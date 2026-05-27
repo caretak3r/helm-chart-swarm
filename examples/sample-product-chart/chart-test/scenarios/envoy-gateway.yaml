@@ -1,0 +1,32 @@
+id: envoy-gateway
+name: "Envoy Gateway (Gateway API)"
+description: "Installs Gateway API CRDs via raw_manifest and Envoy Gateway controller via OCI helm chart. Verifies chart coexists with a running gateway controller."
+labels: { customer: none, profile: gateway-api }
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: raw_manifest
+      path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+    - chart: oci://docker.io/envoyproxy/gateway-helm
+      version: v1.1.2
+      release: envoy-gateway
+      namespace: envoy-gateway-system
+      values:
+        config:
+          envoyGateway:
+            provider:
+              type: Kubernetes
+      wait: pods-ready
+      wait_timeout: 5m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+asserts:
+  - { type: helm-status-deployed, release: envoy-gateway, namespace: envoy-gateway-system }
+  - { type: helm-status-deployed, release: sample, namespace: sample }
+  - { type: pods-ready, namespace: envoy-gateway-system, timeout: 5m }
+  - { type: pods-ready, namespace: sample }
+tags: [nightly]
+mechanisms: [addon:envoy-gateway, gateway-api:envoy]

@@ -79,30 +79,57 @@
   "$defs": {
     "preinstall_item": {
       "type": "object",
-      "required": ["chart", "release", "namespace"],
-      "additionalProperties": false,
       "properties": {
-        "chart":     { "type": "string", "description": "Helm chart ref. Either 'repo/name' (needs prior helm repo add) or OCI ref." },
-        "version":   { "type": "string" },
-        "release":   { "type": "string" },
-        "namespace": { "type": "string" },
-        "values":    { "type": ["string", "object"], "description": "Path to values.yaml or inline object. Path is relative to project root." },
-        "repo": {
+        "kind": {
+          "enum": ["helm", "raw_manifest"],
+          "default": "helm",
+          "description": "Preinstall item kind. Defaults to 'helm' for backward compatibility with pre-F1.2 scenarios that omit this field."
+        }
+      },
+      "oneOf": [
+        {
+          "title": "Helm chart preinstall",
+          "description": "Install a Helm chart before the product chart. This is the default kind when 'kind' is omitted.",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
-            "name": { "type": "string" },
-            "url":  { "type": "string", "format": "uri" }
+            "kind":          { "enum": ["helm"] },
+            "chart":         { "type": "string", "description": "Helm chart ref. Either 'repo/name' (needs prior helm repo add) or OCI ref (oci://...)." },
+            "version":       { "type": "string" },
+            "release":       { "type": "string" },
+            "namespace":     { "type": "string" },
+            "values":        { "type": ["string", "object"], "description": "Path to values.yaml or inline object. Path is relative to project root." },
+            "repo": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "url":  { "type": "string", "format": "uri" }
+              },
+              "required": ["name", "url"],
+              "description": "If set, runs 'helm repo add <name> <url>' before install."
+            },
+            "wait": {
+              "enum": ["none", "helm-deployed", "pods-ready"],
+              "default": "pods-ready"
+            },
+            "wait_timeout": { "type": "string", "default": "5m" }
           },
-          "required": ["name", "url"],
-          "description": "If set, runs 'helm repo add <name> <url>' before install."
+          "required": ["chart", "release", "namespace"],
+          "additionalProperties": false
         },
-        "wait": {
-          "enum": ["none", "helm-deployed", "pods-ready"],
-          "default": "pods-ready"
-        },
-        "wait_timeout": { "type": "string", "default": "5m" }
-      }
+        {
+          "title": "Raw manifest preinstall",
+          "description": "Apply a raw Kubernetes manifest via kubectl apply -f before the product chart.",
+          "type": "object",
+          "properties": {
+            "kind":      { "const": "raw_manifest" },
+            "path":      { "type": "string", "description": "Path to the manifest file (relative to project root) or a URL (https://...). Required." },
+            "namespace": { "type": "string", "description": "Optional namespace override passed via kubectl --namespace." }
+          },
+          "required": ["kind", "path"],
+          "additionalProperties": false
+        }
+      ]
     },
     "assertion": {
       "type": "object",
