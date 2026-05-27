@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chart-test-swarm.dev/schemas/scenario.schema.json",
+  "title": "chart-test-swarm scenario",
+  "description": "One customer-shaped cluster + product chart + assertions. Path fields are resolved relative to the consumer project root (the dir containing chart-test-swarm.yaml).",
+  "type": "object",
+  "required": ["id", "cluster", "product", "asserts"],
+  "additionalProperties": false,
+  "properties": {
+    "id":   { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "labels": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "cluster": {
+      "type": "object",
+      "required": ["provider"],
+      "additionalProperties": false,
+      "properties": {
+        "provider":     { "enum": ["kind", "minikube", "k3d", "eks", "gke", "aks", "vcluster"] },
+        "k8s_version":  { "type": "string" },
+        "config":       { "type": "string", "description": "Path to provider-specific config (e.g. kind --config yaml). Relative to project root." },
+        "preinstall":   {
+          "type": "array",
+          "items": { "$ref": "#/$defs/preinstall_item" }
+        }
+      }
+    },
+    "product": {
+      "type": "object",
+      "required": ["chart", "release", "namespace"],
+      "additionalProperties": false,
+      "properties": {
+        "chart":     { "type": "string", "description": "Path or OCI ref (oci://...) to the chart. Local paths resolve against project root." },
+        "release":   { "type": "string" },
+        "namespace": { "type": "string" },
+        "values":    { "type": "string", "description": "Path to values.yaml override. Relative to project root." },
+        "set":       {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "boolean"] },
+          "description": "helm --set key=value overrides applied on top of values."
+        },
+        "subcharts": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Informational: which subchart variants are exercised. Surfaces in dashboard rollup."
+        }
+      }
+    },
+    "asserts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/assertion" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Suite membership filter (pr-subset, nightly, customer-replica, ...)."
+    },
+    "mechanisms": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Free-vocabulary rollup labels for the dashboard. Convention: <kind>:<name>, e.g. addon:istio, subchart:postgres-internal."
+    },
+    "generated_by": {
+      "type": "object",
+      "description": "Provenance: who/what generated this scenario. Optional but useful for dashboard filtering of LLM-generated scenarios.",
+      "additionalProperties": false,
+      "properties": {
+        "by":          { "type": "string", "description": "e.g. 'chart-test-swarm-skill', 'hand-authored'" },
+        "integration": { "type": "string", "description": "Integration target the scenario was generated for, e.g. 'cert-manager'" },
+        "at":          { "type": "string", "description": "ISO-8601 UTC timestamp" },
+        "skill_version": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "preinstall_item": {
+      "type": "object",
+      "required": ["chart", "release", "namespace"],
+      "additionalProperties": false,
+      "properties": {
+        "chart":     { "type": "string", "description": "Helm chart ref. Either 'repo/name' (needs prior helm repo add) or OCI ref." },
+        "version":   { "type": "string" },
+        "release":   { "type": "string" },
+        "namespace": { "type": "string" },
+        "values":    { "type": ["string", "object"], "description": "Path to values.yaml or inline object. Path is relative to project root." },
+        "repo": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "url":  { "type": "string", "format": "uri" }
+          },
+          "required": ["name", "url"],
+          "description": "If set, runs 'helm repo add <name> <url>' before install."
+        },
+        "wait": {
+          "enum": ["none", "helm-deployed", "pods-ready"],
+          "default": "pods-ready"
+        },
+        "wait_timeout": { "type": "string", "default": "5m" }
+      }
+    },
+    "assertion": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script"] },
+        "timeout": { "type": "string", "default": "5m" }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "type":      { "const": "pods-ready" },
+            "namespace": { "type": "string" },
+            "selector":  { "type": "string", "description": "label selector, e.g. app=my-product" }
+          },
+          "required": ["namespace"]
+        },
+        {
+          "properties": {
+            "type":      { "const": "service-reachable" },
+            "service":   { "type": "string", "description": "<name>.<namespace>" },
+            "port":      { "type": "integer" },
+            "path":      { "type": "string", "default": "/" },
+            "expect":    { "type": "integer", "default": 200 }
+          },
+          "required": ["service", "port"]
+        },
+        {
+          "properties": {
+            "type":    { "const": "helm-status-deployed" },
+            "release": { "type": "string" },
+            "namespace": { "type": "string" }
+          },
+          "required": ["release", "namespace"]
+        },
+        {
+          "properties": {
+            "type": { "const": "smoke-script" },
+            "path": { "type": "string", "description": "Path to executable. Receives RELEASE, NAMESPACE, KUBECONFIG as env." }
+          },
+          "required": ["path"]
+        }
+      ]
+    }
+  }
+}
