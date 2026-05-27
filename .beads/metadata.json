@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "chart_test_swarm",
+  "project_id": "4c656afa-e86f-46f0-bc46-f1cd2863108a"
+}
