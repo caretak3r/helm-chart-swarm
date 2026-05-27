@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — run-20260520-101500</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="run-header">
+  <div class="brand">
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— run-20260520-101500</span></h1>
+    <a href="../index.html" class="up">← all runs</a>
+  </div>
+  <dl>
+    <dt>Time (UTC)</dt><dd>2026-05-20T10:15:00Z</dd>
+    <dt>Project</dt><dd>sample-product-chart</dd>
+    <dt>Chart</dt><dd><code>sample-product:0.1.0</code></dd>
+    <dt>Suite</dt><dd>nightly-full</dd>
+    <dt>Cluster</dt><dd>kind · k8s <code>v1.30.0</code></dd>
+    <dt>Agents</dt><dd>2</dd>
+  </dl>
+  <div class="counts">
+      <span class="badge status-pass">PASS · 4</span>
+      <span class="badge status-fail">FAIL · 1</span>
+  </div>
+</header>
+
+<section class="mechanism-rollup">
+  <h2>Mechanism coverage</h2>
+  <p class="hint">Worst status across all scenarios that exercise each mechanism. Covers: addons (cert-manager, istio, gatekeeper, …), subchart variants, customer profiles.</p>
+    <div class="mech-group">
+      <h3>addon</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>addon:cert-manager</code></span>
+            <span class="mech-status status-fail">FAIL</span>
+            <span class="mech-caps">
+<a href="#with-cert-manager">with-cert-manager</a> · <a href="#customer-A-istio">customer-A-istio</a>            </span>
+          </li>
+          <li>
+            <span class="mech-name"><code>addon:gatekeeper</code></span>
+            <span class="mech-status status-pass">PASS</span>
+            <span class="mech-caps">
+<a href="#customer-B-gatekeeper">customer-B-gatekeeper</a>            </span>
+          </li>
+          <li>
+            <span class="mech-name"><code>addon:istio</code></span>
+            <span class="mech-status status-fail">FAIL</span>
+            <span class="mech-caps">
+<a href="#customer-A-istio">customer-A-istio</a>            </span>
+          </li>
+          <li>
+            <span class="mech-name"><code>addon:none</code></span>
+            <span class="mech-status status-pass">PASS</span>
+            <span class="mech-caps">
+<a href="#minimal">minimal</a>            </span>
+          </li>
+      </ul>
+    </div>
+    <div class="mech-group">
+      <h3>subchart</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>subchart:postgres-internal</code></span>
+            <span class="mech-status status-pass">PASS</span>
+            <span class="mech-caps">
+<a href="#subchart-postgres-internal">subchart-postgres-internal</a>            </span>
+          </li>
+      </ul>
+    </div>
+    <div class="mech-group">
+      <h3>mesh</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>mesh:istio</code></span>
+            <span class="mech-status status-fail">FAIL</span>
+            <span class="mech-caps">
+<a href="#customer-A-istio">customer-A-istio</a>            </span>
+          </li>
+      </ul>
+    </div>
+    <div class="mech-group">
+      <h3>customer</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>customer:A</code></span>
+            <span class="mech-status status-fail">FAIL</span>
+            <span class="mech-caps">
+<a href="#customer-A-istio">customer-A-istio</a>            </span>
+          </li>
+          <li>
+            <span class="mech-name"><code>customer:B</code></span>
+            <span class="mech-status status-pass">PASS</span>
+            <span class="mech-caps">
+<a href="#customer-B-gatekeeper">customer-B-gatekeeper</a>            </span>
+          </li>
+      </ul>
+    </div>
+</section>
+
+<section class="matrix">
+  <h2>Scenarios</h2>
+  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.</p>
+  <table>
+    <thead>
+      <tr>
+        <th class="row-head">Scenario</th>
+        <th>Cluster shape</th>
+        <th>Tags</th>
+        <th>Asserts</th>
+        <th>Status</th>
+        <th>Agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th class="row-head">
+          <a href="#minimal"><code>minimal</code></a>
+<div class="hint">Vanilla cluster — no preinstalled addons</div>        </th>
+        <td>
+          <code>kind</code>
+        </td>
+        <td><code class="mech-tag">pr-subset</code><code class="mech-tag">nightly</code></td>
+        <td class="cell status-pass">2/2</td>
+        <td><span class="badge status-pass">PASS</span></td>
+        <td>1</td>
+      </tr>
+      <tr>
+        <th class="row-head">
+          <a href="#with-cert-manager"><code>with-cert-manager</code></a>
+<div class="hint">Customer ships cert-manager preinstalled</div>        </th>
+        <td>
+          <code>kind</code>
+<div class="hint">+ cert-manager</div>        </td>
+        <td><code class="mech-tag">pr-subset</code><code class="mech-tag">nightly</code></td>
+        <td class="cell status-pass">2/2</td>
+        <td><span class="badge status-pass">PASS</span></td>
+        <td>1</td>
+      </tr>
+      <tr>
+        <th class="row-head">
+          <a href="#customer-A-istio"><code>customer-A-istio</code></a>
+<div class="hint">Customer A — Istio mesh + cert-manager</div>        </th>
+        <td>
+          <code>kind</code>
+<div class="hint">+ cert-manager, istio-base, istiod</div>        </td>
+        <td><code class="mech-tag">nightly</code><code class="mech-tag">customer-replica</code></td>
+        <td class="cell status-fail">1/2</td>
+        <td><span class="badge status-fail">FAIL</span></td>
+        <td>2</td>
+      </tr>
+      <tr>
+        <th class="row-head">
+          <a href="#customer-B-gatekeeper"><code>customer-B-gatekeeper</code></a>
+<div class="hint">Customer B — OPA Gatekeeper admission policies</div>        </th>
+        <td>
+          <code>kind</code>
+<div class="hint">+ gatekeeper</div>        </td>
+        <td><code class="mech-tag">nightly</code><code class="mech-tag">customer-replica</code></td>
+        <td class="cell status-pass">2/2</td>
+        <td><span class="badge status-pass">PASS</span></td>
+        <td>2</td>
+      </tr>
+      <tr>
+        <th class="row-head">
+          <a href="#subchart-postgres-internal"><code>subchart-postgres-internal</code></a>
+<div class="hint">Internal postgres subchart enabled</div>        </th>
+        <td>
+          <code>kind</code>
+        </td>
+        <td><code class="mech-tag">pr-subset</code><code class="mech-tag">nightly</code></td>
+        <td class="cell status-pass">2/2</td>
+        <td><span class="badge status-pass">PASS</span></td>
+        <td>1</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="cap-details">
+  <h2>Scenarios — details</h2>
+  <details id="minimal" class="cap">
+    <summary>
+      <span class="cap-id"><code>minimal</code></span>
+      <span class="cap-name">Vanilla cluster — no preinstalled addons</span>
+      <span class="badge status-pass">PASS</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Baseline: chart installs and pods come up on a stock kind cluster.</dd>      <dt>Cluster</dt><dd><code>kind</code></dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:none</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">pr-subset</code><code class="mech-tag">nightly</code></dd>
+      <dt>Labels</dt><dd><code>customer=none</code> <code>profile=baseline</code> </dd>
+    </dl>
+    <div class="result">
+      <h5>Assertions · agent 1</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>helm-status-deployed</code>
+<details class="notes"><summary>notes</summary><pre>release sample is deployed (rev 1)</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>1/1 pods Ready in ns/sample</pre></details>        </li>
+      </ul>
+<p class="log-path">Logs: <code>/tmp/chart-test-swarm/minimal-12345/</code></p>    </div>
+  </details>
+  <details id="with-cert-manager" class="cap">
+    <summary>
+      <span class="cap-id"><code>with-cert-manager</code></span>
+      <span class="cap-name">Customer ships cert-manager preinstalled</span>
+      <span class="badge status-pass">PASS</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Validates chart coexists with cert-manager and its CRDs.</dd>      <dt>Cluster</dt><dd><code>kind</code></dd>
+      <dt>Preinstalled</dt><dd><code>cert-manager</code></dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:cert-manager</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">pr-subset</code><code class="mech-tag">nightly</code></dd>
+      <dt>Labels</dt><dd><code>customer=any</code> <code>profile=tls</code> </dd>
+    </dl>
+    <div class="result">
+      <h5>Assertions · agent 1</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>helm-status-deployed</code>
+<details class="notes"><summary>notes</summary><pre>release sample is deployed (rev 1)</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>1/1 pods Ready in ns/sample (after cert-manager CRDs installed)</pre></details>        </li>
+      </ul>
+<p class="log-path">Logs: <code>/tmp/chart-test-swarm/with-cert-manager-12346/</code></p>    </div>
+  </details>
+  <details id="customer-A-istio" class="cap">
+    <summary>
+      <span class="cap-id"><code>customer-A-istio</code></span>
+      <span class="cap-name">Customer A — Istio mesh + cert-manager</span>
+      <span class="badge status-fail">FAIL</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Customer A's profile: istio sidecar injection, istio-ingress, cert-manager.</dd>      <dt>Cluster</dt><dd><code>kind</code></dd>
+      <dt>Preinstalled</dt><dd><code>cert-manager</code>, <code>istio-base</code>, <code>istiod</code></dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:istio</code><code class="mech-tag">addon:cert-manager</code><code class="mech-tag">mesh:istio</code><code class="mech-tag">customer:A</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">nightly</code><code class="mech-tag">customer-replica</code></dd>
+      <dt>Labels</dt><dd><code>customer=A</code> <code>mesh=istio</code> <code>ingress=istio-gw</code> </dd>
+      <dt>Failed at</dt><dd class="pitfall">pods-ready — sidecar injection enabled but pod stuck in PodInitializing.
+kubectl -n sample describe pod sample-... shows istio-init container
+waiting on CNI config — istio-cni-node not installed.</dd>
+    </dl>
+    <div class="result">
+      <h5>Assertions · agent 2</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>helm-status-deployed</code>
+<details class="notes"><summary>notes</summary><pre>release sample is deployed (rev 1)</pre></details>        </li>
+        <li class="status-fail">
+          <span class="badge status-fail">FAIL</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>0/1 pods Ready after 5m0s.
+sample-7d4f8c9b8-x7k2p: PodInitializing (istio-init waiting)
+REPRO: helm install sample ./chart -n sample --set podAnnotations."sidecar\.istio\.io/inject"=true</pre></details>        </li>
+      </ul>
+<p class="log-path">Logs: <code>/tmp/chart-test-swarm/customer-A-istio-12348/</code></p>    </div>
+  </details>
+  <details id="customer-B-gatekeeper" class="cap">
+    <summary>
+      <span class="cap-id"><code>customer-B-gatekeeper</code></span>
+      <span class="cap-name">Customer B — OPA Gatekeeper admission policies</span>
+      <span class="badge status-pass">PASS</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Customer B runs Gatekeeper with strict admission policies.</dd>      <dt>Cluster</dt><dd><code>kind</code></dd>
+      <dt>Preinstalled</dt><dd><code>gatekeeper</code></dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:gatekeeper</code><code class="mech-tag">customer:B</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">nightly</code><code class="mech-tag">customer-replica</code></dd>
+      <dt>Labels</dt><dd><code>customer=B</code> <code>policy=gatekeeper</code> </dd>
+    </dl>
+    <div class="result">
+      <h5>Assertions · agent 2</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>helm-status-deployed</code>
+<details class="notes"><summary>notes</summary><pre>release sample is deployed (rev 1)</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>1/1 pods Ready (no admission-policy violations)</pre></details>        </li>
+      </ul>
+<p class="log-path">Logs: <code>/tmp/chart-test-swarm/customer-B-gatekeeper-12349/</code></p>    </div>
+  </details>
+  <details id="subchart-postgres-internal" class="cap">
+    <summary>
+      <span class="cap-id"><code>subchart-postgres-internal</code></span>
+      <span class="cap-name">Internal postgres subchart enabled</span>
+      <span class="badge status-pass">PASS</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Product chart bundles postgres via subchart; verify both come up together.</dd>      <dt>Cluster</dt><dd><code>kind</code></dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">subchart:postgres-internal</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">pr-subset</code><code class="mech-tag">nightly</code></dd>
+      <dt>Labels</dt><dd><code>profile=full-stack</code> </dd>
+    </dl>
+    <div class="result">
+      <h5>Assertions · agent 1</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>helm-status-deployed</code>
+<details class="notes"><summary>notes</summary><pre>release sample is deployed (rev 1)</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>2/2 pods Ready (app + postgres-0)</pre></details>        </li>
+      </ul>
+<p class="log-path">Logs: <code>/tmp/chart-test-swarm/subchart-postgres-internal-12347/</code></p>    </div>
+  </details>
+</section>
+
+</body>
+</html>

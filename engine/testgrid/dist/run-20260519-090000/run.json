@@ -1,0 +1,114 @@
+{
+  "run_id": "run-20260519-090000",
+  "timestamp_utc": "2026-05-19T09:00:00Z",
+  "num_agents": 2,
+  "project_name": "sample-product-chart",
+  "chart_name": "sample-product",
+  "chart_version": "0.1.0",
+  "suite": "pr-subset",
+  "cluster_provider": "kind",
+  "k8s_version": "v1.30.0",
+  "scenarios": [
+    {
+      "id": "minimal",
+      "name": "Vanilla cluster \u2014 no preinstalled addons",
+      "description": "",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:none"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {},
+      "status": "PASS",
+      "asserts": [
+        {
+          "type": "helm-status-deployed",
+          "status": "PASS",
+          "notes": ""
+        },
+        {
+          "type": "pods-ready",
+          "status": "PASS",
+          "notes": "1/1 Ready"
+        }
+      ],
+      "duration_s": 41.0,
+      "agent": 1,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": ""
+    },
+    {
+      "id": "with-cert-manager",
+      "name": "Customer ships cert-manager preinstalled",
+      "description": "",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager"
+      ],
+      "mechanisms": [
+        "addon:cert-manager"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {},
+      "status": "PASS",
+      "asserts": [
+        {
+          "type": "helm-status-deployed",
+          "status": "PASS",
+          "notes": ""
+        },
+        {
+          "type": "pods-ready",
+          "status": "PASS",
+          "notes": ""
+        }
+      ],
+      "duration_s": 92.0,
+      "agent": 1,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": ""
+    },
+    {
+      "id": "subchart-postgres-internal",
+      "name": "Internal postgres subchart enabled",
+      "description": "",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "subchart:postgres-internal"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {},
+      "status": "PARTIAL",
+      "asserts": [
+        {
+          "type": "helm-status-deployed",
+          "status": "PASS",
+          "notes": ""
+        },
+        {
+          "type": "pods-ready",
+          "status": "FAIL",
+          "notes": "postgres-0 PVC pending \u2014 kind cluster has no default StorageClass with WaitForFirstConsumer rebind"
+        }
+      ],
+      "duration_s": 142.0,
+      "agent": 1,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": ""
+    }
+  ]
+}
