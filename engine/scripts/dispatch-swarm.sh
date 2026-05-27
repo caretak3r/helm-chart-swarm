@@ -47,7 +47,12 @@ if [ "$(echo "$TAG_FILTER" | jq 'length')" -eq 0 ]; then
 fi
 
 # Collect matching scenarios (any tag overlap with filter)
-mapfile -t ALL_FILES < <(find "$SCEN_DIR" -type f \( -name "*.yaml" -o -name "*.yml" \) | sort)
+# Bash 3.2 compatible: avoid mapfile, use while-read loop
+ALL_FILES=()
+while IFS= read -r f; do
+  ALL_FILES+=("$f")
+done < <(find "$SCEN_DIR" -type f \( -name "*.yaml" -o -name "*.yml" \) | sort)
+
 MATCHED=()
 for f in "${ALL_FILES[@]}"; do
   s_tags=$(yq -o=json '.tags // []' "$f")
@@ -72,9 +77,16 @@ else
   _REPORTS_ROOT="$ROOT_DIR/reports"
 fi
 RUN_DIR="$_REPORTS_ROOT/$RUN_ID"
+
+# ---- RUN_ID collision detection (VAL-CROSS-028) ----
+if [ -d "$RUN_DIR" ]; then
+  echo "ERROR: run directory already exists: $RUN_DIR" >&2
+  echo "       Use --run-id <override> to specify a different run, or remove the existing directory." >&2
+  exit 1
+fi
 mkdir -p "$RUN_DIR"
 
-# run-meta.yaml
+# run-meta.yaml — reflect actual mix of providers/k8s_versions (VAL-ENGINE-036)
 CHART_NAME=""
 CHART_VERSION=""
 # Best-effort: parse the first scenario's product.chart, then look for Chart.yaml.
@@ -88,13 +100,33 @@ if [ -f "$cabs/Chart.yaml" ]; then
   CHART_VERSION=$(yq '.version' "$cabs/Chart.yaml")
 fi
 
-cat > "$RUN_DIR/run-meta.yaml" <<META
+# Collect all unique providers and k8s_versions across matched scenarios
+ALL_PROVIDERS=()
+ALL_K8S_VERSIONS=()
+for f in "${MATCHED[@]}"; do
+  p=$(yq '.cluster.provider // "kind"' "$f")
+  k=$(yq '.cluster.k8s_version // ""' "$f")
+  ALL_PROVIDERS+=("$p")
+  ALL_K8S_VERSIONS+=("$k")
+done
+
+# Check for mixed providers and either list them or refuse
+UNIQUE_PROVIDERS=$(printf '%s\n' "${ALL_PROVIDERS[@]}" | sort -u)
+PROVIDER_COUNT=$(printf '%s\n' "${UNIQUE_PROVIDERS[@]}" | wc -l | tr -d ' ')
+
+if [ "$PROVIDER_COUNT" -gt 1 ]; then
+  # Record all providers as a YAML list
+  PROVIDER_YAML=$(printf '%s\n' "${UNIQUE_PROVIDERS[@]}" | sed 's/^/  - /')
+  K8S_YAML=$(printf '%s\n' "${ALL_K8S_VERSIONS[@]}" | sort -u | grep -v '^$' | sed 's/^/  - /')
+  cat > "$RUN_DIR/run-meta.yaml" <<META
 run_id: $RUN_ID
 timestamp_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 num_agents: $NUM_AGENTS
 suite: $SUITE
-cluster_provider: $(yq '.cluster.provider // "kind"' "${MATCHED[0]}")
-k8s_version: $(yq '.cluster.k8s_version // ""' "${MATCHED[0]}")
+cluster_provider:
+${PROVIDER_YAML}
+k8s_version:
+${K8S_YAML}
 project:
   name: $PROJECT_NAME
   dir: $PROJECT_DIR
@@ -102,8 +134,28 @@ chart:
   name: ${CHART_NAME:-unknown}
   version: ${CHART_VERSION:-unknown}
 META
+else
+  # Homogeneous — use scalar (backward compatible)
+  FIRST_PROVIDER=$(printf '%s\n' "${UNIQUE_PROVIDERS[@]}" | head -1)
+  FIRST_K8S=$(printf '%s\n' "${ALL_K8S_VERSIONS[@]}" | head -1)
+  cat > "$RUN_DIR/run-meta.yaml" <<META
+run_id: $RUN_ID
+timestamp_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+num_agents: $NUM_AGENTS
+suite: $SUITE
+cluster_provider: ${FIRST_PROVIDER}
+k8s_version: "${FIRST_K8S}"
+project:
+  name: $PROJECT_NAME
+  dir: $PROJECT_DIR
+chart:
+  name: ${CHART_NAME:-unknown}
+  version: ${CHART_VERSION:-unknown}
+META
+fi
 
 # scenarios-snapshot.yaml — frozen copy of each scenario's metadata
+# Includes product + asserts per scenario (VAL-ENGINE-031)
 {
   echo "scenarios:"
   for f in "${MATCHED[@]}"; do
@@ -113,19 +165,21 @@ META
       "description": .description // "",
       "labels": .labels // {},
       "cluster": .cluster,
+      "product": .product,
+      "asserts": .asserts,
       "tags": .tags // [],
       "mechanisms": .mechanisms // []
     }' "$f" | sed 's/^/  /' | sed '1s/^  /- /'
   done
 } > "$RUN_DIR/scenarios-snapshot.yaml"
 
-# Round-robin scenarios into N agent buckets
+# Round-robin scenarios into N agent buckets (Bash 3.2 compatible)
 declare -a BUCKETS
-for i in $(seq 1 "$NUM_AGENTS"); do BUCKETS[$i]=""; done
+for i in $(seq 1 "$NUM_AGENTS"); do BUCKETS[i]=""; done
 i=0
 for f in "${MATCHED[@]}"; do
   slot=$(( (i % NUM_AGENTS) + 1 ))
-  BUCKETS[$slot]="${BUCKETS[$slot]}${f}"$'\n'
+  BUCKETS[slot]="${BUCKETS[slot]}${f}"$'\n'
   i=$((i + 1))
 done
 
@@ -140,16 +194,21 @@ while IFS= read -r d; do
 done < <(find "$_REPORTS_ROOT" -mindepth 1 -maxdepth 1 -type d -name "run-*" 2>/dev/null | sort -r)
 
 # Per-agent brief generation
+# IMPORTANT (VAL-ENGINE-037): We use sed-based substitution instead of envsubst
+# to prevent re-expansion of $VAR / ${VAR} in scenario name/description fields.
 for n in $(seq 1 "$NUM_AGENTS"); do
   agent_dir="$RUN_DIR/agent-$n"
   mkdir -p "$agent_dir"
   brief="$agent_dir/brief.md"
 
   # Build a markdown bullet list of this agent's scenarios
+  # Use single-quoted yq expressions and printf '%s' to prevent shell expansion
+  # of any $VAR in scenario name/description fields.
   assigned_md=""
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     sid=$(yq   '.id'                "$f")
+    # Use printf '%s' to avoid shell interpreting $ in names/descriptions
     snam=$(yq  '.name // ""'        "$f")
     sdesc=$(yq '.description // ""' "$f")
     assigned_md+="- **\`$sid\`** — $snam"$'\n'
@@ -164,14 +223,18 @@ for n in $(seq 1 "$NUM_AGENTS"); do
     pitfalls_md+=$'\n'
   fi
 
-  # Render template via simple substitution
-  AGENT_N="$n" \
-  NUM_AGENTS="$NUM_AGENTS" \
-  RUN_ID="$RUN_ID" \
-  PROJECT_DIR="$PROJECT_DIR" \
-  ASSIGNED_SCENARIOS="$assigned_md" \
-  PRIOR_PITFALLS="$pitfalls_md" \
-  envsubst < "$TEMPLATE" > "$brief"
+  # Render template via sed substitution — NOT envsubst — to prevent
+  # re-expansion of $VAR / ${VAR} in scenario fields (VAL-ENGINE-037).
+  {
+    cat "$TEMPLATE"
+  } | sed \
+    -e "s|\${AGENT_N}|$n|g" \
+    -e "s|\${NUM_AGENTS}|$NUM_AGENTS|g" \
+    -e "s|\${RUN_ID}|$RUN_ID|g" \
+    -e "s|\${PROJECT_DIR}|$PROJECT_DIR|g" \
+    -e "s|\${ASSIGNED_SCENARIOS}|$assigned_md|g" \
+    -e "s|\${PRIOR_PITFALLS}|$pitfalls_md|g" \
+    > "$brief"
 done
 
 echo "==> Briefs ready under $RUN_DIR/agent-*/brief.md"

@@ -39,7 +39,8 @@ cts_cleanup_tempfiles() {
     rm -f "$f" 2>/dev/null || true
   done
 }
-trap 'cts_cleanup_tempfiles' EXIT
+# Trap EXIT, INT, TERM so tempfiles are cleaned up even on SIGTERM mid-loop
+trap 'cts_cleanup_tempfiles' EXIT INT TERM
 
 count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
 if [ "$count" -eq 0 ]; then
@@ -128,7 +129,23 @@ apply_helm() {
   command -v helm >/dev/null 2>&1 || { echo "ERROR: helm required" >&2; exit 1; }
 
   if [ -n "$repo_name" ] && [ -n "$repo_url" ]; then
-    helm repo add "$repo_name" "$repo_url" >/dev/null
+    # Idempotent helm repo add (VAL-ENGINE-032):
+    # If the repo already exists with the same URL, that's fine (no error).
+    # If it exists with a DIFFERENT URL, that's an error — refuse with named details.
+    if helm repo list 2>/dev/null | grep -q "^${repo_name}[[:space:]]"; then
+      existing_url=$(helm repo list 2>/dev/null | awk -v rn="$repo_name" '$1 == rn {print $2}')
+      if [ "$existing_url" = "$repo_url" ]; then
+        # Same repo+URL — idempotent no-op (informational, not an error)
+        echo "    repo '$repo_name' already exists with URL $repo_url (skipping add)"
+      else
+        echo "ERROR: helm repo '$repo_name' already exists with different URL" >&2
+        echo "       existing: $existing_url" >&2
+        echo "       requested: $repo_url" >&2
+        exit 1
+      fi
+    else
+      helm repo add "$repo_name" "$repo_url" >/dev/null
+    fi
     helm repo update "$repo_name" >/dev/null
   fi
 

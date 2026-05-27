@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 # Run ONE scenario end-to-end: cluster up → preinstall → product chart → asserts.
-# Emits a result.yaml under $REPORTS_DIR/scenario-<id>-<ts>/.
+# Emits result.yaml + artifacts/ bundle under $REPORTS_DIR/scenario-<id>-<ts>/.
+#
+# Artifact bundle (self-contained for re-application):
+#   artifacts/scenario.yaml           — verbatim copy of the input scenario
+#   artifacts/applied-overrides.yaml  — helm_values map + raw_manifest_refs seq
+#   artifacts/fixtures/               — byte-identical copies of referenced fixtures
+#   artifacts/manifests/              — kubectl get -o yaml dumps of created resources
+#   artifacts/versions.json           — {helm, kubectl, kind, minikube, k8s_server}
+#   artifacts/logs/                   — all captured logs
 #
 # Usage:   run-scenario.sh <scenario.yaml>
 # Env:
@@ -66,11 +74,37 @@ else
   _REPORTS_ROOT="$ROOT_DIR/reports"
 fi
 REPORT_DIR="$_REPORTS_ROOT/scenario-${SCEN_ID}-${TS}"
-LOG_DIR="$REPORT_DIR/logs"
-mkdir -p "$LOG_DIR"
+ARTIFACTS_DIR="$REPORT_DIR/artifacts"
+LOG_DIR="$ARTIFACTS_DIR/logs"
+mkdir -p "$LOG_DIR" "$ARTIFACTS_DIR/fixtures" "$ARTIFACTS_DIR/manifests"
 RESULT="$REPORT_DIR/result.yaml"
 echo "==> Scenario:   $SCEN_ID"
 echo "==> Report dir: $REPORT_DIR"
+
+# ---- Emit partial artifacts early so even crashed runs leave breadcrumbs ----
+# scenario.yaml (verbatim copy of input)
+cp "$SCENARIO" "$ARTIFACTS_DIR/scenario.yaml"
+
+# versions.json — capture tool versions immediately
+write_versions_json() {
+  local _helm="" _kubectl="" _kind="" _minikube="" _k8s_server=""
+  _helm=$(helm version --short 2>/dev/null | head -1 || echo "unknown")
+  _kubectl=$(kubectl version --client --short 2>/dev/null | head -1 || kubectl version --client -o json 2>/dev/null | jq -r '.clientVersion.gitVersion // "unknown"' || echo "unknown")
+  _kind=$(kind version --short 2>/dev/null | head -1 || echo "unknown")
+  _minikube=$(minikube version --short 2>/dev/null | head -1 || echo "unknown")
+  _k8s_server="unknown"
+  # Try to get server version if cluster is reachable
+  _k8s_server=$(kubectl version -o json 2>/dev/null | jq -r '.serverVersion.gitVersion // "unknown"' || echo "unknown")
+  jq -n \
+    --arg helm "$_helm" \
+    --arg kubectl "$_kubectl" \
+    --arg kind "$_kind" \
+    --arg minikube "$_minikube" \
+    --arg k8s_server "$_k8s_server" \
+    '{helm: $helm, kubectl: $kubectl, kind: $kind, minikube: $minikube, k8s_server: $k8s_server}' \
+    > "$ARTIFACTS_DIR/versions.json"
+}
+write_versions_json || true
 
 # Start result.yaml as we go so a crashed run still leaves breadcrumbs.
 {
@@ -104,6 +138,9 @@ fail() {
   } >> "$RESULT"
   echo ""; echo "FAIL ($stage): $msg" >&2
 
+  # Write partial applied-overrides.yaml if helm merge happened
+  write_applied_overrides || true
+
   # Teardown cluster unless KEEP_CLUSTER=1
   if [ "$KEEP_CLUSTER" = "0" ]; then
     echo "==> Tearing down cluster (KEEP_CLUSTER=0) after failure" >&2
@@ -111,6 +148,151 @@ fail() {
   fi
 
   exit 1
+}
+
+# ---- Generate applied-overrides.yaml (uniform shape) ----
+# Shape: { helm_values: <map>, raw_manifest_refs: [<seq of paths>] }
+# helm_values = final merged values from product.set + product.values + preinstall values
+# raw_manifest_refs = list of paths from raw_manifest preinstall items
+write_applied_overrides() {
+  local ao="$ARTIFACTS_DIR/applied-overrides.yaml"
+  {
+    echo "helm_values:"
+    # Product values file (if specified)
+    if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
+      local vpath
+      vpath=$(resolve_path "$PRODUCT_VALUES")
+      if [ -f "$vpath" ]; then
+        # Indent the values file content under helm_values
+        sed 's/^/  /' "$vpath"
+      fi
+    fi
+
+    # Inline product.set overrides — merge on top of values file
+    local set_count
+    set_count=$(yq '.product.set // {} | length' "$SCENARIO")
+    if [ "$set_count" -gt 0 ]; then
+      # Write product.set entries as helm_values
+      # Use yq to render the product.set map, then indent
+      yq '.product.set // {}' "$SCENARIO" | sed 's/^/  /'
+    fi
+
+    # If neither values nor set, write empty map
+    if [ -z "$PRODUCT_VALUES" ] || [ "$PRODUCT_VALUES" = "null" ]; then
+      if [ "$set_count" -eq 0 ] 2>/dev/null; then
+        echo "  {}"
+      fi
+    fi
+
+    echo "raw_manifest_refs:"
+    # Collect raw_manifest paths from preinstall
+    local preinstall_count
+    preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+    if [ "$preinstall_count" -gt 0 ]; then
+      local i item_kind manifest_path
+      for i in $(seq 0 $((preinstall_count - 1))); do
+        item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
+        if [ "$item_kind" = "raw_manifest" ]; then
+          manifest_path=$(yq ".cluster.preinstall[$i].path" "$SCENARIO")
+          echo "  - ${manifest_path}"
+        fi
+      done
+    fi
+    # If no raw_manifest refs, write empty seq
+    echo "  []"
+  } > "$ao"
+
+  # Clean up: remove the trailing "  []" if we already have entries
+  # (the "  []" is a fallback — remove it when there are real entries)
+  if grep -q '^  - ' "$ao" 2>/dev/null; then
+    # Has real entries — remove the empty seq fallback line
+    sed -i '' '/^  \[\]$/d' "$ao" 2>/dev/null || sed -i '/^  \[\]$/d' "$ao" 2>/dev/null || true
+  fi
+}
+
+# ---- Copy referenced fixture files into artifacts/fixtures/ ----
+copy_fixtures() {
+  local preinstall_count
+  preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+  if [ "$preinstall_count" -gt 0 ]; then
+    local i item_kind manifest_path resolved
+    for i in $(seq 0 $((preinstall_count - 1))); do
+      item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
+      if [ "$item_kind" = "raw_manifest" ]; then
+        manifest_path=$(yq ".cluster.preinstall[$i].path" "$SCENARIO")
+        # Skip URLs
+        case "$manifest_path" in http://*|https://*) continue ;; esac
+        resolved=$(resolve_path "$manifest_path")
+        if [ -f "$resolved" ]; then
+          cp -f "$resolved" "$ARTIFACTS_DIR/fixtures/$(basename "$resolved")"
+        fi
+      fi
+      # Also copy inline values files referenced by helm preinstall items
+      if [ "$item_kind" = "helm" ] || [ "$item_kind" = "" ]; then
+        local values_kind
+        values_kind=$(yq ".cluster.preinstall[$i].values | type" "$SCENARIO" 2>/dev/null || echo "!!null")
+        if [ "$values_kind" = "!!str" ]; then
+          local vpath
+          vpath=$(yq ".cluster.preinstall[$i].values" "$SCENARIO")
+          local resolved_vpath
+          resolved_vpath=$(resolve_path "$vpath")
+          if [ -f "$resolved_vpath" ]; then
+            cp -f "$resolved_vpath" "$ARTIFACTS_DIR/fixtures/$(basename "$resolved_vpath")"
+          fi
+        fi
+      fi
+    done
+  fi
+
+  # Also copy product.values file if it references a fixture
+  if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
+    local vpath
+    vpath=$(resolve_path "$PRODUCT_VALUES")
+    if [ -f "$vpath" ]; then
+      cp -f "$vpath" "$ARTIFACTS_DIR/fixtures/$(basename "$vpath")"
+    fi
+  fi
+}
+
+# ---- Dump manifests via kubectl get -o yaml ----
+capture_manifests() {
+  local out_dir="$ARTIFACTS_DIR/manifests"
+  # Capture resources in the product namespace
+  local ns="$PRODUCT_NS"
+  # Deployments
+  kubectl get deployments -n "$ns" -o yaml > "$out_dir/deployments.yaml" 2>/dev/null || true
+  # Services
+  kubectl get services -n "$ns" -o yaml > "$out_dir/services.yaml" 2>/dev/null || true
+  # ConfigMaps
+  kubectl get configmaps -n "$ns" -o yaml > "$out_dir/configmaps.yaml" 2>/dev/null || true
+  # Secrets (metadata only for safety — not the data)
+  kubectl get secrets -n "$ns" -o yaml > "$out_dir/secrets.yaml" 2>/dev/null || true
+  # Ingresses
+  kubectl get ingress -n "$ns" -o yaml > "$out_dir/ingress.yaml" 2>/dev/null || true
+  # Helm releases
+  helm list -n "$ns" -o yaml > "$out_dir/helm-releases.yaml" 2>/dev/null || true
+
+  # Also capture preinstall namespaces
+  local preinstall_count
+  preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+  if [ "$preinstall_count" -gt 0 ]; then
+    local i pns
+    for i in $(seq 0 $((preinstall_count - 1))); do
+      pns=$(yq ".cluster.preinstall[$i].namespace // \"\"" "$SCENARIO")
+      if [ -n "$pns" ] && [ "$pns" != "null" ] && [ "$pns" != "$ns" ]; then
+        mkdir -p "$out_dir/ns-$pns"
+        kubectl get all -n "$pns" -o yaml > "$out_dir/ns-$pns/resources.yaml" 2>/dev/null || true
+      fi
+    done
+  fi
+
+  # Remove empty/invalid YAML files
+  for f in "$out_dir"/*.yaml "$out_dir"/**/*.yaml; do
+    [ -f "$f" ] || continue
+    if [ ! -s "$f" ] || ! yq '.' "$f" >/dev/null 2>&1; then
+      rm -f "$f"
+    fi
+  done
 }
 
 # ---- SIGINT cleanup: tear down cluster and mark result as INTERRUPTED ----
@@ -124,6 +306,9 @@ cleanup_on_signal() {
     printf '  Interrupted by signal (SIGINT or SIGTERM)\n'
     echo "finished_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   } >> "$RESULT"
+
+  # Write partial artifacts on signal
+  write_applied_overrides || true
 
   # Tear down cluster unless KEEP_CLUSTER=1
   if [ "$KEEP_CLUSTER" = "0" ]; then
@@ -146,6 +331,9 @@ echo "==> Cluster up (provider=$PROVIDER cluster=$CLUSTER_NAME)"
 bash "$SCRIPT_DIR/cluster-up.sh" 2>&1 | tee "$LOG_DIR/cluster-up.log" \
   || fail cluster-up "see $LOG_DIR/cluster-up.log"
 
+# Re-write versions.json now that cluster is up (k8s_server version available)
+write_versions_json || true
+
 # ---- 2. Preinstall addons --------------------------------------------------
 echo "==> Apply scenario preinstall"
 PROJECT_DIR="$PROJECT_DIR" bash "$SCRIPT_DIR/apply-scenario.sh" "$SCENARIO" 2>&1 \
@@ -167,7 +355,7 @@ if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
   helm_args+=(-f "$vpath")
 fi
 
-# --set overrides
+# --set overrides (preserve escaped-dot keys as-is)
 set_count=$(yq '.product.set // {} | length' "$SCENARIO")
 if [ "$set_count" -gt 0 ]; then
   while IFS=$'\t' read -r k v; do
@@ -213,14 +401,26 @@ for i in $(seq 0 $((acount - 1))); do
   fi
 done
 
-# ---- 5. Wrap result --------------------------------------------------------
+# ---- 5. Capture artifacts --------------------------------------------------
+echo "==> Capturing artifacts"
+
+# applied-overrides.yaml (uniform shape)
+write_applied_overrides
+
+# Fixture copies (byte-identical)
+copy_fixtures
+
+# Manifests (kubectl get -o yaml dumps)
+capture_manifests
+
+# ---- 6. Wrap result --------------------------------------------------------
 {
   echo "status: $overall"
   echo "finished_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "log_dir: $LOG_DIR"
 } >> "$RESULT"
 
-# ---- 6. Teardown (if KEEP_CLUSTER=0) --------------------------------------
+# ---- 7. Teardown (if KEEP_CLUSTER=0) --------------------------------------
 if [ "$KEEP_CLUSTER" = "0" ]; then
   echo "==> Tearing down cluster (KEEP_CLUSTER=0)"
   PROVIDER="$PROVIDER" CLUSTER_NAME="$CLUSTER_NAME" bash "$SCRIPT_DIR/cluster-down.sh" || true
