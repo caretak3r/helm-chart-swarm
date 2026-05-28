@@ -2,6 +2,35 @@
 # Tear down the local cluster. Idempotent — re-running exits 0.
 set -euo pipefail
 
+# ---- Usage banner (checked before bash version preflight so --help always works) ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Tear down a local Kubernetes cluster. Idempotent — re-running exits 0.
+
+Options:
+  --help    Show this usage banner and exit
+
+Environment:
+  CLUSTER_NAME  Cluster name (must match ^chart-test-swarm-[a-z0-9-]+\$; default: chart-test-swarm-default)
+  PROVIDER       Cluster provider: kind|minikube|k3d (default: kind)
+EOF
+  exit 0
+}
+
+case "${1:-}" in
+  --help|-h) usage ;;
+esac
+
+# ---- Bash version preflight (VAL-ENGINE-039) ----
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+  echo "ERROR: bash >= 4 required (running ${BASH_VERSION:-unknown})." >&2
+  echo "       Install modern bash: brew install bash" >&2
+  echo "       Then re-run with: /opt/homebrew/bin/bash $0 $*" >&2
+  exit 1
+fi
+
 # Default cluster name satisfies ^chart-test-swarm-[a-z0-9-]+$
 CLUSTER_NAME="${CLUSTER_NAME:-chart-test-swarm-default}"
 PROVIDER="${PROVIDER:-kind}"

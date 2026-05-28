@@ -8,6 +8,31 @@
 #        PROJECT_DIR   consumer chart repo (used to compute default REPORTS_DIR)
 set -euo pipefail
 
+# ---- Usage banner ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") <run-id> [OPTIONS]
+
+Aggregate per-agent results into scenario-matrix.csv + lessons-learned.md,
+then refresh the dashboard (best-effort).
+
+Options:
+  --help    Show this usage banner and exit
+
+Arguments:
+  run-id    Run identifier (e.g. run-20260520-101500)
+
+Environment:
+  REPORTS_DIR   Override reports root (default: auto-detected)
+  PROJECT_DIR   Consumer chart repo (for computing default REPORTS_DIR)
+EOF
+  exit 0
+}
+
+case "${1:-}" in
+  --help|-h) usage ;;
+esac
+
 RUN_ID="${1:?usage: aggregate.sh <run-id>}"
 command -v yq >/dev/null 2>&1 || { echo "ERROR: yq required" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "ERROR: jq required" >&2; exit 1; }

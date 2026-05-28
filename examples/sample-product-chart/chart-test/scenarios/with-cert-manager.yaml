@@ -19,6 +19,6 @@ product:
   namespace: sample
 asserts:
   - { type: helm-status-deployed, release: sample, namespace: sample }
-  - { type: pods-ready,           namespace: sample }
+  - { type: pods-ready, namespace: sample }
 tags: [pr-subset, nightly]
 mechanisms: [addon:cert-manager]

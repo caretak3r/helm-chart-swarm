@@ -4,6 +4,42 @@
 # Does NOT mutate the user's global active kubeconfig context.
 set -euo pipefail
 
+# ---- Usage banner (checked before bash version preflight so --help always works) ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Bring up a local Kubernetes cluster (kind by default; minikube or k3d if PROVIDER is set).
+Idempotent — re-running with the same CLUSTER_NAME is a no-op.
+Does NOT mutate the user's global active kubeconfig context.
+
+Options:
+  --help    Show this usage banner and exit
+
+Environment:
+  CLUSTER_NAME  Cluster name (must match ^chart-test-swarm-[a-z0-9-]+\$; default: chart-test-swarm-default)
+  PROVIDER       Cluster provider: kind|minikube|k3d (default: kind)
+  K8S_VERSION    Kubernetes version, e.g. v1.30.0
+  KIND_CONFIG    Path to kind --config file
+EOF
+  exit 0
+}
+
+case "${1:-}" in
+  --help|-h) usage ;;
+esac
+
+# ---- Bash version preflight (VAL-ENGINE-039) ----
+# Engine scripts use bash-4+ features (mapfile, associative arrays).
+# On macOS default bash 3.2, fail preflight with a clear version error
+# instead of the cryptic "mapfile: command not found".
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+  echo "ERROR: bash >= 4 required (running ${BASH_VERSION:-unknown})." >&2
+  echo "       Install modern bash: brew install bash" >&2
+  echo "       Then re-run with: /opt/homebrew/bin/bash $0 $*" >&2
+  exit 1
+fi
+
 # Default cluster name satisfies ^chart-test-swarm-[a-z0-9-]+$
 CLUSTER_NAME="${CLUSTER_NAME:-chart-test-swarm-default}"
 PROVIDER="${PROVIDER:-kind}"

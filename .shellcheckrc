@@ -1,0 +1,15 @@
+# Root shellcheck configuration for chart-test-swarm.
+# Applied to all engine/scripts/*.sh and engine/asserts/*.sh files.
+
+# SC1091: Not following sourced files — we use -x or external sourcing.
+disable=SC1091
+
+# SC2155: declare and assign separately — we use this pattern
+# extensively for brevity in engine scripts.
+disable=SC2155
+
+# SC2001: sed vs parameter expansion — some cases are clearer with sed.
+disable=SC2001
+
+# SC2005: useless echo — used for consistency in function returns.
+disable=SC2005

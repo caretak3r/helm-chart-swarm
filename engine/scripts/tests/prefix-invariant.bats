@@ -5,6 +5,12 @@
 
 setup() {
   SCRIPT_DIR="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)/.."
+  # Use modern bash (>= 4) — system /bin/bash on macOS is 3.2 and will
+  # trigger the BASH_VERSINFO preflight guard.
+  BASH_CMD="$(command -v bash)"
+  if [ -x /opt/homebrew/bin/bash ]; then
+    BASH_CMD=/opt/homebrew/bin/bash
+  fi
 }
 
 # --- Every cluster-touching script enforces the prefix ---
@@ -25,7 +31,7 @@ asserts:
   - type: pods-ready
     namespace: test
 EOF
-  run env CLUSTER_NAME=evil-cluster bash "$SCRIPT_DIR/run-scenario.sh" "$tmpscen"
+  run env CLUSTER_NAME=evil-cluster $BASH_CMD "$SCRIPT_DIR/run-scenario.sh" "$tmpscen"
   [ "$status" -ne 0 ]
   [[ "$output" == *"chart-test-swarm-"* ]]
   rm -f "$tmpscen"
@@ -46,7 +52,7 @@ asserts:
   - type: pods-ready
     namespace: test
 EOF
-  run env CLUSTER_NAME=chart-test-swarm bash "$SCRIPT_DIR/run-scenario.sh" "$tmpscen"
+  run env CLUSTER_NAME=chart-test-swarm $BASH_CMD "$SCRIPT_DIR/run-scenario.sh" "$tmpscen"
   [ "$status" -ne 0 ]
   [[ "$output" == *"chart-test-swarm-"* ]]
   rm -f "$tmpscen"

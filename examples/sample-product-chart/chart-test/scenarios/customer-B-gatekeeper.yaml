@@ -18,6 +18,6 @@ product:
   namespace: sample
 asserts:
   - { type: helm-status-deployed, release: sample, namespace: sample }
-  - { type: pods-ready,           namespace: sample, timeout: 5m }
+  - { type: pods-ready, namespace: sample, timeout: 5m }
 tags: [nightly, customer-replica]
 mechanisms: [addon:gatekeeper, customer:B]

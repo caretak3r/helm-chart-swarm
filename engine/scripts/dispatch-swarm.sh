@@ -8,6 +8,46 @@
 #                       if chart-test/ exists, else $ROOT_DIR/reports)
 set -euo pipefail
 
+# ---- Usage banner (checked before bash version preflight so --help always works) ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") <project-dir> [suite] [num-agents] [run-id] [OPTIONS]
+
+Resolve a suite into a list of scenarios, round-robin them across N agents,
+write per-agent briefs + run-meta.yaml + scenarios-snapshot.yaml.
+
+Options:
+  --help    Show this usage banner and exit
+
+Arguments:
+  project-dir  Path to the consumer chart project (containing chart-test-swarm.yaml)
+  suite        Suite name defined in chart-test-swarm.yaml (default: pr-subset)
+  num-agents   Number of parallel agents (default: 2)
+  run-id       Run identifier (default: run-<timestamp>)
+
+Environment:
+  PROJECT_DIR   Override project directory
+  SUITE         Override suite name
+  NUM_AGENTS    Override number of agents
+  RUN_ID        Override run identifier
+  CLUSTER_NAME  Cluster name (must match ^chart-test-swarm-[a-z0-9-]+\$)
+  REPORTS_DIR   Override reports root directory
+EOF
+  exit 0
+}
+
+case "${1:-}" in
+  --help|-h) usage ;;
+esac
+
+# ---- Bash version preflight (VAL-ENGINE-039) ----
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+  echo "ERROR: bash >= 4 required (running ${BASH_VERSION:-unknown})." >&2
+  echo "       Install modern bash: brew install bash" >&2
+  echo "       Then re-run with: /opt/homebrew/bin/bash $0 $*" >&2
+  exit 1
+fi
+
 PROJECT_DIR="${PROJECT_DIR:-${1:?usage: dispatch-swarm.sh <project-dir> [suite] [num-agents] [run-id]}}"
 SUITE="${SUITE:-${2:-pr-subset}}"
 NUM_AGENTS="${NUM_AGENTS:-${3:-2}}"

@@ -31,6 +31,6 @@ product:
   set: { "podAnnotations.sidecar\\.istio\\.io/inject": "true" }
 asserts:
   - { type: helm-status-deployed, release: sample, namespace: sample }
-  - { type: pods-ready,           namespace: sample, timeout: 5m }
+  - { type: pods-ready, namespace: sample, timeout: 5m }
 tags: [nightly, customer-replica]
 mechanisms: [addon:istio, addon:cert-manager, mesh:istio, customer:A]

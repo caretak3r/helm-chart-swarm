@@ -11,6 +11,37 @@
 # Env:     PROJECT_DIR (default: parent of scenario file's chart-test/ dir)
 set -euo pipefail
 
+# ---- Usage banner (checked before bash version preflight so --help always works) ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") <scenario.yaml> [OPTIONS]
+
+Apply a scenario's preinstall list (helm charts and/or raw manifests)
+to the current kubectl context. Assumes the cluster is already running.
+
+Options:
+  --help    Show this usage banner and exit
+
+Environment:
+  PROJECT_DIR  Root directory of the consumer chart project (for resolving
+               relative paths). Defaults to walking up from the scenario file
+               until chart-test-swarm.yaml is found.
+EOF
+  exit 0
+}
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  usage
+fi
+
+# ---- Bash version preflight (VAL-ENGINE-039) ----
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+  echo "ERROR: bash >= 4 required (running ${BASH_VERSION:-unknown})." >&2
+  echo "       Install modern bash: brew install bash" >&2
+  echo "       Then re-run with: /opt/homebrew/bin/bash $0 $*" >&2
+  exit 1
+fi
+
 SCENARIO="${1:?usage: apply-scenario.sh <scenario.yaml>}"
 [ -f "$SCENARIO" ] || { echo "ERROR: scenario not found: $SCENARIO" >&2; exit 1; }
 command -v yq   >/dev/null 2>&1 || { echo "ERROR: yq required (brew install yq)" >&2; exit 1; }

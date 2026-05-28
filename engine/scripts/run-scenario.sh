@@ -18,6 +18,39 @@
 #                    if PROJECT_DIR has chart-test/, else $ROOT_DIR/reports)
 set -euo pipefail
 
+# ---- Usage banner (checked before bash version preflight so --help always works) ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") <scenario.yaml> [OPTIONS]
+
+Run a single scenario end-to-end: cluster up → preinstall → product chart → asserts.
+Emits result.yaml + artifacts/ bundle under the reports directory.
+
+Options:
+  --help    Show this usage banner and exit
+
+Environment:
+  KEEP_CLUSTER   1 = keep cluster after run (default), 0 = tear down
+  REPORTS_DIR    Override reports root directory
+  PROJECT_DIR    Consumer chart project root (for path resolution)
+  CLUSTER_NAME   Cluster name (must match ^chart-test-swarm-[a-z0-9-]+\$)
+  PROVIDER       Cluster provider: kind|minikube|k3d (from scenario YAML)
+EOF
+  exit 0
+}
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  usage
+fi
+
+# ---- Bash version preflight (VAL-ENGINE-039) ----
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+  echo "ERROR: bash >= 4 required (running ${BASH_VERSION:-unknown})." >&2
+  echo "       Install modern bash: brew install bash" >&2
+  echo "       Then re-run with: /opt/homebrew/bin/bash $0 $*" >&2
+  exit 1
+fi
+
 SCENARIO="${1:?usage: run-scenario.sh <scenario.yaml>}"
 [ -f "$SCENARIO" ] || { echo "ERROR: scenario not found: $SCENARIO" >&2; exit 1; }
 command -v yq   >/dev/null 2>&1 || { echo "ERROR: yq required" >&2; exit 1; }
@@ -76,6 +109,26 @@ fi
 REPORT_DIR="$_REPORTS_ROOT/scenario-${SCEN_ID}-${TS}"
 ARTIFACTS_DIR="$REPORT_DIR/artifacts"
 LOG_DIR="$ARTIFACTS_DIR/logs"
+
+# ---- Scenario id collision detection (VAL-ENGINE-029) ----
+# Check if a scenario subdirectory with the same ID already exists under
+# the same reports root (e.g., from a prior run into the same run-<id>/).
+# If a collision is found, append a deterministic suffix rather than silently
+# overwriting.
+_collision_base="$_REPORTS_ROOT"
+if [ -n "${RUN_ID:-}" ] && [ -d "$_REPORTS_ROOT/$RUN_ID" ]; then
+  _collision_base="$_REPORTS_ROOT/$RUN_ID"
+fi
+_existing=$(find "$_collision_base" -maxdepth 1 -type d -name "scenario-${SCEN_ID}-*" 2>/dev/null || true)
+if [ -n "$_existing" ]; then
+  # Count existing directories with this scenario ID
+  _count=$(printf '%s\n' "$_existing" | grep -c . || echo 0)
+  _suffix=$(( _count + 1 ))
+  REPORT_DIR="$_collision_base/scenario-${SCEN_ID}-${TS}-${_suffix}"
+  echo "WARN: scenario id collision — ${SCEN_ID} already has ${_count} result dir(s); using suffix -${_suffix}" >&2
+  ARTIFACTS_DIR="$REPORT_DIR/artifacts"
+  LOG_DIR="$ARTIFACTS_DIR/logs"
+fi
 mkdir -p "$LOG_DIR" "$ARTIFACTS_DIR/fixtures" "$ARTIFACTS_DIR/manifests"
 RESULT="$REPORT_DIR/result.yaml"
 echo "==> Scenario:   $SCEN_ID"
@@ -326,6 +379,67 @@ if [ -n "$KIND_CFG" ] && [ "$KIND_CFG" != "null" ]; then
   KIND_CONFIG="$(resolve_path "$KIND_CFG")"
   export KIND_CONFIG
 fi
+
+# ---- Pre-boot fixture path validation (VAL-ENGINE-025) ----
+# Check ALL referenced fixture/manifest paths BEFORE any cluster operation.
+# If any path is missing, emit an actionable error naming the scenario id,
+# the preinstall index, and the missing path — then exit with no cluster created.
+validate_fixture_paths() {
+  local preinstall_count
+  preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+  if [ "$preinstall_count" -gt 0 ]; then
+    local i item_kind manifest_path resolved
+    for i in $(seq 0 $((preinstall_count - 1))); do
+      item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
+
+      # raw_manifest: validate path field exists and resolves
+      if [ "$item_kind" = "raw_manifest" ]; then
+        manifest_path=$(yq ".cluster.preinstall[$i].path" "$SCENARIO")
+        if [ -z "$manifest_path" ] || [ "$manifest_path" = "null" ]; then
+          echo "ERROR: scenario '$SCEN_ID' preinstall[$i] (kind: raw_manifest) missing required 'path' field" >&2
+          echo "       No cluster will be created." >&2
+          exit 1
+        fi
+        case "$manifest_path" in http://*|https://*) continue ;; esac
+        resolved=$(resolve_path "$manifest_path")
+        if [ ! -f "$resolved" ]; then
+          echo "ERROR: scenario '$SCEN_ID' preinstall[$i] (kind: raw_manifest) path not found: $resolved" >&2
+          echo "       No cluster will be created. Fix the path and re-run." >&2
+          exit 1
+        fi
+      fi
+
+      # helm: validate values file path if it's a string reference
+      if [ "$item_kind" = "helm" ] || [ "$item_kind" = "" ]; then
+        local values_kind
+        values_kind=$(yq ".cluster.preinstall[$i].values | type" "$SCENARIO" 2>/dev/null || echo "!!null")
+        if [ "$values_kind" = "!!str" ]; then
+          local vpath
+          vpath=$(yq ".cluster.preinstall[$i].values" "$SCENARIO")
+          local resolved_vpath
+          resolved_vpath=$(resolve_path "$vpath")
+          if [ ! -f "$resolved_vpath" ]; then
+            echo "ERROR: scenario '$SCEN_ID' preinstall[$i] (kind: helm) values file not found: $resolved_vpath" >&2
+            echo "       No cluster will be created. Fix the path and re-run." >&2
+            exit 1
+          fi
+        fi
+      fi
+    done
+  fi
+
+  # Also validate product values file
+  if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
+    local vpath
+    vpath=$(resolve_path "$PRODUCT_VALUES")
+    if [ ! -f "$vpath" ]; then
+      echo "ERROR: scenario '$SCEN_ID' product.values file not found: $vpath" >&2
+      echo "       No cluster will be created. Fix the path and re-run." >&2
+      exit 1
+    fi
+  fi
+}
+validate_fixture_paths
 
 echo "==> Cluster up (provider=$PROVIDER cluster=$CLUSTER_NAME)"
 bash "$SCRIPT_DIR/cluster-up.sh" 2>&1 | tee "$LOG_DIR/cluster-up.log" \

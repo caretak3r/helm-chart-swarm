@@ -1,0 +1,50 @@
+---
+# Root yamllint configuration for chart-test-swarm.
+# Relaxed enough for scenario YAMLs (which embed helm values) but strict on
+# structural errors that indicate a broken file.
+extends: default
+
+rules:
+  # Scenario YAMLs often have short lines with helm value keys.
+  line-length:
+    max: 200
+    allow-non-breakable-words: true
+
+  # Some scenario files start without a document-start marker.
+  document-start: disable
+
+  # Empty values are valid in helm value maps.
+  empty-values: disable
+
+  # Truthy: 'on'/'off' are common in helm values.
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: false
+
+  # Comments: allow without space after # (common in templated YAMLs).
+  comments:
+    require-starting-space: false
+
+  # Trailing whitespace: enforce — easy to fix and avoids noisy diffs.
+  trailing-spaces: enable
+
+  # Braces: allow inline flow mappings (common in helm set values).
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Brackets: same rationale as braces.
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Colons: default is fine.
+  colons: enable
+
+  # Indentation: 2-space standard.
+  indentation:
+    spaces: consistent
+    indent-sequences: true
+
+  # Key-duplicates: always an error.
+  key-duplicates: enable
