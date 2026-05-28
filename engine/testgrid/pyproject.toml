@@ -15,6 +15,7 @@ testgrid = "testgrid.cli:main"
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "pytest-xdist>=3.6",
     "ruff>=0.8",
     "mypy>=1.14",
     "types-PyYAML>=6.0.12",
