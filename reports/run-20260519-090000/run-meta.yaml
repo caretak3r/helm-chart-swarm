@@ -1,0 +1,11 @@
+run_id: run-20260519-090000
+timestamp_utc: "2026-05-19T09:00:00Z"
+num_agents: 2
+suite: pr-subset
+cluster_provider: kind
+k8s_version: v1.30.0
+project:
+  name: sample-product-chart
+chart:
+  name: sample-product
+  version: 0.1.0

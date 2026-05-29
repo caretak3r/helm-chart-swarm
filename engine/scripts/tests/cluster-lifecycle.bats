@@ -215,8 +215,35 @@ _has_modern_bash() {
   [ "$default_val" = "1" ]
 }
 
+@test "run-scenario.sh documents KEEP_ON_FAILURE=0 as default" {
+  grep -q 'KEEP_ON_FAILURE' "$SCRIPT_DIR/run-scenario.sh"
+  default_val=$(grep -oE 'KEEP_ON_FAILURE:-[0-9]+' "$SCRIPT_DIR/run-scenario.sh" | head -1 | sed 's/KEEP_ON_FAILURE:-//')
+  [ "$default_val" = "0" ]
+}
+
 @test "run-scenario.sh supports KEEP_CLUSTER=0 to tear down" {
   grep -q 'KEEP_CLUSTER' "$SCRIPT_DIR/run-scenario.sh"
+}
+
+@test "run-scenario failure path tears down by default and supports KEEP_ON_FAILURE override" {
+  grep -q 'if \[ "\$KEEP_ON_FAILURE" != "1" \]' "$SCRIPT_DIR/run-scenario.sh"
+  grep -q 'Tearing down cluster after failure' "$SCRIPT_DIR/run-scenario.sh"
+  grep -q 'Keeping cluster after failure (KEEP_ON_FAILURE=1)' "$SCRIPT_DIR/run-scenario.sh"
+}
+
+@test "run-scenario signal path tears down by default and supports KEEP_ON_FAILURE override" {
+  grep -q 'Tearing down cluster after interrupt' "$SCRIPT_DIR/run-scenario.sh"
+  grep -q 'Keeping cluster after interrupt (KEEP_ON_FAILURE=1)' "$SCRIPT_DIR/run-scenario.sh"
+}
+
+@test "run-scenario pins kubectl context to scenario cluster context" {
+  grep -q 'KUBE_CONTEXT=' "$SCRIPT_DIR/run-scenario.sh"
+  grep -q 'kubectl config use-context "\$KUBE_CONTEXT"' "$SCRIPT_DIR/run-scenario.sh"
+}
+
+@test "run-scenario restores caller kube context on exit" {
+  grep -q 'ORIGINAL_KUBE_CONTEXT=' "$SCRIPT_DIR/run-scenario.sh"
+  grep -q "trap 'restore_original_context' EXIT" "$SCRIPT_DIR/run-scenario.sh"
 }
 
 # --- Provider unknown rejection ---

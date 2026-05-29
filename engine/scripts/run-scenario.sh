@@ -12,8 +12,10 @@
 #
 # Usage:   run-scenario.sh <scenario.yaml>
 # Env:
-#   KEEP_CLUSTER=1   skip teardown (default: keep — explicit teardown via make down)
-#                     KEEP_CLUSTER=0 tears down after run.
+#   KEEP_CLUSTER=1     keep cluster on success (default)
+#   KEEP_CLUSTER=0     tear down cluster on success
+#   KEEP_ON_FAILURE=0  tear down on failure/signal (default)
+#   KEEP_ON_FAILURE=1  keep cluster on failure/signal for debugging
 #   REPORTS_DIR      override reports root (default: $PROJECT_DIR/chart-test/reports
 #                    if PROJECT_DIR has chart-test/, else $ROOT_DIR/reports)
 set -euo pipefail
@@ -30,7 +32,8 @@ Options:
   --help    Show this usage banner and exit
 
 Environment:
-  KEEP_CLUSTER   1 = keep cluster after run (default), 0 = tear down
+  KEEP_CLUSTER      1 = keep cluster after successful run (default), 0 = tear down
+  KEEP_ON_FAILURE   1 = keep cluster on failure/signal, 0 = tear down (default)
   REPORTS_DIR    Override reports root directory
   PROJECT_DIR    Consumer chart project root (for path resolution)
   CLUSTER_NAME   Cluster name (must match ^chart-test-swarm-[a-z0-9-]+\$)
@@ -61,11 +64,25 @@ ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ROOT_DIR="$(cd "$ENGINE_DIR/.." && pwd)"
 ASSERTS_DIR="$ENGINE_DIR/asserts"
 
+ORIGINAL_KUBE_CONTEXT="$(kubectl config current-context 2>/dev/null || echo "")"
+restore_original_context() {
+  if [ -n "${ORIGINAL_KUBE_CONTEXT:-}" ]; then
+    current="$(kubectl config current-context 2>/dev/null || echo "")"
+    if [ "$current" != "$ORIGINAL_KUBE_CONTEXT" ]; then
+      kubectl config use-context "$ORIGINAL_KUBE_CONTEXT" >/dev/null 2>&1 || true
+    fi
+  fi
+}
+trap 'restore_original_context' EXIT
+
 # Default cluster name satisfies ^chart-test-swarm-[a-z0-9-]+$
 CLUSTER_NAME="${CLUSTER_NAME:-chart-test-swarm-default}"
 # KEEP_CLUSTER=1 means keep cluster (default), =0 means tear it down.
 KEEP_CLUSTER="${KEEP_CLUSTER:-1}"
+# KEEP_ON_FAILURE=0 means tear down on failure/signal by default.
+KEEP_ON_FAILURE="${KEEP_ON_FAILURE:-0}"
 export KEEP_CLUSTER
+export KEEP_ON_FAILURE
 
 # Source the shared prefix guard — exits 1 if CLUSTER_NAME doesn't match ^chart-test-swarm-[a-z0-9-]+$
 . "$SCRIPT_DIR/lib/prefix-check.sh"
@@ -96,6 +113,29 @@ PRODUCT_CHART=$(yq    '.product.chart'     "$SCENARIO")
 PRODUCT_RELEASE=$(yq  '.product.release'   "$SCENARIO")
 PRODUCT_NS=$(yq       '.product.namespace' "$SCENARIO")
 PRODUCT_VALUES=$(yq   '.product.values // ""' "$SCENARIO")
+
+scenario_context() {
+  case "$PROVIDER" in
+    kind) echo "kind-${CLUSTER_NAME}" ;;
+    minikube) echo "${CLUSTER_NAME}" ;;
+    k3d) echo "k3d-${CLUSTER_NAME}" ;;
+    *)
+      echo "ERROR: unknown PROVIDER='$PROVIDER' (supported: kind, minikube, k3d)" >&2
+      exit 1
+      ;;
+  esac
+}
+KUBE_CONTEXT="${KUBE_CONTEXT:-$(scenario_context)}"
+export KUBE_CONTEXT
+export HELM_KUBECONTEXT="$KUBE_CONTEXT"
+
+kubectl_ctx() {
+  kubectl --context "$KUBE_CONTEXT" "$@"
+}
+
+helm_ctx() {
+  helm --kube-context "$KUBE_CONTEXT" "$@"
+}
 
 TS="$(date +%Y%m%d-%H%M%S)"
 # Reports root: explicit env > project's chart-test/reports > engine root reports
@@ -147,7 +187,7 @@ write_versions_json() {
   _minikube=$(minikube version --short 2>/dev/null | head -1 || echo "unknown")
   _k8s_server="unknown"
   # Try to get server version if cluster is reachable
-  _k8s_server=$(kubectl version -o json 2>/dev/null | jq -r '.serverVersion.gitVersion // "unknown"' || echo "unknown")
+  _k8s_server=$(kubectl_ctx version -o json 2>/dev/null | jq -r '.serverVersion.gitVersion // "unknown"' || echo "unknown")
   jq -n \
     --arg helm "$_helm" \
     --arg kubectl "$_kubectl" \
@@ -194,10 +234,12 @@ fail() {
   # Write partial applied-overrides.yaml if helm merge happened
   write_applied_overrides || true
 
-  # Teardown cluster unless KEEP_CLUSTER=1
-  if [ "$KEEP_CLUSTER" = "0" ]; then
-    echo "==> Tearing down cluster (KEEP_CLUSTER=0) after failure" >&2
+  # Failure path defaults to teardown. KEEP_ON_FAILURE=1 opts into keeping.
+  if [ "$KEEP_ON_FAILURE" != "1" ]; then
+    echo "==> Tearing down cluster after failure (KEEP_ON_FAILURE=$KEEP_ON_FAILURE)" >&2
     PROVIDER="$PROVIDER" CLUSTER_NAME="$CLUSTER_NAME" bash "$SCRIPT_DIR/cluster-down.sh" 2>/dev/null || true
+  else
+    echo "==> Keeping cluster after failure (KEEP_ON_FAILURE=1)" >&2
   fi
 
   exit 1
@@ -313,17 +355,17 @@ capture_manifests() {
   # Capture resources in the product namespace
   local ns="$PRODUCT_NS"
   # Deployments
-  kubectl get deployments -n "$ns" -o yaml > "$out_dir/deployments.yaml" 2>/dev/null || true
+  kubectl_ctx get deployments -n "$ns" -o yaml > "$out_dir/deployments.yaml" 2>/dev/null || true
   # Services
-  kubectl get services -n "$ns" -o yaml > "$out_dir/services.yaml" 2>/dev/null || true
+  kubectl_ctx get services -n "$ns" -o yaml > "$out_dir/services.yaml" 2>/dev/null || true
   # ConfigMaps
-  kubectl get configmaps -n "$ns" -o yaml > "$out_dir/configmaps.yaml" 2>/dev/null || true
+  kubectl_ctx get configmaps -n "$ns" -o yaml > "$out_dir/configmaps.yaml" 2>/dev/null || true
   # Secrets (metadata only for safety — not the data)
-  kubectl get secrets -n "$ns" -o yaml > "$out_dir/secrets.yaml" 2>/dev/null || true
+  kubectl_ctx get secrets -n "$ns" -o yaml > "$out_dir/secrets.yaml" 2>/dev/null || true
   # Ingresses
-  kubectl get ingress -n "$ns" -o yaml > "$out_dir/ingress.yaml" 2>/dev/null || true
+  kubectl_ctx get ingress -n "$ns" -o yaml > "$out_dir/ingress.yaml" 2>/dev/null || true
   # Helm releases
-  helm list -n "$ns" -o yaml > "$out_dir/helm-releases.yaml" 2>/dev/null || true
+  helm_ctx list -n "$ns" -o yaml > "$out_dir/helm-releases.yaml" 2>/dev/null || true
 
   # Also capture preinstall namespaces
   local preinstall_count
@@ -334,7 +376,7 @@ capture_manifests() {
       pns=$(yq ".cluster.preinstall[$i].namespace // \"\"" "$SCENARIO")
       if [ -n "$pns" ] && [ "$pns" != "null" ] && [ "$pns" != "$ns" ]; then
         mkdir -p "$out_dir/ns-$pns"
-        kubectl get all -n "$pns" -o yaml > "$out_dir/ns-$pns/resources.yaml" 2>/dev/null || true
+        kubectl_ctx get all -n "$pns" -o yaml > "$out_dir/ns-$pns/resources.yaml" 2>/dev/null || true
       fi
     done
   fi
@@ -363,10 +405,12 @@ cleanup_on_signal() {
   # Write partial artifacts on signal
   write_applied_overrides || true
 
-  # Tear down cluster unless KEEP_CLUSTER=1
-  if [ "$KEEP_CLUSTER" = "0" ]; then
-    echo "==> Tearing down cluster (KEEP_CLUSTER=0) after interrupt" >&2
+  # Interrupt path defaults to teardown. KEEP_ON_FAILURE=1 opts into keeping.
+  if [ "$KEEP_ON_FAILURE" != "1" ]; then
+    echo "==> Tearing down cluster after interrupt (KEEP_ON_FAILURE=$KEEP_ON_FAILURE)" >&2
     PROVIDER="$PROVIDER" CLUSTER_NAME="$CLUSTER_NAME" bash "$SCRIPT_DIR/cluster-down.sh" 2>/dev/null || true
+  else
+    echo "==> Keeping cluster after interrupt (KEEP_ON_FAILURE=1)" >&2
   fi
   exit 1
 }
@@ -445,6 +489,10 @@ echo "==> Cluster up (provider=$PROVIDER cluster=$CLUSTER_NAME)"
 bash "$SCRIPT_DIR/cluster-up.sh" 2>&1 | tee "$LOG_DIR/cluster-up.log" \
   || fail cluster-up "see $LOG_DIR/cluster-up.log"
 
+# Pin all subsequent kubectl/helm operations to the scenario cluster context.
+kubectl config use-context "$KUBE_CONTEXT" >/dev/null 2>&1 \
+  || fail cluster-up "unable to switch to kube context '$KUBE_CONTEXT'"
+
 # Re-write versions.json now that cluster is up (k8s_server version available)
 write_versions_json || true
 
@@ -456,7 +504,7 @@ PROJECT_DIR="$PROJECT_DIR" bash "$SCRIPT_DIR/apply-scenario.sh" "$SCENARIO" 2>&1
 
 # ---- 3. Install product chart ---------------------------------------------
 echo "==> Install product chart: $PRODUCT_RELEASE ($PRODUCT_CHART)"
-kubectl get ns "$PRODUCT_NS" >/dev/null 2>&1 || kubectl create ns "$PRODUCT_NS" >/dev/null
+kubectl_ctx get ns "$PRODUCT_NS" >/dev/null 2>&1 || kubectl_ctx create ns "$PRODUCT_NS" >/dev/null
 
 PCHART="$(resolve_path "$PRODUCT_CHART")"
 [ -e "$PCHART" ] || [[ "$PRODUCT_CHART" == oci://* ]] || [[ "$PRODUCT_CHART" == *://* ]] \
@@ -477,7 +525,7 @@ if [ "$set_count" -gt 0 ]; then
   done < <(yq -o=tsv '.product.set // {} | to_entries | map([.key, .value]) | .[]' "$SCENARIO")
 fi
 
-if ! helm "${helm_args[@]}" 2>&1 | tee "$LOG_DIR/product-install.log"; then
+if ! helm_ctx "${helm_args[@]}" 2>&1 | tee "$LOG_DIR/product-install.log"; then
   fail product-install "helm install failed; see $LOG_DIR/product-install.log"
 fi
 

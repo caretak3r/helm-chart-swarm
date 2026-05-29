@@ -1,0 +1,7 @@
+schema_version: 1
+project: { name: sample-product-chart }
+scenarios_dir: chart-test/scenarios
+suites:
+  pr-subset:        { tag_filter: [pr-subset],        max_minutes: 15 }
+  nightly-full:     { tag_filter: [nightly] }
+  customer-replica: { tag_filter: [customer-replica] }

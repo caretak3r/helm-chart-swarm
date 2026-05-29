@@ -1,0 +1,76 @@
+# Copy into your chart repo at .github/workflows/chart-test-pr.yml
+# Runs the pr-subset suite on every PR. Hard-capped wall-clock for fast feedback.
+name: chart-test-swarm (PR subset)
+
+on:
+  pull_request:
+    paths:
+      - 'chart/**'
+      - 'chart-test/**'
+      - '.github/workflows/chart-test-pr.yml'
+
+jobs:
+  swarm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ENGINE_REPO: yourorg/chart-test-swarm
+      ENGINE_REF:  v0.1.0
+    steps:
+      - name: Checkout consumer chart
+        uses: actions/checkout@v4
+        with:
+          path: consumer
+
+      - name: Checkout engine
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.ENGINE_REPO }}
+          ref:        ${{ env.ENGINE_REF  }}
+          path: engine
+
+      - name: Install kind + yq + helm
+        run: |
+          curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.23.0/kind-linux-amd64 && chmod +x /usr/local/bin/kind
+          curl -L  https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Install uv (for dashboard build)
+        uses: astral-sh/setup-uv@v3
+
+      - name: Preflight
+        working-directory: engine
+        run: make verify
+
+      - name: Run swarm (pr-subset)
+        working-directory: engine
+        env:
+          PROJECT:    ${{ github.workspace }}/consumer
+          SUITE:      pr-subset
+          NUM_AGENTS: 1                       # PR runs serialize for cost
+        run: |
+          # In CI, replace the manual "spawn agents" step with a single
+          # serial executor that runs every scenario in the suite.
+          RUN_ID="run-$(date +%Y%m%d-%H%M%S)"
+          bash engine/scripts/dispatch-swarm.sh "$PROJECT" "$SUITE" "$NUM_AGENTS" "$RUN_ID"
+          # Single-agent path: run each scenario the dispatcher assigned, write result.yaml
+          for f in $(find consumer/chart-test/scenarios -type f \( -name '*.yaml' -o -name '*.yml' \)); do
+            sid=$(yq '.id' "$f")
+            tags=$(yq -o=json '.tags // []' "$f")
+            if echo "$tags" | jq -e 'index("pr-subset")' >/dev/null; then
+              bash engine/scripts/run-scenario.sh "$f" || true
+            fi
+          done
+          # Synthesize a per-agent result.yaml from the per-scenario reports
+          # (CI shim — production path uses real agents). See docs/ci-integration.md.
+          bash engine/scripts/aggregate.sh "$RUN_ID"
+          echo "RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
+
+      - name: Upload dashboard + reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-test-swarm-${{ env.RUN_ID }}
+          path: |
+            engine/reports/${{ env.RUN_ID }}
+            engine/engine/testgrid/dist/${{ env.RUN_ID }}

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — {{ run.run_id }}</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="run-header">
+  <div class="brand">
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— {{ run.run_id }}</span></h1>
+    <a href="../index.html" class="up">← all runs</a>
+  </div>
+  <dl>
+    <dt>Time (UTC)</dt><dd>{{ run.timestamp_utc or '—' }}</dd>
+    <dt>Project</dt><dd>{{ run.project_name or '—' }}</dd>
+    <dt>Chart</dt><dd><code>{{ run.chart_name or '—' }}{% if run.chart_version %}:{{ run.chart_version }}{% endif %}</code></dd>
+    <dt>Suite</dt><dd>{{ run.suite or '—' }}</dd>
+    <dt>Cluster</dt><dd>{{ run.cluster_provider or '—' }}{% if run.k8s_version %} · k8s <code>{{ run.k8s_version }}</code>{% endif %}</dd>
+    <dt>Agents</dt><dd>{{ run.num_agents }}</dd>
+  </dl>
+  <div class="counts">
+    {% for s, n in run.status_counts.items() %}
+      <span class="badge {{ status_class(s) }}">{{ s }} · {{ n }}</span>
+    {% endfor %}
+  </div>
+</header>
+
+<section class="mechanism-rollup">
+  <h2>Mechanism coverage</h2>
+  <p class="hint">Worst status across all scenarios that exercise each mechanism. Covers: addons (cert-manager, istio, gatekeeper, …), subchart variants, customer profiles.</p>
+  {% for category, items in mechanisms_by_category.items() %}
+    <div class="mech-group">
+      <h3>{{ category }}</h3>
+      <ul>
+        {% for m, ss in items %}
+          {% set st = rollup_status(ss) %}
+          <li>
+            <span class="mech-name"><code>{{ m }}</code></span>
+            <span class="mech-status {{ status_class(st) }}">{{ st }}</span>
+            <span class="mech-caps">
+              {% for s in ss %}<a href="#{{ s.id }}">{{ s.id }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
+</section>
+
+<section class="matrix">
+  <h2>Scenarios</h2>
+  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.</p>
+  <table>
+    <thead>
+      <tr>
+        <th class="row-head">Scenario</th>
+        <th>Cluster shape</th>
+        <th>Tags</th>
+        <th>Asserts</th>
+        <th>Status</th>
+        <th>Agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in run.scenarios %}
+      <tr>
+        <th class="row-head">
+          <a href="#{{ s.id }}"><code>{{ s.id }}</code></a>
+          {% if s.name %}<div class="hint">{{ s.name }}</div>{% endif %}
+        </th>
+        <td>
+          <code>{{ s.cluster_provider or '—' }}</code>
+          {% if s.cluster_addons %}<div class="hint">+ {{ s.cluster_addons | join(', ') }}</div>{% endif %}
+        </td>
+        <td>{% for t in s.tags %}<code class="mech-tag">{{ t }}</code>{% endfor %}</td>
+        <td class="cell {{ status_class(s.status) }}">{{ s.asserts_passed }}/{{ s.asserts_total }}</td>
+        <td><span class="badge {{ status_class(s.status) }}">{{ s.status }}</span></td>
+        <td>{{ s.agent if s.agent is not none else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="cap-details">
+  <h2>Scenarios — details</h2>
+  {% for s in run.scenarios %}
+  <details id="{{ s.id }}" class="cap">
+    <summary>
+      <span class="cap-id"><code>{{ s.id }}</code></span>
+      <span class="cap-name">{{ s.name }}</span>
+      <span class="badge {{ status_class(s.status) }}">{{ s.status }}</span>
+    </summary>
+    <dl>
+      {% if s.description %}<dt>Description</dt><dd>{{ s.description }}</dd>{% endif %}
+      <dt>Cluster</dt><dd><code>{{ s.cluster_provider or '—' }}</code></dd>
+      {% if s.cluster_addons %}
+      <dt>Preinstalled</dt><dd>{% for a in s.cluster_addons %}<code>{{ a }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</dd>
+      {% endif %}
+      <dt>Mechanisms</dt><dd>{% for m in s.mechanisms %}<code class="mech-tag">{{ m }}</code>{% endfor %}</dd>
+      <dt>Tags</dt><dd>{% for t in s.tags %}<code class="mech-tag">{{ t }}</code>{% endfor %}</dd>
+      {% if s.labels %}
+      <dt>Labels</dt><dd>{% for k, v in s.labels.items() %}<code>{{ k }}={{ v }}</code> {% endfor %}</dd>
+      {% endif %}
+      {% if s.fail_stage %}
+      <dt>Failed at</dt><dd class="pitfall">{{ s.fail_stage }}{% if s.fail_msg %} — {{ s.fail_msg }}{% endif %}</dd>
+      {% endif %}
+    </dl>
+    {% if s.asserts %}
+    <div class="result">
+      <h5>Assertions · agent {{ s.agent if s.agent is not none else '—' }}</h5>
+      <ul class="asserts">
+      {% for a in s.asserts %}
+        <li class="{{ status_class(a.status) }}">
+          <span class="badge {{ status_class(a.status) }}">{{ a.status }}</span>
+          <code>{{ a.type }}</code>
+          {% if a.notes %}<details class="notes"><summary>notes</summary><pre>{{ a.notes }}</pre></details>{% endif %}
+        </li>
+      {% endfor %}
+      </ul>
+      {% if s.log_dir %}<p class="log-path">Logs: <code>{{ s.log_dir }}</code></p>{% endif %}
+    </div>
+    {% else %}
+    <p class="no-results">⚠ no agent reported on this scenario — UNTESTED</p>
+    {% endif %}
+  </details>
+  {% endfor %}
+</section>
+
+</body>
+</html>

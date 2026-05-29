@@ -1,0 +1,11 @@
+run_id: run-20260520-101500
+timestamp_utc: "2026-05-20T10:15:00Z"
+num_agents: 2
+suite: nightly-full
+cluster_provider: kind
+k8s_version: v1.30.0
+project:
+  name: sample-product-chart
+chart:
+  name: sample-product
+  version: 0.1.0

@@ -1,0 +1,47 @@
+scenarios:
+  - id: minimal
+    name: "Vanilla cluster — no preinstalled addons"
+    description: "Baseline: chart installs and pods come up on a stock kind cluster."
+    cluster: { provider: kind }
+    mechanisms: [addon:none]
+    tags: [pr-subset, nightly]
+    labels: { customer: none, profile: baseline }
+  - id: with-cert-manager
+    name: "Customer ships cert-manager preinstalled"
+    description: "Validates chart coexists with cert-manager and its CRDs."
+    cluster:
+      provider: kind
+      preinstall:
+        - { chart: jetstack/cert-manager, release: cert-manager, namespace: cert-manager }
+    mechanisms: [addon:cert-manager]
+    tags: [pr-subset, nightly]
+    labels: { customer: any, profile: tls }
+  - id: customer-A-istio
+    name: "Customer A — Istio mesh + cert-manager"
+    description: "Customer A's profile: istio sidecar injection, istio-ingress, cert-manager."
+    cluster:
+      provider: kind
+      preinstall:
+        - { chart: jetstack/cert-manager, release: cert-manager, namespace: cert-manager }
+        - { chart: istio/base,            release: istio-base,    namespace: istio-system }
+        - { chart: istio/istiod,          release: istiod,        namespace: istio-system }
+    mechanisms: [addon:istio, addon:cert-manager, mesh:istio, customer:A]
+    tags: [nightly, customer-replica]
+    labels: { customer: A, mesh: istio, ingress: istio-gw }
+  - id: customer-B-gatekeeper
+    name: "Customer B — OPA Gatekeeper admission policies"
+    description: "Customer B runs Gatekeeper with strict admission policies."
+    cluster:
+      provider: kind
+      preinstall:
+        - { chart: gatekeeper/gatekeeper, release: gatekeeper, namespace: gatekeeper-system }
+    mechanisms: [addon:gatekeeper, customer:B]
+    tags: [nightly, customer-replica]
+    labels: { customer: B, policy: gatekeeper }
+  - id: subchart-postgres-internal
+    name: "Internal postgres subchart enabled"
+    description: "Product chart bundles postgres via subchart; verify both come up together."
+    cluster: { provider: kind }
+    mechanisms: [subchart:postgres-internal]
+    tags: [pr-subset, nightly]
+    labels: { profile: full-stack }

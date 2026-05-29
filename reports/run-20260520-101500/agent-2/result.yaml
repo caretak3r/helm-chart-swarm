@@ -1,0 +1,26 @@
+agent: 2
+results:
+  - scenario_id: customer-A-istio
+    status: FAIL
+    duration_s: 184
+    fail_stage: pods-ready
+    fail_msg: |
+      sidecar injection enabled but pod stuck in PodInitializing.
+      kubectl -n sample describe pod sample-... shows istio-init container
+      waiting on CNI config — istio-cni-node not installed.
+    log_dir: /tmp/chart-test-swarm/customer-A-istio-12348/
+    asserts:
+      - { type: helm-status-deployed, status: PASS, notes: "release sample is deployed (rev 1)" }
+      - type: pods-ready
+        status: FAIL
+        notes: |
+          0/1 pods Ready after 5m0s.
+          sample-7d4f8c9b8-x7k2p: PodInitializing (istio-init waiting)
+          REPRO: helm install sample ./chart -n sample --set podAnnotations."sidecar\.istio\.io/inject"=true
+  - scenario_id: customer-B-gatekeeper
+    status: PASS
+    duration_s: 138
+    log_dir: /tmp/chart-test-swarm/customer-B-gatekeeper-12349/
+    asserts:
+      - { type: helm-status-deployed, status: PASS, notes: "release sample is deployed (rev 1)" }
+      - { type: pods-ready,           status: PASS, notes: "1/1 pods Ready (no admission-policy violations)" }

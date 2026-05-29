@@ -9,6 +9,7 @@
 #
 # Usage:   apply-scenario.sh <scenario.yaml>
 # Env:     PROJECT_DIR (default: parent of scenario file's chart-test/ dir)
+#          KUBE_CONTEXT (optional kubectl/helm context name to pin all calls)
 set -euo pipefail
 
 # ---- Usage banner (checked before bash version preflight so --help always works) ----
@@ -26,6 +27,8 @@ Environment:
   PROJECT_DIR  Root directory of the consumer chart project (for resolving
                relative paths). Defaults to walking up from the scenario file
                until chart-test-swarm.yaml is found.
+  KUBE_CONTEXT Optional kube context; when set, all kubectl/helm calls are
+               pinned to this context.
 EOF
   exit 0
 }
@@ -46,6 +49,22 @@ SCENARIO="${1:?usage: apply-scenario.sh <scenario.yaml>}"
 [ -f "$SCENARIO" ] || { echo "ERROR: scenario not found: $SCENARIO" >&2; exit 1; }
 command -v yq   >/dev/null 2>&1 || { echo "ERROR: yq required (brew install yq)" >&2; exit 1; }
 command -v kubectl >/dev/null 2>&1 || { echo "ERROR: kubectl required" >&2; exit 1; }
+
+kubectl_ctx() {
+  if [ -n "${KUBE_CONTEXT:-}" ]; then
+    kubectl --context "$KUBE_CONTEXT" "$@"
+  else
+    kubectl "$@"
+  fi
+}
+
+helm_ctx() {
+  if [ -n "${KUBE_CONTEXT:-}" ]; then
+    helm --kube-context "$KUBE_CONTEXT" "$@"
+  else
+    helm "$@"
+  fi
+}
 
 # Resolve PROJECT_DIR — walk up from the scenario file until we hit
 # chart-test-swarm.yaml. Lets values/paths be repo-relative.
@@ -131,7 +150,7 @@ apply_raw_manifest() {
     kubectl_args+=(--namespace "$raw_ns")
   fi
 
-  kubectl "${kubectl_args[@]}" || {
+  kubectl_ctx "${kubectl_args[@]}" || {
     echo "ERROR: kubectl apply failed for raw_manifest path=$resolved" >&2
     exit 1
   }
@@ -163,8 +182,8 @@ apply_helm() {
     # Idempotent helm repo add (VAL-ENGINE-032):
     # If the repo already exists with the same URL, that's fine (no error).
     # If it exists with a DIFFERENT URL, that's an error — refuse with named details.
-    if helm repo list 2>/dev/null | grep -q "^${repo_name}[[:space:]]"; then
-      existing_url=$(helm repo list 2>/dev/null | awk -v rn="$repo_name" '$1 == rn {print $2}')
+    if helm_ctx repo list 2>/dev/null | grep -q "^${repo_name}[[:space:]]"; then
+      existing_url=$(helm_ctx repo list 2>/dev/null | awk -v rn="$repo_name" '$1 == rn {print $2}')
       if [ "$existing_url" = "$repo_url" ]; then
         # Same repo+URL — idempotent no-op (informational, not an error)
         echo "    repo '$repo_name' already exists with URL $repo_url (skipping add)"
@@ -175,12 +194,12 @@ apply_helm() {
         exit 1
       fi
     else
-      helm repo add "$repo_name" "$repo_url" >/dev/null
+      helm_ctx repo add "$repo_name" "$repo_url" >/dev/null
     fi
-    helm repo update "$repo_name" >/dev/null
+    helm_ctx repo update "$repo_name" >/dev/null
   fi
 
-  kubectl get ns "$ns" >/dev/null 2>&1 || kubectl create ns "$ns" >/dev/null
+  kubectl_ctx get ns "$ns" >/dev/null 2>&1 || kubectl_ctx create ns "$ns" >/dev/null
 
   # Values handling: file path (string) vs inline object.
   local values_args=()
@@ -213,12 +232,12 @@ apply_helm() {
     *) echo "ERROR: unknown wait mode '$wait_mode'" >&2; exit 1 ;;
   esac
 
-  helm "${helm_args[@]}"
+  helm_ctx "${helm_args[@]}"
 
   if [ "$wait_mode" = "pods-ready" ]; then
-    kubectl -n "$ns" wait --for=condition=Ready pods --all --timeout="$wait_to" || {
+    kubectl_ctx -n "$ns" wait --for=condition=Ready pods --all --timeout="$wait_to" || {
       echo "WARN: not all pods Ready in ns/$ns after $wait_to" >&2
-      kubectl -n "$ns" get pods
+      kubectl_ctx -n "$ns" get pods
       exit 1
     }
   fi

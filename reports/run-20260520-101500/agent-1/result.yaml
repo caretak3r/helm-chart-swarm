@@ -1,0 +1,23 @@
+agent: 1
+results:
+  - scenario_id: minimal
+    status: PASS
+    duration_s: 42
+    log_dir: /tmp/chart-test-swarm/minimal-12345/
+    asserts:
+      - { type: helm-status-deployed, status: PASS, notes: "release sample is deployed (rev 1)" }
+      - { type: pods-ready,           status: PASS, notes: "1/1 pods Ready in ns/sample" }
+  - scenario_id: with-cert-manager
+    status: PASS
+    duration_s: 96
+    log_dir: /tmp/chart-test-swarm/with-cert-manager-12346/
+    asserts:
+      - { type: helm-status-deployed, status: PASS, notes: "release sample is deployed (rev 1)" }
+      - { type: pods-ready,           status: PASS, notes: "1/1 pods Ready in ns/sample (after cert-manager CRDs installed)" }
+  - scenario_id: subchart-postgres-internal
+    status: PASS
+    duration_s: 73
+    log_dir: /tmp/chart-test-swarm/subchart-postgres-internal-12347/
+    asserts:
+      - { type: helm-status-deployed, status: PASS, notes: "release sample is deployed (rev 1)" }
+      - { type: pods-ready,           status: PASS, notes: "2/2 pods Ready (app + postgres-0)" }

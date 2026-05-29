@@ -1,0 +1,29 @@
+{{- if .Values.chartTestSwarm.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-${INTEGRATION_SHORT}-test"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: chart-test-swarm
+    integration: ${INTEGRATION}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: probe
+      image: curlimages/curl:8.6.0
+      # >>> COMMAND — replace with the primer's standard helm-test verification.
+      # Convention: exit 0 = PASS, non-zero = FAIL. Print enough context that
+      # `helm test --logs` reveals the failure mode.
+      command: ["sh", "-c"]
+      args:
+        - |
+          set -eu
+          echo "chart-test-swarm: ${INTEGRATION} integration probe"
+          # === integration-specific verification goes here ===
+          echo "PASS"
+  # >>> VOLUMES — populate from primer when the test needs mounted certs/secrets.
+{{- end }}

@@ -1,0 +1,11 @@
+scenario_id: bare-prefix-test
+scenario_path: /tmp/scen-XXXXX.yaml
+project_dir: /
+started_at: 2026-05-27T23:15:06Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  chart not found at //chart/ (and not an OCI/URL ref)
+finished_at: 2026-05-27T23:15:33Z

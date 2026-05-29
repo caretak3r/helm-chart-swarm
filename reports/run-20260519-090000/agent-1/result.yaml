@@ -1,0 +1,22 @@
+agent: 1
+results:
+  - scenario_id: minimal
+    status: PASS
+    duration_s: 41
+    asserts:
+      - { type: helm-status-deployed, status: PASS }
+      - { type: pods-ready,           status: PASS, notes: "1/1 Ready" }
+  - scenario_id: with-cert-manager
+    status: PASS
+    duration_s: 92
+    asserts:
+      - { type: helm-status-deployed, status: PASS }
+      - { type: pods-ready,           status: PASS }
+  - scenario_id: subchart-postgres-internal
+    status: PARTIAL
+    duration_s: 142
+    asserts:
+      - { type: helm-status-deployed, status: PASS }
+      - type: pods-ready
+        status: FAIL
+        notes: "postgres-0 PVC pending — kind cluster has no default StorageClass with WaitForFirstConsumer rebind"
