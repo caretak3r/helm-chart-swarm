@@ -9,15 +9,17 @@ verifies that the consumer chart can:
 
 ## Cluster preinstall
 
-Gateway API CRDs are installed via raw manifest (no official helm chart).
-The reference controller is Envoy Gateway (CNCF, helm-installable via OCI).
+The Envoy Gateway helm chart (OCI) bundles Gateway API CRDs in its `crds/`
+directory — Helm installs them automatically before templates, so no separate
+`raw_manifest` CRD apply is needed. (If you use a different Gateway API
+controller that does NOT bundle CRDs, apply them via `raw_manifest` with
+`kind: raw_manifest` pointing at the standard-install.yaml URL, and
+`apply-scenario.sh` uses `kubectl apply --server-side --force-conflicts`
+to avoid field-manager conflicts.)
 
 ```yaml
-# Step 1 — CRDs (raw_manifest — apply before controller)
-- kind: raw_manifest
-  path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
-
-# Step 2 — Envoy Gateway controller (OCI chart — no helm repo add needed)
+# Envoy Gateway controller (OCI chart — no helm repo add needed;
+# CRDs are bundled in crds/ and installed automatically before templates)
 - chart: oci://docker.io/envoyproxy/gateway-helm
   version: v1.1.2
   release: envoy-gateway

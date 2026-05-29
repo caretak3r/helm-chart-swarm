@@ -160,7 +160,10 @@ apply_raw_manifest() {
   fi
 
   # Build kubectl apply command.
-  local kubectl_args=(apply -f "$resolved")
+  # Use --server-side --force-conflicts so raw_manifest CRDs don't conflict
+  # with helm charts that also install the same CRDs via server-side-apply
+  # (e.g., envoy-gateway helm chart installing Gateway API CRDs).
+  local kubectl_args=(apply --server-side --force-conflicts -f "$resolved")
   if [ -n "$raw_ns" ] && [ "$raw_ns" != "null" ]; then
     kubectl_args+=(--namespace "$raw_ns")
   fi
