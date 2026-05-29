@@ -21,12 +21,16 @@ from typing import Any
 
 import yaml
 
+# Cloud-platform scenarios that were authored but never run locally.
+CLOUD_PROVIDERS = frozenset({"gke", "eks", "aks"})
+
 STATUS_RANK = {
     "FAIL": 0,
     "PARTIAL": 1,
     "INCONCLUSIVE": 2,
     "UNTESTED": 3,
-    "PASS": 4,
+    "AUTHORED": 4,
+    "PASS": 5,
 }
 
 
@@ -258,6 +262,12 @@ def collect_run(reports_dir: Path, run_id: str) -> Run:
         else:
             # Result without a snapshot entry — keep it; surfaces as orphan.
             scenarios.append(res)
+
+    # F2.3: cloud-platform scenarios (gke, eks, aks) always display AUTHORED
+    # because they were authored but never actually run locally.
+    for s in scenarios:
+        if s.cluster_provider in CLOUD_PROVIDERS:
+            s.status = "AUTHORED"
 
     # F2.1: populate artifact links per scenario.
     # Group by agent to scan each agent's artifacts/ dir once.

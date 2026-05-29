@@ -48,6 +48,21 @@ a:hover { text-decoration: underline; }
 .status-inconclusive { background: var(--inconclusive); }
 .status-misread { background: var(--misread); }
 .status-unknown { background: #757575; }
+.status-authored { background: #5e35b1; }
+
+
+/* ── Cloud platform badge (F2.3) ── */
+
+.badge.cloud {
+  background: #e8eaf6;
+  color: #3949ab;
+  border: 1px solid #c5cae9;
+  font-weight: 500;
+  font-size: 0.68rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
 
 /* mechanism rollup */
 .mechanism-rollup .mech-group { margin-bottom: 0.6rem; }

@@ -75,6 +75,9 @@
         </th>
         <td>
           <code>{{ s.cluster_provider or '—' }}</code>
+          {% if is_cloud_provider(s.cluster_provider) %}
+            <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED ONLY</span>
+          {% endif %}
           {% if s.cluster_addons %}<div class="hint">+ {{ s.cluster_addons | join(', ') }}</div>{% endif %}
         </td>
         <td>{% for t in s.tags %}<code class="mech-tag">{{ t }}</code>{% endfor %}</td>
@@ -115,6 +118,9 @@
           </th>
           <td>
             <code>{{ s.cluster_provider or '—' }}</code>
+            {% if is_cloud_provider(s.cluster_provider) %}
+              <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED ONLY</span>
+            {% endif %}
             {% if s.cluster_addons %}<div class="hint">+ {{ s.cluster_addons | join(', ') }}</div>{% endif %}
           </td>
           <td>{% for t in s.tags %}<code class="mech-tag">{{ t }}</code>{% endfor %}</td>
@@ -140,11 +146,18 @@
     <summary>
       <span class="cap-id"><code>{{ s.id }}</code></span>
       <span class="cap-name">{{ s.name }}</span>
+      {% if is_cloud_provider(s.cluster_provider) %}
+        <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED ONLY</span>
+      {% endif %}
       <span class="badge {{ status_class(s.status) }}">{{ s.status }}</span>
     </summary>
     <dl>
       {% if s.description %}<dt>Description</dt><dd>{{ s.description }}</dd>{% endif %}
-      <dt>Cluster</dt><dd><code>{{ s.cluster_provider or '—' }}</code></dd>
+      <dt>Cluster</dt><dd><code>{{ s.cluster_provider or '—' }}</code>
+      {% if is_cloud_provider(s.cluster_provider) %}
+        <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED ONLY</span>
+      {% endif %}
+      </dd>
       {% if s.cluster_addons %}
       <dt>Preinstalled</dt><dd>{% for a in s.cluster_addons %}<code>{{ a }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</dd>
       {% endif %}

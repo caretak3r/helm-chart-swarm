@@ -15,7 +15,7 @@ from pathlib import Path
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from .collect import STATUS_RANK, Run, Scenario
+from .collect import CLOUD_PROVIDERS, STATUS_RANK, Run, Scenario
 
 STATUS_CSS = {
     "PASS": "status-pass",
@@ -23,6 +23,7 @@ STATUS_CSS = {
     "PARTIAL": "status-partial",
     "INCONCLUSIVE": "status-inconclusive",
     "UNTESTED": "status-untested",
+    "AUTHORED": "status-authored",
 }
 
 # Chart-test-swarm mechanism vocabulary. Free-form, but these are the
@@ -179,6 +180,14 @@ def rollup_status(scenarios: list[Scenario]) -> str:
     return min((s.status for s in scenarios), key=lambda st: STATUS_RANK.get(st, 99))
 
 
+CLOUD_TOOLTIP = "authored, not run locally"
+
+
+def _is_cloud_provider(provider: str) -> bool:
+    """Return True if *provider* is a cloud platform (gke, eks, aks)."""
+    return provider in CLOUD_PROVIDERS
+
+
 def _make_env() -> Environment:
     env = Environment(
         loader=PackageLoader("testgrid", "templates"),
@@ -189,6 +198,9 @@ def _make_env() -> Environment:
     env.globals.update(
         status_class=status_class,
         rollup_status=rollup_status,
+        is_cloud_provider=_is_cloud_provider,
+        cloud_tooltip=CLOUD_TOOLTIP,
+        cloud_providers=CLOUD_PROVIDERS,
     )
     env.filters["basename"] = lambda p: Path(str(p)).name if p else ""
     return env
