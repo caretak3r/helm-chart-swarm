@@ -13,6 +13,14 @@ setup() {
   SCHEMA="$ENGINE_DIR/templates/scenario.schema.json"
   SCENARIOS_DIR="$ROOT_DIR/examples/sample-product-chart/chart-test/scenarios"
   TMPDIR="${BATS_TMPDIR:-/tmp}"
+  # Clean up stale tempfiles from interrupted prior runs before any test
+  find "$TMPDIR" -maxdepth 1 -name 'scen-*.yaml' -mmin +5 -delete 2>/dev/null || true
+}
+
+teardown() {
+  # Clean up stale tempfiles left by interrupted runs (belt-and-suspenders
+  # with the per-test rm -f cleanup in each @test block).
+  find "$TMPDIR" -maxdepth 1 -name 'scen-*.yaml' -mmin +5 -delete 2>/dev/null || true
 }
 
 # Helper: validate a YAML file against the scenario schema.

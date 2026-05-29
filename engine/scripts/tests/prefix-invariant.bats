@@ -11,6 +11,18 @@ setup() {
   if [ -x /opt/homebrew/bin/bash ]; then
     BASH_CMD=/opt/homebrew/bin/bash
   fi
+  # Track temp files created by this test run for cleanup
+  _PREFIX_TEMPFILES=()
+}
+
+teardown() {
+  # Clean up any tempfiles created by this test file (prevents mktemp
+  # collision from stale files left by a previous interrupted run).
+  for f in "${_PREFIX_TEMPFILES[@]+"${_PREFIX_TEMPFILES[@]}"}"; do
+    rm -f "$f" 2>/dev/null || true
+  done
+  # Also clean up any stale /tmp/scen-* tempfiles from prior interrupted runs
+  find /tmp -maxdepth 1 -name 'scen-*.yaml' -mmin +5 -delete 2>/dev/null || true
 }
 
 # --- Every cluster-touching script enforces the prefix ---

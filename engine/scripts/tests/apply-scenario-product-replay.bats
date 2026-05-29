@@ -200,7 +200,7 @@ _has_modern_bash() {
   # 4. Spin up a fresh kind cluster for replay
   local replay_cluster="chart-test-swarm-replay2"
   run env PROVIDER=kind CLUSTER_NAME="$replay_cluster" \
-    KEEP_CLUSTER=0 \
+    K8S_VERSION=v1.30.0 KEEP_CLUSTER=0 \
     $BASH_CMD "$SCRIPTS_DIR/cluster-up.sh"
   echo "cluster-up output: $output"
   [ "$status" -eq 0 ]
@@ -218,7 +218,7 @@ _has_modern_bash() {
   [ -n "$ns" ]
 
   # Check helm list for the release
-  run helm --kube-context "${replay_cluster}-kind" list -n "$ns" -o json
+  run helm --kube-context "kind-${replay_cluster}" list -n "$ns" -o json
   echo "helm list output: $output"
   [ "$status" -eq 0 ]
 
@@ -246,6 +246,7 @@ _has_modern_bash() {
 
   # Spin up a kind cluster
   run env PROVIDER=kind CLUSTER_NAME="$cluster" \
+    K8S_VERSION=v1.30.0 \
     $BASH_CMD "$SCRIPTS_DIR/cluster-up.sh"
   echo "cluster-up output: $output"
   [ "$status" -eq 0 ]
@@ -264,7 +265,7 @@ _has_modern_bash() {
   # Product chart should NOT be installed (helm list in sample namespace should be empty or not contain sample)
   local ns
   ns=$(yq '.product.namespace' "$SCEN_DIR/minimal.yaml")
-  run helm --kube-context "${cluster}-kind" list -n "$ns" -o json
+  run helm --kube-context "kind-${cluster}" list -n "$ns" -o json
   # If status is non-zero (no releases) that's fine
   if [ "$status" -eq 0 ]; then
     # If helm list succeeded, the release should NOT be present
@@ -286,6 +287,7 @@ _has_modern_bash() {
 
   # Spin up a kind cluster
   run env PROVIDER=kind CLUSTER_NAME="$cluster" \
+    K8S_VERSION=v1.30.0 \
     $BASH_CMD "$SCRIPTS_DIR/cluster-up.sh"
   echo "cluster-up output: $output"
   [ "$status" -eq 0 ]
@@ -305,7 +307,7 @@ _has_modern_bash() {
   ns=$(yq '.product.namespace' "$SCEN_DIR/minimal.yaml")
   release_name=$(yq '.product.release' "$SCEN_DIR/minimal.yaml")
 
-  run helm --kube-context "${cluster}-kind" list -n "$ns" -o json
+  run helm --kube-context "kind-${cluster}" list -n "$ns" -o json
   echo "helm list output: $output"
   [ "$status" -eq 0 ]
 
