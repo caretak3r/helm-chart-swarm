@@ -108,6 +108,47 @@
       <dt>Failed at</dt><dd class="pitfall">{{ s.fail_stage }}{% if s.fail_msg %} — {{ s.fail_msg }}{% endif %}</dd>
       {% endif %}
     </dl>
+    {% if s.artifact_links %}
+    <div class="artifact-links">
+      <h5>Artifacts</h5>
+      <ul>
+      {% if s.artifact_links.scenario %}
+        <li><a href="{{ s.artifact_links.scenario }}" data-artifact="scenario">Scenario YAML</a></li>
+      {% endif %}
+      {% if s.artifact_links.overrides %}
+        <li><a href="{{ s.artifact_links.overrides }}" data-artifact="overrides">Applied Overrides</a></li>
+      {% endif %}
+      {% if s.artifact_links.fixtures is defined %}
+        <li class="artifact-fixtures">
+          <span>Fixtures</span>
+          {% if s.artifact_links.fixtures %}
+          <ul>
+            {% for fx in s.artifact_links.fixtures %}
+            <li><a href="{{ fx }}" data-artifact="fixture">{{ fx | basename }}</a></li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <span class="empty">(no fixtures captured)</span>
+          {% endif %}
+        </li>
+      {% endif %}
+      {% if s.artifact_links.manifests is defined %}
+        <li class="artifact-manifests">
+          <span>Manifests</span>
+          {% if s.artifact_links.manifests %}
+          <ul>
+            {% for mf in s.artifact_links.manifests %}
+            <li><a href="{{ mf }}" data-artifact="manifest">{{ mf | basename }}</a></li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <span class="empty">(no manifests captured)</span>
+          {% endif %}
+        </li>
+      {% endif %}
+      </ul>
+    </div>
+    {% endif %}
     {% if s.asserts %}
     <div class="result">
       <h5>Assertions · agent {{ s.agent if s.agent is not none else '—' }}</h5>

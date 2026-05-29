@@ -55,6 +55,11 @@ class Scenario:
     log_dir: str = ""
     fail_stage: str = ""
     fail_msg: str = ""
+    # F2.1: artifact links for the dashboard scenario card.
+    # Keys: "scenario" (str), "overrides" (str), "fixtures" (list[str]),
+    #       "manifests" (list[str]).
+    # Values are absolute file paths; empty dict means no artifacts/ bundle.
+    artifact_links: dict[str, Any] = field(default_factory=dict)
 
     @property
     def rolled_status(self) -> str:
@@ -191,6 +196,47 @@ def load_agent_results(run_dir: Path) -> list[Scenario]:
     return out
 
 
+def _collect_artifact_links(artifact_dir: Path) -> dict[str, Any]:
+    """Scan an ``artifacts/`` directory and return a dictionary of artifact links.
+
+    Keys:
+      - ``"scenario"``: absolute path to ``artifacts/scenario.yaml``
+      - ``"overrides"``: absolute path to ``artifacts/applied-overrides.yaml``
+      - ``"fixtures"``: list of absolute paths to files under ``artifacts/fixtures/``
+      - ``"manifests"``: list of absolute paths to files under ``artifacts/manifests/``
+
+    Returns an empty dict if *artifact_dir* does not exist.
+    """
+    if not artifact_dir.is_dir():
+        return {}
+
+    links: dict[str, Any] = {}
+
+    scenario_yaml = artifact_dir / "scenario.yaml"
+    if scenario_yaml.is_file():
+        links["scenario"] = str(scenario_yaml.resolve())
+
+    overrides_yaml = artifact_dir / "applied-overrides.yaml"
+    if overrides_yaml.is_file():
+        links["overrides"] = str(overrides_yaml.resolve())
+
+    fixtures_dir = artifact_dir / "fixtures"
+    if fixtures_dir.is_dir():
+        fixture_files = sorted(str(p.resolve()) for p in fixtures_dir.iterdir() if p.is_file())
+        links["fixtures"] = fixture_files  # always present (empty list if no files)
+
+    manifests_dir = artifact_dir / "manifests"
+    if manifests_dir.is_dir():
+        manifest_files: list[str] = []
+        # Recursively collect all YAML files under manifests/
+        for p in sorted(manifests_dir.rglob("*.yaml")):
+            if p.is_file():
+                manifest_files.append(str(p.resolve()))
+        links["manifests"] = manifest_files  # always present (empty list if no files)
+
+    return links
+
+
 def collect_run(reports_dir: Path, run_id: str) -> Run:
     run_dir = reports_dir / run_id
     if not run_dir.is_dir():
@@ -212,6 +258,20 @@ def collect_run(reports_dir: Path, run_id: str) -> Run:
         else:
             # Result without a snapshot entry — keep it; surfaces as orphan.
             scenarios.append(res)
+
+    # F2.1: populate artifact links per scenario.
+    # Group by agent to scan each agent's artifacts/ dir once.
+    agent_artifact_cache: dict[int | None, dict[str, Any]] = {}
+    for s in scenarios:
+        agent = s.agent
+        if agent not in agent_artifact_cache:
+            if agent is not None:
+                artifact_dir = run_dir / f"agent-{agent}" / "artifacts"
+            else:
+                # UNTESTED / no agent assigned — try run-level artifacts as fallback
+                artifact_dir = run_dir / "artifacts"
+            agent_artifact_cache[agent] = _collect_artifact_links(artifact_dir)
+        s.artifact_links = dict(agent_artifact_cache[agent])
 
     meta = load_run_meta(run_dir)
     project = meta.get("project", {}) or {}

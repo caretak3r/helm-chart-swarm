@@ -101,6 +101,16 @@ a:hover { text-decoration: underline; }
 .cap-details .log-path { font-size: 0.74rem; color: var(--text-muted); margin: 0.3rem 0 0; }
 .cap-details .no-results { color: var(--partial); padding: 0.5rem 0.9rem 0.8rem; font-size: 0.85rem; }
 
+/* artifact links */
+.cap-details .artifact-links { padding: 0.6rem 0.9rem; border-top: 1px solid var(--border); }
+.cap-details .artifact-links ul { font-size: 0.8rem; margin: 0.2rem 0 0.5rem 1rem; padding: 0; list-style: none; }
+.cap-details .artifact-links li { padding: 0.05rem 0; }
+.cap-details .artifact-links .artifact-fixtures,
+.cap-details .artifact-links .artifact-manifests { margin-top: 0.2rem; }
+.cap-details .artifact-links .artifact-fixtures ul,
+.cap-details .artifact-links .artifact-manifests ul { margin-left: 0.8rem; }
+.cap-details .artifact-links .empty { color: var(--text-muted); font-style: italic; font-size: 0.78rem; margin-left: 0.4rem; }
+
 /* index page */
 .runs table { border-collapse: collapse; width: 100%; font-size: 0.85rem; background: var(--surface); }
 .runs th, .runs td { padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border); text-align: left; }

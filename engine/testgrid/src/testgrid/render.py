@@ -67,6 +67,7 @@ def _make_env() -> Environment:
         status_class=status_class,
         rollup_status=rollup_status,
     )
+    env.filters["basename"] = lambda p: Path(str(p)).name if p else ""
     return env
 
 
