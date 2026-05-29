@@ -83,11 +83,13 @@ _has_modern_bash() {
   # Check EXIT trap is set
   grep -q "trap 'restore_original_context' EXIT" "$SCRIPT_DIR/run-scenario.sh"
   
-  # Check fail() calls cluster-down.sh before exit (fail() spans ~15 lines)
-  grep -A20 '^fail()' "$SCRIPT_DIR/run-scenario.sh" | grep -q 'cluster-down.sh'
+  # Check fail() calls cluster-down.sh before exit (fail() spans ~30 lines
+  # due to _interrupted guard and inline comments; use -A30 for safety)
+  grep -A30 '^fail()' "$SCRIPT_DIR/run-scenario.sh" | grep -q 'cluster-down.sh'
   
   # Check cleanup_on_signal() calls cluster-down.sh before exit
-  grep -A20 '^cleanup_on_signal()' "$SCRIPT_DIR/run-scenario.sh" | grep -q 'cluster-down.sh'
+  # (use -A25 for safety since _interrupted guard added a few lines)
+  grep -A25 '^cleanup_on_signal()' "$SCRIPT_DIR/run-scenario.sh" | grep -q 'cluster-down.sh'
 }
 
 @test "run-scenario.sh explicitly sets kubectl context to scenario cluster after cluster-up" {

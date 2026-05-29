@@ -85,6 +85,10 @@ KEEP_ON_FAILURE="${KEEP_ON_FAILURE:-0}"
 export KEEP_CLUSTER
 export KEEP_ON_FAILURE
 
+# Interrupt guard: prevents fail() from overwriting INTERRUPTED with FAIL
+# when set -e races the SIGINT trap handler (VAL-ENGINE-027).
+_interrupted=0
+
 # Source the shared prefix guard — exits 1 if CLUSTER_NAME doesn't match ^chart-test-swarm-[a-z0-9-]+$
 . "$SCRIPT_DIR/lib/prefix-check.sh"
 
@@ -327,7 +331,7 @@ write_versions_json() {
   local _helm="" _kubectl="" _kind="" _minikube="" _k8s_server=""
   _helm=$(helm version --short 2>/dev/null | head -1 || echo "unknown")
   _kubectl=$(kubectl version --client --short 2>/dev/null | head -1 || kubectl version --client -o json 2>/dev/null | jq -r '.clientVersion.gitVersion // "unknown"' || echo "unknown")
-  _kind=$(kind version --short 2>/dev/null | head -1 || echo "unknown")
+  _kind=$(kind version -q 2>/dev/null || echo "unknown")
   _minikube=$(minikube version --short 2>/dev/null | head -1 || echo "unknown")
   _k8s_server="unknown"
   # Try to get server version if cluster is reachable
@@ -366,19 +370,26 @@ emit_assert() {
 
 fail() {
   local stage="$1" msg="$2"
-  {
-    echo "status: FAIL"
-    echo "fail_stage: $stage"
-    echo "fail_msg: |"
-    printf '  %s\n' "${msg//$'\n'/$'\n  '}"
-    echo "finished_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  } >> "$RESULT"
-  echo ""; echo "FAIL ($stage): $msg" >&2
+
+  # If _interrupted is set (by cleanup_on_signal SIGINT trap), do NOT
+  # overwrite the INTERRUPTED status already written by the signal handler.
+  # This prevents set -e from racing the SIGINT trap and writing FAIL
+  # when the user hit Ctrl+C (VAL-ENGINE-027).
+  if [ "${_interrupted:-0}" = "0" ]; then
+    {
+      echo "status: FAIL"
+      echo "fail_stage: $stage"
+      echo "fail_msg: |"
+      printf '  %s\n' "${msg//$'\n'/$'\n  '}"
+      echo "finished_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    } >> "$RESULT"
+    echo ""; echo "FAIL ($stage): $msg" >&2
+  fi
 
   # Write partial applied-overrides.yaml if helm merge happened
   write_applied_overrides || true
 
-  # Failure path defaults to teardown. KEEP_ON_FAILURE=1 opts into keeping.
+  # Failure/Interrupt path defaults to teardown. KEEP_ON_FAILURE=1 opts into keeping.
   if [ "$KEEP_ON_FAILURE" != "1" ]; then
     echo "==> Tearing down cluster after failure (KEEP_ON_FAILURE=$KEEP_ON_FAILURE)" >&2
     PROVIDER="$PROVIDER" CLUSTER_NAME="$CLUSTER_NAME" bash "$SCRIPT_DIR/cluster-down.sh" 2>/dev/null || true
@@ -518,6 +529,12 @@ capture_manifests() {
 cleanup_on_signal() {
   echo "" >&2
   echo "==> SIGINT/SIGTERM received — cleaning up" >&2
+
+  # Set interrupt guard BEFORE writing status so fail() cannot overwrite it.
+  # This prevents set -e from racing the SIGINT trap and writing FAIL
+  # when the user hit Ctrl+C (VAL-ENGINE-027).
+  _interrupted=1
+
   {
     echo "status: INTERRUPTED"
     echo "fail_stage: signal"
