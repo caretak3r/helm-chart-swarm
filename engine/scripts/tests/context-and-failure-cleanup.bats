@@ -46,6 +46,19 @@ _has_modern_bash() {
   # Should either succeed (cluster created) or fail (no docker/kind available)
   # but NOT fail due to prefix check — that would mean env var is ignored
   [[ "$output" != *"chart-test-swarm- prefix"* ]] || false
+
+  # Verify positive teardown: if a cluster was created by this test, tear it
+  # down and confirm kind get clusters shows no chart-test-swarm-* residue.
+  if kind get clusters 2>/dev/null | grep -q '^chart-test-swarm-bats-ctx$'; then
+    run env PROVIDER=kind CLUSTER_NAME=chart-test-swarm-bats-ctx $BASH_CMD "$SCRIPT_DIR/cluster-down.sh"
+    [ "$status" -eq 0 ]
+  fi
+  # After potential teardown, verify no chart-test-swarm-* clusters remain
+  run kind get clusters
+  ! grep -q '^chart-test-swarm-' <<<"$output" || {
+    echo "ERROR: chart-test-swarm-* clusters still present after teardown: $output" >&2
+    false
+  }
 }
 
 # ---------------------------------------------------------------------------

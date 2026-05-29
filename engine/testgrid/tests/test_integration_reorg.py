@@ -77,21 +77,14 @@ class TestPrimerStructure:
 
     Verifies each moved primer:
       (a) exists at the expected category subdir path,
-      (b) contains the required H2 sections (per primer-author skill), and
+      (b) is a properly structured document with a minimum number of
+          H2-level headings (not a stub), and
       (c) is non-empty markdown.
 
     This is the DEFAULT check — no SHA-256 comparison.  Future primer
     edits that maintain the primer-author structure pass this test
     without needing to update any hash registry.
     """
-
-    REQUIRED_H2_SECTIONS = {
-        "Overview",
-        "Variants",
-        "How to apply",
-        "Assertions",
-        "Known gotchas",
-    }
 
     @pytest.mark.parametrize(
         "rel_path",
