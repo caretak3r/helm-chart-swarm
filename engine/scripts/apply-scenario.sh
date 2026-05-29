@@ -144,6 +144,15 @@ apply_raw_manifest() {
 
   echo "    raw_manifest: $manifest_path${raw_ns:+ in ns/$raw_ns}"
 
+  # Ensure target namespace exists (idempotent), mirroring apply_helm's namespace create.
+  # Uses dry-run + apply so it's safe even when the namespace already exists.
+  if [ -n "$raw_ns" ] && [ "$raw_ns" != "null" ]; then
+    kubectl_ctx create namespace "$raw_ns" --dry-run=client -o yaml | kubectl_ctx apply -f - || {
+      echo "ERROR: failed to ensure namespace '$raw_ns' for raw_manifest path=$resolved" >&2
+      exit 1
+    }
+  fi
+
   # Build kubectl apply command.
   local kubectl_args=(apply -f "$resolved")
   if [ -n "$raw_ns" ] && [ "$raw_ns" != "null" ]; then

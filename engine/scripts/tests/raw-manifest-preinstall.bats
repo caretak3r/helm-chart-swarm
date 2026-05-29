@@ -286,6 +286,28 @@ EOF
   grep -q "missing required 'path'" "$SCRIPT_DIR/apply-scenario.sh"
 }
 
+@test "apply_raw_manifest ensures namespace before kubectl apply (greppable check)" {
+  # Within apply_raw_manifest(), the ensure-namespace step (kubectl create
+  # namespace --dry-run=client -o yaml | kubectl apply -f -) MUST appear
+  # before the final kubectl apply call.  We verify by extracting the
+  # function body and checking the relative line order.
+  awk '/^apply_raw_manifest\(\)/,/^}/' "$SCRIPT_DIR/apply-scenario.sh" > "$TMPDIR/raw_manifest_fn.txt"
+
+  # Find line numbers of the two operations.
+  local ensure_ln apply_ln
+  ensure_ln=$(grep -n 'create namespace.*--dry-run=client' "$TMPDIR/raw_manifest_fn.txt" | head -1 | cut -d: -f1)
+  # The actual apply line calls kubectl_ctx with the args array that contains apply -f.
+  apply_ln=$(grep -n 'kubectl_ctx "\${kubectl_args\[@\]}"' "$TMPDIR/raw_manifest_fn.txt" | head -1 | cut -d: -f1)
+
+  [ -n "$ensure_ln" ] || { echo "FAIL: ensure-namespace line not found in apply_raw_manifest" >&2; return 1; }
+  [ -n "$apply_ln" ]   || { echo "FAIL: kubectl apply (kubectl_args) line not found in apply_raw_manifest" >&2; return 1; }
+
+  [ "$ensure_ln" -lt "$apply_ln" ] || {
+    echo "FAIL: ensure-namespace (line $ensure_ln) must appear before kubectl apply (line $apply_ln)" >&2
+    return 1
+  }
+}
+
 @test "envoy-gateway scenario YAML validates against the schema" {
   local eg_scen="$SCENARIOS_DIR/envoy-gateway.yaml"
   [ -f "$eg_scen" ]
