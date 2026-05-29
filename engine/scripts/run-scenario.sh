@@ -439,6 +439,7 @@ write_applied_overrides() {
 
   # Merge: set > values > defaults (rightmost wins) using yq ireduce
   local merged
+  # shellcheck disable=SC2016  # single quotes are intentional: $item is a yq variable, not a shell variable
   merged=$(yq eval-all '. as $item ireduce ({}; . * $item)' "$_tmp_defaults" "$_tmp_values" "$_tmp_set" 2>/dev/null || echo "{}")
   rm -f "$_tmp_defaults" "$_tmp_values" "$_tmp_set"
 
