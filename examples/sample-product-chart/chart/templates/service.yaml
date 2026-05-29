@@ -9,3 +9,9 @@ spec:
   ports:
     - port: {{ .Values.service.port }}
       targetPort: 80
+      name: http
+    {{- if .Values.tls.enabled }}
+    - port: {{ .Values.tls.servicePort }}
+      targetPort: {{ .Values.tls.servicePort }}
+      name: https
+    {{- end }}

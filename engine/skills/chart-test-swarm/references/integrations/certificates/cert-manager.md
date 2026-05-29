@@ -1,242 +1,201 @@
 # cert-manager
 
-Adds TLS certificate lifecycle management. The chart-test-swarm scenario
-generated against this primer verifies that the consumer chart can:
-1. Coexist with cert-manager's CRDs and admission webhooks
-2. Request a Certificate via cert-manager (CR or annotation-driven)
-3. Mount the resulting TLS secret into its pods
-4. Serve TLS using those mounted credentials
+## What
+
+cert-manager is a Kubernetes addon that automates the management and issuance of TLS
+certificates from various issuing sources. It runs as a set of controllers in the
+`cert-manager` namespace and watches `Certificate` custom resources, ensuring they
+are valid, up-to-date, and renewed before expiry. cert-manager also exposes
+`Issuer` / `ClusterIssuer` resources that define how certificates are obtained —
+via self-signed CAs, ACME (Let's Encrypt), Vault, Venafi, or external issuers.
+
+For chart-test-swarm, cert-manager is the **primary TLS lifecycle integration**.
+Any scenario that needs a TLS certificate issued inside the cluster should use
+cert-manager rather than shipping static self-signed material.
+
+## When
+
+Use cert-manager scenarios when the Helm chart under test:
+
+- Exposes a TLS listener and needs a real (or self-signed) certificate for the
+  in-cluster Service FQDN.
+- Ships its own `Certificate` resources and needs to verify they are issued
+  successfully.
+- References a `Secret` of type `kubernetes.io/tls` whose name is configurable
+  via values, and the scenario must prove the chart can consume a cert-manager
+  issued secret.
+- Requires CA material for mTLS or client-certificate authentication (the
+  cert-manager `Certificate` resource emits `ca.crt` alongside `tls.crt` and
+  `tls.key`).
+
+**Do not use** cert-manager if:
+
+- The chart merely tolerates cert-manager CRDs (coexistence) — that is already
+  covered by the `with-cert-manager` scenario, which is a lightweight
+  coexistence check.
+- You are testing TLS material delivered externally (e.g. manually created
+  Secrets, mounted certificates from a PVC) — use `manual-tls-secret` or
+  `mounted-tls-certs` primers instead.
+
+## How
+
+### Consumer chart wiring
+
+The sample product chart exposes a `tls` value block. Set these values to
+enable TLS:
+
+```yaml
+tls:
+  enabled: true
+  secretName: sample-tls          # matches the Certificate spec.secretName
+  servicePort: 443
+```
+
+When `tls.enabled` is `true`, the chart:
+
+1. Creates a ConfigMap (`<release>-nginx-tls`) with an nginx server block
+   listening on the TLS port.
+2. Adds a `tls` volume sourced from the named Secret (with `optional: true` so
+   the pod can start before the Secret exists).
+3. Mounts the nginx TLS config over `/etc/nginx/conf.d`.
+4. Exposes an additional `https` port on the Service.
+
+The chart does **not** create `Certificate` or `Issuer` resources itself —
+scenarios drive that via `smoke-script` assertions that run after the chart is
+installed.
+
+### Scenario pattern
+
+Every cert-manager scenario follows this pattern:
+
+1. **Preinstall cert-manager** (helm) — see the Cluster preinstall section below.
+2. **Preinstall a ClusterIssuer** (raw_manifest) — the issuer definition.
+3. **Install the product chart** with `tls.enabled: true`.
+4. **Run a smoke-script** that:
+   - Creates a `Certificate` CR referencing the preinstalled issuer.
+   - Waits for `Certificate` condition `Ready=True`.
+   - Waits for the product pod to be Ready (the Secret now exists so
+     the pod starts).
+   - Queries the product pod over HTTPS using `--cacert` from the issued
+     Secret's `ca.crt` data key.
+   - Exits 0 (PASS) or non-zero (FAIL) with a diagnostic message.
 
 ## Cluster preinstall
 
+### cert-manager helm chart
+
 ```yaml
-- chart: jetstack/cert-manager
-  version: v1.14.0
-  release: cert-manager
-  namespace: cert-manager
-  repo:
-    name: jetstack
-    url: "https://charts.jetstack.io"
-  values:
-    installCRDs: true
-  wait: pods-ready
-  wait_timeout: 3m
+kind: helm
+chart: jetstack/cert-manager
+version: v1.14.0
+release: cert-manager
+namespace: cert-manager
+repo:
+  name: jetstack
+  url: "https://charts.jetstack.io"
+values:
+  installCRDs: true
+wait: pods-ready
+wait_timeout: 3m
 ```
 
-Plus a self-signed ClusterIssuer applied via raw manifest (no helm chart):
+The `installCRDs: true` flag is **required** — without it, the `Certificate`
+and `Issuer` CRDs are not registered and `kubectl apply` of those resources
+will fail.
+
+After this preinstall completes, `cert-manager`, `cert-manager-cainjector`,
+and `cert-manager-webhook` pods must be Ready in the `cert-manager` namespace.
+
+### ClusterIssuer (self-signed)
+
+```yaml
+kind: raw_manifest
+path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+```
+
+The fixture at that path contains:
 
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
-metadata: { name: chart-test-swarm-selfsigned }
-spec: { selfSigned: {} }
-```
-
-(The skill writes this as a second preinstall item using a fake "chart"
-of `raw://` — actually applied via `kubectl apply -f` from a fixture file.
-Until raw-manifest preinstall lands in the engine, the helm-test pod can
-create the ClusterIssuer at runtime instead.)
-
-## Feasibility checklist for the consumer chart
-
-**Required:**
-- [ ] Chart has at least one pod-owning kind (Deployment / StatefulSet / DaemonSet) — without a pod, there's nowhere to mount certs.
-- [ ] At least one pod template has `volumes:` and `volumeMounts:` blocks that are value-driven (use `{{ .Values… }}`) OR the chart already references a TLS secret name via values — without that, we can't inject a cert mount without forking the chart.
-- [ ] Chart exposes a Service for the pod (so we have an FQDN to issue the cert against).
-
-**Soft:**
-- [ ] Pod annotations are value-driven (lets us inject `cert-manager.io/inject-ca-from` annotations if needed).
-- [ ] Env vars are value-driven (lets us point the app at `/etc/tls/tls.crt` etc. without a code change).
-- [ ] Chart doesn't already define its own Certificate / Issuer resources (otherwise the scenario is "validate the chart's own cert-manager wiring" — a different scenario shape, manual).
-
-## Standard values-override pattern
-
-```yaml
-chartTestSwarm:
-  enabled: true                              # gates the helm-test pod
-
-# Conventional override shape — adjust field paths to match the chart's
-# actual values schema (cross-reference values_keys in the chart profile).
-tls:
-  enabled: true
-  secretName: sample-tls
-  mountPath: /etc/tls
-
-# Tell the chart to mount the secret cert-manager will create
-extraVolumes:
-  - name: tls
-    secret:
-      secretName: sample-tls
-extraVolumeMounts:
-  - name: tls
-    mountPath: /etc/tls
-    readOnly: true
-
-# If the chart's main container takes env vars for cert paths
-extraEnv:
-  - { name: TLS_CERT_FILE, value: /etc/tls/tls.crt }
-  - { name: TLS_KEY_FILE,  value: /etc/tls/tls.key }
-  - { name: TLS_CA_FILE,   value: /etc/tls/ca.crt  }
-```
-
-If the chart doesn't expose `extraVolumes` / `extraVolumeMounts` / `extraEnv`,
-you must map to whatever the chart DOES expose — read `values.yaml` and the
-template files to find the right field paths. Cite the actual paths in a
-trailing comment on each override key so reviewers can verify.
-
-The chart also needs a Certificate CR. Two patterns:
-
-**A) Generated by the chart itself** (if it has a `tls.certManager.enabled` flag) — set that flag and provide issuer details.
-
-**B) Generated by the scenario** (most common) — the helm-test pod (next section) creates the Certificate CR at test time, waits for cert-manager to issue, then probes.
-
-## Standard helm-test pattern
-
-```yaml
-{{- if .Values.chartTestSwarm.enabled }}
-apiVersion: v1
-kind: ConfigMap
 metadata:
-  name: "{{ .Release.Name }}-ct-cert-mgr-setup"
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    "helm.sh/hook": test
-    "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": hook-succeeded
-data:
-  certificate.yaml: |
-    apiVersion: cert-manager.io/v1
-    kind: ClusterIssuer
-    metadata: { name: ct-selfsigned }
-    spec: { selfSigned: {} }
-    ---
-    apiVersion: cert-manager.io/v1
-    kind: Certificate
-    metadata:
-      name: {{ .Values.tls.secretName | default (print .Release.Name "-tls") }}
-      namespace: {{ .Release.Namespace }}
-    spec:
-      secretName: {{ .Values.tls.secretName | default (print .Release.Name "-tls") }}
-      duration: 24h
-      issuerRef: { name: ct-selfsigned, kind: ClusterIssuer }
-      commonName: "{{ .Release.Name }}.{{ .Release.Namespace }}.svc"
-      dnsNames:
-        - "{{ .Release.Name }}.{{ .Release.Namespace }}.svc"
-        - "{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local"
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: "{{ .Release.Name }}-ct-cert-mgr-test"
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/component: chart-test-swarm
-    integration: cert-manager
-  annotations:
-    "helm.sh/hook": test
-    "helm.sh/hook-delete-policy": hook-succeeded
+  name: chart-test-swarm-selfsigned
 spec:
-  serviceAccountName: {{ .Release.Name }}-ct-cert-mgr
-  restartPolicy: Never
-  containers:
-    - name: probe
-      image: bitnami/kubectl:1.30
-      command: ["sh", "-c"]
-      args:
-        - |
-          set -eu
-          echo "==> Applying Certificate request"
-          kubectl apply -f /setup/certificate.yaml
-          echo "==> Waiting for Certificate ready (3m max)"
-          SECRET="{{ .Values.tls.secretName | default (print .Release.Name "-tls") }}"
-          kubectl -n {{ .Release.Namespace }} wait certificate "$SECRET" --for=condition=Ready --timeout=3m
-          echo "==> Verifying TLS secret exists and contains tls.crt + tls.key + ca.crt"
-          kubectl -n {{ .Release.Namespace }} get secret "$SECRET" -o json \
-            | jq -e '.data["tls.crt"] and .data["tls.key"] and .data["ca.crt"]' >/dev/null
-          echo "==> Verifying mounted cert is reachable by the workload"
-          POD=$(kubectl -n {{ .Release.Namespace }} get pod -l app={{ .Release.Name }} -o jsonpath='{.items[0].metadata.name}')
-          kubectl -n {{ .Release.Namespace }} exec "$POD" -- ls -la {{ .Values.tls.mountPath | default "/etc/tls" }}/tls.crt
-          echo "PASS: cert-manager integration verified"
-      volumeMounts:
-        - { name: setup, mountPath: /setup }
-  volumes:
-    - name: setup
-      configMap:
-        name: "{{ .Release.Name }}-ct-cert-mgr-setup"
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: "{{ .Release.Name }}-ct-cert-mgr"
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    "helm.sh/hook": test
-    "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": hook-succeeded
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: "{{ .Release.Name }}-ct-cert-mgr"
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    "helm.sh/hook": test
-    "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": hook-succeeded
-rules:
-  - apiGroups: ["cert-manager.io"]
-    resources: ["certificates", "clusterissuers"]
-    verbs: ["create", "get", "list", "watch", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets", "pods", "pods/exec"]
-    verbs: ["get", "list", "create"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: "{{ .Release.Name }}-ct-cert-mgr"
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    "helm.sh/hook": test
-    "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": hook-succeeded
-subjects:
-  - kind: ServiceAccount
-    name: "{{ .Release.Name }}-ct-cert-mgr"
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: Role
-  name: "{{ .Release.Name }}-ct-cert-mgr"
-  apiGroup: rbac.authorization.k8s.io
-{{- end }}
+  selfSigned: {}
 ```
 
-This is one Helm-tests file with multiple resources separated by `---`.
-Hook-weight ordering ensures the SA + Role + RoleBinding + ConfigMap
-land before the Pod runs.
+This ClusterIssuer is used by the self-signed-ca and wildcard scenarios.
+The lets-encrypt-staging scenario uses a separate ClusterIssuer pointing
+at the Let's Encrypt staging ACME endpoint.
 
-## Common failure modes
+## Variants
 
-- **CRDs not installed when scenario runs** → set `installCRDs: true` in
-  preinstall values; verify via `kubectl get crd | grep cert-manager.io`
-  before phase 7. Failure signal: `helm install` errors with "no matches
-  for kind Certificate".
-- **Webhook not ready when chart installs** → preinstall `wait: pods-ready`
-  with `wait_timeout: 3m`; cert-manager-webhook takes 30-60s on cold kind.
-  Failure signal: chart install logs "failed calling webhook
-  webhook.cert-manager.io".
-- **Pod can't mount secret because secret doesn't exist yet** → the
-  consumer chart's pod may go CrashLoopBackOff if the secret reference
-  is required and the secret only materialises after `helm install`
-  completes. Two mitigations: (a) make the volume `optional: true` in
-  the override; (b) deliver the Certificate CR via a `pre-install` hook
-  so the secret exists before the main pod is scheduled. The standard
-  helm-test pattern above takes approach (a) implicitly — the chart
-  installs first, then helm test creates the Certificate.
-- **Self-signed CA chain isn't trusted by app code** → the helm-test
-  curls with `--cacert ca.crt`; production code paths might use the
-  system trust store. Caveat: this scenario verifies the *mount and
-  issuance*, not the application's trust-chain handling.
-- **DNS mismatch** → Certificate CR commonName + dnsNames must include
-  the in-cluster Service FQDN the app serves on. The standard pattern
-  populates both `<release>.<ns>.svc` and `<release>.<ns>.svc.cluster.local`.
+Four scenario variants are available under
+`examples/sample-product-chart/chart-test/scenarios/`:
+
+| Variant | File | Issuer | Key behavior |
+|---|---|---|---|
+| self-signed-ca | `certificates-cert-manager-self-signed-ca.yaml` | `ClusterIssuer` selfSigned | Issues a `Certificate` for `<release>.<ns>.svc`; verifies HTTPS curl with `--cacert`; SAN matches host |
+| lets-encrypt-staging | `certificates-cert-manager-lets-encrypt-staging.yaml` | `ClusterIssuer` ACME Let's Encrypt staging | Uses a staging ACME URL; issues a `Certificate` for the Service FQDN; issuer `Ready=True`; chart pods Ready |
+| wildcard | `certificates-cert-manager-wildcard.yaml` | `ClusterIssuer` selfSigned | Issues a wildcard `Certificate` with SAN `DNS:*.test.local` and base domain SAN; `tls.crt` contains both SANs |
+| jks-pkcs12 | `certificates-cert-manager-jks-pkcs12.yaml` (optional) | `ClusterIssuer` selfSigned | Issues a `Certificate` and bundles the key material into a JKS or PKCS12 secret alongside `tls.crt` / `tls.key` |
+
+The self-signed-ca variant is the fastest to run (no external ACME
+challenge) and serves as the baseline. The lets-encrypt-staging variant
+uses the ACME staging endpoint (`https://acme-staging-v02.api.letsencrypt.org/directory`)
+and exercises the HTTP-01 challenge solver path, but the resulting
+certificate is **not** trusted by any real client — it is a staging
+certificate only.
+
+## Assertions
+
+Every cert-manager scenario uses three assertion types:
+
+| Type | Purpose |
+|---|---|
+| `helm-status-deployed` | Confirm the chart release is deployed |
+| `pods-ready` | Confirm all pods in the product namespace are Ready |
+| `smoke-script` | Create the `Certificate`, wait for issuance, probe HTTPS |
+
+The smoke-script assertions live under
+`examples/sample-product-chart/chart-test/assertions/` and are referenced by
+`path` from the scenario. Each script receives `RELEASE`, `NAMESPACE`,
+`KUBECONFIG`, `KUBE_CONTEXT`, and `PROJECT_DIR` via the environment.
+
+## Known gotchas
+
+- **CRDs not installed**: If `cert-manager` is installed without
+  `installCRDs: true`, the `Certificate` CRD is not registered. Always set
+  this flag. The webhook also needs the CRDs to be present before it can
+  serve.
+- **Webhook not ready**: The cert-manager webhook takes 30–60 seconds on a
+  cold kind cluster. The preinstall `wait: pods-ready` with
+  `wait_timeout: 3m` handles this. If the webhook is not ready when the
+  chart installs, helm errors with "failed calling webhook
+  `webhook.cert-manager.io`".
+- **Secret not created before pod starts**: The Deployment volume references
+  the TLS Secret with `optional: true` so the pod remains Pending (not
+  CrashLoopBackOff) until the smoke-script creates the `Certificate` and
+  cert-manager issues the Secret. Without `optional: true`, the pod would
+  fail repeatedly.
+- **ACME HTTP-01 challenge needs a reachable endpoint**: The
+  lets-encrypt-staging scenario works out of the box because Let's Encrypt
+  staging uses the self-check validation pattern — cert-manager's own
+  solver pods respond to the challenge. No ingress controller or external
+  DNS is required for the staging endpoint.
+- **Certificate duration**: The self-signed and wildcard scenarios use
+  `duration: 24h` and `renewBefore: 12h`. For local test runs these are
+  intentionally short to exercise the renewal path, though actual renewal
+  is not asserted by these scenarios.
+- **Previous helm-test pattern is deprecated**: Scenarios authored before
+  F3.1 used a helm-test pod to create `Certificate` resources. The
+  smoke-script pattern replaces this — it is simpler, easier to debug
+  (stdout/stderr captured in logs), and doesn't require RBAC resources
+  in the chart's `templates/` directory.
+
+## References
+
+- [cert-manager documentation](https://cert-manager.io/docs/)
+- [cert-manager helm chart](https://artifacthub.io/packages/helm/cert-manager/cert-manager)
+- [ACME staging environment](https://letsencrypt.org/docs/staging-environment/)
+- [Self-signed issuer](https://cert-manager.io/docs/configuration/selfsigned/)
