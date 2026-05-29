@@ -211,19 +211,17 @@ class TestVariantGroupProperties:
         assert rolled == "FAIL"
 
     def test_rolled_status_untested_above_inconclusive(self) -> None:
-        """STATUS_RANK has UNTESTED(3) < INCONCLUSIVE(2) — verify ordering."""
+        """STATUS_RANK has UNTESTED(2) < INCONCLUSIVE(3) — UNTESTED is more severe.
+        Per VAL-DASH-022: UNTESTED reflects "we never even tried" which is a
+        worse-confidence outcome than "we tried but couldn't conclude"."""
         from testgrid.collect import STATUS_RANK
 
-        assert STATUS_RANK["UNTESTED"] > STATUS_RANK["INCONCLUSIVE"], (
-            "UNTESTED should rank HIGHER (less severe) than INCONCLUSIVE"
+        assert STATUS_RANK["UNTESTED"] < STATUS_RANK["INCONCLUSIVE"], (
+            "UNTESTED should rank LOWER (more severe) than INCONCLUSIVE per VAL-DASH-022"
         )
-        # UNTESTED has rank 3, INCONCLUSIVE has rank 2
-        # So min() would select INCONCLUSIVE as "worse"
-        # VERIFY: INCONCLUSIVE is worse (lower rank number)
-        assert STATUS_RANK["INCONCLUSIVE"] < STATUS_RANK["UNTESTED"]
 
     def test_inconclusive_and_untested_rollup_untested(self) -> None:
-        """INCONCLUSIVE + UNTESTED -> INCONCLUSIVE is rolled (it's worse)."""
+        """INCONCLUSIVE + UNTESTED -> UNTESTED is rolled (it's worse per VAL-DASH-022)."""
         from testgrid.collect import STATUS_RANK, Scenario
 
         scenarios = [
@@ -231,8 +229,8 @@ class TestVariantGroupProperties:
             Scenario(id="sc-2", status="UNTESTED"),
         ]
         rolled = min((s.status for s in scenarios), key=lambda st: STATUS_RANK.get(st, 99))
-        # STATUS_RANK: INCONCLUSIVE=2, UNTESTED=3. Min rank = INCONCLUSIVE
-        assert rolled == "INCONCLUSIVE"
+        # STATUS_RANK: UNTESTED=2, INCONCLUSIVE=3. Min rank = UNTESTED
+        assert rolled == "UNTESTED"
 
     def test_status_breakdown_string(self) -> None:
         """Status breakdown produces correct count string."""
@@ -690,14 +688,15 @@ class TestVariantGroupingEdgeCases:
         assert '<details class="integration-group' in html
 
     def test_status_rank_ordering_unchanged(self) -> None:
-        """STATUS_RANK maintains expected ordering:
-        FAIL(0) < PARTIAL(1) < INCONCLUSIVE(2) < UNTESTED(3) < PASS(4)."""
+        """STATUS_RANK maintains expected ordering per VAL-DASH-022:
+        FAIL(0) < PARTIAL(1) < UNTESTED(2) < INCONCLUSIVE(3) < AUTHORED(4) < PASS(5)."""
         from testgrid.collect import STATUS_RANK
 
         assert STATUS_RANK["FAIL"] < STATUS_RANK["PARTIAL"]
-        assert STATUS_RANK["PARTIAL"] < STATUS_RANK["INCONCLUSIVE"]
-        assert STATUS_RANK["INCONCLUSIVE"] < STATUS_RANK["UNTESTED"]
-        assert STATUS_RANK["UNTESTED"] < STATUS_RANK["PASS"]
+        assert STATUS_RANK["PARTIAL"] < STATUS_RANK["UNTESTED"]
+        assert STATUS_RANK["UNTESTED"] < STATUS_RANK["INCONCLUSIVE"]
+        assert STATUS_RANK["INCONCLUSIVE"] < STATUS_RANK["AUTHORED"]
+        assert STATUS_RANK["AUTHORED"] < STATUS_RANK["PASS"]
 
     def test_unknown_status_ranks_high(self) -> None:
         """An unknown status has rank 99, so it doesn't win the min() rollup."""

@@ -135,14 +135,14 @@
   {% endfor %}
 
   {% if not standalone_scenarios and not variant_groups %}
-  <p class="hint">No scenarios in this run.</p>
+  <p class="empty-state">0 scenarios in this run</p>
   {% endif %}
 </section>
 
 <section class="cap-details">
   <h2>Scenarios — details</h2>
   {% for s in run.scenarios %}
-  <details id="{{ s.id }}" class="cap">
+  <details id="{{ s.id }}" class="cap" data-status="{{ s.status }}" data-run-id="{{ run.run_id }}">
     <summary>
       <span class="cap-id"><code>{{ s.id }}</code></span>
       <span class="cap-name">{{ s.name }}</span>
@@ -166,8 +166,16 @@
       {% if s.labels %}
       <dt>Labels</dt><dd>{% for k, v in s.labels.items() %}<code>{{ k }}={{ v }}</code> {% endfor %}</dd>
       {% endif %}
-      {% if s.fail_stage %}
-      <dt>Failed at</dt><dd class="pitfall">{{ s.fail_stage }}{% if s.fail_msg %} — {{ s.fail_msg }}{% endif %}</dd>
+      {% if s.status == "FAIL" %}
+      {% if s.fail_msg %}
+      <dt class="error-summary">Error</dt><dd class="error-summary pitfall">{{ s.fail_msg }}</dd>
+      {% endif %}
+      {% if s.log_dir %}
+      <dt class="error-log">Log</dt><dd class="error-log"><a href="{{ s.log_dir }}">{{ s.log_dir | basename }}</a></dd>
+      {% endif %}
+      {% if s.fail_stage and not s.fail_msg %}
+      <dt>Failed at</dt><dd class="pitfall">{{ s.fail_stage }}</dd>
+      {% endif %}
       {% endif %}
     </dl>
     {% if s.artifact_links %}

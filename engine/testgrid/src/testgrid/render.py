@@ -24,6 +24,7 @@ STATUS_CSS = {
     "INCONCLUSIVE": "status-inconclusive",
     "UNTESTED": "status-untested",
     "AUTHORED": "status-authored",
+    "UNKNOWN": "status-unknown",
 }
 
 # Chart-test-swarm mechanism vocabulary. Free-form, but these are the
@@ -191,7 +192,7 @@ def _is_cloud_provider(provider: str) -> bool:
 def _make_env() -> Environment:
     env = Environment(
         loader=PackageLoader("testgrid", "templates"),
-        autoescape=select_autoescape(["html"]),
+        autoescape=select_autoescape(["html", "j2"]),
         trim_blocks=True,
         lstrip_blocks=True,
     )
@@ -217,7 +218,17 @@ def render_run(run: Run, out_dir: Path) -> Path:
     run_dir = out_dir / run.run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    # Deterministic ordering: sort scenarios lexicographically by id
+    # before building variant groups and rendering.
+    run.scenarios.sort(key=lambda s: s.id)
+    # Re-sort variant group members for deterministic sub-table ordering.
+    # Also sort standalone scenarios within the run (already done above).
+
     groups, standalone = build_variant_groups(run)
+    # Ensure variant group members are sorted lexicographically.
+    for g in groups:
+        g.scenarios.sort(key=lambda s: s.id)
+    standalone.sort(key=lambda s: s.id)
 
     html = tpl.render(
         run=run,

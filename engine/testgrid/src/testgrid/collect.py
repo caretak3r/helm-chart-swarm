@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import glob
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -27,11 +28,19 @@ CLOUD_PROVIDERS = frozenset({"gke", "eks", "aks"})
 STATUS_RANK = {
     "FAIL": 0,
     "PARTIAL": 1,
-    "INCONCLUSIVE": 2,
-    "UNTESTED": 3,
+    "UNTESTED": 2,
+    "INCONCLUSIVE": 3,
     "AUTHORED": 4,
     "PASS": 5,
 }
+
+KNOWN_STATUSES = frozenset(STATUS_RANK.keys()) | {"UNKNOWN"}
+"""The set of status strings the collector recognizes.
+
+Any ``result.yaml`` whose ``status`` is not in this set is normalized to
+``"UNKNOWN"`` and surfaced visibly in the dashboard rather than being
+silently CSS-coerced to ``status-unknown``.
+"""
 
 
 @dataclass
@@ -115,6 +124,14 @@ class Run:
         return dict(sorted(idx.items()))
 
 
+class OrphanRunError(Exception):
+    """Raised when a run directory has no valid metadata (no snapshot, no agent results)."""
+
+    def __init__(self, run_dir: Path) -> None:
+        super().__init__(f"orphan run dir: {run_dir}")
+        self.run_dir = run_dir
+
+
 def _load_yaml(path: Path) -> Any:
     with path.open() as f:
         return yaml.safe_load(f)
@@ -125,7 +142,11 @@ def load_snapshot(run_dir: Path) -> list[Scenario]:
     snap_path = run_dir / "scenarios-snapshot.yaml"
     if not snap_path.exists():
         return []
-    doc = _load_yaml(snap_path) or {}
+    try:
+        doc = _load_yaml(snap_path) or {}
+    except yaml.YAMLError as exc:
+        print(f"warn: corrupt {snap_path} — {exc}", file=sys.stderr)
+        return []
     scenarios: list[Scenario] = []
     for s in doc.get("scenarios", []) or []:
         cluster = s.get("cluster", {}) or {}
@@ -151,11 +172,23 @@ def load_run_meta(run_dir: Path) -> dict[str, Any]:
     meta_path = run_dir / "run-meta.yaml"
     if not meta_path.exists():
         return {}
-    return _load_yaml(meta_path) or {}
+    try:
+        return _load_yaml(meta_path) or {}
+    except yaml.YAMLError as exc:
+        print(f"warn: corrupt {meta_path} — {exc}", file=sys.stderr)
+        return {}
 
 
 def _scenario_from_result(doc: dict[str, Any], agent: int | None) -> Scenario:
     """Build a Scenario record from a single result.yaml document."""
+    raw_status = (doc.get("status") or "UNTESTED").strip()
+    if raw_status not in KNOWN_STATUSES:
+        print(
+            f"warn: unknown status '{raw_status}' in result.yaml"
+            f" (scenario_id={doc.get('scenario_id', '?')}) — normalizing to UNKNOWN",
+            file=sys.stderr,
+        )
+        raw_status = "UNKNOWN"
     asserts = [
         Assertion(
             type=a.get("type", ""),
@@ -166,7 +199,7 @@ def _scenario_from_result(doc: dict[str, Any], agent: int | None) -> Scenario:
     ]
     return Scenario(
         id=doc.get("scenario_id", ""),
-        status=(doc.get("status") or "UNTESTED").strip(),
+        status=raw_status,
         asserts=asserts,
         duration_s=float(doc.get("duration_s", 0) or 0),
         agent=agent,
@@ -187,7 +220,7 @@ def load_agent_results(run_dir: Path) -> list[Scenario]:
         try:
             doc = _load_yaml(Path(path)) or {}
         except yaml.YAMLError as exc:
-            print(f"warn: skipping malformed {path}: {exc}")
+            print(f"warn: skipping malformed {path}: {exc}", file=sys.stderr)
             continue
         # Two formats supported:
         #  A) single scenario doc (from run-scenario.sh)
@@ -246,10 +279,22 @@ def collect_run(reports_dir: Path, run_id: str) -> Run:
     if not run_dir.is_dir():
         raise FileNotFoundError(f"run dir not found: {run_dir}")
 
+    # Detect orphaned run dirs: no scenarios-snapshot.yaml AND no agent-*/result.yaml files.
+    has_snapshot = (run_dir / "scenarios-snapshot.yaml").exists()
+    has_agent_results = any(run_dir.glob("agent-*/result.yaml"))
+    if not has_snapshot and not has_agent_results:
+        print(
+            f"warn: skipped orphaned run dir {run_dir.name} (no snapshot, no agent results)",
+            file=sys.stderr,
+        )
+        raise OrphanRunError(run_dir)
+
     scenarios = load_snapshot(run_dir)
+    agent_results = load_agent_results(run_dir)
+
     by_id = {s.id: s for s in scenarios}
 
-    for res in load_agent_results(run_dir):
+    for res in agent_results:
         if res.id in by_id:
             s = by_id[res.id]
             s.status = res.status

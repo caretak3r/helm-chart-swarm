@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from .collect import Run, collect_run, list_runs
+from .collect import OrphanRunError, Run, collect_run, list_runs
 from .render import render_index, render_run
 
 # chart-test-swarm repo root: cli.py is at engine/testgrid/src/testgrid/cli.py
@@ -27,8 +27,7 @@ def cmd_build(args: argparse.Namespace) -> int:
     for rid in run_ids:
         try:
             run = collect_run(reports, rid)
-        except FileNotFoundError as exc:
-            print(f"warn: {exc}", file=sys.stderr)
+        except (FileNotFoundError, OrphanRunError):
             continue
         path = render_run(run, out)
         passed = sum(1 for s in run.scenarios if s.status == "PASS")
@@ -38,7 +37,7 @@ def cmd_build(args: argparse.Namespace) -> int:
     for rid in list_runs(reports):
         try:
             all_runs.append(collect_run(reports, rid))
-        except FileNotFoundError:
+        except (FileNotFoundError, OrphanRunError):
             continue
 
     if not all_runs:
