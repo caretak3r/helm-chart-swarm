@@ -486,7 +486,9 @@ validate_fixture_paths() {
 validate_fixture_paths
 
 echo "==> Cluster up (provider=$PROVIDER cluster=$CLUSTER_NAME)"
-bash "$SCRIPT_DIR/cluster-up.sh" 2>&1 | tee "$LOG_DIR/cluster-up.log" \
+# Defer context restore to run-scenario.sh so the scenario workflow never
+# races the caller's kubectl by restoring the global context prematurely.
+CTS_NO_CONTEXT_RESTORE=1 bash "$SCRIPT_DIR/cluster-up.sh" 2>&1 | tee "$LOG_DIR/cluster-up.log" \
   || fail cluster-up "see $LOG_DIR/cluster-up.log"
 
 # Pin all subsequent kubectl/helm operations to the scenario cluster context.

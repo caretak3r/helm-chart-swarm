@@ -56,8 +56,17 @@ if command -v kubectl >/dev/null 2>&1; then
   SAVED_CONTEXT=$(kubectl config current-context 2>/dev/null || echo "")
 fi
 
-# Cleanup: restore the original kubeconfig context on exit.
+# CTS_NO_CONTEXT_RESTORE=1 defers context restore to the parent (e.g. run-scenario.sh).
+# When set, cluster-up.sh does NOT restore the original context on exit so the
+# scenario workflow (apply-scenario.sh, run-asserts.sh) runs against the cluster
+# without a race window where the global context flips back to the caller's.
+CTS_NO_CONTEXT_RESTORE="${CTS_NO_CONTEXT_RESTORE:-0}"
+
+# Cleanup: restore the original kubeconfig context on exit (only when not deferred).
 restore_context() {
+  if [ "$CTS_NO_CONTEXT_RESTORE" = "1" ]; then
+    return 0
+  fi
   if [ -n "${SAVED_CONTEXT:-}" ] && command -v kubectl >/dev/null 2>&1; then
     # Only restore if the current context isn't already what we want
     current=$(kubectl config current-context 2>/dev/null || echo "")
@@ -125,4 +134,8 @@ kubectl config use-context "$CONTEXT" >/dev/null
 echo "==> Cluster nodes:"
 kubectl get nodes
 echo "==> OK: $CONTEXT ready"
-echo "==> Note: kubeconfig context was temporarily switched to '$CONTEXT' and will be restored on exit."
+if [ "$CTS_NO_CONTEXT_RESTORE" = "1" ]; then
+  echo "==> Note: kubeconfig context set to '$CONTEXT' (context restore deferred to caller)."
+else
+  echo "==> Note: kubeconfig context was temporarily switched to '$CONTEXT' and will be restored on exit."
+fi
