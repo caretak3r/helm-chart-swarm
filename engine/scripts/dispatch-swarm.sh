@@ -51,7 +51,8 @@ fi
 PROJECT_DIR="${PROJECT_DIR:-${1:?usage: dispatch-swarm.sh <project-dir> [suite] [num-agents] [run-id]}}"
 SUITE="${SUITE:-${2:-pr-subset}}"
 NUM_AGENTS="${NUM_AGENTS:-${3:-2}}"
-RUN_ID="${RUN_ID:-${4:-run-$(date +%Y%m%d-%H%M%S)}}"
+# Default RUN_ID includes PID ($$) for uniqueness across concurrent dispatches (VAL-CROSS-028)
+RUN_ID="${RUN_ID:-${4:-run-$(date +%Y%m%d-%H%M%S)-$$}}"
 
 # Default cluster name satisfies ^chart-test-swarm-[a-z0-9-]+$
 CLUSTER_NAME="${CLUSTER_NAME:-chart-test-swarm-default}"
@@ -119,12 +120,24 @@ fi
 RUN_DIR="$_REPORTS_ROOT/$RUN_ID"
 
 # ---- RUN_ID collision detection (VAL-CROSS-028) ----
-if [ -d "$RUN_DIR" ]; then
-  echo "ERROR: run directory already exists: $RUN_DIR" >&2
-  echo "       Use --run-id <override> to specify a different run, or remove the existing directory." >&2
-  exit 1
-fi
-mkdir -p "$RUN_DIR"
+# Ensure the parent reports directory exists
+mkdir -p "$_REPORTS_ROOT"
+
+# Use atomic mkdir (without -p) so we can detect collisions.
+# Default RUN_ID includes PID ($$) for per-process uniqueness; explicit
+# RUN_ID collisions are handled with a retry counter.
+_attempt=0
+_original_run_id="$RUN_ID"
+while ! mkdir "$RUN_DIR" 2>/dev/null; do
+  _attempt=$((_attempt + 1))
+  if [ "$_attempt" -gt 9 ]; then
+    echo "ERROR: could not create unique run directory after 10 attempts: $RUN_DIR" >&2
+    echo "       Use a different RUN_ID to avoid collisions." >&2
+    exit 1
+  fi
+  RUN_ID="${_original_run_id}-${_attempt}"
+  RUN_DIR="$_REPORTS_ROOT/$RUN_ID"
+done
 
 # run-meta.yaml — reflect actual mix of providers/k8s_versions (VAL-ENGINE-036)
 CHART_NAME=""
@@ -234,8 +247,10 @@ while IFS= read -r d; do
 done < <(find "$_REPORTS_ROOT" -mindepth 1 -maxdepth 1 -type d -name "run-*" 2>/dev/null | sort -r)
 
 # Per-agent brief generation
-# IMPORTANT (VAL-ENGINE-037): We use sed-based substitution instead of envsubst
-# to prevent re-expansion of $VAR / ${VAR} in scenario name/description fields.
+# IMPORTANT (VAL-ENGINE-037): We use awk-based substitution instead of envsubst
+# or sed to prevent re-expansion of $VAR / ${VAR} in scenario name/description
+# fields AND to handle multi-line replacement strings correctly on both GNU
+# and BSD (macOS) platforms.
 for n in $(seq 1 "$NUM_AGENTS"); do
   agent_dir="$RUN_DIR/agent-$n"
   mkdir -p "$agent_dir"
@@ -263,18 +278,25 @@ for n in $(seq 1 "$NUM_AGENTS"); do
     pitfalls_md+=$'\n'
   fi
 
-  # Render template via sed substitution — NOT envsubst — to prevent
+  # Render template via awk — NOT envsubst — to prevent
   # re-expansion of $VAR / ${VAR} in scenario fields (VAL-ENGINE-037).
-  {
-    cat "$TEMPLATE"
-  } | sed \
-    -e "s|\${AGENT_N}|$n|g" \
-    -e "s|\${NUM_AGENTS}|$NUM_AGENTS|g" \
-    -e "s|\${RUN_ID}|$RUN_ID|g" \
-    -e "s|\${PROJECT_DIR}|$PROJECT_DIR|g" \
-    -e "s|\${ASSIGNED_SCENARIOS}|$assigned_md|g" \
-    -e "s|\${PRIOR_PITFALLS}|$pitfalls_md|g" \
-    > "$brief"
+  # Use ENVIRON instead of -v to pass multi-line replacement strings,
+  # which awk -v cannot handle. This works on both GNU and BSD awk.
+  export _AWK_AGENT_N="$n"
+  export _AWK_NUM_AGENTS="$NUM_AGENTS"
+  export _AWK_RUN_ID="$RUN_ID"
+  export _AWK_PROJECT_DIR="$PROJECT_DIR"
+  export _AWK_ASSIGNED_SCENARIOS="$assigned_md"
+  export _AWK_PRIOR_PITFALLS="$pitfalls_md"
+  awk '{
+        gsub(/\$\{AGENT_N\}/, ENVIRON["_AWK_AGENT_N"]);
+        gsub(/\$\{NUM_AGENTS\}/, ENVIRON["_AWK_NUM_AGENTS"]);
+        gsub(/\$\{RUN_ID\}/, ENVIRON["_AWK_RUN_ID"]);
+        gsub(/\$\{PROJECT_DIR\}/, ENVIRON["_AWK_PROJECT_DIR"]);
+        gsub(/\$\{ASSIGNED_SCENARIOS\}/, ENVIRON["_AWK_ASSIGNED_SCENARIOS"]);
+        gsub(/\$\{PRIOR_PITFALLS\}/, ENVIRON["_AWK_PRIOR_PITFALLS"]);
+        print;
+      }' "$TEMPLATE" > "$brief"
 done
 
 echo "==> Briefs ready under $RUN_DIR/agent-*/brief.md"
