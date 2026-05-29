@@ -94,7 +94,7 @@ class VariantGroup:
     def status_breakdown(self) -> str:
         """Human-readable breakdown, e.g. ``"2 PASS / 1 FAIL"``."""
         parts: list[str] = []
-        for st in ("PASS", "FAIL", "PARTIAL", "INCONCLUSIVE", "UNTESTED"):
+        for st in ("PASS", "FAIL", "PARTIAL", "INCONCLUSIVE", "UNTESTED", "AUTHORED", "UNKNOWN"):
             cnt = self.status_counts.get(st, 0)
             if cnt > 0:
                 parts.append(f"{cnt} {st}")

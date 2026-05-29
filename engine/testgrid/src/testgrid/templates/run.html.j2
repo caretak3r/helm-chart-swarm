@@ -234,7 +234,7 @@
       {% if s.log_dir %}<p class="log-path">Logs: <code>{{ s.log_dir }}</code></p>{% endif %}
     </div>
     {% else %}
-    <p class="no-results">⚠ no agent reported on this scenario — UNTESTED</p>
+    <p class="no-results">⚠ {% if s.status == 'AUTHORED' %}authored only — not run locally{% else %}no agent reported on this scenario — UNTESTED{% endif %}</p>
     {% endif %}
   </details>
   {% endfor %}
