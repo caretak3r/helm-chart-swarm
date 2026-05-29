@@ -624,7 +624,7 @@ write_versions_json || true
 
 # ---- 2. Preinstall addons --------------------------------------------------
 echo "==> Apply scenario preinstall"
-PROJECT_DIR="$PROJECT_DIR" bash "$SCRIPT_DIR/apply-scenario.sh" "$SCENARIO" 2>&1 \
+PROJECT_DIR="$PROJECT_DIR" bash "$SCRIPT_DIR/apply-scenario.sh" --preinstall-only "$SCENARIO" 2>&1 \
   | tee "$LOG_DIR/preinstall.log" \
   || fail preinstall "see $LOG_DIR/preinstall.log"
 

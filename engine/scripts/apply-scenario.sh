@@ -1,27 +1,33 @@
 #!/usr/bin/env bash
 # Apply a scenario's preinstall list — helm install or kubectl apply each
 # item in order, wait per spec. Assumes cluster is already up and current
-# kubectl context.
+# kubectl context. By default, also installs the product chart from the
+# scenario's product section. Use --preinstall-only to skip product install.
 #
 # Supported preinstall kinds:
 #   helm          — helm upgrade --install (default when kind is omitted)
 #   raw_manifest  — kubectl apply -f <path> [—namespace <ns>]
 #
-# Usage:   apply-scenario.sh <scenario.yaml>
+# Usage:   apply-scenario.sh [--preinstall-only] <scenario.yaml>
 # Env:     PROJECT_DIR (default: parent of scenario file's chart-test/ dir)
 #          KUBE_CONTEXT (optional kubectl/helm context name to pin all calls)
 set -euo pipefail
 
 # ---- Usage banner (checked before bash version preflight so --help always works) ----
+PREINSTALL_ONLY=0
+
 usage() {
   cat <<EOF
 Usage: $(basename "$0") <scenario.yaml> [OPTIONS]
 
 Apply a scenario's preinstall list (helm charts and/or raw manifests)
-to the current kubectl context. Assumes the cluster is already running.
+to the current kubectl context, then install the product chart (unless
+--preinstall-only is given). Assumes the cluster is already running.
 
 Options:
-  --help    Show this usage banner and exit
+  --help              Show this usage banner and exit
+  --preinstall-only   Apply only cluster.preinstall items; skip product
+                      chart install (backward compat for run-scenario.sh).
 
 Environment:
   PROJECT_DIR  Root directory of the consumer chart project (for resolving
@@ -33,9 +39,15 @@ EOF
   exit 0
 }
 
-if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
-  usage
-fi
+# ---- Argument parsing ----
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --help|-h) usage ;;
+    --preinstall-only) PREINSTALL_ONLY=1; shift ;;
+    --*) echo "ERROR: unknown option: $1" >&2; exit 1 ;;
+    *) break ;;
+  esac
+done
 
 # ---- Bash version preflight (VAL-ENGINE-039) ----
 if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
@@ -91,12 +103,6 @@ cts_cleanup_tempfiles() {
 }
 # Trap EXIT, INT, TERM so tempfiles are cleaned up even on SIGTERM mid-loop
 trap 'cts_cleanup_tempfiles' EXIT INT TERM
-
-count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
-if [ "$count" -eq 0 ]; then
-  echo "==> No preinstall items; skipping addon phase"
-  exit 0
-fi
 
 resolve_path() {
   # Make a path absolute, relative to PROJECT_DIR if it isn't already.
@@ -252,28 +258,98 @@ apply_helm() {
   fi
 }
 
-echo "==> Applying $count preinstall item(s)"
-for i in $(seq 0 $((count - 1))); do
-  # Determine kind — defaults to "helm" for backward compatibility.
-  item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
+count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+if [ "$count" -eq 0 ]; then
+  echo "==> No preinstall items; skipping addon phase"
+else
+  echo "==> Applying $count preinstall item(s)"
+  for i in $(seq 0 $((count - 1))); do
+    # Determine kind — defaults to "helm" for backward compatibility.
+    item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
 
-  echo ""
-  echo "==> [$((i+1))/$count] kind=$item_kind"
+    echo ""
+    echo "==> [$((i+1))/$count] kind=$item_kind"
 
-  case "$item_kind" in
-    helm)
-      apply_helm "$i"
-      ;;
-    raw_manifest)
-      apply_raw_manifest "$i"
-      ;;
-    *)
-      scen_id=$(yq '.id' "$SCENARIO")
-      echo "ERROR: scenario '$scen_id' preinstall[$i] has unknown kind '$item_kind'; expected 'helm' or 'raw_manifest'" >&2
-      exit 1
-      ;;
-  esac
-done
+    case "$item_kind" in
+      helm)
+        apply_helm "$i"
+        ;;
+      raw_manifest)
+        apply_raw_manifest "$i"
+        ;;
+      *)
+        scen_id=$(yq '.id' "$SCENARIO")
+        echo "ERROR: scenario '$scen_id' preinstall[$i] has unknown kind '$item_kind'; expected 'helm' or 'raw_manifest'" >&2
+        exit 1
+        ;;
+    esac
+  done
+fi
 
 echo ""
 echo "==> OK: preinstall complete"
+
+# ---- Product chart install (unless --preinstall-only) ----
+if [ "$PREINSTALL_ONLY" -eq 1 ]; then
+  echo ""
+  echo "==> Skipping product chart install (--preinstall-only)"
+  exit 0
+fi
+
+echo ""
+echo "==> Installing product chart"
+
+# Read product section from scenario YAML
+PRODUCT_CHART=$(yq    '.product.chart'     "$SCENARIO")
+PRODUCT_RELEASE=$(yq  '.product.release'   "$SCENARIO")
+PRODUCT_NS=$(yq       '.product.namespace' "$SCENARIO")
+PRODUCT_VALUES=$(yq   '.product.values // ""' "$SCENARIO")
+
+# Resolve chart path relative to PROJECT_DIR (respects PROJECT_DIR for ./chart etc.)
+PCHART=$(resolve_path "$PRODUCT_CHART")
+
+# Fail fast with named error if chart is not resolvable
+if [ ! -e "$PCHART" ]; then
+  case "$PRODUCT_CHART" in
+    oci://*|https://*|http://*) ;;
+    *)
+      echo "ERROR: product.chart not found: $PRODUCT_CHART (resolved: $PCHART)" >&2
+      echo "       Ensure PROJECT_DIR is set correctly and the chart exists." >&2
+      exit 1
+      ;;
+  esac
+fi
+
+echo "==> Chart:  $PRODUCT_CHART (resolved: $PCHART)"
+echo "==> Release: $PRODUCT_RELEASE in ns/$PRODUCT_NS"
+
+# Ensure product namespace exists
+kubectl_ctx get ns "$PRODUCT_NS" >/dev/null 2>&1 || kubectl_ctx create ns "$PRODUCT_NS" >/dev/null
+
+command -v helm >/dev/null 2>&1 || { echo "ERROR: helm required" >&2; exit 1; }
+
+helm_args=(upgrade --install "$PRODUCT_RELEASE" "$PCHART" --namespace "$PRODUCT_NS" --create-namespace --wait --timeout 5m)
+
+# Handle product.values file
+if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
+  vpath=$(resolve_path "$PRODUCT_VALUES")
+  [ -f "$vpath" ] || { echo "ERROR: product.values file missing: $vpath" >&2; exit 1; }
+  helm_args+=(-f "$vpath")
+fi
+
+# Handle product.set inline values
+set_count=$(yq '.product.set // {} | length' "$SCENARIO")
+if [ "$set_count" -gt 0 ]; then
+  while IFS=$'\t' read -r k v; do
+    helm_args+=(--set "$k=$v")
+  done < <(yq -o=tsv '.product.set // {} | to_entries | map([.key, .value]) | .[]' "$SCENARIO")
+fi
+
+echo "    helm: ${helm_args[*]}"
+helm_ctx "${helm_args[@]}" || {
+  echo "ERROR: product chart install failed" >&2
+  exit 1
+}
+
+echo ""
+echo "==> OK: product chart installed"
