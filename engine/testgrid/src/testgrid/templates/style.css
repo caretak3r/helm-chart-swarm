@@ -116,3 +116,94 @@ a:hover { text-decoration: underline; }
 .runs th, .runs td { padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border); text-align: left; }
 .runs th { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .runs td.status-cell { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+/* ── Integration groups (F2.2 variant grouping) ── */
+
+.integration-group.matrix-details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 0.8rem;
+  overflow: hidden;
+}
+
+.integration-group.matrix-details summary.integration-header {
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  list-style: none;
+  background: #f5f5f5;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+
+.integration-group.matrix-details summary.integration-header::-webkit-details-marker {
+  display: none;
+}
+
+.integration-group.matrix-details summary.integration-header::before {
+  content: "▸";
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin-right: 0.1rem;
+}
+
+.integration-group.matrix-details[open] summary.integration-header::before {
+  content: "▾";
+}
+
+.integration-group.matrix-details .variant-summary {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.integration-group.matrix-details .group-label {
+  flex: 1;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+/* Variant sub-table inside the integration group */
+.integration-group.matrix-details .variant-sub-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.78rem;
+  width: 100%;
+}
+
+.integration-group.matrix-details .variant-sub-table thead {
+  display: none;  /* headers are redundant — same structure as matrix */
+}
+
+.integration-group.matrix-details .variant-sub-table th,
+.integration-group.matrix-details .variant-sub-table td {
+  border: 1px solid var(--border);
+  padding: 0;
+  background: var(--surface);
+}
+
+.integration-group.matrix-details .variant-sub-table th.row-head {
+  text-align: left;
+  padding: 0.35rem 0.7rem;
+  font-weight: 500;
+  min-width: 17rem;
+}
+
+.integration-group.matrix-details .variant-sub-table th.row-head code {
+  font-size: 0.78rem;
+}
+
+.integration-group.matrix-details .variant-sub-table td.cell {
+  width: 3rem;
+  height: 2rem;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: white;
+}
+

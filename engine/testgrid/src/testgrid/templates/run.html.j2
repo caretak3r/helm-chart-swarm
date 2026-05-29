@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -51,8 +51,11 @@
 
 <section class="matrix">
   <h2>Scenarios</h2>
-  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.</p>
-  <table>
+  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.
+  {% if variant_groups %}Groups with 3+ variants per integration are collapsed — click the header to expand.{% endif %}</p>
+
+  {% if standalone_scenarios %}
+  <table class="standalone-table">
     <thead>
       <tr>
         <th class="row-head">Scenario</th>
@@ -64,8 +67,8 @@
       </tr>
     </thead>
     <tbody>
-      {% for s in run.scenarios %}
-      <tr>
+      {% for s in standalone_scenarios %}
+      <tr{% if s.status == "UNTESTED" and not s.asserts_total %} class="untested-row"{% endif %}>
         <th class="row-head">
           <a href="#{{ s.id }}"><code>{{ s.id }}</code></a>
           {% if s.name %}<div class="hint">{{ s.name }}</div>{% endif %}
@@ -82,6 +85,52 @@
       {% endfor %}
     </tbody>
   </table>
+  {% endif %}
+
+  {# Integration groups (3+ variants of the same integration) — each is a <details> block #}
+  {% for group in variant_groups %}
+  <details class="integration-group matrix-details" id="{{ group.anchor }}" open>
+    <summary class="integration-header" aria-expanded="true">
+      <span class="badge {{ status_class(group.rolled_status) }}">{{ group.rolled_status }}</span>
+      <span class="variant-summary">{{ group.variant_count }} variants: {{ group.status_breakdown }}</span>
+      <span class="group-label"><code>{{ group.category }}/{{ group.integration }}</code></span>
+    </summary>
+    <table class="variant-sub-table">
+      <thead>
+        <tr>
+          <th class="row-head">Scenario</th>
+          <th>Cluster shape</th>
+          <th>Tags</th>
+          <th>Asserts</th>
+          <th>Status</th>
+          <th>Agent</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in group.scenarios %}
+        <tr class="variant-row">
+          <th class="row-head">
+            <a href="#{{ s.id }}"><code>{{ s.id }}</code></a>
+            {% if s.name %}<div class="hint">{{ s.name }}</div>{% endif %}
+          </th>
+          <td>
+            <code>{{ s.cluster_provider or '—' }}</code>
+            {% if s.cluster_addons %}<div class="hint">+ {{ s.cluster_addons | join(', ') }}</div>{% endif %}
+          </td>
+          <td>{% for t in s.tags %}<code class="mech-tag">{{ t }}</code>{% endfor %}</td>
+          <td class="cell {{ status_class(s.status) }}">{{ s.asserts_passed }}/{{ s.asserts_total }}</td>
+          <td><span class="badge {{ status_class(s.status) }}">{{ s.status }}</span></td>
+          <td>{{ s.agent if s.agent is not none else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endfor %}
+
+  {% if not standalone_scenarios and not variant_groups %}
+  <p class="hint">No scenarios in this run.</p>
+  {% endif %}
 </section>
 
 <section class="cap-details">

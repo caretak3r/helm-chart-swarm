@@ -9,6 +9,8 @@ from __future__ import annotations
 import dataclasses
 import json
 import shutil
+from collections import defaultdict
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -26,6 +28,127 @@ STATUS_CSS = {
 # Chart-test-swarm mechanism vocabulary. Free-form, but these are the
 # categories the dashboard knows how to group.
 MECHANISM_CATEGORIES = ["addon", "subchart", "mesh", "ingress", "customer", "cloud", "version"]
+
+
+# ---------------------------------------------------------------------------
+# Variant grouping (F2.2)
+# ---------------------------------------------------------------------------
+
+GROUPING_THRESHOLD = 3
+"""Minimum number of scenarios sharing a (category, integration) before
+they are collapsed under a single integration header row."""
+
+
+@dataclass
+class VariantGroup:
+    """A group of scenarios that share the same ``(category, integration)``.
+
+    Rendered as a collapsible ``<details>`` block with the integration as
+    the header summary and each variant member as a row in a sub-table.
+    """
+
+    category: str
+    """e.g. ``certificates``, ``ingress-controllers``, ``service-mesh``."""
+
+    integration: str
+    """e.g. ``cert-manager``, ``traefik``, ``istio-ingress-gateway``."""
+
+    scenarios: list[Scenario] = field(default_factory=list)
+    """The variant scenarios belonging to this group."""
+
+    @property
+    def key(self) -> str:
+        """Stable identifier for the group, e.g. ``certificates:cert-manager``."""
+        return f"{self.category}:{self.integration}"
+
+    @property
+    def anchor(self) -> str:
+        """HTML-safe anchor id for the group."""
+        return f"group--{self.category}--{self.integration}"
+
+    @property
+    def variant_count(self) -> int:
+        return len(self.scenarios)
+
+    @property
+    def rolled_status(self) -> str:
+        """Worst-of-set status using ``STATUS_RANK`` ordering."""
+        if not self.scenarios:
+            return "UNTESTED"
+        return min(
+            (s.status for s in self.scenarios),
+            key=lambda st: STATUS_RANK.get(st, 99),
+        )
+
+    @property
+    def status_counts(self) -> dict[str, int]:
+        """Per-status count across all variant scenarios."""
+        counts: dict[str, int] = {}
+        for s in self.scenarios:
+            counts[s.status] = counts.get(s.status, 0) + 1
+        return counts
+
+    @property
+    def status_breakdown(self) -> str:
+        """Human-readable breakdown, e.g. ``"2 PASS / 1 FAIL"``."""
+        parts: list[str] = []
+        for st in ("PASS", "FAIL", "PARTIAL", "INCONCLUSIVE", "UNTESTED"):
+            cnt = self.status_counts.get(st, 0)
+            if cnt > 0:
+                parts.append(f"{cnt} {st}")
+        return " / ".join(parts) if parts else "0 UNTESTED"
+
+
+def _primary_mechanism_key(mechanisms: list[str]) -> tuple[str, str] | None:
+    """Extract the ``(category, integration)`` key from a scenario's
+    mechanism list.
+
+    Uses the first mechanism that has at least two colon-separated parts
+    (``category:integration`` or ``category:integration:variant``).
+    Returns ``None`` if no suitable mechanism is found.
+    """
+    for m in mechanisms:
+        parts = m.split(":")
+        if len(parts) >= 2:
+            return parts[0], parts[1]
+    return None
+
+
+def build_variant_groups(run: Run) -> tuple[list[VariantGroup], list[Scenario]]:
+    """Partition *run.scenarios* into integration groups and standalones.
+
+    **Groups**: Scenarios that share a ``(category, integration)`` key AND
+    have at least ``GROUPING_THRESHOLD`` members are collapsed into a
+    ``VariantGroup``.
+
+    **Standalone**: Every scenario NOT in a qualifying group — this includes
+    scenarios with no mechanisms, scenarios whose group has fewer than the
+    threshold, and scenarios whose mechanism key could not be determined.
+
+    Returns ``(groups, standalone)``.
+    """
+    # Bucket by (category, integration) key.
+    buckets: dict[tuple[str, str], list[Scenario]] = defaultdict(list)
+    unkeyed: list[Scenario] = []
+
+    for s in run.scenarios:
+        key = _primary_mechanism_key(s.mechanisms)
+        if key is None:
+            unkeyed.append(s)
+        else:
+            buckets[key].append(s)
+
+    groups: list[VariantGroup] = []
+    standalone: list[Scenario] = []
+
+    for (cat, integ), members in sorted(buckets.items()):
+        if len(members) >= GROUPING_THRESHOLD:
+            groups.append(VariantGroup(category=cat, integration=integ, scenarios=members))
+        else:
+            standalone.extend(members)
+
+    standalone.extend(unkeyed)
+    return groups, standalone
 
 
 def status_class(status: str) -> str:
@@ -81,9 +204,15 @@ def render_run(run: Run, out_dir: Path) -> Path:
     tpl = env.get_template("run.html.j2")
     run_dir = out_dir / run.run_id
     run_dir.mkdir(parents=True, exist_ok=True)
+
+    groups, standalone = build_variant_groups(run)
+
     html = tpl.render(
         run=run,
         mechanisms_by_category=mechanisms_by_category(run),
+        variant_groups=groups,
+        standalone_scenarios=standalone,
+        VariantGroup=VariantGroup,
     )
     (run_dir / "index.html").write_text(html, encoding="utf-8")
     (run_dir / "run.json").write_text(_run_to_json(run), encoding="utf-8")
