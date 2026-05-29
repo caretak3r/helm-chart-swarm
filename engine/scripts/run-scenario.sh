@@ -2,10 +2,11 @@
 # Run ONE scenario end-to-end: cluster up → preinstall → product chart → asserts.
 # Emits result.yaml + artifacts/ bundle under $REPORTS_DIR/scenario-<id>-<ts>/.
 #
-# Artifact bundle (self-contained for re-application):
-#   artifacts/scenario.yaml           — verbatim copy of the input scenario
-#   artifacts/applied-overrides.yaml  — helm_values map + raw_manifest_refs seq
-#   artifacts/fixtures/               — byte-identical copies of referenced fixtures
+# Artifact bundle (self-contained for re-application from artifacts alone):
+#   artifacts/scenario.yaml           — scenario with bundle-relative paths (./chart, ./fixtures/<name>)
+#   artifacts/chart/                  — vendored Helm chart (verbatim copy from source)
+#   artifacts/applied-overrides.yaml  — helm_values map (single merged) + raw_manifest_refs seq
+#   artifacts/fixtures/               — byte-identical copies of ALL referenced fixture files
 #   artifacts/manifests/              — kubectl get -o yaml dumps of created resources
 #   artifacts/versions.json           — {helm, kubectl, kind, minikube, k8s_server}
 #   artifacts/logs/                   — all captured logs
@@ -175,8 +176,151 @@ echo "==> Scenario:   $SCEN_ID"
 echo "==> Report dir: $REPORT_DIR"
 
 # ---- Emit partial artifacts early so even crashed runs leave breadcrumbs ----
-# scenario.yaml (verbatim copy of input)
+# scenario.yaml (verbatim copy of input — will be rewritten with bundle-relative paths below)
 cp "$SCENARIO" "$ARTIFACTS_DIR/scenario.yaml"
+
+# ---- Vendor chart into artifacts/chart/ (F1.4 bundle replay) ----
+vendor_chart() {
+  local chart_src
+  chart_src=$(resolve_path "$PRODUCT_CHART")
+  mkdir -p "$ARTIFACTS_DIR/chart"
+  if [ -d "$chart_src" ]; then
+    cp -R "$chart_src"/* "$ARTIFACTS_DIR/chart/"
+    echo "==> Chart vendored to $ARTIFACTS_DIR/chart/"
+  elif [[ "$PRODUCT_CHART" == oci://* ]] || [[ "$PRODUCT_CHART" == *://* ]]; then
+    # OCI/URL refs can't be vendored; write a pointer file
+    echo "chart_ref: $PRODUCT_CHART" > "$ARTIFACTS_DIR/chart/CHART_REF.yaml"
+    echo "==> Chart is remote (OCI/URL), wrote pointer to $ARTIFACTS_DIR/chart/CHART_REF.yaml"
+  else
+    echo "WARN: chart path '$chart_src' is not a directory, cannot vendor" >&2
+  fi
+}
+vendor_chart
+
+# ---- Copy fixtures into artifacts/fixtures/ (early, so rewrite can reference them) ----
+copy_fixtures_early() {
+  local preinstall_count
+  preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+  if [ "$preinstall_count" -gt 0 ]; then
+    local i item_kind manifest_path resolved
+    for i in $(seq 0 $((preinstall_count - 1))); do
+      item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
+      if [ "$item_kind" = "raw_manifest" ]; then
+        manifest_path=$(yq ".cluster.preinstall[$i].path" "$SCENARIO")
+        case "$manifest_path" in http://*|https://*) continue ;; esac
+        resolved=$(resolve_path "$manifest_path")
+        if [ -f "$resolved" ]; then
+          cp -f "$resolved" "$ARTIFACTS_DIR/fixtures/$(basename "$resolved")"
+        fi
+      fi
+      if [ "$item_kind" = "helm" ] || [ "$item_kind" = "" ]; then
+        local values_kind
+        values_kind=$(yq ".cluster.preinstall[$i].values | type" "$SCENARIO" 2>/dev/null || echo "!!null")
+        if [ "$values_kind" = "!!str" ]; then
+          local vpath
+          vpath=$(yq ".cluster.preinstall[$i].values" "$SCENARIO")
+          local resolved_vpath
+          resolved_vpath=$(resolve_path "$vpath")
+          if [ -f "$resolved_vpath" ]; then
+            cp -f "$resolved_vpath" "$ARTIFACTS_DIR/fixtures/$(basename "$resolved_vpath")"
+          fi
+        fi
+      fi
+    done
+  fi
+
+  # Also copy product.values file if it references a fixture
+  if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
+    local vpath
+    vpath=$(resolve_path "$PRODUCT_VALUES")
+    if [ -f "$vpath" ]; then
+      cp -f "$vpath" "$ARTIFACTS_DIR/fixtures/$(basename "$vpath")"
+    fi
+  fi
+
+  # Copy cluster.config if it's a local file
+  local cluster_cfg
+  cluster_cfg=$(yq '.cluster.config // ""' "$SCENARIO")
+  if [ -n "$cluster_cfg" ] && [ "$cluster_cfg" != "null" ]; then
+    local cfg_resolved
+    cfg_resolved=$(resolve_path "$cluster_cfg")
+    if [ -f "$cfg_resolved" ]; then
+      cp -f "$cfg_resolved" "$ARTIFACTS_DIR/fixtures/$(basename "$cfg_resolved")"
+    fi
+  fi
+}
+copy_fixtures_early
+
+# ---- Rewrite artifacts/scenario.yaml with bundle-relative paths (F1.4 bundle replay) ----
+rewrite_scenario_for_bundle() {
+  local bundle_scenario="$ARTIFACTS_DIR/scenario.yaml"
+
+  # Rewrite product.chart to ./chart (unless it's a remote ref)
+  local chart_path="$PRODUCT_CHART"
+  case "$chart_path" in
+    oci://*|https://*|http://*) ;;  # Keep remote refs as-is
+    *)
+      yq -i '.product.chart = "./chart"' "$bundle_scenario"
+      ;;
+  esac
+
+  # Rewrite product.values to ./fixtures/<basename>
+  if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
+    local vbasename
+    vbasename=$(basename "$PRODUCT_VALUES")
+    yq -i ".product.values = \"./fixtures/$vbasename\"" "$bundle_scenario"
+  fi
+
+  # Rewrite cluster.config if present
+  local _cfg
+  _cfg=$(yq '.cluster.config // ""' "$SCENARIO")
+  if [ -n "$_cfg" ] && [ "$_cfg" != "null" ] && [ "$_cfg" != "" ]; then
+    local cfg_basename
+    cfg_basename=$(basename "$_cfg")
+    yq -i ".cluster.config = \"./fixtures/$cfg_basename\"" "$bundle_scenario"
+  fi
+
+  # Rewrite preinstall paths
+  local preinstall_count
+  preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+  if [ "$preinstall_count" -gt 0 ]; then
+    local i
+    for i in $(seq 0 $((preinstall_count - 1))); do
+      local item_kind
+      item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
+
+      # raw_manifest: rewrite path
+      if [ "$item_kind" = "raw_manifest" ]; then
+        local manifest_path
+        manifest_path=$(yq ".cluster.preinstall[$i].path" "$SCENARIO")
+        case "$manifest_path" in
+          http://*|https://*) ;;  # Keep URLs as-is
+          *)
+            local mbasename
+            mbasename=$(basename "$manifest_path")
+            yq -i ".cluster.preinstall[$i].path = \"./fixtures/$mbasename\"" "$bundle_scenario"
+            ;;
+        esac
+      fi
+
+      # helm: rewrite values if it's a file path (string), not inline object
+      if [ "$item_kind" = "helm" ] || [ "$item_kind" = "" ]; then
+        local values_kind
+        values_kind=$(yq ".cluster.preinstall[$i].values | type" "$SCENARIO" 2>/dev/null || echo "!!null")
+        if [ "$values_kind" = "!!str" ]; then
+          local vnode
+          vnode=$(yq ".cluster.preinstall[$i].values" "$SCENARIO")
+          if [ -n "$vnode" ] && [ "$vnode" != "null" ]; then
+            local vbasename
+            vbasename=$(basename "$vnode")
+            yq -i ".cluster.preinstall[$i].values = \"./fixtures/$vbasename\"" "$bundle_scenario"
+          fi
+        fi
+      fi
+    done
+  fi
+}
+rewrite_scenario_for_bundle
 
 # versions.json — capture tool versions immediately
 write_versions_json() {
@@ -246,43 +390,71 @@ fail() {
 }
 
 # ---- Generate applied-overrides.yaml (uniform shape) ----
-# Shape: { helm_values: <map>, raw_manifest_refs: [<seq of paths>] }
-# helm_values = final merged values from product.set + product.values + preinstall values
-# raw_manifest_refs = list of paths from raw_manifest preinstall items
+# Shape: { helm_values: <merged-map>, raw_manifest_refs: [<seq of paths>] }
+# helm_values = SINGLE merged map computed from:
+#   Layer 1: chart defaults (helm show values)
+#   Layer 2: product.values file (if specified)
+#   Layer 3: product.set inline values (if specified)
+#   Precedence: set > values file > defaults (Helm semantics — rightmost wins in yq *)
+# raw_manifest_refs = sequence of paths from raw_manifest preinstall items
 write_applied_overrides() {
   local ao="$ARTIFACTS_DIR/applied-overrides.yaml"
+
+  # -- Compute merged helm_values via temp files --
+  local _tmp_defaults _tmp_values _tmp_set
+  _tmp_defaults=$(mktemp)
+  _tmp_values=$(mktemp)
+  _tmp_set=$(mktemp)
+
+  # Layer 1: chart defaults from helm show values
+  local chart_src
+  chart_src=$(resolve_path "$PRODUCT_CHART")
+  if [ -d "$chart_src" ] && command -v helm >/dev/null 2>&1; then
+    helm show values "$chart_src" > "$_tmp_defaults" 2>/dev/null || echo "{}" > "$_tmp_defaults"
+  else
+    echo "{}" > "$_tmp_defaults"
+  fi
+
+  # Layer 2: product.values file (if specified)
+  if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
+    local vpath
+    vpath=$(resolve_path "$PRODUCT_VALUES")
+    if [ -f "$vpath" ]; then
+      cat "$vpath" > "$_tmp_values"
+    else
+      echo "{}" > "$_tmp_values"
+    fi
+  else
+    echo "{}" > "$_tmp_values"
+  fi
+
+  # Layer 3: product.set inline overrides
+  local set_count
+  set_count=$(yq '.product.set // {} | length' "$SCENARIO")
+  if [ "$set_count" -gt 0 ]; then
+    yq '.product.set // {}' "$SCENARIO" > "$_tmp_set"
+  else
+    echo "{}" > "$_tmp_set"
+  fi
+
+  # Merge: set > values > defaults (rightmost wins) using yq ireduce
+  local merged
+  merged=$(yq eval-all '. as $item ireduce ({}; . * $item)' "$_tmp_defaults" "$_tmp_values" "$_tmp_set" 2>/dev/null || echo "{}")
+  rm -f "$_tmp_defaults" "$_tmp_values" "$_tmp_set"
+
+  # -- Write applied-overrides.yaml --
   {
     echo "helm_values:"
-    # Product values file (if specified)
-    if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
-      local vpath
-      vpath=$(resolve_path "$PRODUCT_VALUES")
-      if [ -f "$vpath" ]; then
-        # Indent the values file content under helm_values
-        sed 's/^/  /' "$vpath"
-      fi
+    if [ "$merged" = "{}" ]; then
+      echo "  {}"
+    else
+      echo "$merged" | sed 's/^/  /'
     fi
-
-    # Inline product.set overrides — merge on top of values file
-    local set_count
-    set_count=$(yq '.product.set // {} | length' "$SCENARIO")
-    if [ "$set_count" -gt 0 ]; then
-      # Write product.set entries as helm_values
-      # Use yq to render the product.set map, then indent
-      yq '.product.set // {}' "$SCENARIO" | sed 's/^/  /'
-    fi
-
-    # If neither values nor set, write empty map
-    if [ -z "$PRODUCT_VALUES" ] || [ "$PRODUCT_VALUES" = "null" ]; then
-      if [ "$set_count" -eq 0 ] 2>/dev/null; then
-        echo "  {}"
-      fi
-    fi
-
     echo "raw_manifest_refs:"
     # Collect raw_manifest paths from preinstall
-    local preinstall_count
+    local preinstall_count refs_written
     preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+    refs_written=0
     if [ "$preinstall_count" -gt 0 ]; then
       local i item_kind manifest_path
       for i in $(seq 0 $((preinstall_count - 1))); do
@@ -290,63 +462,14 @@ write_applied_overrides() {
         if [ "$item_kind" = "raw_manifest" ]; then
           manifest_path=$(yq ".cluster.preinstall[$i].path" "$SCENARIO")
           echo "  - ${manifest_path}"
+          refs_written=1
         fi
       done
     fi
-    # If no raw_manifest refs, write empty seq
-    echo "  []"
-  } > "$ao"
-
-  # Clean up: remove the trailing "  []" if we already have entries
-  # (the "  []" is a fallback — remove it when there are real entries)
-  if grep -q '^  - ' "$ao" 2>/dev/null; then
-    # Has real entries — remove the empty seq fallback line
-    sed -i '' '/^  \[\]$/d' "$ao" 2>/dev/null || sed -i '/^  \[\]$/d' "$ao" 2>/dev/null || true
-  fi
-}
-
-# ---- Copy referenced fixture files into artifacts/fixtures/ ----
-copy_fixtures() {
-  local preinstall_count
-  preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
-  if [ "$preinstall_count" -gt 0 ]; then
-    local i item_kind manifest_path resolved
-    for i in $(seq 0 $((preinstall_count - 1))); do
-      item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
-      if [ "$item_kind" = "raw_manifest" ]; then
-        manifest_path=$(yq ".cluster.preinstall[$i].path" "$SCENARIO")
-        # Skip URLs
-        case "$manifest_path" in http://*|https://*) continue ;; esac
-        resolved=$(resolve_path "$manifest_path")
-        if [ -f "$resolved" ]; then
-          cp -f "$resolved" "$ARTIFACTS_DIR/fixtures/$(basename "$resolved")"
-        fi
-      fi
-      # Also copy inline values files referenced by helm preinstall items
-      if [ "$item_kind" = "helm" ] || [ "$item_kind" = "" ]; then
-        local values_kind
-        values_kind=$(yq ".cluster.preinstall[$i].values | type" "$SCENARIO" 2>/dev/null || echo "!!null")
-        if [ "$values_kind" = "!!str" ]; then
-          local vpath
-          vpath=$(yq ".cluster.preinstall[$i].values" "$SCENARIO")
-          local resolved_vpath
-          resolved_vpath=$(resolve_path "$vpath")
-          if [ -f "$resolved_vpath" ]; then
-            cp -f "$resolved_vpath" "$ARTIFACTS_DIR/fixtures/$(basename "$resolved_vpath")"
-          fi
-        fi
-      fi
-    done
-  fi
-
-  # Also copy product.values file if it references a fixture
-  if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
-    local vpath
-    vpath=$(resolve_path "$PRODUCT_VALUES")
-    if [ -f "$vpath" ]; then
-      cp -f "$vpath" "$ARTIFACTS_DIR/fixtures/$(basename "$vpath")"
+    if [ "$refs_written" -eq 0 ]; then
+      echo "  []"
     fi
-  fi
+  } > "$ao"
 }
 
 # ---- Dump manifests via kubectl get -o yaml ----
@@ -568,11 +691,8 @@ done
 # ---- 5. Capture artifacts --------------------------------------------------
 echo "==> Capturing artifacts"
 
-# applied-overrides.yaml (uniform shape)
+# applied-overrides.yaml (uniform shape — merged helm_values map)
 write_applied_overrides
-
-# Fixture copies (byte-identical)
-copy_fixtures
 
 # Manifests (kubectl get -o yaml dumps)
 capture_manifests
