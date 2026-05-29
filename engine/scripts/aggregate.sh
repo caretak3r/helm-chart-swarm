@@ -89,7 +89,7 @@ for rfile in "$RUN_DIR"/agent-*/result.yaml; do
         "fail_stage": (.fail_stage // ""),
         "notes": ((.fail_msg // "") | tostring)
       }
-    ' "$rfile" >> "$TMP"
+    ' "$rfile" | jq -c '.' >> "$TMP"
   elif [ "$(yq '.scenario_id // ""' "$rfile")" != "" ]; then
     yq -o=json '
       {
@@ -101,7 +101,7 @@ for rfile in "$RUN_DIR"/agent-*/result.yaml; do
         "fail_stage": (.fail_stage // ""),
         "notes": ((.fail_msg // "") | tostring)
       }
-    ' "$rfile" >> "$TMP"
+    ' "$rfile" | jq -c '.' >> "$TMP"
   fi
 done
 
@@ -109,10 +109,10 @@ done
 # (VAL-ENGINE-034: assertion notes with commas, newlines, and quotes must survive CSV round-trip)
 {
   python3 -c '
-import csv, json, sys
-rows = []
+import csv, json, sys, os
+
+# Read snapshot for expected IDs (best-effort — may need PyYAML)
 expected_ids = []
-# Read snapshot for expected IDs
 try:
     with open("'"$SNAPSHOT"'") as f:
         import yaml
@@ -122,7 +122,7 @@ try:
 except Exception:
     pass
 
-# Read all agent results
+# Read all agent results (one compact JSON object per line)
 all_results = []
 try:
     with open("'"$TMP"'") as f:
@@ -133,14 +133,15 @@ try:
 except Exception:
     pass
 
+# Guard: always emit at least a CSV header (empty all_results is not an error)
+writer = csv.writer(sys.stdout)
+writer.writerow(["scenario_id","status","agent","asserts_passed","asserts_total","fail_stage","notes"])
+
 # Build lookup by scenario_id
 by_id = {}
 for r in all_results:
     sid = r.get("scenario_id", "")
     by_id.setdefault(sid, []).append(r)
-
-writer = csv.writer(sys.stdout)
-writer.writerow(["scenario_id","status","agent","asserts_passed","asserts_total","fail_stage","notes"])
 
 # Emit one row per expected scenario; UNTESTED if no agent reported.
 for sid in expected_ids:
@@ -180,17 +181,25 @@ for r in all_results:
 ' 2>/dev/null || {
     # Fallback: use jq @csv if python fails
     echo "scenario_id,status,agent,asserts_passed,asserts_total,fail_stage,notes"
-    for sid in "${EXPECTED_IDS[@]+"${EXPECTED_IDS[@]}"}"; do
-      matches=$(jq -s --arg id "$sid" '[.[] | select(.scenario_id == $id)]' "$TMP")
-      if [ "$(echo "$matches" | jq 'length')" -eq 0 ]; then
+    # Guard: only slurp TMP if it has content, otherwise jq produces no output
+    if [ -s "$TMP" ]; then
+      for sid in "${EXPECTED_IDS[@]+"${EXPECTED_IDS[@]}"}"; do
+        matches=$(jq -s --arg id "$sid" '[.[] | select(.scenario_id == $id)]' "$TMP")
+        if [ "$(echo "$matches" | jq 'length')" -eq 0 ]; then
+          echo "$sid,UNTESTED,,0,0,,no agent reported"
+        else
+          echo "$matches" | jq -r '.[] | [
+            .scenario_id, .status, .agent, .asserts_passed, .asserts_total,
+            .fail_stage, (.notes | gsub("[\r\n]+"; " ") | gsub("\""; "\"\""))
+          ] | @csv'
+        fi
+      done
+    else
+      # No agent results at all — emit UNTESTED rows for expected scenarios
+      for sid in "${EXPECTED_IDS[@]+"${EXPECTED_IDS[@]}"}"; do
         echo "$sid,UNTESTED,,0,0,,no agent reported"
-      else
-        echo "$matches" | jq -r '.[] | [
-          .scenario_id, .status, .agent, .asserts_passed, .asserts_total,
-          .fail_stage, (.notes | gsub("[\r\n]+"; " ") | gsub("\""; "\"\""))
-        ] | @csv'
-      fi
-    done
+      done
+    fi
   }
 } > "$CSV"
 
@@ -203,9 +212,11 @@ STATUS_COUNTS=$(awk -F, 'NR>1 && $2!="" {print $2}' "$CSV" | sort | uniq -c | aw
   echo ""
   echo "## Status counts"
   echo ""
-  echo "$STATUS_COUNTS" | while read -r line; do
-    [ -n "$line" ] && echo "- $line"
-  done
+  if [ -n "$STATUS_COUNTS" ]; then
+    echo "$STATUS_COUNTS" | while read -r line; do
+      [ -n "$line" ] && echo "- $line"
+    done
+  fi
   echo ""
 
   # Untested
