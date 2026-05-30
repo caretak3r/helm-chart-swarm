@@ -1,0 +1,7 @@
+---
+# Relax yamllint for auto-generated Kubernetes Secret manifests containing base64 blobs.
+extends: default
+
+rules:
+  line-length: disable
+  document-start: disable
