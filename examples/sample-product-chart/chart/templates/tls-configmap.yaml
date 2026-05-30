@@ -15,14 +15,16 @@ data:
         index index.html;
       }
     }
+    {{- if ne (.Values.tls.waitForCerts | toString) "false" }}
     server {
       listen {{ .Values.tls.servicePort }} ssl;
       server_name _;
-      ssl_certificate     /etc/tls/tls.crt;
-      ssl_certificate_key /etc/tls/tls.key;
+      ssl_certificate     {{ .Values.tls.mountPath | default "/etc/tls" }}/tls.crt;
+      ssl_certificate_key {{ .Values.tls.mountPath | default "/etc/tls" }}/tls.key;
       location / {
         root /usr/share/nginx/html;
         index index.html;
       }
     }
+    {{- end }}
 {{- end }}
