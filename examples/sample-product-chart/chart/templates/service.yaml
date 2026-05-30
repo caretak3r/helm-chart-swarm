@@ -8,7 +8,7 @@ spec:
     {{- include "sample-product.selectorLabels" . | nindent 4 }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: 80
+      targetPort: {{ .Values.service.targetPort | default 80 }}
       name: http
     {{- if .Values.tls.enabled }}
     - port: {{ .Values.tls.servicePort }}

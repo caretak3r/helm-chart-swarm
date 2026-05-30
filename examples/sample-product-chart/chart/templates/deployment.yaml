@@ -24,7 +24,7 @@ spec:
       {{- if ne (.Values.tls.waitForCerts | toString) "false" }}
       initContainers:
         - name: wait-for-tls
-          image: busybox:1.36
+          image: {{ .Values.tls.initContainerImage | default "busybox:1.36" | quote }}
           command:
             - sh
             - -c
@@ -43,7 +43,7 @@ spec:
         - name: app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: 80
+            - containerPort: {{ .Values.service.containerPort | default 80 }}
             {{- if .Values.tls.enabled }}
             - containerPort: {{ .Values.tls.servicePort }}
             {{- end }}
@@ -58,9 +58,9 @@ spec:
               readOnly: true
           {{- end }}
           readinessProbe:
-            httpGet: { path: /, port: 80 }
+            httpGet: { path: /, port: {{ .Values.service.containerPort | default 80 }} }
           livenessProbe:
-            httpGet: { path: /, port: 80 }
+            httpGet: { path: /, port: {{ .Values.service.containerPort | default 80 }} }
       {{- if .Values.tls.enabled }}
       {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
       {{- $volumeType := .Values.tls.volumeType | default "secret" }}
