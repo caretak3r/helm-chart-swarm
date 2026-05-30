@@ -13,6 +13,15 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}
+        {{- with .Values.policy.complianceLabels }}
+        {{- range $k, $v := . }}
+        {{ $k }}: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
+      {{- if .Values.mesh.inject }}
+      annotations:
+        sidecar.istio.io/inject: "true"
+      {{- end }}
     spec:
       {{- if .Values.tls.enabled }}
       {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
