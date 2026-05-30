@@ -5,7 +5,7 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   selector:
-    app: {{ .Release.Name }}
+    {{- include "sample-product.selectorLabels" . | nindent 4 }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: 80

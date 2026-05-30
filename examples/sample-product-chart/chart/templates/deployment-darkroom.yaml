@@ -4,7 +4,8 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-darkroom
   labels:
-    {{- include "sample-product.selectorLabels" . | nindent 4 }}
+    {{- include "sample-product.labels" . | nindent 4 }}
+    {{- include "sample-product.darkroomSelectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: darkroom
 spec:
   replicas: {{ .Values.darkroom.replicaCount }}
@@ -15,7 +16,8 @@ spec:
     metadata:
       labels:
         {{- include "sample-product.darkroomPodLabels" . | nindent 8 }}
-      {{- include "sample-product.meshAnnotations" . | nindent 6 }}
+      annotations:
+        {{- include "sample-product.meshAnnotations" . | nindent 8 }}
     spec:
       containers:
         - name: darkroom

@@ -119,6 +119,17 @@ if [ ! -s "$OUTPUT_CSV" ]; then
   echo "timestamp,scenario,status,duration_s,peak_memory_mb,artifacts_path" > "$OUTPUT_CSV"
 fi
 
+# ---- Pre-cleanup: sweep stale clusters from SIGKILL-interrupted prior runs ----
+echo "==> Pre-cleanup: checking for stale benchmark clusters..."
+STALE_CLUSTERS=$(kind get clusters 2>/dev/null | grep '^chart-test-swarm-bench-' || true)
+if [ -n "$STALE_CLUSTERS" ]; then
+  echo "==> Found stale benchmark clusters, cleaning up..."
+  for stale in $STALE_CLUSTERS; do
+    echo "==> Removing stale cluster: $stale"
+    kind delete cluster --name "$stale" 2>/dev/null || true
+  done
+fi
+
 # ---- Benchmark each scenario ----
 PASS_COUNT=0
 FAIL_COUNT=0
@@ -186,7 +197,8 @@ for SCENARIO_FILE in "${SCENARIO_FILES[@]}"; do
 
   # Record start timestamp (ISO 8601 UTC)
   TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  START_SEC=$(date +%s)
+  # Use python3 for sub-second precision (macOS date lacks %N)
+  START_TS=$(python3 -c 'import time; print(time.time())')
 
   # Run the scenario using /usr/bin/time -l for memory capture.
   # -o writes resource usage to TIME_LOG; child stdout+stderr go to SCENARIO_LOG.
@@ -202,8 +214,8 @@ for SCENARIO_FILE in "${SCENARIO_FILES[@]}"; do
         bash "$SCRIPT_DIR/run-scenario.sh" "$SCENARIO_FILE" \
     > "$SCENARIO_LOG" 2>&1 || RUN_EXIT=$?
 
-  END_SEC=$(date +%s)
-  DURATION=$((END_SEC - START_SEC))
+  END_TS=$(python3 -c 'import time; print(time.time())')
+  DURATION=$(python3 -c "print(f'{float(${END_TS}) - float(${START_TS}):.1f}')")
 
   # Parse peak memory from /usr/bin/time -l output
   PEAK_MEMORY_BYTES=$(parse_peak_memory_bytes "$TIME_LOG")
@@ -236,8 +248,12 @@ for SCENARIO_FILE in "${SCENARIO_FILES[@]}"; do
     ARTIFACTS_PATH="N/A"
   fi
 
-  # Append row to CSV
-  echo "${TIMESTAMP},${SCEN_ID},${STATUS},${DURATION},${PEAK_MEMORY_MB},${ARTIFACTS_PATH}" >> "$OUTPUT_CSV"
+  # Append row to CSV (properly quoted for fields with commas/special chars)
+  python3 -c "
+import csv, sys
+writer = csv.writer(sys.stdout, quoting=csv.QUOTE_MINIMAL)
+writer.writerow(['${TIMESTAMP//\'/\'\\\'\'}' ,'${SCEN_ID//\'/\'\\\'\'}' ,'${STATUS//\'/\'\\\'\'}' ,'${DURATION//\'/\'\\\'\'}' ,'${PEAK_MEMORY_MB//\'/\'\\\'\'}' ,'${ARTIFACTS_PATH//\'/\'\\\'\'}'])
+" >> "$OUTPUT_CSV"
 
   # Track counts
   if [ "$STATUS" = "PASS" ]; then

@@ -4,7 +4,8 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-scope
   labels:
-    {{- include "sample-product.selectorLabels" . | nindent 4 }}
+    {{- include "sample-product.labels" . | nindent 4 }}
+    {{- include "sample-product.scopeSelectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: scope
 spec:
   type: ClusterIP
