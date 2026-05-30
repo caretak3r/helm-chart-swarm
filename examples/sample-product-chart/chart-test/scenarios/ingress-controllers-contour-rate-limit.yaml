@@ -1,0 +1,44 @@
+---
+id: ingress-controllers-contour-rate-limit
+name: "Contour rate limit"
+description: "Installs Contour, creates an HTTPProxy with local rateLimitPolicy (5 req/min), and verifies that exceeding the limit produces 429 responses while requests within the limit succeed."
+labels: { customer: any, profile: ingress }
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: projectcontour/contour
+      version: "0.6.0"
+      release: contour
+      namespace: projectcontour
+      repo:
+        name: projectcontour
+        url: "https://projectcontour.github.io/helm-charts"
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: raw_manifest
+      path: chart-test/fixtures/ingress-controllers/contour-rate-limit-httpproxy.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    ingress.enabled: "false"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: pods-ready
+    namespace: projectcontour
+    timeout: 3m
+  - type: smoke-script
+    path: chart-test/assertions/contour-rate-limit.sh
+tags: [nightly]
+mechanisms: [addon:contour]
