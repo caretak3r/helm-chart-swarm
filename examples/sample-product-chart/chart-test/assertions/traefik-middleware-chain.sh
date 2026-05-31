@@ -41,11 +41,12 @@ TRAEFIK_IP=$(kctl -n "${TRAEFIK_NS}" get pod -l app.kubernetes.io/name=traefik -
 echo "Traefik pod IP: ${TRAEFIK_IP}"
 
 echo "==> Probing HTTP with Host header (expect 200 with X-Test header)"
-RESPONSE=$(kctl -n "${NS}" run ct-probe-mw --rm -i --restart=Never --quiet \
+RAW_RESPONSE=$(kctl -n "${NS}" run ct-probe-mw --rm -i --restart=Never --quiet \
   --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
   sh -c "curl -s -D - --max-time 15 \
     -H 'Host: ${HOST}' \
     'http://${TRAEFIK_IP}:8000/'" 2>/dev/null || echo "")
+RESPONSE="${RAW_RESPONSE}"
 
 HTTP_CODE=$(echo "${RESPONSE}" | head -1 | awk '{print $2}')
 echo "HTTP response code: ${HTTP_CODE}"

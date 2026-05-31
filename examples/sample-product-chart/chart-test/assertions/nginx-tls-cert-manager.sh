@@ -60,12 +60,13 @@ echo "NGINX pod IP: ${NGINX_IP}"
 CA_CRT_B64=$(kctl -n "${NS}" get secret "${SECRET_NAME}" -o jsonpath='{.data.ca\.crt}')
 
 echo "==> Probing HTTPS with --cacert (expect 200 with cert chain rooted at ClusterIssuer CA)"
-HTTP_CODE=$(kctl -n "${NS}" run ct-curl-tls --rm -i --restart=Never --quiet \
+RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-curl-tls --rm -i --restart=Never --quiet \
   --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
   sh -c "echo '${CA_CRT_B64}' | base64 -d > /tmp/ca.crt && \
     curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
     --resolve '${HOST}:443:${NGINX_IP}' \
     'https://${HOST}/'" 2>/dev/null || echo "000")
+HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
 
 echo "HTTPS response: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then

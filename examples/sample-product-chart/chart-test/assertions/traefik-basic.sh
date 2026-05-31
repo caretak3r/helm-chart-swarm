@@ -29,11 +29,12 @@ kctl -n "${NS}" get ingressroute sample-basic -o name || { echo "FAIL: IngressRo
 echo "PASS: IngressRoute sample-basic exists"
 
 echo "==> Probing HTTP with Host header (expect 200) on container port 8000"
-HTTP_CODE=$(kctl -n "${NS}" run ct-probe --rm -i --restart=Never --quiet \
+RAW_HTTP=$(kctl -n "${NS}" run ct-probe --rm -i --restart=Never --quiet \
   --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${HOST}" \
     "http://${TRAEFIK_IP}:8000/" 2>/dev/null || echo "000")
+HTTP_CODE=$(echo "${RAW_HTTP}" | grep -oE '[0-9]{3}' | tail -1)
 
 echo "HTTP response (with Host): ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
@@ -44,10 +45,11 @@ else
 fi
 
 echo "==> Probing HTTP without Host header (expect 404) on container port 8000"
-NO_HOST_CODE=$(kctl -n "${NS}" run ct-probe-no-host --rm -i --restart=Never --quiet \
+RAW_NO_HOST=$(kctl -n "${NS}" run ct-probe-no-host --rm -i --restart=Never --quiet \
   --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${TRAEFIK_IP}:8000/" 2>/dev/null || echo "000")
+NO_HOST_CODE=$(echo "${RAW_NO_HOST}" | grep -oE '[0-9]{3}' | tail -1)
 
 echo "HTTP response (without Host): ${NO_HOST_CODE}"
 if [ "${NO_HOST_CODE}" = "404" ]; then

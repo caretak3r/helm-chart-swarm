@@ -38,11 +38,12 @@ NGINX_IP=$(kctl -n "${NGINX_NS}" get pod -l app.kubernetes.io/name=ingress-nginx
 echo "NGINX pod IP: ${NGINX_IP}"
 
 echo "==> Probing HTTP with Host header (expect 200 with X-Test header)"
-RESPONSE=$(kctl -n "${NS}" run ct-probe-snip --rm -i --restart=Never --quiet \
+RAW_RESPONSE=$(kctl -n "${NS}" run ct-probe-snip --rm -i --restart=Never --quiet \
   --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
   sh -c "curl -s -D - --max-time 15 \
     -H 'Host: ${HOST}' \
     'http://${NGINX_IP}/'" 2>/dev/null || echo "")
+RESPONSE="${RAW_RESPONSE}"
 
 HTTP_CODE=$(echo "${RESPONSE}" | head -1 | awk '{print $2}')
 echo "HTTP response code: ${HTTP_CODE}"

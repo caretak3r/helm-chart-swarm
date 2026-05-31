@@ -29,10 +29,11 @@ NGINX_IP=$(kctl -n "${NGINX_NS}" get pod -l app.kubernetes.io/name=ingress-nginx
 echo "NGINX pod IP: ${NGINX_IP}"
 
 echo "==> Probing HTTP without Host header (should hit custom default backend)"
-BODY=$(kctl -n "${NS}" run ct-probe-def --rm -i --restart=Never --quiet \
+RAW_BODY=$(kctl -n "${NS}" run ct-probe-def --rm -i --restart=Never --quiet \
   --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
   curl -s --max-time 15 \
     "http://${NGINX_IP}/" 2>/dev/null || echo "")
+BODY="${RAW_BODY}"
 
 echo "Response body: '${BODY}'"
 
@@ -44,11 +45,12 @@ else
 fi
 
 echo "==> Verifying Host-matched request still reaches product Service"
-HTTP_CODE=$(kctl -n "${NS}" run ct-probe-host --rm -i --restart=Never --quiet \
+RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe-host --rm -i --restart=Never --quiet \
   --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: sample.test.local" \
     "http://${NGINX_IP}/" 2>/dev/null || echo "000")
+HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
 
 echo "HTTP response (with Host): ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
