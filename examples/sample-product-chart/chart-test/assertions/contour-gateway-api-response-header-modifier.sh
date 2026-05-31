@@ -89,7 +89,7 @@ else
 fi
 
 echo "==> Getting Envoy Service ClusterIP in ${NS}"
-GW_SVC_IP=$(kctl -n "${NS}" get svc -l gateway.networking.k8s.io/gateway-name=sample-gw -o jsonpath='{.items[0].spec.clusterIP}' 2>/dev/null)
+GW_SVC_IP=$(kctl -n "${NS}" get svc -l gateway.networking.k8s.io/gateway-name=sample-gw -o json 2>/dev/null | jq -r '.items[] | select(.spec.ports[].port == 80) | .spec.clusterIP')
 echo "Envoy Service IP: ${GW_SVC_IP}"
 
 echo "==> Probing backend via gateway (retry up to 2m for data-plane ready)"

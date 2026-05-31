@@ -98,6 +98,25 @@ Every Istio Gateway API scenario follows this pattern:
    - Probes the backend through the auto-provisioned data-plane Service.
    - Exits 0 (PASS) or non-zero (FAIL) with a diagnostic message.
 
+Example Gateway resource referencing the Istio GatewayClass:
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: sample-gw
+  namespace: sample
+spec:
+  gatewayClassName: istio
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+```
+
 ## Cluster preinstall
 
 ### istio/base helm chart

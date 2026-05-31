@@ -94,7 +94,7 @@ for i in $(seq 1 20); do
 done
 
 echo "==> Getting Envoy Service ClusterIP in ${NS}"
-GW_SVC_IP=$(kctl -n "${NS}" get svc -l gateway.networking.k8s.io/gateway-name=sample-gw -o jsonpath='{.items[0].spec.clusterIP}' 2>/dev/null)
+GW_SVC_IP=$(kctl -n "${NS}" get svc -l gateway.networking.k8s.io/gateway-name=sample-gw -o json 2>/dev/null | jq -r '.items[] | select(.spec.ports[].port == 80) | .spec.clusterIP')
 echo "Envoy Service IP: ${GW_SVC_IP}"
 
 echo "==> Test 1: /api/v2/foo → expect X-Route: v2 (more specific prefix wins)"

@@ -18,9 +18,7 @@ product:
   set:
     image.repository: "nginx"
     image.tag: "1.27-alpine"
-    gatewayRoute.enabled: "true"
-    gatewayRoute.parentRef.name: "sample-gw"
-    gatewayRoute.parentRef.sectionName: "http"
+    gatewayRoute.enabled: "false"
 asserts:
   - type: helm-status-deployed
     release: sample
