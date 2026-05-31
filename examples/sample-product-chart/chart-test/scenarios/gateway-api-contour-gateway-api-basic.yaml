@@ -1,0 +1,38 @@
+---
+id: gateway-api-contour-gateway-api-basic
+name: "Contour Gateway API Basic"
+description: "Installs Gateway API CRDs and Contour Gateway Provisioner, creates GatewayClass contour + Gateway + HTTPRoute, and verifies HTTP routing through the auto-provisioned Envoy proxy."
+labels: { customer: any, profile: gateway-api }
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: raw_manifest
+      path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+    - kind: raw_manifest
+      path: https://projectcontour.io/quickstart/contour-gateway-provisioner.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "nginx"
+    image.tag: "1.27-alpine"
+    gatewayRoute.enabled: "true"
+    gatewayRoute.parentRef.name: "sample-gw"
+    gatewayRoute.parentRef.sectionName: "http"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: projectcontour
+    selector: control-plane=contour-gateway-provisioner
+    timeout: 5m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/contour-gateway-api-basic.sh
+tags: [nightly]
+mechanisms: [addon:contour, gateway-api:contour]

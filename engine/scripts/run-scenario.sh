@@ -347,6 +347,37 @@ write_versions_json() {
 }
 write_versions_json || true
 
+# Capture Gateway API CRD version as an extension key in versions.json.
+# Detects installed CRDs from gateway.networking.k8s.io and merges a
+# gateway_api_crds key into the existing versions.json (preserving other keys).
+capture_gateway_crds_version() {
+  local _gw_crds=""
+  # Check if GatewayClass CRD exists (indicates Gateway API CRDs are installed)
+  if kubectl_ctx get crd gatewayclasses.gateway.networking.k8s.io >/dev/null 2>&1; then
+    # Try to extract the version from the CRD's stored generation or app label
+    _gw_crds=$(kubectl_ctx get crd gatewayclasses.gateway.networking.k8s.io \
+      -o jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' 2>/dev/null || echo "")
+    # Fallback: try annotations
+    if [ -z "$_gw_crds" ]; then
+      _gw_crds=$(kubectl_ctx get crd gatewayclasses.gateway.networking.k8s.io \
+        -o jsonpath='{.metadata.annotations.gateway\.networking\.k8s\.io/bundle-version}' 2>/dev/null || echo "")
+    fi
+    # Fallback: derive from the CRD apiVersion in its stored manifest
+    if [ -z "$_gw_crds" ]; then
+      local _api_ver
+      _api_ver=$(kubectl_ctx get crd gatewayclasses.gateway.networking.k8s.io \
+        -o jsonpath='{.spec.versions[0].name}' 2>/dev/null || echo "")
+      _gw_crds="$_api_ver"
+    fi
+    [ -z "$_gw_crds" ] && _gw_crds="v1"
+  fi
+  if [ -n "$_gw_crds" ] && [ -f "$ARTIFACTS_DIR/versions.json" ]; then
+    jq --arg val "$_gw_crds" '. + {gateway_api_crds: $val}' \
+      "$ARTIFACTS_DIR/versions.json" > "$ARTIFACTS_DIR/versions.json.tmp" \
+      && mv -f "$ARTIFACTS_DIR/versions.json.tmp" "$ARTIFACTS_DIR/versions.json"
+  fi
+}
+
 # Start result.yaml as we go so a crashed run still leaves breadcrumbs.
 {
   echo "scenario_id: $SCEN_ID"
@@ -516,6 +547,15 @@ capture_manifests() {
     done
   fi
 
+  # Capture Gateway API resources (cluster-scoped + namespace-scoped) — VAL-GW-020
+  if kubectl_ctx get crd gatewayclasses.gateway.networking.k8s.io >/dev/null 2>&1; then
+    kubectl_ctx get gatewayclasses -o yaml > "$out_dir/gatewayclasses.yaml" 2>/dev/null || true
+    kubectl_ctx get gateways -A -o yaml > "$out_dir/gateways.yaml" 2>/dev/null || true
+    kubectl_ctx get httproutes -A -o yaml > "$out_dir/httproutes.yaml" 2>/dev/null || true
+    kubectl_ctx get grpcroutes -A -o yaml > "$out_dir/grpcroutes.yaml" 2>/dev/null || true
+    kubectl_ctx get backendtlspolicies -A -o yaml > "$out_dir/backendtlspolicies.yaml" 2>/dev/null || true
+  fi
+
   # Remove empty/invalid YAML files
   for f in "$out_dir"/*.yaml "$out_dir"/**/*.yaml; do
     [ -f "$f" ] || continue
@@ -644,6 +684,9 @@ echo "==> Apply scenario preinstall"
 PROJECT_DIR="$PROJECT_DIR" bash "$SCRIPT_DIR/apply-scenario.sh" --preinstall-only "$SCENARIO" 2>&1 \
   | tee "$LOG_DIR/preinstall.log" \
   || fail preinstall "see $LOG_DIR/preinstall.log"
+
+# Capture Gateway API CRD version if preinstall installed them (VAL-GW-020)
+capture_gateway_crds_version || true
 
 # ---- 3. Install product chart ---------------------------------------------
 echo "==> Install product chart: $PRODUCT_RELEASE ($PRODUCT_CHART)"
