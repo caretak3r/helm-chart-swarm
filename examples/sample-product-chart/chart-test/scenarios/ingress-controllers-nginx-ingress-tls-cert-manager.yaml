@@ -22,7 +22,7 @@ cluster:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
     - kind: raw_manifest
-      path: chart-test/fixtures/certificates/sample-tls-certificate.yaml
+      path: chart-test/fixtures/certificates/ingress-tls-certificate.yaml
       namespace: sample
     - kind: helm
       chart: ingress-nginx/ingress-nginx

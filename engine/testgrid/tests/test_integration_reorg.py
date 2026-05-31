@@ -32,9 +32,9 @@ FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 # Expected mapping: category subdir → list of primer basenames.
 EXPECTED_LAYOUT: dict[str, list[str]] = {
     "certificates": ["cert-manager.md", "manual-tls-secret.md", "mounted-tls-certs.md"],
-    "ingress-controllers": ["traefik.md"],
+    "ingress-controllers": ["traefik.md", "nginx-ingress.md", "contour.md"],
     "service-mesh": ["istio-service-mesh.md", "istio-ingress-gateway.md"],
-    "gateway-api": ["gateway-api.md"],
+    "gateway-api": ["gateway-api.md", "envoy-gateway.md"],
     "policy": ["opa-gatekeeper.md"],
 }
 
@@ -62,9 +62,12 @@ class TestCategorySubdirs:
             ("certificates", "manual-tls-secret.md"),
             ("certificates", "mounted-tls-certs.md"),
             ("ingress-controllers", "traefik.md"),
+            ("ingress-controllers", "nginx-ingress.md"),
+            ("ingress-controllers", "contour.md"),
             ("service-mesh", "istio-service-mesh.md"),
             ("service-mesh", "istio-ingress-gateway.md"),
             ("gateway-api", "gateway-api.md"),
+            ("gateway-api", "envoy-gateway.md"),
             ("policy", "opa-gatekeeper.md"),
         ],
     )
@@ -95,9 +98,12 @@ class TestPrimerStructure:
             "certificates/manual-tls-secret.md",
             "certificates/mounted-tls-certs.md",
             "ingress-controllers/traefik.md",
+            "ingress-controllers/nginx-ingress.md",
+            "ingress-controllers/contour.md",
             "service-mesh/istio-service-mesh.md",
             "service-mesh/istio-ingress-gateway.md",
             "gateway-api/gateway-api.md",
+            "gateway-api/envoy-gateway.md",
             "policy/opa-gatekeeper.md",
         ],
     )
@@ -115,9 +121,12 @@ class TestPrimerStructure:
             "certificates/manual-tls-secret.md",
             "certificates/mounted-tls-certs.md",
             "ingress-controllers/traefik.md",
+            "ingress-controllers/nginx-ingress.md",
+            "ingress-controllers/contour.md",
             "service-mesh/istio-service-mesh.md",
             "service-mesh/istio-ingress-gateway.md",
             "gateway-api/gateway-api.md",
+            "gateway-api/envoy-gateway.md",
             "policy/opa-gatekeeper.md",
         ],
     )
@@ -139,9 +148,12 @@ class TestPrimerStructure:
             "certificates/manual-tls-secret.md",
             "certificates/mounted-tls-certs.md",
             "ingress-controllers/traefik.md",
+            "ingress-controllers/nginx-ingress.md",
+            "ingress-controllers/contour.md",
             "service-mesh/istio-service-mesh.md",
             "service-mesh/istio-ingress-gateway.md",
             "gateway-api/gateway-api.md",
+            "gateway-api/envoy-gateway.md",
             "policy/opa-gatekeeper.md",
         ],
     )
