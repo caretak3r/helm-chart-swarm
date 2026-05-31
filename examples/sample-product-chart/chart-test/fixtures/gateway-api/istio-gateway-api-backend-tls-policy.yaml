@@ -1,0 +1,17 @@
+---
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: BackendTLSPolicy
+metadata:
+  name: sample-backend-tls
+  namespace: sample
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: sample
+  validation:
+    caCertificateRefs:
+      - name: backend-ca-cert
+        group: ""
+        kind: ConfigMap
+    hostname: sample.sample.svc.cluster.local
