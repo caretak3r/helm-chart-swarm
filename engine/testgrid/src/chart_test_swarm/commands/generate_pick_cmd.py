@@ -3,6 +3,9 @@
 Picks a scenario YAML from (category, integration, variant) tuples by matching
 against the scenarios directory. Supports --category/--integration/--variant flags,
 stdin JSON/YAML feed, and --output for file capture.
+
+Adds ``generated_by`` provenance with ``by: pick``, no ``cmd``, and an
+ISO-8601 UTC timestamp.
 """
 
 from __future__ import annotations
@@ -11,6 +14,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import NoReturn
 
@@ -80,6 +84,7 @@ def generate_pick(  # noqa: PLR0913
     integration: str | None = None,
     variant: str | None = None,
     output: str | None = None,
+    force: bool = False,  # noqa: FBT001, FBT002
     non_interactive: bool = False,  # noqa: FBT001
     stdin_feed: str | None = None,
     scenarios_dir: str | None = None,
@@ -194,28 +199,55 @@ def generate_pick(  # noqa: PLR0913
     schema = _resolve_schema_path(schema_path)
     if schema.exists():
         # Prefer check-jsonschema (supports YAML natively); fall back to
-        # Python jsonschema library + PyYAML if check-jsonschema is not found.
-        result = subprocess.run(  # noqa: S603
-            [
-                "check-jsonschema",
-                "--schemafile",
-                str(schema),
-                str(scenario_path),
-            ],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            _die(
-                f"ERROR: selected scenario does not validate against schema:\n{result.stderr}",
-                code=6,
+        # skipping validation if check-jsonschema is not found.
+        try:
+            result = subprocess.run(  # noqa: S603
+                [
+                    "check-jsonschema",
+                    "--schemafile",
+                    str(schema),
+                    str(scenario_path),
+                ],
+                capture_output=True,
+                text=True,
             )
+            if result.returncode != 0:
+                _die(
+                    f"ERROR: selected scenario does not validate against schema:\n{result.stderr}",
+                    code=6,
+                )
+        except FileNotFoundError:
+            _debug("check-jsonschema not found; skipping schema validation")
     else:
         _debug(f"Schema not found at {schema}; skipping validation")
+
+    # ── add generated_by provenance ───────────────────────────────────────
+    import yaml as _yaml_lib  # noqa: PLC0415
+    try:
+        data = _yaml_lib.safe_load(scenario_yaml)
+        if isinstance(data, dict):
+            # Only add if not already present
+            if "generated_by" not in data:
+                data["generated_by"] = {
+                    "by": "pick",
+                    "timestamp": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                }
+            scenario_yaml = _yaml_lib.dump(
+                data, default_flow_style=False, sort_keys=False, allow_unicode=True
+            )
+    except Exception:
+        # If we can't parse YAML, emit as-is
+        pass
 
     # ── emit ───────────────────────────────────────────────────────────────
     if output:
         out_path = Path(output).resolve()
+        if out_path.exists() and out_path.stat().st_size > 0 and not force:
+            _die(
+                f"ERROR: {out_path} already exists.\n"
+                "  Use --force to overwrite.",
+                code=16,
+            )
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(scenario_yaml)
         print(f"Scenario written to {out_path}")
