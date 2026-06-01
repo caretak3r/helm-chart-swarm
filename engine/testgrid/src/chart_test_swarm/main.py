@@ -105,6 +105,12 @@ def run_cmd(
         metavar="NAME",
         help="Suite name defined in chart-test-swarm.yaml (default: pr-subset).",
     ),
+    include_cloud_native: bool = typer.Option(
+        False,
+        "--include-cloud-native",
+        help="Include cloud-native scenarios (gke/eks/aks). "
+        "Authored-only — no real cloud cluster operations are performed.",
+    ),
 ) -> None:
     """Run scenarios against a Kubernetes cluster.
 
@@ -129,6 +135,7 @@ def run_cmd(
         reports_dir=reports_dir,
         project_dir=project_dir,
         suite=suite,
+        include_cloud_native=include_cloud_native,
     )
 
 

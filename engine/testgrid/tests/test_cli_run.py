@@ -665,3 +665,176 @@ class TestEdgeCases:
         assert result.exit_code == 0, (
             f"exit_code={result.exit_code}\nstdout={result.stdout}\nstderr={result.stderr}"
         )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# VAL-CLOUD-015: --include-cloud-native flag
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestIncludeCloudNative:
+    """VAL-CLOUD-015: --include-cloud-native flag maps to CTS_INCLUDE_CLOUD_NATIVE=1."""
+
+    def test_help_shows_include_cloud_native(self) -> None:
+        """run --help shows --include-cloud-native flag."""
+        result = runner.invoke(app, ["run", "--help"])
+        assert result.exit_code == 0, f"exit_code={result.exit_code}, stderr={result.stderr}"
+        assert "--include-cloud-native" in result.stdout, (
+            f"Expected '--include-cloud-native' in help output:\n{result.stdout}"
+        )
+
+    def test_flag_sets_env_var(self, tmp_path: Path) -> None:
+        """--include-cloud-native sets CTS_INCLUDE_CLOUD_NATIVE=1 in subprocess env."""
+        _write_stub(
+            tmp_path,
+            "dispatch-swarm.sh",
+            dedent("""\
+                #!/usr/bin/env bash
+                echo "CTS_INCLUDE_CLOUD_NATIVE=${CTS_INCLUDE_CLOUD_NATIVE:-unset}"
+                echo "RUN_ID=run-stub"
+                exit 0
+            """),
+        )
+
+        scn = _scenario_yaml(tmp_path, "test-scenario.yaml")
+        env = _add_to_path(tmp_path)
+        env["CTS_ENGINE_SCRIPTS_DIR"] = str(tmp_path)
+
+        result = runner.invoke(
+            app,
+            [
+                "run",
+                "--scenario",
+                str(scn),
+                "--include-cloud-native",
+                "--project-dir",
+                str(tmp_path),
+            ],
+            env=env,
+        )
+        assert result.exit_code == 0, f"stderr: {result.stderr}"
+        assert "CTS_INCLUDE_CLOUD_NATIVE=1" in result.stdout, (
+            f"Expected CTS_INCLUDE_CLOUD_NATIVE=1 in output:\n{result.stdout}"
+        )
+
+    def test_flag_default_is_zero(self, tmp_path: Path) -> None:
+        """Default (flag not set) → CTS_INCLUDE_CLOUD_NATIVE=0."""
+        _write_stub(
+            tmp_path,
+            "dispatch-swarm.sh",
+            dedent("""\
+                #!/usr/bin/env bash
+                echo "CTS_INCLUDE_CLOUD_NATIVE=${CTS_INCLUDE_CLOUD_NATIVE:-unset}"
+                echo "RUN_ID=run-stub"
+                exit 0
+            """),
+        )
+
+        scn = _scenario_yaml(tmp_path, "test-scenario.yaml")
+        env = _add_to_path(tmp_path)
+        env["CTS_ENGINE_SCRIPTS_DIR"] = str(tmp_path)
+
+        result = runner.invoke(
+            app,
+            [
+                "run",
+                "--scenario",
+                str(scn),
+                "--project-dir",
+                str(tmp_path),
+            ],
+            env=env,
+        )
+        assert result.exit_code == 0, f"stderr: {result.stderr}"
+        assert "CTS_INCLUDE_CLOUD_NATIVE=0" in result.stdout, (
+            f"Expected CTS_INCLUDE_CLOUD_NATIVE=0 in output:\n{result.stdout}"
+        )
+
+    def test_debug_trace_shows_include_cloud_native(self, tmp_path: Path) -> None:
+        """CTS_DEBUG=1 trace shows CTS_INCLUDE_CLOUD_NATIVE=1 when flag is set."""
+        _write_stub(
+            tmp_path,
+            "dispatch-swarm.sh",
+            dedent("""\
+                #!/usr/bin/env bash
+                echo "RUN_ID=run-stub"
+                exit 0
+            """),
+        )
+
+        scn = _scenario_yaml(tmp_path, "test-scenario.yaml")
+        env = _add_to_path(tmp_path)
+        env["CTS_ENGINE_SCRIPTS_DIR"] = str(tmp_path)
+        env["CTS_DEBUG"] = "1"
+
+        result = runner.invoke(
+            app,
+            [
+                "run",
+                "--scenario",
+                str(scn),
+                "--include-cloud-native",
+                "--project-dir",
+                str(tmp_path),
+            ],
+            env=env,
+        )
+        assert result.exit_code == 0, f"stderr: {result.stderr}"
+        assert "CTS_INCLUDE_CLOUD_NATIVE=1" in result.stderr, (
+            f"Expected CTS_INCLUDE_CLOUD_NATIVE=1 in debug trace (stderr):\n{result.stderr}"
+        )
+
+    def test_flag_to_env_includes_include_cloud_native(self) -> None:
+        """FLAG_TO_ENV mapping includes --include-cloud-native → CTS_INCLUDE_CLOUD_NATIVE."""
+        from chart_test_swarm.flags import FLAG_TO_ENV
+
+        assert "include_cloud_native" in FLAG_TO_ENV, (
+            "Missing 'include_cloud_native' key in FLAG_TO_ENV"
+        )
+        assert FLAG_TO_ENV["include_cloud_native"] == "CTS_INCLUDE_CLOUD_NATIVE", (
+            f"Expected 'CTS_INCLUDE_CLOUD_NATIVE', got '{FLAG_TO_ENV['include_cloud_native']}'"
+        )
+
+    def test_all_flags_including_cloud_native(self, tmp_path: Path) -> None:
+        """--include-cloud-native can be combined with other flags."""
+        _write_stub(
+            tmp_path,
+            "dispatch-swarm.sh",
+            dedent("""\
+                #!/usr/bin/env bash
+                echo "CTS_INCLUDE_CLOUD_NATIVE=${CTS_INCLUDE_CLOUD_NATIVE:-unset}"
+                echo "RUN_ID=run-stub"
+                exit 0
+            """),
+        )
+
+        scn = _scenario_yaml(tmp_path, "test-scenario.yaml")
+        env = _add_to_path(tmp_path)
+        env["CTS_ENGINE_SCRIPTS_DIR"] = str(tmp_path)
+
+        result = runner.invoke(
+            app,
+            [
+                "run",
+                "--scenario",
+                str(scn),
+                "--backend",
+                "kind",
+                "--parallelism",
+                "2",
+                "--cluster-name",
+                "chart-test-swarm-cloud1",
+                "--run-id",
+                "run-cloud-test",
+                "--suite",
+                "all",
+                "--include-cloud-native",
+                "--project-dir",
+                str(tmp_path),
+            ],
+            env=env,
+        )
+        assert result.exit_code == 0, (
+            f"exit_code={result.exit_code}\nstdout={result.stdout}\nstderr={result.stderr}"
+        )
+        assert "CTS_INCLUDE_CLOUD_NATIVE=1" in result.stdout

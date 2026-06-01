@@ -30,6 +30,7 @@ FLAG_TO_ENV: Final[dict[str, str]] = {
     "reports_dir": "REPORTS_DIR",
     "project_dir": "PROJECT_DIR",
     "suite": "SUITE",
+    "include_cloud_native": "CTS_INCLUDE_CLOUD_NATIVE",
 }
 
 # ── Supported backends (must match the schema enum) ─────────────────────────

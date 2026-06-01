@@ -204,6 +204,7 @@ def _build_env(
     reports_dir: str | None,
     project_dir: Path,
     suite: str | None,
+    include_cloud_native: bool = False,
 ) -> dict[str, str]:
     """Build the environment dict for the subprocess call.
 
@@ -216,6 +217,7 @@ def _build_env(
     env["CLUSTER_NAME"] = cluster_name
     env["RUN_ID"] = run_id
     env["PROJECT_DIR"] = str(project_dir)
+    env["CTS_INCLUDE_CLOUD_NATIVE"] = "1" if include_cloud_native else "0"
     if suite:
         env["SUITE"] = suite
     if reports_dir:
@@ -226,6 +228,7 @@ def _build_env(
     _debug(f"CLUSTER_NAME={env['CLUSTER_NAME']}")
     _debug(f"RUN_ID={env['RUN_ID']}")
     _debug(f"PROJECT_DIR={env['PROJECT_DIR']}")
+    _debug(f"CTS_INCLUDE_CLOUD_NATIVE={env['CTS_INCLUDE_CLOUD_NATIVE']}")
     if suite:
         _debug(f"SUITE={env['SUITE']}")
     if reports_dir:
@@ -245,6 +248,7 @@ def _call_dispatch(
     reports_dir: str | None,
     project_dir: Path,
     suite: str | None,
+    include_cloud_native: bool = False,
 ) -> int:
     """Call ``dispatch-swarm.sh`` via subprocess.
 
@@ -260,6 +264,7 @@ def _call_dispatch(
         reports_dir=reports_dir,
         project_dir=project_dir,
         suite=suite,
+        include_cloud_native=include_cloud_native,
     )
 
     # Pass scenario list via CTS_SCENARIOS (newline-separated)
@@ -312,6 +317,7 @@ def run(
     reports_dir: str | None = None,
     project_dir: str | None = None,
     suite: str | None = None,
+    include_cloud_native: bool = False,
 ) -> None:
     """Run scenarios against a Kubernetes cluster.
 
@@ -363,6 +369,7 @@ def run(
         reports_dir=reports_dir,
         project_dir=resolved_project_dir,
         suite=suite,
+        include_cloud_native=include_cloud_native,
     )
 
     # ── 4. Emit RUN_ID as last line of stdout (VAL-CLI-018) ─────────────
