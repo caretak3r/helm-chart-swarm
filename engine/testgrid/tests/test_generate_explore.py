@@ -682,7 +682,9 @@ class TestExploreGeneratedBy:
         assert "explore" in scenario_yaml, (
             f"Expected 'explore' value for by:\n{scenario_yaml[:500]}"
         )
-        assert "cmd:" in scenario_yaml, f"Expected 'cmd:' field:\n{scenario_yaml[:500]}"
+        assert "skill_version:" in scenario_yaml, (
+            f"Expected 'skill_version:' field:\n{scenario_yaml[:500]}"
+        )
 
 
 # ---------------------------------------------------------------------------

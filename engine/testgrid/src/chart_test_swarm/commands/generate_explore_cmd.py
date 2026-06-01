@@ -201,8 +201,8 @@ def _add_generated_by(
     result = dict(data)
     result["generated_by"] = {
         "by": by_mode,
-        "cmd": llm_cmd_str,
-        "timestamp": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "skill_version": llm_cmd_str,
+        "at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
     return result
 
@@ -371,9 +371,7 @@ def _format_result_summary(result: dict[str, object]) -> str:
             sstatus = scn.get("status", "UNKNOWN")
             npass = scn.get("assertions_pass", 0)
             nfail = scn.get("assertions_fail", 0)
-            summary_lines.append(
-                f"  Scenario {sid}: {sstatus} ({npass} PASS / {nfail} FAIL)"
-            )
+            summary_lines.append(f"  Scenario {sid}: {sstatus} ({npass} PASS / {nfail} FAIL)")
     return "\n".join(summary_lines)
 
 
@@ -383,9 +381,7 @@ def _format_result_summary(result: dict[str, object]) -> str:
 def _write_summary(summary_records: list[dict[str, object]], output: Path) -> None:
     """Write the summary records as JSON to *output*."""
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(summary_records, indent=2, default=str) + "\n"
-    )
+    output.write_text(json.dumps(summary_records, indent=2, default=str) + "\n")
 
 
 # ── output emission ──────────────────────────────────────────────────────
@@ -401,8 +397,7 @@ def _check_output_overwrite(output: str | None, force: bool) -> None:
     out_path = Path(output).resolve()
     if out_path.exists() and out_path.stat().st_size > 0 and not force:
         _die(
-            f"ERROR: {out_path} already exists.\n"
-            "  Use --force to overwrite.",
+            f"ERROR: {out_path} already exists.\n  Use --force to overwrite.",
             code=16,
         )
 
@@ -599,9 +594,7 @@ def generate_explore(  # noqa: PLR0913, PLR0912, PLR0915
             if run_result.returncode == 0:
                 # Extract run_id from stdout
                 stdout_lines = [
-                    line.strip()
-                    for line in run_result.stdout.split("\n")
-                    if line.strip()
+                    line.strip() for line in run_result.stdout.split("\n") if line.strip()
                 ]
                 run_id = stdout_lines[-1] if stdout_lines else None
                 if run_id and run_id.startswith("run-"):
@@ -619,8 +612,7 @@ def generate_explore(  # noqa: PLR0913, PLR0912, PLR0915
             else:
                 run_status = "RUN_FAILED"
                 prior_result_summary = (
-                    f"Run failed (exit {run_result.returncode}): "
-                    f"{run_result.stderr[:200]}"
+                    f"Run failed (exit {run_result.returncode}): {run_result.stderr[:200]}"
                 )
 
             scenario_id = str(data.get("id", f"explore-iter{iteration}"))
@@ -639,8 +631,7 @@ def generate_explore(  # noqa: PLR0913, PLR0912, PLR0915
 
             status_icon = "✓" if run_status in ("PASS", "RUN_DISPATCHED") else "✗"
             print(
-                f"Iteration {iteration}: {status_icon} {run_status} "
-                f"(run_id={run_id or 'N/A'})",
+                f"Iteration {iteration}: {status_icon} {run_status} (run_id={run_id or 'N/A'})",
                 file=sys.stderr,
             )
 
@@ -708,14 +699,16 @@ def _build_prompt(
     ]
 
     if prior_result:
-        lines.extend([
-            "",
-            "─── Prior iteration result ───",
-            prior_result,
-            "",
-            "Use this result to refine your next proposal. "
-            "If the prior run PASSED, try a different integration combination. "
-            "If it FAILED, propose a fix or a different approach.",
-        ])
+        lines.extend(
+            [
+                "",
+                "─── Prior iteration result ───",
+                prior_result,
+                "",
+                "Use this result to refine your next proposal. "
+                "If the prior run PASSED, try a different integration combination. "
+                "If it FAILED, propose a fix or a different approach.",
+            ]
+        )
 
     return "\n".join(lines)

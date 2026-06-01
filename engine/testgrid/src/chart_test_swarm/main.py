@@ -402,13 +402,88 @@ def generate_author(
 
 
 @generate_app.command(name="explore")
-def generate_explore() -> None:
+def generate_explore(
+    chart: str = typer.Option(
+        ...,
+        "--chart",
+        metavar="PATH",
+        help="Path to the Helm chart directory.",
+    ),
+    integrations: str = typer.Option(
+        ...,
+        "--integrations",
+        "-i",
+        metavar="NAMES",
+        help="Comma-separated integration names to explore (e.g. cert-manager,istio).",
+    ),
+    max_iterations: int = typer.Option(
+        3,
+        "--max-iterations",
+        metavar="N",
+        help="Maximum number of exploration iterations (default: 3).",
+    ),
+    budget: float | None = typer.Option(
+        None,
+        "--budget",
+        metavar="USD",
+        help="Halt exploration when cumulative LLM cost exceeds this budget.",
+    ),
+    output: str | None = typer.Option(
+        None,
+        "--output",
+        "-o",
+        metavar="PATH",
+        help="Write the exploration summary JSON to this file.",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Overwrite the output file if it already exists.",
+    ),
+    timeout: int = typer.Option(
+        120,
+        "--timeout",
+        metavar="SECONDS",
+        help="Timeout in seconds for each LLM invocation (default: 120).",
+    ),
+    run_timeout: int = typer.Option(
+        600,
+        "--run-timeout",
+        metavar="SECONDS",
+        help="Timeout in seconds for each scenario run (default: 600).",
+    ),
+) -> None:
     """Iteratively explore and test scenario combinations via LLM.
 
-    (Stub — full implementation in F10.3.)
+    Shells out to ``CTS_LLM_CMD`` to propose scenario combos, validates each
+    against the schema and cluster-name prefix, runs validated combos via
+    ``CTS_RUN_CMD``, feeds results back to the LLM, and emits an
+    incremental summary report. Bounded by ``--max-iterations`` and ``--budget``.
+
+    \b
+    Examples:
+        chart-test-swarm generate explore \\
+            --chart ./chart --integrations cert-manager
+        chart-test-swarm generate explore \\
+            --chart ./chart -i cert-manager,istio --max-iterations 5
+        chart-test-swarm generate explore \\
+            --chart ./chart -i cert-manager --budget 2.00 --output /tmp/summary.json
     """
-    print("generate explore: stub — F10.3 will implement iterative exploration", file=sys.stderr)
-    raise typer.Exit(code=1)
+    from chart_test_swarm.commands.generate_explore_cmd import (
+        generate_explore as _generate_explore_impl,
+    )
+
+    _generate_explore_impl(
+        chart=chart,
+        integrations=integrations,
+        max_iterations=max_iterations,
+        budget=budget,
+        output=output,
+        force=force,
+        timeout=timeout,
+        run_timeout=run_timeout,
+    )
 
 
 # -- register sub-apps -------------------------------------------------------

@@ -4,8 +4,8 @@ Picks a scenario YAML from (category, integration, variant) tuples by matching
 against the scenarios directory. Supports --category/--integration/--variant flags,
 stdin JSON/YAML feed, and --output for file capture.
 
-Adds ``generated_by`` provenance with ``by: pick``, no ``cmd``, and an
-ISO-8601 UTC timestamp.
+Adds ``generated_by`` provenance with ``by: pick`` and an
+ISO-8601 UTC ``at`` timestamp.
 """
 
 from __future__ import annotations
@@ -223,6 +223,7 @@ def generate_pick(  # noqa: PLR0913
 
     # ── add generated_by provenance ───────────────────────────────────────
     import yaml as _yaml_lib  # noqa: PLC0415
+
     try:
         data = _yaml_lib.safe_load(scenario_yaml)
         if isinstance(data, dict):
@@ -230,7 +231,7 @@ def generate_pick(  # noqa: PLR0913
             if "generated_by" not in data:
                 data["generated_by"] = {
                     "by": "pick",
-                    "timestamp": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    "at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 }
             scenario_yaml = _yaml_lib.dump(
                 data, default_flow_style=False, sort_keys=False, allow_unicode=True
@@ -244,8 +245,7 @@ def generate_pick(  # noqa: PLR0913
         out_path = Path(output).resolve()
         if out_path.exists() and out_path.stat().st_size > 0 and not force:
             _die(
-                f"ERROR: {out_path} already exists.\n"
-                "  Use --force to overwrite.",
+                f"ERROR: {out_path} already exists.\n  Use --force to overwrite.",
                 code=16,
             )
         out_path.parent.mkdir(parents=True, exist_ok=True)

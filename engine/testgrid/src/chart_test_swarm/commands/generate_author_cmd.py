@@ -160,13 +160,10 @@ def _try_parse_yaml(raw: str) -> tuple[dict[str, object] | None, str | None]:
         data = yaml.safe_load(raw)
     except yaml.YAMLError as exc:
         return None, (
-            f"LLM output is invalid YAML: {exc}\n\n"
-            "The LLM did not return parseable YAML."
+            f"LLM output is invalid YAML: {exc}\n\nThe LLM did not return parseable YAML."
         )
     if not isinstance(data, dict):
-        return None, (
-            f"LLM output is not a YAML mapping (got {type(data).__name__})."
-        )
+        return None, (f"LLM output is not a YAML mapping (got {type(data).__name__}).")
     return data, None
 
 
@@ -176,15 +173,16 @@ def _try_parse_yaml(raw: str) -> tuple[dict[str, object] | None, str | None]:
 def _add_generated_by(data: dict[str, object]) -> dict[str, object]:
     """Add ``generated_by`` provenance to the scenario data.
 
-    Uses ``by``, ``cmd`` (resolved CTS_LLM_CMD), and ``timestamp`` (ISO-8601 UTC).
+    Uses ``by``, ``skill_version`` (resolved CTS_LLM_CMD), and ``at`` (ISO-8601 UTC).
+    Schema requires: ``by``, ``integration`` (optional), ``at``, ``skill_version`` (optional).
     Returns a new dict (does not mutate *data* in place).
     """
     result = dict(data)
     llm_cmd_str = os.environ.get("CTS_LLM_CMD", "droid")
     result["generated_by"] = {
         "by": "author",
-        "cmd": llm_cmd_str,
-        "timestamp": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "skill_version": llm_cmd_str,
+        "at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
     return result
 
@@ -253,8 +251,7 @@ def _emit_yaml(
         out_path = Path(output).resolve()
         if out_path.exists() and out_path.stat().st_size > 0 and not force:
             _die(
-                f"ERROR: {out_path} already exists.\n"
-                "  Use --force to overwrite.",
+                f"ERROR: {out_path} already exists.\n  Use --force to overwrite.",
                 code=16,
             )
         out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -351,8 +348,7 @@ def generate_author(  # noqa: PLR0913
             _debug(f"YAML parse failed on attempt {attempt}: {yaml_error}")
             if attempt < max_retries:
                 print(
-                    f"LLM output is not valid YAML (attempt {attempt}/{max_retries}) "
-                    "— retrying...",
+                    f"LLM output is not valid YAML (attempt {attempt}/{max_retries}) — retrying...",
                     file=sys.stderr,
                 )
             continue
@@ -361,9 +357,7 @@ def generate_author(  # noqa: PLR0913
 
         # 3c. Add provenance and validate against schema
         data = _add_generated_by(data)
-        yaml_text = yaml.dump(
-            data, default_flow_style=False, sort_keys=False, allow_unicode=True
-        )
+        yaml_text = yaml.dump(data, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
         is_valid, schema_error = _validate_against_schema(yaml_text)
         if is_valid:
@@ -391,7 +385,6 @@ def generate_author(  # noqa: PLR0913
         _die(f"ERROR: {last_error}", code=18)
     else:
         _die(
-            f"ERROR: Failed to produce a schema-valid scenario after "
-            f"{max_retries} attempt(s).",
+            f"ERROR: Failed to produce a schema-valid scenario after {max_retries} attempt(s).",
             code=19,
         )

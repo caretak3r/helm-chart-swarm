@@ -533,10 +533,10 @@ class TestAuthorGeneratedBy:
         assert "by: author" in result.stdout, (
             f"Expected generated_by.by=author:\n{result.stdout[:500]}"
         )
-        assert "cmd:" in result.stdout, f"Expected generated_by.cmd:\n{result.stdout[:500]}"
-        assert "timestamp:" in result.stdout, (
-            f"Expected generated_by.timestamp:\n{result.stdout[:500]}"
+        assert "skill_version:" in result.stdout, (
+            f"Expected generated_by.skill_version:\n{result.stdout[:500]}"
         )
+        assert "at:" in result.stdout, f"Expected generated_by.at:\n{result.stdout[:500]}"
 
 
 # ---------------------------------------------------------------------------
