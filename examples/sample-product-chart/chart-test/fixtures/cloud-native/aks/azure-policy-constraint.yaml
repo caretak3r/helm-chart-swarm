@@ -1,0 +1,48 @@
+# AKS Azure Policy: ConstraintTemplate and Constraint for requiring
+# specific labels on namespaces. This is a reference fixture; Azure
+# Policy for AKS uses the Gatekeeper v3 ConstraintTemplate format.
+# chart-test-swarm/target-k8s-version: aks-1.30
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sazurerequiredlabels
+  annotations:
+    description: "Requires specific labels on all namespaces."
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAzureRequiredLabels
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            labels:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sazurerequiredlabels
+        violation[{"msg": msg}] {
+          provided := {label | input.review.object.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("missing required labels: %v", [missing])
+        }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureRequiredLabels
+metadata:
+  name: chart-test-swarm-azure-policy-required-labels
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Namespace"]
+  parameters:
+    labels:
+      - "<REPLACE_WITH_REQUIRED_LABEL>"

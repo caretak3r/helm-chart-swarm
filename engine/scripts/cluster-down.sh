@@ -81,6 +81,11 @@ case "$PROVIDER" in
     fi
     ;;
 
+  gke|eks|aks)
+    echo "==> Cloud-native provider '$PROVIDER' — authored only; skipping cluster teardown (no local cluster to remove)." >&2
+    exit 0
+    ;;
+
   *)
     echo "ERROR: unknown PROVIDER='$PROVIDER' (supported: kind, minikube, k3d)" >&2
     exit 1

@@ -109,6 +109,55 @@ if [ "$COUNT" -eq 0 ]; then
 fi
 echo "==> Suite '$SUITE' matched $COUNT scenario(s); dispatching to $NUM_AGENTS agent(s)"
 
+# ---- Cloud-native authored-only guard (VAL-CLOUD-012) ----
+# Cloud-native scenarios (gke, eks, aks) are authored only — they must NOT
+# trigger any cluster operations, cloud CLI calls, or kubectl --context.
+# Filter them out unless CTS_INCLUDE_CLOUD_NATIVE=1 is set.
+CLOUD_PROVIDERS='gke\|eks\|aks'
+_LOCAL_ONLY=()
+_CLOUD_SKIPPED=()
+_CLOUD_INCLUDE="${CTS_INCLUDE_CLOUD_NATIVE:-0}"
+
+for f in "${MATCHED[@]}"; do
+  _prov=$(yq '.cluster.provider // ""' "$f")
+  if echo "$_prov" | grep -qE "$CLOUD_PROVIDERS"; then
+    if [ "$_CLOUD_INCLUDE" = "1" ]; then
+      _LOCAL_ONLY+=("$f")
+      echo "  (authored-only) $f" >&2
+    else
+      _CLOUD_SKIPPED+=("$f")
+    fi
+  else
+    _LOCAL_ONLY+=("$f")
+  fi
+done
+
+# If ALL matched scenarios are cloud-native and not explicitly included,
+# emit the skip message and exit 0 — do not start any cluster ops.
+if [ "${#_CLOUD_SKIPPED[@]}" -gt 0 ] && [ "${#_LOCAL_ONLY[@]}" -eq "${#_CLOUD_SKIPPED[@]}" ]; then
+  echo "==> All ${#_CLOUD_SKIPPED[@]} matched scenario(s) are cloud-native — authored only; skipping cluster operations." >&2
+  echo "    Re-run with CTS_INCLUDE_CLOUD_NATIVE=1 to include them (note: they will still be" >&2
+  echo "    authored only — no real GKE/EKS/AKS cluster operations are invoked)." >&2
+  exit 0
+fi
+
+# If some cloud-native scenarios were skipped, note it
+if [ "${#_CLOUD_SKIPPED[@]}" -gt 0 ]; then
+  echo "==> Skipped ${#_CLOUD_SKIPPED[@]} cloud-native scenario(s) (authored only)." >&2
+  echo "    Re-run with CTS_INCLUDE_CLOUD_NATIVE=1 to include them in the dispatch." >&2
+fi
+
+# Replace MATCHED with local-only scenarios (plus cloud-native if opted in)
+MATCHED=("${_LOCAL_ONLY[@]}")
+COUNT=${#MATCHED[@]}
+
+if [ "$COUNT" -eq 0 ]; then
+  echo "==> No local-backend scenarios to dispatch after filtering cloud-native." >&2
+  exit 0
+fi
+
+echo "==> $COUNT local-backend scenario(s) will be dispatched."
+
 # Reports root: explicit env > project's chart-test/reports > engine root reports
 if [ -n "${REPORTS_DIR:-}" ]; then
   _REPORTS_ROOT="$REPORTS_DIR"

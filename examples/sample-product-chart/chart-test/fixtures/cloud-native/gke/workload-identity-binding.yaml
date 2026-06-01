@@ -1,0 +1,12 @@
+# GKE Workload Identity: Kubernetes ServiceAccount with GCP IAM binding.
+# Apply this to your GKE cluster after creating the GCP service account
+# and IAM policy binding described in the GKE primer.
+# chart-test-swarm/target-k8s-version: gke-1.30
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: chart-test-swarm-gke-sa
+  namespace: <REPLACE_WITH_NAMESPACE>
+  annotations:
+    iam.gke.io/gcp-service-account: "<REPLACE_WITH_GCP_SA_EMAIL>"

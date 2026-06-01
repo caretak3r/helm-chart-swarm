@@ -1,0 +1,12 @@
+# AKS Workload Identity: Kubernetes ServiceAccount with Azure AD
+# workload identity client ID annotation.
+# Requires Azure AD application registration and federated credential.
+# chart-test-swarm/target-k8s-version: aks-1.30
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: chart-test-swarm-aks-sa
+  namespace: <REPLACE_WITH_NAMESPACE>
+  annotations:
+    azure.workload.identity/client-id: "<REPLACE_WITH_AZURE_CLIENT_ID>"

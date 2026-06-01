@@ -1,0 +1,52 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, kubeval, yamllint.
+# Apply to your own EKS cluster per the EKS primer instructions.
+---
+id: cloud-native-eks-alb-ingress
+name: "EKS ALB Ingress Controller"
+description: "AWS Load Balancer Controller provisions an Application Load Balancer from a Kubernetes Ingress with ALB annotations; smoke-script curls the ALB DNS name over HTTPS."
+labels:
+  customer: any
+  profile: eks
+  chart-test-swarm/target-k8s-version: eks-1.30
+cluster:
+  provider: eks
+  k8s_version: "1.30"
+  preinstall:
+    - kind: helm
+      repo:
+        name: eks
+        url: https://aws.github.io/eks-charts
+      chart: aws-load-balancer-controller
+      version: "1.8.0"
+      release: aws-load-balancer-controller
+      namespace: kube-system
+      values:
+        clusterName: "<REPLACE_WITH_CLUSTER_NAME>"
+        serviceAccount:
+          create: true
+          name: aws-load-balancer-controller
+          annotations:
+            eks.amazonaws.com/role-arn: "<REPLACE_WITH_LBC_ROLE_ARN>"
+      wait: pods-ready
+      wait_timeout: 5m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    eks.loadBalancerController.enabled: "true"
+    eks.loadBalancerController.certificateArn: "<REPLACE_WITH_ACM_CERT_ARN>"
+    eks.loadBalancerController.scheme: "internet-facing"
+    ingress.enabled: "true"
+    ingress.className: "alb"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/cloud-native/eks/alb-ingress.sh
+tags: [cloud-native]
+mechanisms: [cloud:eks, addon:alb-ingress]

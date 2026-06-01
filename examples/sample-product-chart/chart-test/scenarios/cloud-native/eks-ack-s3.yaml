@@ -1,0 +1,51 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, kubeval, yamllint.
+# Apply to your own EKS cluster per the EKS primer instructions.
+---
+id: cloud-native-eks-ack-s3
+name: "EKS ACK (AWS Controllers for Kubernetes) S3"
+description: "ACK S3 controller reconciles a Bucket CR into a real S3 bucket; smoke-script puts and gets an object via IRSA-authenticated S3 API."
+labels:
+  customer: any
+  profile: eks
+  chart-test-swarm/target-k8s-version: eks-1.30
+cluster:
+  provider: eks
+  k8s_version: "1.30"
+  preinstall:
+    - kind: helm
+      repo:
+        name: ack
+        url: https://aws-controllers-k8s.github.io/community
+      chart: oci://public.ecr.aws/aws-controllers-k8s/s3-chart
+      version: "1.0.0"
+      release: ack-s3-controller
+      namespace: ack-system
+      values:
+        aws:
+          region: "<REPLACE_WITH_AWS_REGION>"
+        serviceAccount:
+          annotations:
+            eks.amazonaws.com/role-arn: "<REPLACE_WITH_ACK_S3_ROLE_ARN>"
+      wait: pods-ready
+      wait_timeout: 5m
+    - kind: raw_manifest
+      path: chart-test/fixtures/cloud-native/eks/ack-s3-bucket.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    eks.ack.enabled: "true"
+    eks.ack.rdsInstanceIdentifier: "<REPLACE_WITH_DB_IDENTIFIER>"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/cloud-native/eks/ack-s3.sh
+tags: [cloud-native]
+mechanisms: [cloud:eks, addon:ack-s3]

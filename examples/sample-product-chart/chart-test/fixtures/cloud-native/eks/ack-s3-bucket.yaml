@@ -1,0 +1,11 @@
+# EKS ACK S3: Bucket custom resource managed by the ACK S3 controller.
+# The controller reconciles this into a real S3 bucket.
+# chart-test-swarm/target-k8s-version: eks-1.30
+---
+apiVersion: s3.services.k8s.aws/v1alpha1
+kind: Bucket
+metadata:
+  name: chart-test-swarm-eks-ack-bucket
+  namespace: <REPLACE_WITH_NAMESPACE>
+spec:
+  name: chart-test-swarm-eks-ack-<REPLACE_WITH_SUFFIX>

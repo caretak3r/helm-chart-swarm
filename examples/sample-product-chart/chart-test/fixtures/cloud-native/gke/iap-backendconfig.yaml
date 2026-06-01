@@ -1,0 +1,13 @@
+# GKE IAP: BackendConfig enabling Identity-Aware Proxy.
+# Requires an OAuth 2.0 Client ID configured in the GCP project.
+# chart-test-swarm/target-k8s-version: gke-1.30
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: chart-test-swarm-iap-config
+spec:
+  iap:
+    enabled: true
+    oauthclientCredentials:
+      secretName: chart-test-swarm-iap-secret

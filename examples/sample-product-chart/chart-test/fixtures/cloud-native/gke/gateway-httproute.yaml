@@ -1,0 +1,35 @@
+# GKE Gateway Controller: Gateway + HTTPRoute using the managed GKE
+# Gateway Controller (gke-l7-global-external-managed).
+# chart-test-swarm/target-k8s-version: gke-1.30
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: chart-test-swarm-gke-gateway
+  namespace: <REPLACE_WITH_NAMESPACE>
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: chart-test-swarm-gke-httproute
+  namespace: <REPLACE_WITH_NAMESPACE>
+spec:
+  parentRefs:
+    - name: chart-test-swarm-gke-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: <REPLACE_WITH_SERVICE_NAME>
+          port: 80
