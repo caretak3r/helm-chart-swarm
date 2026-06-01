@@ -252,13 +252,82 @@ generate_app = typer.Typer(
 
 
 @generate_app.command(name="pick")
-def generate_pick() -> None:
-    """Select a scenario from (category, integration, variant) tuples.
+def generate_pick(
+    category: str | None = typer.Option(
+        None,
+        "--category",
+        "-c",
+        metavar="NAME",
+        help="Integration category (e.g. certificates, ingress-controllers).",
+    ),
+    integration: str | None = typer.Option(
+        None,
+        "--integration",
+        "-i",
+        metavar="NAME",
+        help="Integration name (e.g. cert-manager, nginx-ingress).",
+    ),
+    variant: str | None = typer.Option(
+        None,
+        "--variant",
+        "-v",
+        metavar="NAME",
+        help="Variant name (e.g. self-signed, basic, wildcard). Substring match.",
+    ),
+    output: str | None = typer.Option(
+        None,
+        "--output",
+        "-o",
+        metavar="PATH",
+        help="Write the scenario YAML to this file instead of stdout.",
+    ),
+    non_interactive: bool = typer.Option(
+        False,
+        "--non-interactive",
+        help="Force non-interactive mode (no prompts).",
+    ),
+    scenarios_dir: str | None = typer.Option(
+        None,
+        "--scenarios-dir",
+        metavar="DIR",
+        help="Path to the scenarios directory (default: auto-detected).",
+    ),
+) -> None:
+    """Select a scenario YAML from (category, integration, variant) tuples.
 
-    (Stub — full implementation in F10.1.)
+    Selection is non-interactive — use flags or pipe JSON/YAML to stdin.
+    The matched scenario YAML is emitted to stdout (or --output file).
+
+    \b
+    Examples:
+        chart-test-swarm generate pick --category certificates \\
+            --integration cert-manager --variant self-signed
+        echo '{"category":"certificates","integration":"cert-manager","variant":"wildcard"}' \\
+            | chart-test-swarm generate pick
+        chart-test-swarm generate pick -c certificates -i cert-manager \\
+            -v self-signed --output /tmp/scenario.yaml
     """
-    print("generate pick: stub — F10.1 will implement selector", file=sys.stderr)
-    raise typer.Exit(code=1)
+    from chart_test_swarm.commands.generate_pick_cmd import (
+        generate_pick as _generate_pick_impl,
+    )
+
+    # Read stdin if available (for piped JSON/YAML feed)
+    stdin_feed: str | None = None
+    if not sys.stdin.isatty():
+        import contextlib
+
+        with contextlib.suppress(Exception):
+            stdin_feed = sys.stdin.read()
+
+    _generate_pick_impl(
+        category=category,
+        integration=integration,
+        variant=variant,
+        output=output,
+        non_interactive=non_interactive,
+        stdin_feed=stdin_feed,
+        scenarios_dir=scenarios_dir,
+    )
 
 
 @generate_app.command(name="author")

@@ -334,9 +334,10 @@ class TestGenerateSubcommandGroup:
         assert "Usage" in (result.stdout + result.stderr)
 
     def test_generate_pick_stub(self) -> None:
-        """generate pick stub exits non-zero."""
+        """generate pick (real implementation) exits non-zero without selection."""
         result = runner.invoke(app, ["generate", "pick"])
-        assert result.exit_code == 1
+        # The real implementation exits non-zero when no selection is provided
+        assert result.exit_code != 0
 
     def test_generate_author_stub(self) -> None:
         """generate author stub exits non-zero."""
