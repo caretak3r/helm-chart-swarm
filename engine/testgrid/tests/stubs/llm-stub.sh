@@ -7,17 +7,28 @@
 #     chart-test-swarm generate author "some description"
 #
 # Modes (via LLM_STUB_MODE):
-#   valid         Emit a schema-valid scenario YAML.
-#   invalid-yaml  Emit unparseable YAML (mixed garbage).
-#   schema-fail   Emit parseable YAML that fails schema validation
-#                 (cluster.provider = bogus-backend).
-#   invalid-yaml-schema-fail  First emit invalid YAML, then (on retry) schema-fail.
+#   valid                    Emit a schema-valid scenario YAML.
+#   invalid-yaml             Emit unparseable YAML (mixed garbage).
+#   schema-fail              Emit parseable YAML that fails schema validation
+#                            (cluster.provider = bogus-backend).
+#   invalid-yaml-schema-fail First emit invalid YAML, then (on retry) schema-fail.
+#   prefix-violation         Emit parseable YAML with cluster.name=escaped-cluster.
+#   crash-exit-137           Exit with code 137 (simulating a crash).
 #
 # Multi-invocation plan (via LLM_STUB_PLAN):
 #   LLM_STUB_PLAN="fail,fail,pass"  Emit invalid YAML on calls 1-2, valid on call 3.
-#   Each token: pass=valid, fail=invalid-yaml, schema-fail=schema-fail.
+#   Each token: pass=valid, fail=invalid-yaml, schema-fail=schema-fail,
+#               prefix-violation=prefix-violation, crash-exit-137=crash-exit-137.
+#
+# Cost reporting (via LLM_STUB_COST): report a cost value per invocation on stderr.
+#   Set LLM_STUB_COST=0.50 to report "$0.50" cost per invocation.
+#   The stub emits "LLM_STUB_COST: N.NN" on stderr.
 #
 # Counter file (via LLM_STUB_COUNT_FILE): records invocation count.
+#
+# Stdin capture (via LLM_STUB_STDIN_FILE): write stdin to this file per invocation.
+#   The file is overwritten on each call — tests that need per-iteration inspection
+#   should use a different file per iteration (via LLM_STUB_PLAN + tee).
 #
 # All invocations are logged to stderr (key:value format) for test assertions.
 
@@ -40,6 +51,16 @@ echo "LLM_STUB invocation=$COUNT" >&2
 DESCRIPTION="$(cat)"
 echo "LLM_STUB description=$DESCRIPTION" >&2
 
+# ── write stdin to a file if configured (for test assertions) ──────────────
+if [[ -n "${LLM_STUB_STDIN_FILE:-}" ]]; then
+  echo "$DESCRIPTION" > "$LLM_STUB_STDIN_FILE"
+fi
+
+# ── report cost if configured ──────────────────────────────────────────────
+if [[ -n "${LLM_STUB_COST:-}" ]]; then
+  echo "LLM_STUB_COST: $LLM_STUB_COST" >&2
+fi
+
 # ── determine which mode/plan to use ───────────────────────────────────────
 MODE="${LLM_STUB_MODE:-valid}"
 
@@ -54,14 +75,22 @@ if [[ -n "${LLM_STUB_PLAN:-}" ]]; then
   fi
   TOKEN="${TOKENS[$IDX]}"
   case "$TOKEN" in
-    pass)        MODE=valid ;;
-    fail)        MODE=invalid-yaml ;;
-    schema-fail) MODE=schema-fail ;;
-    *)           MODE=valid ;;
+    pass)               MODE=valid ;;
+    fail)               MODE=invalid-yaml ;;
+    schema-fail)        MODE=schema-fail ;;
+    prefix-violation)   MODE=prefix-violation ;;
+    crash-exit-137)     MODE=crash-exit-137 ;;
+    *)                  MODE=valid ;;
   esac
   echo "LLM_STUB mode=$MODE (plan token: $TOKEN)" >&2
 else
   echo "LLM_STUB mode=$MODE" >&2
+fi
+
+# ── crash-exit-137 must happen before any output ───────────────────────────
+if [[ "$MODE" == "crash-exit-137" ]]; then
+  echo "LLM_STUB crashing with exit 137" >&2
+  exit 137
 fi
 
 # ── emit output ────────────────────────────────────────────────────────────
@@ -148,6 +177,38 @@ product:
 asserts:
   - type: pods-ready
     namespace: sample
+generated_by:
+  by: llm-stub
+  at: "2026-06-01T00:00:00Z"
+EOF
+    ;;
+
+  prefix-violation)
+    # Emit a scenario whose name/comment references a cluster named
+    # "escaped-cluster" — the explore command must validate that any
+    # cluster-name-equivalent in the scenario matches ^chart-test-swarm-[a-z0-9-]+$
+    # BEFORE any cluster spin-up.
+    cat <<'EOF'
+---
+id: prefix-violation-scenario
+name: Scenario with invalid cluster.name reference
+description: This YAML references a cluster without the chart-test-swarm- prefix
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  config:
+    cluster_name: escaped-cluster
+product:
+  chart: chart
+  release: sample
+  namespace: sample
+  set:
+    replicaCount: "1"
+asserts:
+  - type: pods-ready
+    namespace: sample
+tags:
+  - pr-subset
 generated_by:
   by: llm-stub
   at: "2026-06-01T00:00:00Z"

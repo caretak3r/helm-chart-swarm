@@ -176,13 +176,15 @@ def _try_parse_yaml(raw: str) -> tuple[dict[str, object] | None, str | None]:
 def _add_generated_by(data: dict[str, object]) -> dict[str, object]:
     """Add ``generated_by`` provenance to the scenario data.
 
-    Only uses fields defined in the schema: ``by``, ``at``.
+    Uses ``by``, ``cmd`` (resolved CTS_LLM_CMD), and ``timestamp`` (ISO-8601 UTC).
     Returns a new dict (does not mutate *data* in place).
     """
     result = dict(data)
+    llm_cmd_str = os.environ.get("CTS_LLM_CMD", "droid")
     result["generated_by"] = {
-        "by": "generate-author",
-        "at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "by": "author",
+        "cmd": llm_cmd_str,
+        "timestamp": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
     return result
 
