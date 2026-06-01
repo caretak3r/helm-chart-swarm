@@ -83,11 +83,12 @@ echo "Gateway Service: ${GW_SVC_NAME} IP: ${GW_SVC_IP}"
 echo "==> Probing backend via gateway (retry up to 2m for data-plane ready)"
 HTTP_CODE="000"
 for attempt in $(seq 1 20); do
-  HTTP_CODE=$(kctl -n "${NS}" run "ct-probe-${attempt}" --rm -i --restart=Never --quiet \
+  RAW_HTTP_CODE=$(kctl -n "${NS}" run "ct-probe-${attempt}" --rm -i --restart=Never --quiet \
     --image=curlimages/curl:8.6.0 --timeout=30s -- \
     curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
       -H "Host: sample.sample.svc.cluster.local" \
       "http://${GW_SVC_IP}:80/" 2>/dev/null) || true
+  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
   if [ "${HTTP_CODE}" = "200" ]; then
     echo "HTTP response: ${HTTP_CODE} (attempt ${attempt})"
     break

@@ -95,12 +95,13 @@ CA_CRT_B64=$(kctl -n "${NS}" get secret "${CERT_NAME}" -o jsonpath='{.data.ca\.c
 echo "==> Probing HTTPS backend via gateway (retry up to 2m)"
 HTTP_CODE="000"
 for attempt in $(seq 1 20); do
-  HTTP_CODE=$(kctl -n "${NS}" run "ct-https-${attempt}" --rm -i --restart=Never --quiet \
+  RAW_HTTP_CODE=$(kctl -n "${NS}" run "ct-https-${attempt}" --rm -i --restart=Never --quiet \
     --image=curlimages/curl:8.6.0 --timeout=30s -- \
     sh -c "echo '${CA_CRT_B64}' | base64 -d > /tmp/ca.crt && \
       curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
         --resolve '${DOMAIN}:443:${GW_SVC_IP}' \
         'https://${DOMAIN}:443/'" 2>/dev/null) || true
+  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
   if [ "${HTTP_CODE}" = "200" ]; then
     echo "HTTPS response: ${HTTP_CODE} (attempt ${attempt})"
     break
