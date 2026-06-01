@@ -42,17 +42,94 @@ def root_callback(
     pass
 
 
-# -- run (direct command, flags added in F9.2) ---------------------------------
+# -- run (F9.2 — wraps dispatch-swarm.sh with validated flags) ------------------
 
 
 @app.command(name="run", help="Run scenarios against a Kubernetes cluster.")
-def run_cmd() -> None:
+def run_cmd(
+    scenario: str | None = typer.Option(
+        None,
+        "--scenario",
+        "-s",
+        metavar="PATH",
+        help="Path to a single scenario YAML file.",
+    ),
+    integration: str | None = typer.Option(
+        None,
+        "--integration",
+        "-i",
+        metavar="NAME",
+        help="Filter scenarios by integration name (e.g. cert-manager).",
+    ),
+    backend: str | None = typer.Option(
+        None,
+        "--backend",
+        "-b",
+        metavar="PROVIDER",
+        help="Cluster provider: kind|minikube|k3d|eks|gke|aks|vcluster.",
+    ),
+    parallelism: str | None = typer.Option(
+        None,
+        "--parallelism",
+        "-p",
+        metavar="N",
+        help="Maximum number of concurrent scenarios (default: 2).",
+    ),
+    cluster_name: str = typer.Option(
+        "chart-test-swarm-default",
+        "--cluster-name",
+        metavar="NAME",
+        help="Cluster name (must start with chart-test-swarm-).",
+    ),
+    run_id: str | None = typer.Option(
+        None,
+        "--run-id",
+        metavar="ID",
+        help="Run identifier (default: auto-generated run-YYYYmmdd-HHMMSS-<pid>).",
+    ),
+    reports_dir: str | None = typer.Option(
+        None,
+        "--reports-dir",
+        metavar="DIR",
+        help="Override the reports root directory.",
+    ),
+    project_dir: str | None = typer.Option(
+        None,
+        "--project-dir",
+        metavar="DIR",
+        help="Root of the consumer chart project.",
+    ),
+    suite: str | None = typer.Option(
+        None,
+        "--suite",
+        metavar="NAME",
+        help="Suite name defined in chart-test-swarm.yaml (default: pr-subset).",
+    ),
+) -> None:
     """Run scenarios against a Kubernetes cluster.
 
-    (Stub — full implementation in F9.2.)
+    Wraps ``engine/scripts/dispatch-swarm.sh`` with validated flags,
+    cluster-name prefix enforcement, and a machine-readable RUN_ID on stdout.
+
+    \b
+    Examples:
+        chart-test-swarm run --scenario examples/.../scenarios/minimal.yaml
+        chart-test-swarm run --integration cert-manager --backend minikube -p 2
+        chart-test-swarm run --suite all --project-dir ./my-chart
     """
-    print("run: stub — F9.2 will wire dispatch-swarm.sh", file=sys.stderr)
-    raise typer.Exit(code=1)
+    from chart_test_swarm.commands.run_cmd import run as _run_impl
+
+    _run_impl(
+        scenario=scenario,
+        integration=integration,
+        backend=backend,
+        parallelism=parallelism,
+        cluster_name=cluster_name,
+        run_id=run_id,
+        reports_dir=reports_dir,
+        project_dir=project_dir,
+        suite=suite,
+    )
 
 
 # -- dashboard (direct command, flags added in F9.3) ---------------------------

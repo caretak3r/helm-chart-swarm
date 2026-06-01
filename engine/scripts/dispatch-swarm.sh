@@ -87,27 +87,42 @@ if [ "$(echo "$TAG_FILTER" | jq 'length')" -eq 0 ]; then
   exit 1
 fi
 
-# Collect matching scenarios (any tag overlap with filter)
-# Bash 3.2 compatible: avoid mapfile, use while-read loop
-ALL_FILES=()
-while IFS= read -r f; do
-  ALL_FILES+=("$f")
-done < <(find "$SCEN_DIR" -type f \( -name "*.yaml" -o -name "*.yml" \) | sort)
+# Collect matching scenarios (any tag overlap with filter).
+# CTS_SCENARIOS (from CLI wrapper) takes precedence: newline-separated list of
+# absolute scenario file paths.
+if [ -n "${CTS_SCENARIOS:-}" ]; then
+  MATCHED=()
+  while IFS= read -r f; do
+    [ -n "$f" ] && MATCHED+=("$f")
+  done <<< "$CTS_SCENARIOS"
+  COUNT=${#MATCHED[@]}
+  if [ "$COUNT" -eq 0 ]; then
+    echo "ERROR: CTS_SCENARIOS was set but empty" >&2
+    exit 1
+  fi
+  echo "==> CLI provided $COUNT scenario(s); dispatching to $NUM_AGENTS agent(s)"
+else
+  # Bash 3.2 compatible: avoid mapfile, use while-read loop
+  ALL_FILES=()
+  while IFS= read -r f; do
+    ALL_FILES+=("$f")
+  done < <(find "$SCEN_DIR" -type f \( -name "*.yaml" -o -name "*.yml" \) | sort)
 
-MATCHED=()
-for f in "${ALL_FILES[@]}"; do
-  s_tags=$(yq -o=json '.tags // []' "$f")
-  hit=$(jq -n --argjson a "$TAG_FILTER" --argjson b "$s_tags" \
-        '[ $a[] | select(. as $x | $b | index($x) != null) ] | length')
-  [ "$hit" -gt 0 ] && MATCHED+=("$f")
-done
+  MATCHED=()
+  for f in "${ALL_FILES[@]}"; do
+    s_tags=$(yq -o=json '.tags // []' "$f")
+    hit=$(jq -n --argjson a "$TAG_FILTER" --argjson b "$s_tags" \
+          '[ $a[] | select(. as $x | $b | index($x) != null) ] | length')
+    [ "$hit" -gt 0 ] && MATCHED+=("$f")
+  done
 
-COUNT=${#MATCHED[@]}
-if [ "$COUNT" -eq 0 ]; then
-  echo "ERROR: no scenarios matched suite '$SUITE' (tag_filter=$TAG_FILTER)" >&2
-  exit 1
+  COUNT=${#MATCHED[@]}
+  if [ "$COUNT" -eq 0 ]; then
+    echo "ERROR: no scenarios matched suite '$SUITE' (tag_filter=$TAG_FILTER)" >&2
+    exit 1
+  fi
+  echo "==> Suite '$SUITE' matched $COUNT scenario(s); dispatching to $NUM_AGENTS agent(s)"
 fi
-echo "==> Suite '$SUITE' matched $COUNT scenario(s); dispatching to $NUM_AGENTS agent(s)"
 
 # ---- Cloud-native authored-only guard (VAL-CLOUD-012) ----
 # Cloud-native scenarios (gke, eks, aks) are authored only — they must NOT
