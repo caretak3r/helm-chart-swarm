@@ -93,13 +93,13 @@
   {# Integration groups (3+ variants of the same integration) — each is a <details> block #}
   {% for group in variant_groups %}
   <details class="integration-group matrix-details" id="{{ group.anchor }}" open>
-    <summary class="integration-header" aria-expanded="true">
+    <summary class="integration-header">
       <span class="badge {{ status_class(group.rolled_status) }}">{{ group.rolled_status }}</span>
       <span class="variant-summary">{{ group.variant_count }} variants: {{ group.status_breakdown }}</span>
       <span class="group-label"><code>{{ group.category }}/{{ group.integration }}</code></span>
     </summary>
     <table class="variant-sub-table">
-      <thead>
+      <thead class="sr-only">
         <tr>
           <th class="row-head">Scenario</th>
           <th>Cluster shape</th>

@@ -233,8 +233,8 @@ class TestVariantGroupProperties:
         assert rolled == "UNTESTED"
 
     def test_status_breakdown_string(self) -> None:
-        """Status breakdown produces correct count string."""
-        from testgrid.collect import Scenario
+        """Status breakdown produces correct count string, ordered by STATUS_RANK."""
+        from testgrid.collect import STATUS_RANK, Scenario
 
         scenarios = [
             Scenario(id="sc-1", status="PASS"),
@@ -247,16 +247,27 @@ class TestVariantGroupProperties:
             counts[s.status] = counts.get(s.status, 0) + 1
 
         parts = []
-        for status in ["PASS", "FAIL", "PARTIAL", "INCONCLUSIVE", "UNTESTED"]:
+        seen: set[str] = set()
+        for status in STATUS_RANK:
             if counts.get(status):
                 parts.append(f"{counts[status]} {status}")
+                seen.add(status)
+        # Append any statuses not in STATUS_RANK.
+        for status, cnt in sorted(counts.items()):
+            if cnt > 0 and status not in seen:
+                parts.append(f"{cnt} {status}")
         breakdown = " / ".join(parts)
 
-        assert breakdown == "2 PASS / 1 FAIL"
+        # STATUS_RANK order: FAIL=0, PARTIAL=1, UNTESTED=2, INCONCLUSIVE=3,
+        # AUTHORED=4, PASS=5. So FAIL comes before PASS.
+        assert breakdown == "1 FAIL / 2 PASS", (
+            f"Expected '1 FAIL / 2 PASS' (STATUS_RANK order), got '{breakdown}'"
+        )
 
     def test_status_breakdown_includes_partial_untested(self) -> None:
-        """Status breakdown includes PARTIAL and UNTESTED when present."""
-        from testgrid.collect import Scenario
+        """Status breakdown includes PARTIAL and UNTESTED when present,
+        ordered by STATUS_RANK keys."""
+        from testgrid.collect import STATUS_RANK, Scenario
 
         scenarios = [
             Scenario(id="sc-1", status="PASS"),
@@ -270,15 +281,25 @@ class TestVariantGroupProperties:
             counts[s.status] = counts.get(s.status, 0) + 1
 
         parts = []
-        for status in ["PASS", "FAIL", "PARTIAL", "INCONCLUSIVE", "UNTESTED"]:
+        seen: set[str] = set()
+        for status in STATUS_RANK:
             if counts.get(status):
                 parts.append(f"{counts[status]} {status}")
+                seen.add(status)
+        for status, cnt in sorted(counts.items()):
+            if cnt > 0 and status not in seen:
+                parts.append(f"{cnt} {status}")
         breakdown = " / ".join(parts)
 
+        # STATUS_RANK order: FAIL(1) / PARTIAL(1) / UNTESTED(1) / PASS(1)
         assert "1 PASS" in breakdown
         assert "1 FAIL" in breakdown
         assert "1 PARTIAL" in breakdown
         assert "1 UNTESTED" in breakdown
+        # Verify STATUS_RANK order specifically.
+        assert breakdown == "1 FAIL / 1 PARTIAL / 1 UNTESTED / 1 PASS", (
+            f"Expected STATUS_RANK order, got '{breakdown}'"
+        )
 
 
 # ---------------------------------------------------------------------------

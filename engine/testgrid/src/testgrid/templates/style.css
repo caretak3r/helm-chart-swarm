@@ -190,8 +190,19 @@ a:hover { text-decoration: underline; }
   width: 100%;
 }
 
-.integration-group.matrix-details .variant-sub-table thead {
-  display: none;  /* headers are redundant — same structure as matrix */
+/* sr-only / visually-hidden: keeps content in the accessibility tree
+   while hiding it visually. Used for variant sub-table thead so
+   screen readers can navigate column headers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .integration-group.matrix-details .variant-sub-table th,

@@ -92,11 +92,23 @@ class VariantGroup:
 
     @property
     def status_breakdown(self) -> str:
-        """Human-readable breakdown, e.g. ``"2 PASS / 1 FAIL"``."""
+        """Human-readable breakdown, e.g. ``"1 FAIL / 2 PASS"``.
+
+        Iterates ``STATUS_RANK`` keys in rank order so adding a new status
+        to ``STATUS_RANK`` automatically surfaces in breakdown text.
+        Any statuses present in counts but not in ``STATUS_RANK`` (e.g.
+        ``UNKNOWN``) are appended at the end.
+        """
         parts: list[str] = []
-        for st in ("PASS", "FAIL", "PARTIAL", "INCONCLUSIVE", "UNTESTED", "AUTHORED", "UNKNOWN"):
+        seen: set[str] = set()
+        for st in STATUS_RANK:
             cnt = self.status_counts.get(st, 0)
             if cnt > 0:
+                parts.append(f"{cnt} {st}")
+                seen.add(st)
+        # Append any statuses not in STATUS_RANK (e.g. UNKNOWN).
+        for st, cnt in sorted(self.status_counts.items()):
+            if cnt > 0 and st not in seen:
                 parts.append(f"{cnt} {st}")
         return " / ".join(parts) if parts else "0 UNTESTED"
 
