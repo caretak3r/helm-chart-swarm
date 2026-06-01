@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-noncompliant-limits
+  namespace: sample
+  labels:
+    app.kubernetes.io/name: test-noncompliant-limits
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-noncompliant-limits
+  template:
+    metadata:
+      labels:
+        app: test-noncompliant-limits
+        app.kubernetes.io/name: test-noncompliant-limits
+    spec:
+      containers:
+        - name: app
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80

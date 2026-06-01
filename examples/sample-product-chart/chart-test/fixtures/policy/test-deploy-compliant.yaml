@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-compliant
+  namespace: sample
+  labels:
+    app.kubernetes.io/name: test-compliant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-compliant
+  template:
+    metadata:
+      labels:
+        app: test-compliant
+        app.kubernetes.io/name: test-compliant
+    spec:
+      containers:
+        - name: app
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"

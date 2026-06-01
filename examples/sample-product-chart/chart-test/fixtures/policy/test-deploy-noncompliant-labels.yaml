@@ -1,0 +1,21 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-noncompliant-labels
+  namespace: sample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-noncompliant-labels
+  template:
+    metadata:
+      labels:
+        app: test-noncompliant-labels
+    spec:
+      containers:
+        - name: app
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80

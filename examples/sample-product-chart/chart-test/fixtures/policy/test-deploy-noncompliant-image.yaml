@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-noncompliant-image
+  namespace: sample
+  labels:
+    app.kubernetes.io/name: test-noncompliant-image
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-noncompliant-image
+  template:
+    metadata:
+      labels:
+        app: test-noncompliant-image
+        app.kubernetes.io/name: test-noncompliant-image
+    spec:
+      containers:
+        - name: app
+          image: docker.io/library/redis:7-alpine
+          ports:
+            - containerPort: 6379

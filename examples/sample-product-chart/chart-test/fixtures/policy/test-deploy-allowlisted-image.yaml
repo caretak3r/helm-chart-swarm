@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-allowlisted-image
+  namespace: sample
+  labels:
+    app.kubernetes.io/name: test-allowlisted-image
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-allowlisted-image
+  template:
+    metadata:
+      labels:
+        app: test-allowlisted-image
+        app.kubernetes.io/name: test-allowlisted-image
+    spec:
+      containers:
+        - name: app
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
