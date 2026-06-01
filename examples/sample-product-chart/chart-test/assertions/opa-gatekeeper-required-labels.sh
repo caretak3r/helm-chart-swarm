@@ -110,4 +110,76 @@ else
   echo "NOTE: compliant Ingress may not yet have address (NGINX controller processes async)"
 fi
 
+echo "==> Phase 4: Webhook failure mode — verify Fail policy + outage behavior"
+
+# 4a: Verify failurePolicy: Fail on validating webhook configuration
+WEBHOOK_NAME="gatekeeper-validating-webhook-configuration"
+FP=$(kctl get validatingwebhookconfiguration "${WEBHOOK_NAME}" -o jsonpath='{.webhooks[0].failurePolicy}' 2>/dev/null)
+if [ "${FP}" = "Fail" ]; then
+  echo "PASS: webhook ${WEBHOOK_NAME} failurePolicy=${FP}"
+else
+  echo "FAIL: expected failurePolicy=Fail, got '${FP}'" >&2
+  exit 1
+fi
+
+# 4b: Scale gatekeeper controller to 0 replicas
+GK_DEPLOY="gatekeeper-controller-manager"
+ORIG_REPLICAS=$(kctl -n "${GK_NS}" get deploy "${GK_DEPLOY}" -o jsonpath='{.spec.replicas}' 2>/dev/null || echo 1)
+echo "Scaling ${GK_DEPLOY} to 0 in ${GK_NS} (original replicas: ${ORIG_REPLICAS})..."
+kctl -n "${GK_NS}" scale deploy "${GK_DEPLOY}" --replicas=0
+# Wait for the controller pods to actually terminate
+kctl -n "${GK_NS}" wait pod -l control-plane=controller-manager --for=delete --timeout=2m 2>/dev/null || true
+sleep 3
+echo "PASS: gatekeeper controller scaled to 0"
+
+# 4c: Verify admission fails with webhook timeout/connection-refused
+echo "Attempting kubectl apply with webhook unavailable..."
+if kctl apply --dry-run=server -f "${FIXTURES}/test-deploy-compliant.yaml" 2>&1 | tee /tmp/gk-outage-probe.txt; then
+  echo "FAIL: admission succeeded despite webhook being down (possible Ignore policy)" >&2
+  # Restore controller before exiting
+  kctl -n "${GK_NS}" scale deploy "${GK_DEPLOY}" --replicas="${ORIG_REPLICAS}" 2>/dev/null || true
+  exit 1
+else
+  if grep -qiE "failed calling webhook|connection refused|timeout|deadline exceeded|no endpoints|service not found|Internal error" /tmp/gk-outage-probe.txt 2>/dev/null; then
+    echo "PASS: admission correctly blocked during webhook outage (Fail policy)"
+  else
+    echo "FAIL: rejection message did not indicate webhook unavailability" >&2
+    cat /tmp/gk-outage-probe.txt >&2
+    kctl -n "${GK_NS}" scale deploy "${GK_DEPLOY}" --replicas="${ORIG_REPLICAS}" 2>/dev/null || true
+    exit 1
+  fi
+fi
+
+# 4d: Scale controller back up and verify admission works again
+echo "Restoring ${GK_DEPLOY} to ${ORIG_REPLICAS} in ${GK_NS}..."
+kctl -n "${GK_NS}" scale deploy "${GK_DEPLOY}" --replicas="${ORIG_REPLICAS}"
+echo "Waiting for gatekeeper controller pods to be Ready again..."
+kctl -n "${GK_NS}" wait pod -l control-plane=controller-manager --for=condition=Ready --timeout=3m
+echo "PASS: gatekeeper controller pods Ready"
+
+# Note: kind clusters may restart kube-controller-manager during gatekeeper CRD installation,
+# which can delay endpoint reconciliation. We retry with generous timeout.
+echo "Waiting for admission webhook to accept requests (180s max, may be slow on resource-constrained clusters)..."
+ADMISSION_RESTORED=0
+for i in $(seq 1 36); do
+  # Periodically nudge the endpoint controller by touching the service
+  if [ $((i % 6)) -eq 0 ]; then
+    kctl -n "${GK_NS}" delete endpoints gatekeeper-webhook-service --ignore-not-found=true 2>/dev/null || true
+  fi
+  if kctl apply --dry-run=server -f "${FIXTURES}/test-deploy-compliant.yaml" 2>/dev/null; then
+    echo "PASS: admission restored after webhook recovery (attempt ${i})"
+    ADMISSION_RESTORED=1
+    break
+  fi
+  if [ "$i" -eq 36 ]; then
+    echo "FAIL: admission still failing after controller restore (36 attempts, 180s)" >&2
+    exit 1
+  fi
+  sleep 5
+done
+if [ "${ADMISSION_RESTORED}" -eq 0 ]; then
+  echo "FAIL: admission did not recover" >&2
+  exit 1
+fi
+
 echo "PASS: OPA Gatekeeper required-labels + nginx-ingress cross-feature compose verified"

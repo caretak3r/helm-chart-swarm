@@ -266,23 +266,40 @@ kubectl get mutatingwebhookconfiguration kyverno-resource-mutating-webhook-cfg \
 
 ### Deliberate-outage probe
 
-To observe Fail behavior (webhook timeout):
+Kyverno **dynamically manages** its webhook configurations. When the
+admission controller pod terminates (e.g., scaled to 0), Kubernetes
+garbage collection removes the webhook configs via ownerReferences.
+This means admission is effectively **bypassed** during an outage
+despite `failurePolicy: Fail` — because the webhook configuration
+itself is removed.
+
+This is a known architectural difference from Gatekeeper (which uses
+static webhook configs). For clusters that require admission to
+**always** fail closed during an outage, Kyverno recommends running at
+least 2 admission controller replicas with pod anti-affinity.
 
 ```bash
 # Scale down the admission controller
 kubectl scale deploy/kyverno-admission-controller -n kyverno --replicas=0
 
-# Attempt to create a resource — should fail with webhook timeout
+# Wait for pod termination + webhook config GC (usually < 5s)
+kubectl wait pod -l app.kubernetes.io/component=admission-controller \
+  -n kyverno --for=delete --timeout=2m
+
+# Check if webhook config still exists (may have been GC'd)
+kubectl get validatingwebhookconfiguration kyverno-resource-validating-webhook-cfg
+
+# If webhook config still present: apply FAILS with timeout
+# If webhook config was GC'd: apply SUCCEEDS (admission bypassed)
 kubectl apply --dry-run=server -f test-deploy.yaml 2>&1
-# Expected: "Internal error occurred: failed calling webhook ... no service ... "
-# or "context deadline exceeded" or similar timeout message
 
 # Restore the controller
 kubectl scale deploy/kyverno-admission-controller -n kyverno --replicas=1
 ```
 
-With `Ignore` mode (not recommended for production), the same outage would
-silently admit all resources. To demo Ignore behavior:
+With `Ignore` mode explicitly set (not recommended for production), the
+outcome is identical — admission succeeds because there is no webhook to
+call:
 
 ```bash
 # Reinstall Kyverno with forceFailurePolicyIgnore
@@ -296,8 +313,13 @@ kubectl apply --dry-run=server -f test-deploy.yaml 2>&1
 # Expected: "deployment.apps/test-deploy created (server dry run)" (exit 0)
 ```
 
-The default `Fail` mode is the enterprise-recommended setting for
-security-hardened clusters.
+**Bottom line:** Kyverno's `failurePolicy: Fail` on the webhook
+configuration is architecturally different from Gatekeeper's static
+webhook. Because Kyverno dynamically manages and cleans up its
+webhooks, the effective failure mode during a controller outage is
+**always Ignore** (admission bypassed). The `Fail` setting only takes
+effect when the webhook endpoint is reachable but returns an error — not
+when the webhook config itself is garbage collected.
 
 ## References
 
