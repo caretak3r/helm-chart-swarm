@@ -335,13 +335,63 @@ def generate_author(
     description: str | None = typer.Argument(
         None, help="Natural-language description of the scenario to author."
     ),
+    max_retries: int = typer.Option(
+        3,
+        "--max-retries",
+        "-r",
+        metavar="N",
+        help="Maximum number of LLM retries on invalid output (default: 3).",
+    ),
+    output: str | None = typer.Option(
+        None,
+        "--output",
+        "-o",
+        metavar="PATH",
+        help="Write the generated scenario to this file instead of stdout.",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Overwrite the output file if it already exists.",
+    ),
+    timeout: int = typer.Option(
+        120,
+        "--timeout",
+        metavar="SECONDS",
+        help="Timeout in seconds for each LLM invocation (default: 120).",
+    ),
 ) -> None:
     """Author a scenario YAML from a natural-language description.
 
-    (Stub — full implementation in F10.2.)
+    Shells out to ``CTS_LLM_CMD`` (env var) or auto-discovers ``droid`` on PATH.
+    Retries bounded by ``--max-retries`` on invalid output. Rejects empty
+    descriptions before invoking the LLM.
+
+    The emitted scenario is validated against
+    ``engine/templates/scenario.schema.json`` and carries ``generated_by``
+    provenance.
+
+    \b
+    Examples:
+        chart-test-swarm generate author \\
+            "istio with strict mTLS + cert-manager self-signed CA"
+        chart-test-swarm generate author \\
+            "nginx ingress with TLS" --output /tmp/nginx-scenario.yaml
+        chart-test-swarm generate author \\
+            "custom integration" --max-retries 5 --force
     """
-    print("generate author: stub — F10.2 will wire CTS_LLM_CMD", file=sys.stderr)
-    raise typer.Exit(code=1)
+    from chart_test_swarm.commands.generate_author_cmd import (
+        generate_author as _generate_author_impl,
+    )
+
+    _generate_author_impl(
+        description=description,
+        max_retries=max_retries,
+        output=output,
+        force=force,
+        timeout=timeout,
+    )
 
 
 @generate_app.command(name="explore")
