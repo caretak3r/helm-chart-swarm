@@ -7,10 +7,13 @@ Validates:
 
 from __future__ import annotations
 
+import io as _io
 import os
+import sys
 from pathlib import Path
 from textwrap import dedent
 
+import pytest
 from typer.testing import CliRunner
 
 from chart_test_swarm.main import app
@@ -455,3 +458,408 @@ class TestDashboardEnvironmentVariables:
         # Without any flags, the env vars should not be overridden by CLI
         # (REPORTS_DIR may be unset or set by the env)
         assert "RUN_ID_ARG=unset" in result.stdout
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# VAL-DASH-026: --watch and --interval flags on dashboard subcommand
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestDashboardWatchHelp:
+    """``dashboard --help`` advertises --watch and --interval flags."""
+
+    def test_help_shows_watch_flag(self) -> None:
+        """--help output includes --watch."""
+        result = runner.invoke(app, ["dashboard", "--help"])
+        assert result.exit_code == 0, f"exit_code={result.exit_code}, stderr={result.stderr}"
+        assert "--watch" in result.stdout, f"Expected --watch in help output, got: {result.stdout}"
+
+    def test_help_shows_interval_flag(self) -> None:
+        """--help output includes --interval."""
+        result = runner.invoke(app, ["dashboard", "--help"])
+        assert result.exit_code == 0, f"exit_code={result.exit_code}, stderr={result.stderr}"
+        assert "--interval" in result.stdout, (
+            f"Expected --interval in help output, got: {result.stdout}"
+        )
+
+    def test_help_shows_interval_default_30(self) -> None:
+        """--help output mentions the default poll interval of 30."""
+        result = runner.invoke(app, ["dashboard", "--help"])
+        assert result.exit_code == 0
+        assert "30" in result.stdout, (
+            f"Expected default interval 30 in help text, got: {result.stdout}"
+        )
+
+
+class TestDashboardScanReports:
+    """Unit tests for ``_scan_reports`` helper."""
+
+    def test_empty_dir_returns_empty_dict(self) -> None:
+        """_scan_reports returns {} for a non-existent directory."""
+        from chart_test_swarm.commands.dashboard_cmd import _scan_reports
+
+        assert _scan_reports(Path("/nonexistent/path/ctstest42")) == {}
+
+    def test_detects_run_dirs(self, tmp_path: Path) -> None:
+        """_scan_reports detects run-* dirs with their mtimes."""
+        from chart_test_swarm.commands.dashboard_cmd import _scan_reports
+
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+        (reports_dir / "run-001").mkdir()
+        (reports_dir / "run-001" / "result.yaml").write_text("status: PASS\n")
+
+        state = _scan_reports(reports_dir)
+        assert "run-001" in state, f"Expected run-001 in state, got keys: {list(state.keys())}"
+        # mtime should be a positive float
+        assert state["run-001"] > 0.0
+
+    def test_ignores_non_run_dirs(self, tmp_path: Path) -> None:
+        """_scan_reports ignores directories not starting with 'run-'."""
+        from chart_test_swarm.commands.dashboard_cmd import _scan_reports
+
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+        (reports_dir / "dist").mkdir()
+        (reports_dir / "run-001").mkdir()
+        (reports_dir / "run-001" / "result.yaml").write_text("status: PASS\n")
+        (reports_dir / "other-dir").mkdir()
+
+        state = _scan_reports(reports_dir)
+        assert "run-001" in state
+        assert "dist" not in state
+        assert "other-dir" not in state
+
+    def test_detects_file_change_in_run_dir(self, tmp_path: Path) -> None:
+        """_scan_reports returns different state when a file inside a run changes."""
+        import time as _time
+
+        from chart_test_swarm.commands.dashboard_cmd import _scan_reports
+
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+        run_dir = reports_dir / "run-001"
+        run_dir.mkdir()
+        (run_dir / "result.yaml").write_text("status: PASS\n")
+
+        state_before = _scan_reports(reports_dir)
+
+        # Sleep to guarantee mtime tick (many filesystems have 1s granularity)
+        _time.sleep(1.1)
+        (run_dir / "result.yaml").write_text("status: FAIL\n")
+
+        state_after = _scan_reports(reports_dir)
+        assert state_after["run-001"] > state_before["run-001"], (
+            "Expected mtime to increase after file modification"
+        )
+
+
+class TestDashboardClampInterval:
+    """Unit tests for ``_clamp_interval`` helper."""
+
+    def test_below_minimum_clamped_to_5(self) -> None:
+        """Values below 5 are clamped to 5."""
+        from chart_test_swarm.commands.dashboard_cmd import _clamp_interval
+
+        assert _clamp_interval(3) == 5
+        assert _clamp_interval(1) == 5
+        assert _clamp_interval(0) == 5
+        assert _clamp_interval(-1) == 5
+
+    def test_above_minimum_passes_through(self) -> None:
+        """Values >= 5 are returned unchanged."""
+        from chart_test_swarm.commands.dashboard_cmd import _clamp_interval
+
+        assert _clamp_interval(5) == 5
+        assert _clamp_interval(30) == 30
+        assert _clamp_interval(60) == 60
+        assert _clamp_interval(300) == 300
+
+    def test_clamping_prints_warning(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """Clamping prints a warning to stderr."""
+        from chart_test_swarm.commands.dashboard_cmd import _clamp_interval
+
+        _clamp_interval(3)
+        captured = capsys.readouterr()
+        assert "below minimum" in captured.err
+        assert "using 5s" in captured.err
+
+
+class TestDashboardWatchLoop:
+    """Integration-style tests for ``_watch_loop`` with stubs."""
+
+    def test_watch_loop_polls_and_prints_status_lines(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """_watch_loop prints a timestamped status line each poll cycle."""
+        from chart_test_swarm.commands.dashboard_cmd import _watch_loop
+
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+
+        stub = _write_stub(
+            tmp_path,
+            "build-dashboard.sh",
+            "#!/usr/bin/env bash\nexit 0\n",
+        )
+
+        # Capture sleep calls but do not actually sleep
+        sleep_calls: list[float] = []
+        monkeypatch.setattr("time.sleep", lambda s: sleep_calls.append(s))
+
+        # Capture stdout
+        fake_stdout = _io.StringIO()
+        monkeypatch.setattr(sys, "stdout", fake_stdout)
+
+        # Stub _run_build to a no-op
+        monkeypatch.setattr(
+            "chart_test_swarm.commands.dashboard_cmd._run_build",
+            lambda *_a: None,
+            raising=False,
+        )
+
+        _watch_loop(stub, {}, reports_dir, 30, [], _max_cycles=3)
+
+        output = fake_stdout.getvalue()
+        assert 2 <= output.count("polling... no changes") <= 3, (
+            f"Expected 2-3 polling lines, got {output.count('polling... no changes')}"
+        )
+        assert len(sleep_calls) == 3
+
+    def test_watch_loop_rebuilds_on_new_run(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """_watch_loop rebuilds the dashboard when a new run-* dir appears."""
+        from chart_test_swarm.commands.dashboard_cmd import _watch_loop
+
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+
+        stub = _write_stub(
+            tmp_path,
+            "build-dashboard.sh",
+            "#!/usr/bin/env bash\nexit 0\n",
+        )
+
+        # Track build calls
+        build_count = 0
+
+        def _fake_build(*_a: object, **_kw: object) -> None:
+            nonlocal build_count
+            build_count += 1
+
+        # Insert a new run dir after the first sleep cycle
+        sleep_count = 0
+
+        def _fake_sleep(_seconds: float) -> None:
+            nonlocal sleep_count
+            sleep_count += 1
+            if sleep_count == 1:
+                run_dir = reports_dir / "run-new"
+                run_dir.mkdir()
+                (run_dir / "result.yaml").write_text("status: PASS\n")
+
+        monkeypatch.setattr("time.sleep", _fake_sleep)
+        monkeypatch.setattr(
+            "chart_test_swarm.commands.dashboard_cmd._run_build",
+            _fake_build,
+        )
+
+        fake_stdout = _io.StringIO()
+        monkeypatch.setattr(sys, "stdout", fake_stdout)
+
+        _watch_loop(stub, {}, reports_dir, 30, [], _max_cycles=3)
+
+        output = fake_stdout.getvalue()
+        assert build_count >= 1, f"Expected at least 1 rebuild, got {build_count}"
+        assert "rebuilt dashboard at" in output, f"Expected rebuild line in output, got: {output}"
+
+    def test_watch_loop_keyboard_interrupt_clean_exit(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """KeyboardInterrupt terminates _watch_loop cleanly without raising."""
+        from chart_test_swarm.commands.dashboard_cmd import _watch_loop
+
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+
+        stub = _write_stub(
+            tmp_path,
+            "build-dashboard.sh",
+            "#!/usr/bin/env bash\nexit 0\n",
+        )
+
+        # Raise KeyboardInterrupt on the first sleep call
+        def _raise_kb(_s: float) -> None:
+            raise KeyboardInterrupt
+
+        monkeypatch.setattr("time.sleep", _raise_kb)
+
+        # Stub _run_build
+        monkeypatch.setattr(
+            "chart_test_swarm.commands.dashboard_cmd._run_build",
+            lambda *_a: None,
+            raising=False,
+        )
+
+        fake_stdout = _io.StringIO()
+        monkeypatch.setattr(sys, "stdout", fake_stdout)
+
+        # Must NOT raise
+        _watch_loop(stub, {}, reports_dir, 30, [], _max_cycles=10)
+
+        output = fake_stdout.getvalue()
+        assert "stopped" in output, f"Expected '[watch] stopped.' in output, got: {output}"
+
+    def test_watch_loop_rebuilds_on_modified_run(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """_watch_loop rebuilds when an existing run's result.yaml is modified."""
+        from chart_test_swarm.commands.dashboard_cmd import _watch_loop
+
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+
+        # Pre-create a run dir
+        run_dir = reports_dir / "run-001"
+        run_dir.mkdir()
+        (run_dir / "result.yaml").write_text("status: PASS\n")
+
+        stub = _write_stub(
+            tmp_path,
+            "build-dashboard.sh",
+            "#!/usr/bin/env bash\nexit 0\n",
+        )
+
+        build_count = 0
+
+        def _fake_build(*_a: object, **_kw: object) -> None:
+            nonlocal build_count
+            build_count += 1
+
+        sleep_count = 0
+
+        def _fake_sleep(_seconds: float) -> None:
+            nonlocal sleep_count
+            sleep_count += 1
+            if sleep_count == 1:
+                # Modify existing run's result file
+                (run_dir / "result.yaml").write_text("status: FAIL\n")
+
+        monkeypatch.setattr("time.sleep", _fake_sleep)
+        monkeypatch.setattr(
+            "chart_test_swarm.commands.dashboard_cmd._run_build",
+            _fake_build,
+        )
+
+        fake_stdout = _io.StringIO()
+        monkeypatch.setattr(sys, "stdout", fake_stdout)
+
+        _watch_loop(stub, {}, reports_dir, 30, [], _max_cycles=3)
+
+        output = fake_stdout.getvalue()
+        assert build_count >= 1, f"Expected at least 1 rebuild, got {build_count}"
+        assert "rebuilt dashboard at" in output
+
+
+class TestDashboardWatchCliIntegration:
+    """CLI-level integration tests for --watch and --interval flags."""
+
+    def test_interval_flag_clamped_in_help_or_validation(self) -> None:
+        """--interval below 5 is clamped or help mentions the minimum."""
+        # Verify that --help shows the minimum constraint
+        result = runner.invoke(app, ["dashboard", "--help"])
+        assert result.exit_code == 0
+        # The help text should mention the minimum (5)
+        help_text = result.stdout.lower()
+        assert "minimum" in help_text or "min" in help_text or "5" in help_text, (
+            f"Help should mention interval minimum: {result.stdout}"
+        )
+
+    def test_watch_with_stub_reports_dir(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """--watch with a stubbed build-dashboard.sh does initial build and polls."""
+        # Stub that records invocations to a file
+        invocation_log = tmp_path / "invocations.txt"
+        _write_stub(
+            tmp_path,
+            "build-dashboard.sh",
+            f"""#!/usr/bin/env bash
+echo "$(date +%s)" >> {invocation_log}
+exit 0
+""",
+        )
+
+        env = _add_to_path(tmp_path)
+        env["CTS_ENGINE_SCRIPTS_DIR"] = str(tmp_path)
+
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+
+        # Monkeypatch time.sleep to avoid real sleep
+        sleep_calls: list[float] = []
+        monkeypatch.setattr("time.sleep", lambda s: sleep_calls.append(s))
+
+        # Monkeypatch _watch_loop to run a bounded number of cycles
+        import chart_test_swarm.commands.dashboard_cmd as dash_mod
+
+        original_watch_loop = dash_mod._watch_loop
+
+        def _bounded_watch_loop(
+            script: Path,
+            loop_env: dict,
+            loop_reports_dir: Path,
+            loop_interval: int,
+            cmd_args: list,
+        ) -> None:
+            original_watch_loop(
+                script,
+                loop_env,
+                loop_reports_dir,
+                loop_interval,
+                cmd_args,
+                _max_cycles=2,
+            )
+
+        monkeypatch.setattr(dash_mod, "_watch_loop", _bounded_watch_loop)
+
+        result = runner.invoke(
+            app,
+            [
+                "dashboard",
+                "--watch",
+                "--interval",
+                "5",
+                "--reports-dir",
+                str(reports_dir),
+            ],
+            env=env,
+        )
+        assert result.exit_code == 0, f"stderr: {result.stderr}"
+
+        # Verify the stub was invoked at least once (initial build)
+        assert invocation_log.is_file(), "Stub should have been invoked at least once"
+        lines = invocation_log.read_text().strip().split("\n")
+        assert len(lines) >= 1, f"Expected >=1 invocations, got {len(lines)}"
+
+    def test_no_watch_one_shot_preserved(self, tmp_path: Path) -> None:
+        """Without --watch, dashboard builds once and exits (no regression)."""
+        _write_stub(
+            tmp_path,
+            "build-dashboard.sh",
+            dedent("""\
+                #!/usr/bin/env bash
+                echo "built once"
+                exit 0
+            """),
+        )
+
+        env = _add_to_path(tmp_path)
+        env["CTS_ENGINE_SCRIPTS_DIR"] = str(tmp_path)
+
+        result = runner.invoke(app, ["dashboard"], env=env)
+        assert result.exit_code == 0, f"stderr: {result.stderr}"
+        assert "built once" in result.stdout
+        # Only one occurrence — no polling loop
+        assert result.stdout.count("built once") == 1

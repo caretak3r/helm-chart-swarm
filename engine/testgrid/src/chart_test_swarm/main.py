@@ -162,17 +162,35 @@ def dashboard_cmd(
         metavar="DIR",
         help="Root of the consumer chart project.",
     ),
+    watch: bool = typer.Option(
+        False,
+        "--watch",
+        help="Enter watch mode: poll for new or modified runs and rebuild "
+        "the dashboard automatically.  Runs until interrupted (SIGINT).",
+    ),
+    interval: int = typer.Option(
+        30,
+        "--interval",
+        metavar="SECONDS",
+        help="Poll interval in seconds (default: 30, minimum: 5).",
+    ),
 ) -> None:
     """Build and view the test results dashboard.
 
     Wraps ``engine/scripts/build-dashboard.sh`` which invokes the testgrid
     Python collector and Jinja2 renderer to produce static HTML.
 
+    When ``--watch`` is set, enters a long-running polling process that
+    monitors the reports directory for new or modified ``run-*``
+    directories and rebuilds the dashboard automatically.
+
     \b
     Examples:
         chart-test-swarm dashboard
         chart-test-swarm dashboard --run-id run-20260520-101500
         chart-test-swarm dashboard --reports-dir /path/to/reports
+        chart-test-swarm dashboard --watch
+        chart-test-swarm dashboard --watch --interval 10
     """
     from chart_test_swarm.commands.dashboard_cmd import dashboard as _dashboard_impl
 
@@ -180,6 +198,8 @@ def dashboard_cmd(
         run_id=run_id,
         reports_dir=reports_dir,
         project_dir=project_dir,
+        watch=watch,
+        interval=interval,
     )
 
 
