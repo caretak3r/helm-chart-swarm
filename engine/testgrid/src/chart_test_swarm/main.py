@@ -182,32 +182,65 @@ list_app = typer.Typer(help="List integrations and scenario variants.", no_args_
 
 
 @list_app.command(name="integrations")
-def list_integrations() -> None:
+def list_integrations_cmd(
+    root: str | None = typer.Option(
+        None,
+        "--root",
+        metavar="DIR",
+        help="Path to the integrations root directory "
+        "(default: engine/skills/chart-test-swarm/references/integrations).",
+    ),
+) -> None:
     """List available integration categories and their primers.
 
-    (Stub — full implementation in F9.4.)
+    Walks ``engine/skills/chart-test-swarm/references/integrations/<category>/``
+    and emits one tab-separated line per primer in sorted order.
+
+    \b
+    Examples:
+        chart-test-swarm list integrations
+        chart-test-swarm list integrations --root /custom/integrations
     """
-    print("list integrations: stub — F9.4 will walk integration subdirs", file=sys.stderr)
-    raise typer.Exit(code=1)
+    from chart_test_swarm.commands.list_cmd import list_integrations as _list_integrations_impl
+
+    _list_integrations_impl(root=root)
 
 
 @list_app.command(name="variants")
-def list_variants(
+def list_variants_cmd(
     integration: str | None = typer.Option(
         None,
         "--integration",
-        help="Filter variants by integration name.",
+        "-i",
+        metavar="NAME",
+        help="Filter variants by integration name (e.g. cert-manager).",
+    ),
+    scenarios_dir: str | None = typer.Option(
+        None,
+        "--scenarios-dir",
+        metavar="DIR",
+        help="Path to the scenarios directory (default: examples/.../chart-test/scenarios).",
     ),
 ) -> None:
     """List scenario variants, optionally filtered by integration.
 
-    (Stub — full implementation in F9.4.)
+    Walks ``examples/*/scenarios/`` recursively and prints matching YAML paths.
+    When ``--integration`` is given, only files whose stem contains the
+    integration name (case-insensitive) are emitted.
+
+    \b
+    Examples:
+        chart-test-swarm list variants
+        chart-test-swarm list variants --integration cert-manager
+        chart-test-swarm list variants --integration nginx-ingress
+            --scenarios-dir /path/to/scenarios
     """
-    if integration:
-        print(f"list variants --integration {integration}: stub", file=sys.stderr)
-    else:
-        print("list variants: stub — F9.4 will walk scenario directories", file=sys.stderr)
-    raise typer.Exit(code=1)
+    from chart_test_swarm.commands.list_cmd import list_variants as _list_variants_impl
+
+    _list_variants_impl(
+        integration=integration,
+        scenarios_dir=scenarios_dir,
+    )
 
 
 # -- generate (sub-typer with pick / author / explore) -------------------------

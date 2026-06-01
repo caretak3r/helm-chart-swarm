@@ -25,7 +25,7 @@ if [ -n "${KUBE_CONTEXT:-}" ]; then
 fi
 
 kubectl "${kubectl_args[@]}" -n "$ns" run "$pod" --rm -i --restart=Never --quiet \
-  --image=curlimages/curl:8.6.0 --timeout="$TIMEOUT" \
+  --image=curlimages/curl:8.6.0 --pod-running-timeout="$TIMEOUT" \
   -- sh -c "curl -sS -o /dev/null -w '%{http_code}' --max-time 30 '$url'" \
   > /tmp/${pod}.out 2>/tmp/${pod}.err || true
 

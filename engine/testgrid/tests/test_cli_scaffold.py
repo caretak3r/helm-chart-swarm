@@ -271,8 +271,8 @@ class TestSubcommandStubs:
     def test_list_variants_accepts_integration_flag(self) -> None:
         """list variants --integration is accepted."""
         result = runner.invoke(app, ["list", "variants", "--integration", "cert-manager"])
-        # Will exit 1 (stub), not 2 (arg error)
-        assert result.exit_code == 1
+        # Real implementation: should find matching scenarios; exit 0
+        assert result.exit_code == 0
 
     def test_generate_pick_exists(self) -> None:
         """generate pick command is registered."""
@@ -311,15 +311,17 @@ class TestListSubcommandGroup:
         assert result.exit_code != 0
         assert "Usage" in (result.stdout + result.stderr)
 
-    def test_list_integrations_stub(self) -> None:
-        """list integrations stub exits non-zero."""
+    def test_list_integrations_succeeds(self) -> None:
+        """list integrations exits 0 with real implementation."""
         result = runner.invoke(app, ["list", "integrations"])
-        assert result.exit_code == 1
+        assert result.exit_code == 0
+        assert result.stdout.strip(), "Expected non-empty stdout"
 
-    def test_list_variants_stub(self) -> None:
-        """list variants stub exits non-zero."""
+    def test_list_variants_succeeds(self) -> None:
+        """list variants exits 0 with real implementation."""
         result = runner.invoke(app, ["list", "variants"])
-        assert result.exit_code == 1
+        assert result.exit_code == 0
+        assert result.stdout.strip(), "Expected non-empty stdout"
 
 
 class TestGenerateSubcommandGroup:
