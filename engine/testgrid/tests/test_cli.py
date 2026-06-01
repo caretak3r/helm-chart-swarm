@@ -246,11 +246,22 @@ class TestGenerateExploreCli:
         assert "Usage" in result.stdout or "usage" in result.stdout.lower()
 
     def test_valid_invocation(self) -> None:
-        """Valid invocation (stub) exits 1 but not arg error."""
-        result = runner.invoke(app, ["generate", "explore"])
-        # Stub exits 1 — not arg error 2
-        assert result.exit_code != 2, (
-            f"Expected non-2 exit (arg error), got {result.exit_code}: {result.stderr}"
+        """Valid invocation with required flags exits non-zero (no LLM binary in test env)."""
+        result = runner.invoke(
+            app,
+            [
+                "generate",
+                "explore",
+                "--chart",
+                "/tmp/nonexistent",
+                "--integrations",
+                "cert-manager",
+            ],
+        )
+        # Real implementation: exits non-zero (no LLM binary or chart not found)
+        # but NOT arg-error (exit 2)
+        assert result.exit_code not in (0, 2), (
+            f"Expected non-zero/non-arg-error exit, got {result.exit_code}: {result.stderr}"
         )
 
     def test_invalid_flag_exits_nonzero(self) -> None:

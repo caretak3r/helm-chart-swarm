@@ -292,8 +292,11 @@ class TestSubcommandStubs:
     def test_generate_author_accepts_description(self) -> None:
         """generate author accepts a description argument."""
         result = runner.invoke(app, ["generate", "author", "test description"])
-        # Will exit 1 (stub), not 2 (arg error)
-        assert result.exit_code == 1
+        # Real implementation: exits non-zero (no LLM binary in test env),
+        # but NOT arg-error (exit 2)
+        assert result.exit_code not in (0, 2), (
+            f"Expected non-zero/non-arg-error exit, got {result.exit_code}: {result.stderr}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -340,11 +343,18 @@ class TestGenerateSubcommandGroup:
         assert result.exit_code != 0
 
     def test_generate_author_stub(self) -> None:
-        """generate author stub exits non-zero."""
+        """generate author exits non-zero without LLM binary in test env."""
         result = runner.invoke(app, ["generate", "author", "a scenario"])
-        assert result.exit_code == 1
+        # Real implementation: exits non-zero (no LLM binary), not arg-error (2)
+        assert result.exit_code not in (0, 2), (
+            f"Expected non-zero/non-arg-error exit, got {result.exit_code}: {result.stderr}"
+        )
 
     def test_generate_explore_stub(self) -> None:
-        """generate explore stub exits non-zero."""
+        """generate explore exits non-zero without required flags or LLM binary."""
         result = runner.invoke(app, ["generate", "explore"])
-        assert result.exit_code == 1
+        # Real implementation: missing required --chart/--integrations exits 2 (arg error)
+        # This is expected — the command now requires these flags
+        assert result.exit_code != 0, (
+            f"Expected non-zero exit, got {result.exit_code}: {result.stderr}"
+        )

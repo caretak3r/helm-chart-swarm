@@ -131,9 +131,7 @@ class TestAuthorInvokesLLMCmd:
                     if pattern == "sk-" and "sk-" in content:
                         # Check if it's a random occurrence (e.g. in a word like "task-")
                         # or an actual API key pattern
-                        lines_with_sk = [
-                            line for line in content.split("\n") if "sk-" in line
-                        ]
+                        lines_with_sk = [line for line in content.split("\n") if "sk-" in line]
                         for line in lines_with_sk:
                             if "sk-" in line and not line.strip().startswith("#"):
                                 pytest.fail(
@@ -141,9 +139,7 @@ class TestAuthorInvokesLLMCmd:
                                     f"in {py_file}:\n  {line.strip()[:120]}"
                                 )
                     else:
-                        pytest.fail(
-                            f"Found credential pattern '{pattern}' in {py_file}"
-                        )
+                        pytest.fail(f"Found credential pattern '{pattern}' in {py_file}")
 
 
 # ---------------------------------------------------------------------------
@@ -164,9 +160,7 @@ class TestAuthorSchemaValidation:
             ["generate", "author", "cert-manager with self-signed ca"],
             env=env,
         )
-        assert result.exit_code == 0, (
-            f"exit_code={result.exit_code}\nstderr={result.stderr}"
-        )
+        assert result.exit_code == 0, f"exit_code={result.exit_code}\nstderr={result.stderr}"
         assert _validate_yaml_against_schema(result.stdout), (
             f"Schema validation failed for generated YAML:\n{result.stdout[:500]}"
         )
@@ -183,10 +177,12 @@ class TestAuthorRetries:
     def test_author_retries_three_times_on_invalid(self, tmp_path: Path) -> None:
         """LLM_STUB_PLAN=fail,fail,pass → 3 invocations, exits 0."""
         count_file = tmp_path / "llm-count.txt"
-        env = _make_env({
-            "LLM_STUB_PLAN": "fail,fail,pass",
-            "LLM_STUB_COUNT_FILE": str(count_file),
-        })
+        env = _make_env(
+            {
+                "LLM_STUB_PLAN": "fail,fail,pass",
+                "LLM_STUB_COUNT_FILE": str(count_file),
+            }
+        )
 
         result = runner.invoke(
             app,
@@ -203,10 +199,12 @@ class TestAuthorRetries:
     def test_author_max_retries_one_fails_on_invalid(self, tmp_path: Path) -> None:
         """--max-retries 1 against fail,fail,pass → non-zero exit, stderr has 'invalid'/'schema'."""
         count_file = tmp_path / "llm-count.txt"
-        env = _make_env({
-            "LLM_STUB_PLAN": "fail,fail,pass",
-            "LLM_STUB_COUNT_FILE": str(count_file),
-        })
+        env = _make_env(
+            {
+                "LLM_STUB_PLAN": "fail,fail,pass",
+                "LLM_STUB_COUNT_FILE": str(count_file),
+            }
+        )
 
         result = runner.invoke(
             app,
@@ -232,9 +230,7 @@ class TestAuthorRetries:
             ["generate", "author", "valid description"],
             env=env,
         )
-        assert result.exit_code == 0, (
-            f"exit_code={result.exit_code}\nstderr={result.stderr}"
-        )
+        assert result.exit_code == 0, f"exit_code={result.exit_code}\nstderr={result.stderr}"
         assert count_file.read_text().strip() == "1"
 
 
@@ -256,9 +252,7 @@ class TestAuthorRejectsEmptyDescription:
             ["generate", "author", ""],
             env=env,
         )
-        assert result.exit_code != 0, (
-            f"Expected non-zero exit, got {result.exit_code}"
-        )
+        assert result.exit_code != 0, f"Expected non-zero exit, got {result.exit_code}"
         combined = result.stdout + result.stderr
         assert (
             "empty" in combined.lower()
@@ -280,9 +274,7 @@ class TestAuthorRejectsEmptyDescription:
             ["generate", "author", "   "],
             env=env,
         )
-        assert result.exit_code != 0, (
-            f"Expected non-zero exit, got {result.exit_code}"
-        )
+        assert result.exit_code != 0, f"Expected non-zero exit, got {result.exit_code}"
         combined = result.stdout + result.stderr
         assert (
             "empty" in combined.lower()
@@ -337,13 +329,9 @@ class TestAuthorMissingLLMBinary:
         )
         combined = result.stdout + result.stderr
         # Must explain how to set CTS_LLM_CMD
-        assert "CTS_LLM_CMD" in combined, (
-            f"Expected mention of CTS_LLM_CMD env var:\n{combined}"
-        )
+        assert "CTS_LLM_CMD" in combined, f"Expected mention of CTS_LLM_CMD env var:\n{combined}"
         # Must name what was searched for
-        assert "droid" in combined.lower(), (
-            f"Expected mention of 'droid' binary:\n{combined}"
-        )
+        assert "droid" in combined.lower(), f"Expected mention of 'droid' binary:\n{combined}"
 
 
 # ---------------------------------------------------------------------------
@@ -374,7 +362,7 @@ class TestAuthorDroidAutoDiscovery:
             "  release: sample\n"
             "  namespace: sample\n"
             "  set:\n"
-            "    replicaCount: \"1\"\n"
+            '    replicaCount: "1"\n'
             "asserts:\n"
             "  - type: pods-ready\n"
             "    namespace: sample\n"
@@ -411,10 +399,12 @@ class TestAuthorSchemaFailing:
     def test_author_schema_fail_reports_diagnosable_error(self, tmp_path: Path) -> None:
         """schema-fail mode → non-zero exit, stderr names provider + enum."""
         count_file = tmp_path / "llm-count.txt"
-        env = _make_env({
-            "LLM_STUB_MODE": "schema-fail",
-            "LLM_STUB_COUNT_FILE": str(count_file),
-        })
+        env = _make_env(
+            {
+                "LLM_STUB_MODE": "schema-fail",
+                "LLM_STUB_COUNT_FILE": str(count_file),
+            }
+        )
 
         result = runner.invoke(
             app,
@@ -437,10 +427,12 @@ class TestAuthorSchemaFailing:
     def test_author_schema_fail_retry_then_success(self, tmp_path: Path) -> None:
         """schema-fail on invocations 1-2, valid on 3 → exits 0."""
         count_file = tmp_path / "llm-count.txt"
-        env = _make_env({
-            "LLM_STUB_PLAN": "schema-fail,schema-fail,pass",
-            "LLM_STUB_COUNT_FILE": str(count_file),
-        })
+        env = _make_env(
+            {
+                "LLM_STUB_PLAN": "schema-fail,schema-fail,pass",
+                "LLM_STUB_COUNT_FILE": str(count_file),
+            }
+        )
 
         result = runner.invoke(
             app,
@@ -541,9 +533,7 @@ class TestAuthorGeneratedBy:
         assert "by: author" in result.stdout, (
             f"Expected generated_by.by=author:\n{result.stdout[:500]}"
         )
-        assert "cmd:" in result.stdout, (
-            f"Expected generated_by.cmd:\n{result.stdout[:500]}"
-        )
+        assert "cmd:" in result.stdout, f"Expected generated_by.cmd:\n{result.stdout[:500]}"
         assert "timestamp:" in result.stdout, (
             f"Expected generated_by.timestamp:\n{result.stdout[:500]}"
         )
@@ -583,9 +573,7 @@ class TestAuthorForceFlag:
             f"Expected message about existing file or --force:\n{combined}"
         )
         # Content preserved
-        assert out_file.read_text() == "existing content", (
-            "Original file content was modified!"
-        )
+        assert out_file.read_text() == "existing content", "Original file content was modified!"
 
     def test_author_output_force_overwrites(self, tmp_path: Path) -> None:
         """--output --force overwrites existing file."""
@@ -606,9 +594,7 @@ class TestAuthorForceFlag:
             ],
             env=env,
         )
-        assert result.exit_code == 0, (
-            f"exit_code={result.exit_code}\nstderr={result.stderr}"
-        )
+        assert result.exit_code == 0, f"exit_code={result.exit_code}\nstderr={result.stderr}"
         content = out_file.read_text()
         assert "old content" not in content, "File was not overwritten"
         assert "llm-generated-scenario" in content, f"New content missing:\n{content[:500]}"
@@ -630,16 +616,12 @@ class TestAuthorHelp:
     def test_author_help_shows_max_retries(self) -> None:
         """generate author --help shows --max-retries."""
         result = runner.invoke(app, ["generate", "author", "--help"])
-        assert "--max-retries" in result.stdout, (
-            f"Expected --max-retries in help:\n{result.stdout}"
-        )
+        assert "--max-retries" in result.stdout, f"Expected --max-retries in help:\n{result.stdout}"
 
     def test_author_help_shows_output(self) -> None:
         """generate author --help shows --output."""
         result = runner.invoke(app, ["generate", "author", "--help"])
-        assert "--output" in result.stdout, (
-            f"Expected --output in help:\n{result.stdout}"
-        )
+        assert "--output" in result.stdout, f"Expected --output in help:\n{result.stdout}"
 
 
 # ---------------------------------------------------------------------------
@@ -661,9 +643,7 @@ class TestAuthorDescriptionPassedThrough:
             ["generate", "author", desc],
             env=env,
         )
-        assert result.exit_code == 0, (
-            f"exit_code={result.exit_code}\nstderr={result.stderr}"
-        )
+        assert result.exit_code == 0, f"exit_code={result.exit_code}\nstderr={result.stderr}"
         # The stub logs the description to stderr — we verify the stub was called
         # but we can't easily assert the exact description via CliRunner's stderr
         # since it captures stderr from the stub too. The key test is that
