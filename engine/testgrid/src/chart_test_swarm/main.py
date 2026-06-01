@@ -132,17 +132,48 @@ def run_cmd(
     )
 
 
-# -- dashboard (direct command, flags added in F9.3) ---------------------------
+# -- dashboard (F9.3 — wraps build-dashboard.sh) --------------------------------
 
 
 @app.command(name="dashboard", help="Build and view the test results dashboard.")
-def dashboard_cmd() -> None:
+def dashboard_cmd(
+    run_id: str | None = typer.Option(
+        None,
+        "--run-id",
+        metavar="ID",
+        help="Render only this run id (e.g. run-20260520-101500).",
+    ),
+    reports_dir: str | None = typer.Option(
+        None,
+        "--reports-dir",
+        metavar="DIR",
+        help="Reports root directory (default: auto-detected).",
+    ),
+    project_dir: str | None = typer.Option(
+        None,
+        "--project-dir",
+        metavar="DIR",
+        help="Root of the consumer chart project.",
+    ),
+) -> None:
     """Build and view the test results dashboard.
 
-    (Stub — full implementation in F9.3.)
+    Wraps ``engine/scripts/build-dashboard.sh`` which invokes the testgrid
+    Python collector and Jinja2 renderer to produce static HTML.
+
+    \b
+    Examples:
+        chart-test-swarm dashboard
+        chart-test-swarm dashboard --run-id run-20260520-101500
+        chart-test-swarm dashboard --reports-dir /path/to/reports
     """
-    print("dashboard: stub — F9.3 will wire build-dashboard.sh", file=sys.stderr)
-    raise typer.Exit(code=1)
+    from chart_test_swarm.commands.dashboard_cmd import dashboard as _dashboard_impl
+
+    _dashboard_impl(
+        run_id=run_id,
+        reports_dir=reports_dir,
+        project_dir=project_dir,
+    )
 
 
 # -- list (sub-typer with integrations / variants) -----------------------------
