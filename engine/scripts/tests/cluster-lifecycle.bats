@@ -21,6 +21,18 @@ setup() {
   fi
 }
 
+teardown() {
+  # Clean up any minikube profiles created by this test suite.
+  # This ensures interrupted bats runs don't leave stale profiles behind.
+  # The primary profile is chart-test-swarm-bats-mk (created by the
+  # PROVIDER=minikube cluster-up test). We also catch any other
+  # chart-test-swarm-bats-* profiles that may have been left from
+  # interrupted runs.
+  for profile in chart-test-swarm-bats-mk; do
+    minikube delete -p "$profile" 2>/dev/null || true
+  done
+}
+
 # Helper: check if we have bash >= 4 for full script execution
 _has_modern_bash() {
   [ "${BASH_VERSINFO[0]:-0}" -ge 4 ]
@@ -151,6 +163,11 @@ _has_modern_bash() {
     # by checking source code for provider handling
     grep -q 'minikube' "$SCRIPT_DIR/cluster-up.sh"
     return
+  fi
+  # Gate real-cluster tests behind CTS_BATS_REAL_CLUSTERS=1 so the default
+  # bats run is fast and hermetic (no minikube spin-up).
+  if [ "${CTS_BATS_REAL_CLUSTERS:-0}" != "1" ]; then
+    skip "CTS_BATS_REAL_CLUSTERS=1 not set: skipping real-cluster test"
   fi
   # We verify that the script proceeds past the prefix check and provider
   # check. It may fail later if minikube can't start, but should NOT fail
