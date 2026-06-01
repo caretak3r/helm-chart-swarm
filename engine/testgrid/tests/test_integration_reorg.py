@@ -40,7 +40,7 @@ EXPECTED_LAYOUT: dict[str, list[str]] = {
         "contour-gateway-api.md",
         "istio-gateway-api.md",
     ],
-    "policy": ["opa-gatekeeper.md"],
+    "policy": ["opa-gatekeeper.md", "kyverno.md"],
 }
 
 # Required H2 sections per the primer-author skill.
@@ -116,6 +116,7 @@ class TestPrimerStructure:
             "gateway-api/contour-gateway-api.md",
             "gateway-api/istio-gateway-api.md",
             "policy/opa-gatekeeper.md",
+            "policy/kyverno.md",
         ],
     )
     def test_primer_is_non_empty(self, rel_path: str) -> None:
@@ -142,6 +143,7 @@ class TestPrimerStructure:
             "gateway-api/contour-gateway-api.md",
             "gateway-api/istio-gateway-api.md",
             "policy/opa-gatekeeper.md",
+            "policy/kyverno.md",
         ],
     )
     def test_primer_has_h2_sections(self, rel_path: str) -> None:
@@ -172,6 +174,7 @@ class TestPrimerStructure:
             "gateway-api/contour-gateway-api.md",
             "gateway-api/istio-gateway-api.md",
             "policy/opa-gatekeeper.md",
+            "policy/kyverno.md",
         ],
     )
     def test_primer_file_has_markdown_extension(self, rel_path: str) -> None:
