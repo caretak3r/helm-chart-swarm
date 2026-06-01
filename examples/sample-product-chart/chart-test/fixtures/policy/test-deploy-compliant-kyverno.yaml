@@ -1,0 +1,22 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-compliant-kyverno
+  labels:
+    app: test-compliant-kyverno
+    app.kubernetes.io/name: test-compliant-kyverno
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-compliant-kyverno
+  template:
+    metadata:
+      labels:
+        app: test-compliant-kyverno
+        app.kubernetes.io/name: test-compliant-kyverno
+    spec:
+      containers:
+        - name: nginx
+          image: public.ecr.aws/nginx/nginx:1.27-alpine

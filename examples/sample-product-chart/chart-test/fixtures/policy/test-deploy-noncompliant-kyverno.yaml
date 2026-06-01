@@ -1,0 +1,20 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-noncompliant-kyverno
+  labels:
+    app: test-noncompliant-kyverno
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-noncompliant-kyverno
+  template:
+    metadata:
+      labels:
+        app: test-noncompliant-kyverno
+    spec:
+      containers:
+        - name: nginx
+          image: public.ecr.aws/nginx/nginx:1.27-alpine

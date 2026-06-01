@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-mutate-kyverno
+  labels:
+    app: test-mutate-kyverno
+spec:
+  containers:
+    - name: nginx
+      image: public.ecr.aws/nginx/nginx:1.27-alpine
