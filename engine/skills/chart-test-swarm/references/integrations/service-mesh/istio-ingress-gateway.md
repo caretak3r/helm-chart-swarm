@@ -20,7 +20,7 @@ add the gateway component as a third step.
 
 ```yaml
 - chart: istio/base
-  version: 1.22.0
+  version: 1.27.9
   release: istio-base
   namespace: istio-system
   repo:
@@ -30,17 +30,17 @@ add the gateway component as a third step.
   wait: helm-deployed
   wait_timeout: 2m
 - chart: istio/istiod
-  version: 1.22.0
+  version: 1.27.9
   release: istiod
   namespace: istio-system
   values:
     pilot:
       resources:
-        requests: { cpu: "100m", memory: "256Mi" }
+        requests: { cpu: "100m", memory: "384Mi" }
   wait: pods-ready
   wait_timeout: 5m
 - chart: istio/gateway
-  version: 1.22.0
+  version: 1.27.9
   release: istio-ingressgateway
   namespace: istio-system
   repo:
