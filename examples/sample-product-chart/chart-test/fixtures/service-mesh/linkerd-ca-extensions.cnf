@@ -1,0 +1,21 @@
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+database    = /tmp/linkerd-ca-index.txt
+new_certs_dir = /tmp
+policy      = policy_anything
+
+[ policy_anything ]
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+
+[ v3_intermediate_ca ]
+basicConstraints = critical,CA:TRUE,pathlen:0
+keyUsage = critical,keyCertSign,cRLSign
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer

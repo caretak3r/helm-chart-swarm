@@ -1,0 +1,80 @@
+---
+id: service-mesh-linkerd-multi-cluster-preview
+name: "Linkerd — Multi-Cluster Preview"
+description: >-
+  Installs linkerd-crds + linkerd-control-plane + linkerd-multicluster
+  extension via Helm, verifies the multicluster Link and ServiceMirror
+  CRDs are established, and authors a preview Link resource targeting
+  a logical target cluster. No real cross-cluster traffic — this variant
+  validates that the multicluster extension installs cleanly and that
+  the CRD scaffolding is functional.
+labels: { customer: any, profile: mesh }
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: linkerd/linkerd-crds
+      version: 1.8.0
+      release: linkerd-crds
+      namespace: linkerd
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    - kind: helm
+      chart: linkerd/linkerd-control-plane
+      version: 1.16.11
+      release: linkerd-control-plane
+      namespace: linkerd
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values: chart-test/fixtures/service-mesh/linkerd-control-plane-values.yaml
+      wait: none
+    - kind: helm
+      chart: linkerd/linkerd-multicluster
+      version: 1.14.2
+      release: linkerd-multicluster
+      namespace: linkerd-multicluster
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values: {}
+      wait: pods-ready
+      wait_timeout: 3m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    scope.enabled: "true"
+    scope.service.port: 80
+asserts:
+  - type: helm-status-deployed
+    release: linkerd-crds
+    namespace: linkerd
+  - type: helm-status-deployed
+    release: linkerd-control-plane
+    namespace: linkerd
+  - type: helm-status-deployed
+    release: linkerd-multicluster
+    namespace: linkerd-multicluster
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: linkerd
+    timeout: 3m
+  - type: pods-ready
+    namespace: linkerd-multicluster
+    timeout: 3m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/linkerd-multi-cluster-preview.sh
+tags: [nightly]
+mechanisms: [addon:linkerd, mesh:linkerd-multicluster]
