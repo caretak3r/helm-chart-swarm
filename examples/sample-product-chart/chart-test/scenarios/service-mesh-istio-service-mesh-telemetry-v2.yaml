@@ -1,0 +1,68 @@
+---
+id: service-mesh-istio-service-mesh-telemetry-v2
+name: "Istio Service Mesh — Telemetry v2"
+description: >-
+  Installs istio/base + istio/istiod, deploys the product chart with
+  mesh.inject=true, applies a Telemetry resource in the product
+  namespace to configure Envoy access logging and metrics, and
+  verifies proxy stats are accessible and telemetry configuration
+  is active.
+labels: { customer: any, profile: mesh }
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: istio/base
+      version: 1.27.9
+      release: istio-base
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    - kind: helm
+      chart: istio/istiod
+      version: 1.27.9
+      release: istiod
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        pilot:
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "384Mi"
+      wait: pods-ready
+      wait_timeout: 5m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    mesh.inject: "true"
+asserts:
+  - type: helm-status-deployed
+    release: istio-base
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istiod
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: istio-system
+    selector: app=istiod
+    timeout: 5m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/istio-telemetry-v2.sh
+tags: [nightly]
+mechanisms: [addon:istio, mesh:istio-service-mesh]

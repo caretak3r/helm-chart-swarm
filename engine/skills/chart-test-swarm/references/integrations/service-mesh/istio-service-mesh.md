@@ -1,17 +1,62 @@
 # istio-service-mesh
 
 Installs Istio as a service mesh (control plane + data-plane sidecar injection).
-The chart-test-swarm scenario generated against this primer verifies that the
+The chart-test-swarm scenarios generated against this primer verify that the
 consumer chart can:
-1. Have its pods receive an Envoy sidecar via automatic namespace-level injection
+1. Have its pods receive an Envoy sidecar via annotation-driven injection
 2. Survive the `istio-init` container + iptables redirect without init failures
 3. Communicate pod-to-pod after `PeerAuthentication: STRICT` mTLS is enforced
+4. Reject non-mesh traffic under STRICT mTLS while allowing in-mesh traffic
+5. Export telemetry via the Telemetry v2 API for metrics, access logs, and tracing
+
+## What
+
+istio-service-mesh scenarios install the Istio control plane (istio-base + istiod)
+on a kind cluster and exercise the sample-product chart's mesh injection
+capabilities. Each variant targets a specific mesh feature: sidecar injection
+verification, mTLS enforcement, permissive-to-strict PeerAuthentication transitions,
+and Telemetry v2 observability.
+
+## When
+
+Use these scenarios when validating that a Helm chart:
+- Correctly annotates pods for sidecar injection (`sidecar.istio.io/inject: "true"`)
+- Survives the istio-init container + iptables redirect cycle
+- Supports pod-to-pod communication through the mesh under mTLS
+- Exposes values to opt individual workloads into/out of mesh injection
+
+## How
+
+The consumer chart (sample-product) exposes `mesh.inject: true` which maps to
+the `sidecar.istio.io/inject: "true"` pod annotation via its `_helpers.tpl`.
+The istio base + istiod charts are installed as `cluster.preinstall` items.
+After istiod pods are Ready, the product namespace is labeled for injection.
+The product chart is then installed with mesh injection enabled.
+
+## Variants
+
+Four lean variants exercise the core mesh capabilities:
+
+| Variant | Scenario file | What it verifies |
+|---------|--------------|------------------|
+| **sidecar-injection** | `service-mesh-istio-service-mesh-sidecar-injection.yaml` | Every product pod has exactly 2 containers including `istio-proxy`; in-mesh pod reaches the product Service FQDN over the sidecar with HTTP 200 |
+| **strict-mtls** | `service-mesh-istio-service-mesh-strict-mtls.yaml` | `PeerAuthentication` with `spec.mtls.mode==STRICT`; plain HTTP from a non-mesh pod is rejected; in-mesh probe pod still succeeds with 200 via auto-upgraded mTLS |
+| **peer-authentication** | `service-mesh-istio-service-mesh-peer-authentication.yaml` | PeerAuthentication lifecycle: PERMISSIVE allows both mesh and non-mesh traffic; switching to STRICT blocks non-mesh while mesh traffic continues |
+| **telemetry-v2** | `service-mesh-istio-service-mesh-telemetry-v2.yaml` | Telemetry resource applied in product namespace; Envoy access logging and metrics collection verified via proxy stats endpoint |
+
+### Cross-feature compose
+
+The cross-feature compose variant (`service-mesh-istio-service-mesh-cert-manager-tls.yaml`)
+combines Istio Gateway with cert-manager (M3): an Istio Gateway listener references
+a `credentialName` pointing to a cert-manager-issued Secret. `istioctl analyze` must
+report clean, and an HTTPS request through the gateway must return 200 with the
+cert-manager-issued certificate.
 
 ## Cluster preinstall
 
 ```yaml
 - chart: istio/base
-  version: 1.22.0
+  version: 1.27.9
   release: istio-base
   namespace: istio-system
   repo:
@@ -21,7 +66,7 @@ consumer chart can:
   wait: helm-deployed
   wait_timeout: 2m
 - chart: istio/istiod
-  version: 1.22.0
+  version: 1.27.9
   release: istiod
   namespace: istio-system
   repo:
@@ -30,15 +75,7 @@ consumer chart can:
   values:
     pilot:
       resources:
-        requests: { cpu: "100m", memory: "256Mi" }
-    global:
-      proxy:
-        resources:
-          requests: { cpu: "50m", memory: "64Mi" }
-          limits:  { cpu: "200m", memory: "128Mi" }
-      proxy_init:
-        resources:
-          limits: { cpu: "100m", memory: "50Mi" }
+        requests: { cpu: "100m", memory: "384Mi" }
   wait: pods-ready
   wait_timeout: 5m
 ```
@@ -77,26 +114,33 @@ already installed without the label, do a `helm upgrade` to cycle the pods.
 ## Standard values-override pattern
 
 ```yaml
-chartTestSwarm:
-  enabled: true              # gates the helm-test pod
+# Enable mesh injection via the chart's built-in value gate.
+# The _helpers.tpl maps mesh.inject → sidecar.istio.io/inject: "true" pod annotation.
+mesh:
+  inject: true
 
-# No special values are needed for basic sidecar injection — istiod handles
-# it via the namespace label. Main concern: Jobs must opt out.
-
-# If the chart exposes pod annotations, make injection explicit:
-podAnnotations:
-  sidecar.istio.io/inject: "true"
-
-# If the chart has Jobs (check templates/*.yaml for kind: Job), add:
-# jobAnnotations:
-#   sidecar.istio.io/inject: "false"
-# This requires the chart to expose job-level podAnnotations. If it doesn't,
-# report a soft finding: "chart has Jobs but cannot opt out of injection via
-# values — risk of Job pods never completing in mesh namespaces."
+# Enable scope component to verify multi-pod injection:
+scope:
+  enabled: true
 
 # Resource limits: the istio-proxy sidecar runs with its OWN resource spec
 # (set in istiod values above). Product container limits don't need changes,
 # but the node needs capacity for the extra sidecar per pod.
+```
+
+For the istio Gateway cross-feature compose, also install the `istio/gateway` chart:
+
+```yaml
+- chart: istio/gateway
+  version: 1.27.9
+  release: istio-ingressgateway
+  namespace: istio-system
+  repo:
+    name: istio
+    url: "https://istio-release.storage.googleapis.com/charts"
+  values: {}
+  wait: pods-ready
+  wait_timeout: 3m
 ```
 
 ## Standard helm-test pattern
