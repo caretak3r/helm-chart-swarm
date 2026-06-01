@@ -16,28 +16,49 @@ PROJECT_DIR="${PROJECT_DIR:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
 
 kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }
 
-# Resolve JWT fixture paths (PROJECT_DIR is chart root)
-resolve_fixture() {
-  local rel="$1"
-  for base in "${PROJECT_DIR}/chart-test" "${PROJECT_DIR}"; do
-    if [ -f "${base}/${rel}" ]; then
-      echo "${base}/${rel}"
-      return 0
-    fi
-  done
-  echo ""
+# Generate ephemeral RSA 2048-bit key and JWKS at runtime (no committed private key)
+echo "==> Generating ephemeral RSA 2048-bit JWT signing key"
+TMPDIR=$(mktemp -d)
+trap 'rm -rf ${TMPDIR}' EXIT
+
+JWT_KEY_FILE="${TMPDIR}/jwt-key.pem"
+JWT_PUB_FILE="${TMPDIR}/jwt-key.pub"
+JWKS_FILE="${TMPDIR}/jwks.json"
+
+openssl genpkey -algorithm RSA -out "${JWT_KEY_FILE}" -pkeyopt rsa_keygen_bits:2048 2>/dev/null
+openssl rsa -in "${JWT_KEY_FILE}" -pubout -out "${JWT_PUB_FILE}" 2>/dev/null
+
+# Generate JWKS from the public key
+python3 -c "
+import json, base64, subprocess
+
+# Extract modulus using openssl
+result = subprocess.run(['openssl', 'rsa', '-in', '${JWT_PUB_FILE}', '-pubin', '-noout', '-modulus'],
+                       capture_output=True, text=True)
+modulus_hex = result.stdout.strip().replace('Modulus=', '').replace('\n', '').replace(':', '')
+n_bytes = bytes.fromhex(modulus_hex)
+
+def b64url(b):
+    return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
+
+jwks = {
+    'keys': [{
+        'kty': 'RSA',
+        'use': 'sig',
+        'alg': 'RS256',
+        'kid': 'test-issuer-key',
+        'n': b64url(n_bytes),
+        'e': 'AQAB'
+    }]
+}
+with open('${JWKS_FILE}', 'w') as f:
+    json.dump(jwks, f, indent=2)
+" 2>/dev/null || {
+  echo "FAIL: Could not generate JWKS (Python unavailable)" >&2
+  exit 1
 }
 
-JWT_KEY_FILE=$(resolve_fixture "fixtures/service-mesh/jwt/jwt-key.pem")
-JWKS_FILE=$(resolve_fixture "fixtures/service-mesh/jwt/jwks.json")
-
-echo "==> JWT key: ${JWT_KEY_FILE}"
-echo "==> JWKS:    ${JWKS_FILE}"
-
-if [ -z "${JWT_KEY_FILE}" ] || [ -z "${JWKS_FILE}" ]; then
-  echo "FAIL: Could not find JWT fixtures" >&2
-  exit 1
-fi
+echo "==> JWT key generated at: ${JWT_KEY_FILE}"
 
 echo "==> Creating Istio Gateway + VirtualService"
 kctl -n "${NS}" apply -f - <<EOF

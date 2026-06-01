@@ -50,6 +50,8 @@ asserts:
   - type: helm-status-deployed
     release: sample
     namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/linkerd-gen-certs.sh
   - type: pods-ready
     namespace: linkerd
     timeout: 10m

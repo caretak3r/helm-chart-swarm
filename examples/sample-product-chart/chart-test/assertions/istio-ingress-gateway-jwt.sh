@@ -14,12 +14,75 @@ PROJECT_DIR="${PROJECT_DIR:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
 
 kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }
 
-# Extract the JWT private key from fixtures (PROJECT_DIR is chart root)
-JWT_KEY_FILE="${PROJECT_DIR}/chart-test/fixtures/service-mesh/jwt/jwt-key.pem"
-if [ ! -f "${JWT_KEY_FILE}" ]; then
-  JWT_KEY_FILE="${PROJECT_DIR}/fixtures/service-mesh/jwt/jwt-key.pem"
-fi
-echo "==> JWT key path: ${JWT_KEY_FILE}"
+# Generate ephemeral RSA 2048-bit key and JWKS at runtime (no committed private key)
+echo "==> Generating ephemeral RSA 2048-bit JWT signing key"
+TMPDIR=$(mktemp -d)
+trap 'rm -rf ${TMPDIR}' EXIT
+
+JWT_KEY_FILE="${TMPDIR}/jwt-key.pem"
+JWT_PUB_FILE="${TMPDIR}/jwt-key.pub"
+JWKS_FILE="${TMPDIR}/jwks.json"
+
+openssl genpkey -algorithm RSA -out "${JWT_KEY_FILE}" -pkeyopt rsa_keygen_bits:2048 2>/dev/null
+openssl rsa -in "${JWT_KEY_FILE}" -pubout -out "${JWT_PUB_FILE}" 2>/dev/null
+
+# Generate JWKS from the public key
+python3 -c "
+import json, base64, struct
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+
+with open('${JWT_PUB_FILE}', 'rb') as f:
+    pub_key = serialization.load_pem_public_key(f.read(), backend=default_backend())
+numbers = pub_key.public_numbers()
+
+def int_to_base64url(n):
+    n_bytes = n.to_bytes((n.bit_length() + 7) // 8, 'big')
+    return base64.urlsafe_b64encode(n_bytes).rstrip(b'=').decode()
+
+jwks = {
+    'keys': [{
+        'kty': 'RSA',
+        'use': 'sig',
+        'alg': 'RS256',
+        'kid': 'test-issuer-key',
+        'n': int_to_base64url(numbers.n),
+        'e': int_to_base64url(numbers.e)
+    }]
+}
+with open('${JWKS_FILE}', 'w') as f:
+    json.dump(jwks, f, indent=2)
+" 2>/dev/null || {
+  echo "WARN: Python cryptography library not available; using openssl fallback"
+  # Fallback: generate JWKS with openssl + basic python (no cryptography)
+  python3 -c "
+import json, base64, subprocess, re
+
+# Extract modulus using openssl
+result = subprocess.run(['openssl', 'rsa', '-in', '${JWT_PUB_FILE}', '-pubin', '-noout', '-modulus'],
+                       capture_output=True, text=True)
+modulus_hex = result.stdout.strip().replace('Modulus=', '').replace('\n', '').replace(':', '')
+n_bytes = bytes.fromhex(modulus_hex)
+
+def int_to_base64url(b):
+    return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
+
+jwks = {
+    'keys': [{
+        'kty': 'RSA',
+        'use': 'sig',
+        'alg': 'RS256',
+        'kid': 'test-issuer-key',
+        'n': int_to_base64url(n_bytes),
+        'e': 'AQAB'
+    }]
+}
+with open('${JWKS_FILE}', 'w') as f:
+    json.dump(jwks, f, indent=2)
+" 2>/dev/null
+}
+
+echo "==> JWT key generated at: ${JWT_KEY_FILE}"
 
 echo "==> Creating Istio Gateway + VirtualService"
 kctl -n "${NS}" apply -f - <<EOF
@@ -61,10 +124,9 @@ spec:
 EOF
 
 echo "==> Creating RequestAuthentication (JWT validation)"
-JWKS_CONTENT=$(cat "${PROJECT_DIR}/chart-test/fixtures/service-mesh/jwt/jwks.json" 2>/dev/null || \
-  cat "${PROJECT_DIR}/fixtures/service-mesh/jwt/jwks.json" 2>/dev/null || echo "")
+JWKS_CONTENT=$(cat "${JWKS_FILE}" 2>/dev/null || echo "")
 if [ -z "${JWKS_CONTENT}" ]; then
-  echo "FAIL: Could not read jwks.json fixture" >&2
+  echo "FAIL: Could not generate JWKS" >&2
   exit 1
 fi
 
