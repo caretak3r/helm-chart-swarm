@@ -156,7 +156,7 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy"] },
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations"] },
         "timeout": { "type": "string", "default": "5m" }
       },
       "oneOf": [
@@ -254,6 +254,42 @@
             "namespace":      { "type": "string", "description": "Product namespace." },
             "expect_present": { "type": "boolean", "description": "true: at least one NetworkPolicy MUST exist selecting the workload. false: zero NetworkPolicy documents." },
             "source":         { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: resource requests/limits are set on every workload container (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":           { "const": "resources-present" },
+            "namespace":      { "type": "string", "description": "Product namespace." },
+            "expect_present": { "type": "boolean", "description": "true: every workload container MUST carry resources.requests and resources.limits. false: no populated resources block on any container." },
+            "source":         { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "requests":       { "type": "object", "description": "Expected resources.requests fields (e.g. cpu, memory). Checked when expect_present=true.", "additionalProperties": true },
+            "limits":         { "type": "object", "description": "Expected resources.limits fields (e.g. cpu, memory). Checked when expect_present=true.", "additionalProperties": true }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: imagePullSecrets propagate to every workload pod spec and optionally to the chart ServiceAccount (expect_present=true) or are absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "imagepullsecrets-present" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: imagePullSecrets MUST appear on every workload pod spec (and ServiceAccount if one exists). false: no imagePullSecrets on any pod spec or ServiceAccount." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "secret_names":     { "type": "array", "items": { "type": "string" }, "description": "Expected imagePullSecret name(s) (e.g. ['regcred']). Checked when expect_present=true." },
+            "check_service_account": { "type": "boolean", "default": true, "description": "Also check imagePullSecrets on the chart's ServiceAccount (if one is rendered)." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: ServiceAccount carries configured cloud-identity annotations (IRSA / Azure workload identity / GKE WI) when expect_present=true, or omits them when false.",
+          "properties": {
+            "type":             { "const": "serviceaccount-annotations" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: the rendered ServiceAccount MUST carry the configured annotations. false: the ServiceAccount MUST NOT carry cloud-identity annotation keys." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "annotations":      { "type": "object", "additionalProperties": { "type": "string" }, "description": "Expected annotation key=value pairs on the ServiceAccount. Checked when expect_present=true." },
+            "identity_keys":    { "type": "array", "items": { "type": "string" }, "description": "Cloud-identity annotation keys that MUST be absent when expect_present=false (e.g. eks.amazonaws.com/role-arn, azure.workload.identity/client-id, iam.gke.io/gcp-service-account)." }
           },
           "required": ["namespace", "expect_present"]
         }

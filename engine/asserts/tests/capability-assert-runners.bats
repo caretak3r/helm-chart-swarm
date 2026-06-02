@@ -1051,3 +1051,385 @@ EOF
 @test "network-policy.sh is executable" {
   [ -x "$ASSERTS_DIR/network-policy.sh" ]
 }
+
+# ═══════════════════════════════════════════════════════════════════════
+# resources-present
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "resources-present: FAIL (expect_present=true) when chart lacks resources on skywatcher" {
+  local s="$TEST_TMPDIR/res-fail.yaml"
+  cat > "$s" <<'EOF'
+id: res-fail
+name: resources-present FAIL test
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    resources.requests.cpu: 100m
+    resources.requests.memory: 128Mi
+    resources.limits.cpu: 500m
+    resources.limits.memory: 256Mi
+asserts:
+  - type: resources-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+EOF
+  run_assert "resources-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]]
+  [[ "$output" == *"missing resources"* ]]
+}
+
+@test "resources-present: PASS (expect_present=false) when no resources block in rendered output" {
+  local s="$TEST_TMPDIR/res-pass-off.yaml"
+  cat > "$s" <<'EOF'
+id: res-pass-off
+name: resources-present PASS off-case
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: resources-present
+    namespace: sample
+    source: rendered
+    expect_present: false
+EOF
+  run_assert "resources-present.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "resources-present: FAIL with invalid expect_present value" {
+  local s="$TEST_TMPDIR/res-invalid.yaml"
+  cat > "$s" <<'EOF'
+id: res-invalid
+name: resources-present invalid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: resources-present
+    namespace: sample
+    source: rendered
+    expect_present: maybe
+EOF
+  run_assert "resources-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"expect_present must be"* ]]
+}
+
+@test "resources-present: schema validates resources-present assertion" {
+  local s="$TEST_TMPDIR/res-schema-valid.yaml"
+  cat > "$s" <<'EOF'
+id: res-schema-valid
+name: resources-present schema valid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: resources-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    requests:
+      cpu: 100m
+    limits:
+      cpu: 500m
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -eq 0 ]
+}
+
+@test "resources-present: schema rejects resources-present without expect_present" {
+  local s="$TEST_TMPDIR/res-schema-noexpect.yaml"
+  cat > "$s" <<'EOF'
+id: res-schema-noexpect
+name: resources-present schema missing expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: resources-present
+    namespace: sample
+    source: rendered
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -ne 0 ]
+}
+
+@test "resources-present.sh is executable" {
+  [ -x "$ASSERTS_DIR/resources-present.sh" ]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# imagepullsecrets-present
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "imagepullsecrets-present: FAIL (expect_present=true) when chart lacks imagePullSecrets" {
+  local s="$TEST_TMPDIR/ips-fail.yaml"
+  cat > "$s" <<'EOF'
+id: ips-fail
+name: imagepullsecrets-present FAIL test
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    imagePullSecrets[0].name: regcred
+asserts:
+  - type: imagepullsecrets-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    secret_names:
+      - regcred
+    check_service_account: true
+EOF
+  run_assert "imagepullsecrets-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]]
+}
+
+@test "imagepullsecrets-present: PASS (expect_present=false) when no imagePullSecrets in rendered output" {
+  local s="$TEST_TMPDIR/ips-pass-off.yaml"
+  cat > "$s" <<'EOF'
+id: ips-pass-off
+name: imagepullsecrets-present PASS off-case
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: imagepullsecrets-present
+    namespace: sample
+    source: rendered
+    expect_present: false
+    check_service_account: true
+EOF
+  run_assert "imagepullsecrets-present.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "imagepullsecrets-present: FAIL with invalid expect_present value" {
+  local s="$TEST_TMPDIR/ips-invalid.yaml"
+  cat > "$s" <<'EOF'
+id: ips-invalid
+name: imagepullsecrets-present invalid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: imagepullsecrets-present
+    namespace: sample
+    source: rendered
+    expect_present: maybe
+EOF
+  run_assert "imagepullsecrets-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"expect_present must be"* ]]
+}
+
+@test "imagepullsecrets-present: schema validates imagepullsecrets-present assertion" {
+  local s="$TEST_TMPDIR/ips-schema-valid.yaml"
+  cat > "$s" <<'EOF'
+id: ips-schema-valid
+name: imagepullsecrets-present schema valid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: imagepullsecrets-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    secret_names:
+      - regcred
+    check_service_account: true
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -eq 0 ]
+}
+
+@test "imagepullsecrets-present: schema rejects imagepullsecrets-present without expect_present" {
+  local s="$TEST_TMPDIR/ips-schema-noexpect.yaml"
+  cat > "$s" <<'EOF'
+id: ips-schema-noexpect
+name: imagepullsecrets-present schema missing expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: imagepullsecrets-present
+    namespace: sample
+    source: rendered
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -ne 0 ]
+}
+
+@test "imagepullsecrets-present.sh is executable" {
+  [ -x "$ASSERTS_DIR/imagepullsecrets-present.sh" ]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# serviceaccount-annotations
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "serviceaccount-annotations: FAIL (expect_present=true) when chart lacks ServiceAccount" {
+  local s="$TEST_TMPDIR/saann-fail.yaml"
+  cat > "$s" <<'EOF'
+id: saann-fail
+name: serviceaccount-annotations FAIL test
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    serviceAccount.create: true
+    serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn: arn:aws:iam::123456789012:role/demo
+asserts:
+  - type: serviceaccount-annotations
+    namespace: sample
+    source: rendered
+    expect_present: true
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/demo
+EOF
+  run_assert "serviceaccount-annotations.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]]
+  [[ "$output" == *"ServiceAccount"* ]]
+}
+
+@test "serviceaccount-annotations: PASS (expect_present=false) when no ServiceAccount rendered" {
+  local s="$TEST_TMPDIR/saann-pass-off.yaml"
+  cat > "$s" <<'EOF'
+id: saann-pass-off
+name: serviceaccount-annotations PASS off-case
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: serviceaccount-annotations
+    namespace: sample
+    source: rendered
+    expect_present: false
+    identity_keys:
+      - eks.amazonaws.com/role-arn
+      - azure.workload.identity/client-id
+      - iam.gke.io/gcp-service-account
+EOF
+  run_assert "serviceaccount-annotations.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "serviceaccount-annotations: FAIL with invalid expect_present value" {
+  local s="$TEST_TMPDIR/saann-invalid.yaml"
+  cat > "$s" <<'EOF'
+id: saann-invalid
+name: serviceaccount-annotations invalid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: serviceaccount-annotations
+    namespace: sample
+    source: rendered
+    expect_present: maybe
+EOF
+  run_assert "serviceaccount-annotations.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"expect_present must be"* ]]
+}
+
+@test "serviceaccount-annotations: schema validates serviceaccount-annotations assertion" {
+  local s="$TEST_TMPDIR/saann-schema-valid.yaml"
+  cat > "$s" <<'EOF'
+id: saann-schema-valid
+name: serviceaccount-annotations schema valid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: serviceaccount-annotations
+    namespace: sample
+    source: rendered
+    expect_present: true
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/demo
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -eq 0 ]
+}
+
+@test "serviceaccount-annotations: schema rejects serviceaccount-annotations without expect_present" {
+  local s="$TEST_TMPDIR/saann-schema-noexpect.yaml"
+  cat > "$s" <<'EOF'
+id: saann-schema-noexpect
+name: serviceaccount-annotations schema missing expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: serviceaccount-annotations
+    namespace: sample
+    source: rendered
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -ne 0 ]
+}
+
+@test "serviceaccount-annotations.sh is executable" {
+  [ -x "$ASSERTS_DIR/serviceaccount-annotations.sh" ]
+}
