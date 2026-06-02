@@ -5,6 +5,11 @@
   "description": "One customer-shaped cluster + product chart + assertions. Path fields are resolved relative to the consumer project root (the dir containing chart-test-swarm.yaml).",
   "type": "object",
   "required": ["id", "cluster", "product", "asserts"],
+  "not": {
+    "type": "object",
+    "required": ["capability", "integration"],
+    "description": "capability and integration are mutually exclusive — a scenario must have one or neither, never both."
+  },
   "additionalProperties": false,
   "properties": {
     "id":   { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
@@ -151,7 +156,7 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script"] },
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects"] },
         "timeout": { "type": "string", "default": "5m" }
       },
       "oneOf": [
@@ -187,6 +192,48 @@
             "path": { "type": "string", "description": "Path to executable. Receives RELEASE, NAMESPACE, KUBECONFIG as env." }
           },
           "required": ["path"]
+        },
+        {
+          "description": "Addon-less capability assert: every rendered/live object carries the configured extra labels.",
+          "properties": {
+            "type":      { "const": "labels-present" },
+            "namespace": { "type": "string", "description": "Product namespace." },
+            "labels":    { "type": "object", "additionalProperties": { "type": "string" }, "description": "Map of key=value labels expected on ALL objects (both .metadata.labels and pod template labels)." },
+            "source":    { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect: helm template output, live kubectl output, or both." },
+            "kinds":     { "type": "array", "items": { "type": "string" }, "description": "Kubernetes kinds to check (default: all rendered/live kinds)." }
+          },
+          "required": ["namespace", "labels"]
+        },
+        {
+          "description": "Addon-less capability assert: every rendered/live object carries the configured extra annotations.",
+          "properties": {
+            "type":        { "const": "annotations-present" },
+            "namespace":   { "type": "string", "description": "Product namespace." },
+            "annotations": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Map of key=value annotations expected on ALL objects (both .metadata.annotations and pod template annotations)." },
+            "source":      { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "kinds":       { "type": "array", "items": { "type": "string" }, "description": "Kubernetes kinds to check (default: all rendered/live kinds)." }
+          },
+          "required": ["namespace", "annotations"]
+        },
+        {
+          "description": "Addon-less capability assert: no plain-HTTP port/scheme when HTTPS-only is configured; Service/container ports reflect the configured scheme.",
+          "properties": {
+            "type":      { "const": "scheme-enforced" },
+            "namespace": { "type": "string", "description": "Product namespace." },
+            "scheme":    { "enum": ["https-only", "allow-http"], "description": "Expected scheme policy. https-only: no port 80 or http scheme on Service/container/probe/Ingress. allow-http: baseline check that http/80 is present." },
+            "source":    { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
+          },
+          "required": ["namespace", "scheme"]
+        },
+        {
+          "description": "Addon-less capability assert: rbac.create=true yields expected ServiceAccount + Role/ClusterRole + RoleBinding/ClusterRoleBinding; false yields none.",
+          "properties": {
+            "type":           { "const": "rbac-objects" },
+            "namespace":      { "type": "string", "description": "Product namespace." },
+            "expect_present": { "type": "boolean", "description": "true: RBAC objects MUST exist and be wired. false: zero RBAC-kind objects." },
+            "source":         { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
+          },
+          "required": ["namespace", "expect_present"]
         }
       ]
     }
