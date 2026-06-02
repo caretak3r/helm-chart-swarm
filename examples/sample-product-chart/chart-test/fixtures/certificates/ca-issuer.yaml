@@ -1,0 +1,10 @@
+# CA Issuer — backed by the CA Certificate Secret.
+# Leaf Certificates are issued by this CA Issuer.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: chart-test-swarm-ca-issuer
+  namespace: sample
+spec:
+  ca:
+    secretName: chart-test-swarm-ca-tls
