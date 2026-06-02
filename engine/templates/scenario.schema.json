@@ -59,6 +59,22 @@
       "items": { "type": "string" },
       "description": "Suite membership filter (pr-subset, nightly, customer-replica, ...)."
     },
+    "category": {
+      "type": "string",
+      "description": "Library taxonomy category (e.g. networking, gateway-api, service-mesh, certificates, storage, capability, cloud-native). Drives catalog grouping and support-matrix placement."
+    },
+    "capability": {
+      "type": "string",
+      "description": "Chart capability/compliance test name (e.g. label-all-objects, scheme-enforced). Mutually exclusive with 'integration' at the scenario level — one or the other (or neither)."
+    },
+    "integration": {
+      "type": "string",
+      "description": "Integration target name (e.g. cert-manager, traefik, istio). Mutually exclusive with 'capability' at the scenario level — one or the other (or neither)."
+    },
+    "tier": {
+      "enum": ["live", "authored-only", "capability"],
+      "description": "Execution tier. live: runs on local kind. authored-only: cloud-specific, off by default. capability: addon-less render+deploy + manifest introspection."
+    },
     "mechanisms": {
       "type": "array",
       "items": { "type": "string" },
