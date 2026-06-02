@@ -562,6 +562,18 @@ capture_manifests() {
     kubectl_ctx get backendtlspolicies -A -o yaml > "$out_dir/backendtlspolicies.yaml" 2>/dev/null || true
   fi
 
+  # Capture Istio CRD resources (ServiceEntry, VirtualService, DestinationRule,
+  # istio Gateway, Sidecar, AuthorizationPolicy, PeerAuthentication) when present
+  if kubectl_ctx get crd serviceentries.networking.istio.io >/dev/null 2>&1; then
+    kubectl_ctx get serviceentries -A -o yaml > "$out_dir/istio-serviceentries.yaml" 2>/dev/null || true
+    kubectl_ctx get virtualservices -A -o yaml > "$out_dir/istio-virtualservices.yaml" 2>/dev/null || true
+    kubectl_ctx get destinationrules -A -o yaml > "$out_dir/istio-destinationrules.yaml" 2>/dev/null || true
+    kubectl_ctx get gateways.networking.istio.io -A -o yaml > "$out_dir/istio-gateways.yaml" 2>/dev/null || true
+    kubectl_ctx get sidecars -A -o yaml > "$out_dir/istio-sidecars.yaml" 2>/dev/null || true
+    kubectl_ctx get authorizationpolicies -A -o yaml > "$out_dir/istio-authorizationpolicies.yaml" 2>/dev/null || true
+    kubectl_ctx get peerauthentications -A -o yaml > "$out_dir/istio-peerauthentications.yaml" 2>/dev/null || true
+  fi
+
   # Remove empty/invalid YAML files
   for f in "$out_dir"/*.yaml "$out_dir"/**/*.yaml; do
     [ -f "$f" ] || continue
