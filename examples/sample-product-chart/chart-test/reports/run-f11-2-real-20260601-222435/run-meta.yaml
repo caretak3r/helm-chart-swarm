@@ -1,0 +1,12 @@
+run_id: run-f11-2-real-20260601-222435
+timestamp_utc: 2026-06-02T02:24:35Z
+num_agents: 2
+suite: pr-subset
+cluster_provider: kind
+k8s_version: "v1.30.0"
+project:
+  name: sample-product-chart
+  dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+chart:
+  name: sample-product
+  version: 0.1.0
