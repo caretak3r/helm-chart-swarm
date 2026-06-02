@@ -1433,3 +1433,351 @@ EOF
 @test "serviceaccount-annotations.sh is executable" {
   [ -x "$ASSERTS_DIR/serviceaccount-annotations.sh" ]
 }
+
+# ═══════════════════════════════════════════════════════════════════════
+# scheduling-present
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "scheduling-present: FAIL (expect_present=true) when chart lacks nodeSelector knob" {
+  local s="$TEST_TMPDIR/sched-ns-on.yaml"
+  cat > "$s" <<'EOF'
+id: sched-ns-on
+name: scheduling-present nodeSelector ON
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    nodeSelector.disktype: ssd
+asserts:
+  - type: scheduling-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    check_nodeSelector: true
+    check_tolerations: false
+    check_affinity: false
+    check_topologySpreadConstraints: false
+    nodeSelector:
+      disktype: ssd
+EOF
+  run_assert "scheduling-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"missing nodeSelector"* ]]
+}
+
+@test "scheduling-present: PASS (expect_present=false) when no scheduling fields in rendered output" {
+  local s="$TEST_TMPDIR/sched-off.yaml"
+  cat > "$s" <<'EOF'
+id: sched-off
+name: scheduling-present OFF
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: scheduling-present
+    namespace: sample
+    source: rendered
+    expect_present: false
+    check_nodeSelector: true
+    check_tolerations: true
+    check_affinity: true
+    check_topologySpreadConstraints: true
+EOF
+  run_assert "scheduling-present.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "scheduling-present: FAIL (expect_present=true) when chart lacks tolerations knob" {
+  local s="$TEST_TMPDIR/sched-tol-on.yaml"
+  cat > "$s" <<'EOF'
+id: sched-tol-on
+name: scheduling-present tolerations ON
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    tolerations[0].key: dedicated
+    tolerations[0].operator: Equal
+    tolerations[0].value: gpu
+    tolerations[0].effect: NoSchedule
+asserts:
+  - type: scheduling-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    check_nodeSelector: false
+    check_tolerations: true
+    check_affinity: false
+    check_topologySpreadConstraints: false
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: gpu
+        effect: NoSchedule
+EOF
+  run_assert "scheduling-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"missing tolerations"* ]]
+}
+
+@test "scheduling-present: FAIL (expect_present=true) when chart lacks affinity knob" {
+  local s="$TEST_TMPDIR/sched-aff-on.yaml"
+  cat > "$s" <<'EOF'
+id: sched-aff-on
+name: scheduling-present affinity ON
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    affinity.nodeAffinity: dummy
+asserts:
+  - type: scheduling-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    check_nodeSelector: false
+    check_tolerations: false
+    check_affinity: true
+    check_topologySpreadConstraints: false
+    affinity:
+      nodeAffinity: true
+EOF
+  run_assert "scheduling-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"missing affinity"* ]]
+}
+
+@test "scheduling-present: FAIL (expect_present=true) when chart lacks topologySpreadConstraints knob" {
+  local s="$TEST_TMPDIR/sched-tsc-on.yaml"
+  cat > "$s" <<'EOF'
+id: sched-tsc-on
+name: scheduling-present topologySpreadConstraints ON
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    topologySpreadConstraints[0].maxSkew: 1
+    topologySpreadConstraints[0].topologyKey: topology.kubernetes.io/zone
+    topologySpreadConstraints[0].whenUnsatisfiable: DoNotSchedule
+asserts:
+  - type: scheduling-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    check_nodeSelector: false
+    check_tolerations: false
+    check_affinity: false
+    check_topologySpreadConstraints: true
+    topologySpreadConstraints:
+      - topologyKey: topology.kubernetes.io/zone
+        maxSkew: 1
+        whenUnsatisfiable: DoNotSchedule
+EOF
+  run_assert "scheduling-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"missing topologySpreadConstraints"* ]]
+}
+
+@test "scheduling-present: FAIL with invalid expect_present value" {
+  local s="$TEST_TMPDIR/sched-invalid.yaml"
+  cat > "$s" <<'EOF'
+id: sched-invalid
+name: scheduling-present invalid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: scheduling-present
+    namespace: sample
+    source: rendered
+    expect_present: maybe
+EOF
+  run_assert "scheduling-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"expect_present must be"* ]]
+}
+
+@test "scheduling-present: schema validates scheduling-present assertion" {
+  local s="$TEST_TMPDIR/sched-schema-valid.yaml"
+  cat > "$s" <<'EOF'
+id: sched-schema-valid
+name: scheduling-present schema valid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: scheduling-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    nodeSelector:
+      disktype: ssd
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -eq 0 ]
+}
+
+@test "scheduling-present: schema rejects scheduling-present without expect_present" {
+  local s="$TEST_TMPDIR/sched-schema-noexpect.yaml"
+  cat > "$s" <<'EOF'
+id: sched-schema-noexpect
+name: scheduling-present schema missing expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: scheduling-present
+    namespace: sample
+    source: rendered
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -ne 0 ]
+}
+
+@test "scheduling-present.sh is executable" {
+  [ -x "$ASSERTS_DIR/scheduling-present.sh" ]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# priority-class-present
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "priority-class-present: FAIL (expect_present=true) when chart lacks priorityClassName knob" {
+  local s="$TEST_TMPDIR/pc-on.yaml"
+  cat > "$s" <<'EOF'
+id: pc-on
+name: priority-class-present ON
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    priorityClassName: high-priority
+asserts:
+  - type: priority-class-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    priority_class_name: high-priority
+EOF
+  run_assert "priority-class-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"missing priorityClassName"* ]]
+}
+
+@test "priority-class-present: PASS (expect_present=false) when no priorityClassName in rendered output" {
+  local s="$TEST_TMPDIR/pc-off.yaml"
+  cat > "$s" <<'EOF'
+id: pc-off
+name: priority-class-present OFF
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: priority-class-present
+    namespace: sample
+    source: rendered
+    expect_present: false
+EOF
+  run_assert "priority-class-present.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "priority-class-present: FAIL with invalid expect_present value" {
+  local s="$TEST_TMPDIR/pc-invalid.yaml"
+  cat > "$s" <<'EOF'
+id: pc-invalid
+name: priority-class-present invalid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: priority-class-present
+    namespace: sample
+    source: rendered
+    expect_present: maybe
+EOF
+  run_assert "priority-class-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"expect_present must be"* ]]
+}
+
+@test "priority-class-present: schema validates priority-class-present assertion" {
+  local s="$TEST_TMPDIR/pc-schema-valid.yaml"
+  cat > "$s" <<'EOF'
+id: pc-schema-valid
+name: priority-class-present schema valid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: priority-class-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    priority_class_name: high-priority
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -eq 0 ]
+}
+
+@test "priority-class-present: schema rejects priority-class-present without expect_present" {
+  local s="$TEST_TMPDIR/pc-schema-noexpect.yaml"
+  cat > "$s" <<'EOF'
+id: pc-schema-noexpect
+name: priority-class-present schema missing expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: priority-class-present
+    namespace: sample
+    source: rendered
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -ne 0 ]
+}
+
+@test "priority-class-present.sh is executable" {
+  [ -x "$ASSERTS_DIR/priority-class-present.sh" ]
+}

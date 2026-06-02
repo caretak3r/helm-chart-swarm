@@ -156,7 +156,7 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations"] },
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present"] },
         "timeout": { "type": "string", "default": "5m" }
       },
       "oneOf": [
@@ -290,6 +290,35 @@
             "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
             "annotations":      { "type": "object", "additionalProperties": { "type": "string" }, "description": "Expected annotation key=value pairs on the ServiceAccount. Checked when expect_present=true." },
             "identity_keys":    { "type": "array", "items": { "type": "string" }, "description": "Cloud-identity annotation keys that MUST be absent when expect_present=false (e.g. eks.amazonaws.com/role-arn, azure.workload.identity/client-id, iam.gke.io/gcp-service-account)." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: scheduling knobs (nodeSelector, tolerations, affinity, topologySpreadConstraints) are rendered with configured values on ALL workloads (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":                            { "const": "scheduling-present" },
+            "namespace":                       { "type": "string", "description": "Product namespace." },
+            "expect_present":                  { "type": "boolean", "description": "true: configured scheduling fields MUST appear on every workload pod spec. false: none of the checked scheduling fields may appear." },
+            "source":                          { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "check_nodeSelector":              { "type": "boolean", "default": true, "description": "Check nodeSelector field on pod specs." },
+            "check_tolerations":               { "type": "boolean", "default": true, "description": "Check tolerations field on pod specs." },
+            "check_affinity":                  { "type": "boolean", "default": true, "description": "Check affinity field on pod specs." },
+            "check_topologySpreadConstraints": { "type": "boolean", "default": true, "description": "Check topologySpreadConstraints field on pod specs." },
+            "nodeSelector":                    { "type": "object", "description": "Expected nodeSelector key=value pairs. Checked when expect_present=true and check_nodeSelector=true.", "additionalProperties": true },
+            "tolerations":                     { "type": "array", "description": "Expected tolerations entries. Checked when expect_present=true and check_tolerations=true.", "items": { "type": "object", "additionalProperties": true } },
+            "affinity":                        { "type": "object", "description": "Expected affinity block. Checked when expect_present=true and check_affinity=true.", "additionalProperties": true },
+            "topologySpreadConstraints":       { "type": "array", "description": "Expected topologySpreadConstraints entries. Checked when expect_present=true and check_topologySpreadConstraints=true.", "items": { "type": "object", "additionalProperties": true } }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: priorityClassName is rendered with configured value on ALL workloads (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":                { "const": "priority-class-present" },
+            "namespace":           { "type": "string", "description": "Product namespace." },
+            "expect_present":      { "type": "boolean", "description": "true: priorityClassName MUST appear on every workload pod spec with the configured value. false: no priorityClassName on any workload." },
+            "source":              { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "priority_class_name": { "type": "string", "description": "Expected priorityClassName value. Checked when expect_present=true." }
           },
           "required": ["namespace", "expect_present"]
         }
