@@ -2,7 +2,9 @@
 id: service-mesh-istio-ingress-gateway-jwt
 name: "Istio Ingress Gateway — JWT Authentication"
 description: >-
-  Installs istio/base + istio/istiod + istio/gateway, deploys the product chart, creates an Istio Gateway + VirtualService, applies a RequestAuthentication + AuthorizationPolicy requiring a valid JWT, and verifies: (a) requests without a Bearer token are rejected with 401/403, (b) requests with a valid JWT signed by the test issuer key from fixtures/service-mesh/jwt/ return HTTP 200.
+  Installs istio/base + istio/istiod + istio/gateway, deploys the product chart, creates an Istio Gateway + VirtualService, applies a RequestAuthentication + AuthorizationPolicy
+  requiring a valid JWT, and verifies: (a) requests without a Bearer token are rejected with 401/403, (b) requests with a valid JWT signed by the test issuer key from
+  fixtures/service-mesh/jwt/ return HTTP 200.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind

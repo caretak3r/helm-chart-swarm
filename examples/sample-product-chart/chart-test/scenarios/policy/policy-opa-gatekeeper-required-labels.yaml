@@ -2,7 +2,8 @@
 id: policy-opa-gatekeeper-required-labels
 name: "OPA Gatekeeper required labels enforcement"
 description: >-
-  Installs OPA Gatekeeper + NGINX Ingress, creates k8srequiredlabels ConstraintTemplate + Constraint targeting Deployments and Ingress. Verifies non-compliant resources denied, compliant accepted. Cross-feature compose with M4 nginx-ingress.
+  Installs OPA Gatekeeper + NGINX Ingress, creates k8srequiredlabels ConstraintTemplate + Constraint targeting Deployments and Ingress. Verifies non-compliant resources denied,
+  compliant accepted. Cross-feature compose with M4 nginx-ingress.
 labels: {customer: any, profile: policy}
 cluster:
   provider: kind

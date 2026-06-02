@@ -2,7 +2,8 @@
 id: service-mesh-istio-ingress-gateway-basic
 name: "Istio Ingress Gateway — Basic"
 description: >-
-  Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with ingress disabled, creates an Istio Gateway + VirtualService to route external traffic through the ingressgateway pod, and verifies HTTP 200 via the gateway with a Host header.
+  Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with ingress disabled, creates an Istio Gateway + VirtualService to route external traffic through
+  the ingressgateway pod, and verifies HTTP 200 via the gateway with a Host header.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind

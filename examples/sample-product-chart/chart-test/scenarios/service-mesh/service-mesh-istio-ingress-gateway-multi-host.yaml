@@ -2,7 +2,8 @@
 id: service-mesh-istio-ingress-gateway-multi-host
 name: "Istio Ingress Gateway — Multi-Host"
 description: >-
-  Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with scope.enabled=true, creates an Istio Gateway with two server blocks for different hosts, and a VirtualService that routes each host to a different backend (skywatcher vs scope). Verifies both hosts return HTTP 200 through the ingressgateway.
+  Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with scope.enabled=true, creates an Istio Gateway with two server blocks for different hosts, and a
+  VirtualService that routes each host to a different backend (skywatcher vs scope). Verifies both hosts return HTTP 200 through the ingressgateway.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind

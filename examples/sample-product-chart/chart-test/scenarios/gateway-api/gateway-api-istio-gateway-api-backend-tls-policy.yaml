@@ -2,7 +2,8 @@
 id: gateway-api-istio-gateway-api-backend-tls-policy
 name: "Istio Gateway API BackendTLSPolicy"
 description: >-
-  Installs istio/base + istio/istiod and Gateway API CRDs, generates self-signed TLS certs at runtime, creates BackendTLSPolicy targeting the Service, and verifies Policy acceptance and gateway routing.
+  Installs istio/base + istio/istiod and Gateway API CRDs, generates self-signed TLS certs at runtime, creates BackendTLSPolicy targeting the Service, and verifies Policy
+  acceptance and gateway routing.
 labels: {customer: any, profile: gateway-api-backendtls}
 cluster:
   provider: kind

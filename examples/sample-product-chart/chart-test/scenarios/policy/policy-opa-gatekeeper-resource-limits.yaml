@@ -2,7 +2,8 @@
 id: policy-opa-gatekeeper-resource-limits
 name: "OPA Gatekeeper resource limits enforcement"
 description: >-
-  Installs OPA Gatekeeper, creates k8scontainerlimits ConstraintTemplate + Constraint requiring CPU and memory limits on all containers. Verifies Deployment without limits denied, compliant Deployment accepted.
+  Installs OPA Gatekeeper, creates k8scontainerlimits ConstraintTemplate + Constraint requiring CPU and memory limits on all containers. Verifies Deployment without limits denied,
+  compliant Deployment accepted.
 labels: {customer: any, profile: policy}
 cluster:
   provider: kind

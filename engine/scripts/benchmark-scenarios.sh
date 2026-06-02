@@ -94,7 +94,7 @@ if [ ! -d "$SCENARIOS_DIR" ]; then
 fi
 
 # ---- Discover scenario YAMLs ----
-mapfile -t SCENARIO_FILES < <(find "$SCENARIOS_DIR" -maxdepth 1 -name '*.yaml' -type f | sort)
+mapfile -t SCENARIO_FILES < <(find "$SCENARIOS_DIR" -name '*.yaml' -type f | sort)
 SCENARIO_COUNT="${#SCENARIO_FILES[@]}"
 
 if [ "$SCENARIO_COUNT" -eq 0 ]; then

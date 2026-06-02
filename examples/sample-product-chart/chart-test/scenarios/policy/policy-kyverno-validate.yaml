@@ -2,7 +2,8 @@
 id: policy-kyverno-validate
 name: "Kyverno validate: require labels on Deployments"
 description: >-
-  Installs Kyverno, creates a ClusterPolicy that requires app.kubernetes.io/name label on Deployments. Verifies non-compliant Deployment denied (stderr names validate.kyverno.svc-fail and policy name), compliant Deployment accepted. Webhook failure mode: Fail.
+  Installs Kyverno, creates a ClusterPolicy that requires app.kubernetes.io/name label on Deployments. Verifies non-compliant Deployment denied (stderr names
+  validate.kyverno.svc-fail and policy name), compliant Deployment accepted. Webhook failure mode: Fail.
 labels: {customer: any, profile: policy}
 cluster:
   provider: kind
