@@ -226,8 +226,59 @@ class TestNewCapability:
         scenario = chart_test / "scenarios" / "capability" / "capability-my-custom-check.yaml"
         doc = yaml.safe_load(scenario.read_text())
 
-        preinstall = doc.get("cluster", {}).get("preinstall", [])
-        assert preinstall == [], f"Capability scenario should have no preinstall, got: {preinstall}"
+        # preinstall must be absent or empty — capability tests use no addon
+        cluster = doc.get("cluster", {})
+        assert "preinstall" not in cluster or cluster["preinstall"] == [], (
+            f"Capability scenario should have no preinstall, got: {cluster.get('preinstall')}"
+        )
+
+    def test_assert_type_override(self, tmp_path: Path) -> None:
+        """VAL-KIT-010: --assert-type changes the default capability assert type."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        result = runner.invoke(
+            app,
+            [
+                "new",
+                "capability/rbac-test",
+                "--project-dir",
+                str(tmp_path),
+                "--assert-type",
+                "rbac-objects",
+            ],
+        )
+        assert result.exit_code == 0, f"exit={result.exit_code}, out={result.output}"
+
+        scenario = chart_test / "scenarios" / "capability" / "capability-rbac-test.yaml"
+        doc = yaml.safe_load(scenario.read_text())
+
+        assert_types = [a["type"] for a in doc.get("asserts", [])]
+        assert "rbac-objects" in assert_types, f"rbac-objects not found in: {assert_types}"
+
+    def test_default_assert_type_is_labels_present(self, tmp_path: Path) -> None:
+        """VAL-KIT-010: default capability assert type is labels-present."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            ["new", "capability/my-check", "--project-dir", str(tmp_path)],
+        )
+
+        scenario = chart_test / "scenarios" / "capability" / "capability-my-check.yaml"
+        doc = yaml.safe_load(scenario.read_text())
+
+        assert_types = [a["type"] for a in doc.get("asserts", [])]
+        assert "labels-present" in assert_types, (
+            f"Default assert type should be labels-present, got: {assert_types}"
+        )
 
 
 # ── Schema validation (VAL-KIT-003) ────────────────────────────────────────
@@ -322,6 +373,48 @@ class TestSelfDescribingPlacement:
         assert cap == "my-custom-check", f"Wrong capability: {cap}"
         assert "tier" in doc, "Missing tier field"
         assert "integration" not in doc, "Capability scenario must NOT have 'integration' field"
+
+    def test_integration_tier_consistency(self, tmp_path: Path) -> None:
+        """VAL-KIT-004: integration scenario has tier=live and integration field set."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            ["new", "certificates/cert-manager", "--project-dir", str(tmp_path)],
+        )
+
+        scenario = chart_test / "scenarios" / "certificates" / "certificates-cert-manager.yaml"
+        doc = yaml.safe_load(scenario.read_text())
+
+        # Internally consistent: integration + tier=live
+        assert doc.get("tier") == "live", "Integration should have tier=live"
+        assert doc.get("integration") == "cert-manager", "Missing integration field"
+        assert "capability" not in doc, "Integration must not have capability field"
+
+    def test_capability_tier_consistency(self, tmp_path: Path) -> None:
+        """VAL-KIT-004: capability scenario has tier=capability and capability field set."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            ["new", "capability/my-check", "--project-dir", str(tmp_path)],
+        )
+
+        scenario = chart_test / "scenarios" / "capability" / "capability-my-check.yaml"
+        doc = yaml.safe_load(scenario.read_text())
+
+        # Internally consistent: capability + tier=capability
+        assert doc.get("tier") == "capability", "Capability should have tier=capability"
+        assert doc.get("capability") == "my-check", "Missing capability field"
+        assert "integration" not in doc, "Capability must not have integration field"
 
 
 # ── Taxonomy category enforcement (VAL-KIT-005) ────────────────────────────
@@ -589,18 +682,19 @@ class TestTierDefaults:
         (chart_test / "fixtures").mkdir()
         (chart_test / "assertions").mkdir()
 
-        # cloud-native/aws-load-balancer-controller has a primer
+        # cloud-native/eks has a primer (same for aks, gke)
+        primers = _primers_for_category("cloud-native")
+        if not primers:
+            pytest.skip("No cloud-native primers authored yet")
+
+        # Use the first available cloud-native primer
+        primer_name = primers[0]
+
         result = runner.invoke(
             app,
-            ["new", "cloud-native/aws-load-balancer-controller", "--project-dir", str(tmp_path)],
+            ["new", f"cloud-native/{primer_name}", "--project-dir", str(tmp_path)],
         )
-        if result.exit_code != 0:
-            # If there's no primer for this, the command should refuse;
-            # but if there IS a primer, check the tier
-            primers = _primers_for_category("cloud-native")
-            if "aws-load-balancer-controller" not in primers:
-                pytest.skip("aws-load-balancer-controller primer not yet authored")
-            raise AssertionError(f"Command failed unexpectedly: {result.output}")
+        assert result.exit_code == 0, f"Command failed: {result.output}"
 
         # Find the scenario
         scenario_files = list((chart_test / "scenarios" / "cloud-native").glob("*.yaml"))
@@ -608,6 +702,83 @@ class TestTierDefaults:
         doc = yaml.safe_load(scenario_files[0].read_text())
         assert doc.get("tier") == "authored-only", (
             f"Expected tier=authored-only, got {doc.get('tier')}"
+        )
+
+    def test_tier_override_integration(self, tmp_path: Path) -> None:
+        """VAL-KIT-016: --tier override changes the default tier for integration."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            [
+                "new",
+                "certificates/cert-manager",
+                "--project-dir",
+                str(tmp_path),
+                "--tier",
+                "authored-only",
+            ],
+        )
+
+        scenario = chart_test / "scenarios" / "certificates" / "certificates-cert-manager.yaml"
+        doc = yaml.safe_load(scenario.read_text())
+        assert doc.get("tier") == "authored-only", (
+            f"Expected tier=authored-only (override), got {doc.get('tier')}"
+        )
+
+    def test_tier_override_capability(self, tmp_path: Path) -> None:
+        """VAL-KIT-016: --tier override changes the default tier for capability."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            [
+                "new",
+                "capability/my-check",
+                "--project-dir",
+                str(tmp_path),
+                "--tier",
+                "live",
+            ],
+        )
+
+        scenario = chart_test / "scenarios" / "capability" / "capability-my-check.yaml"
+        doc = yaml.safe_load(scenario.read_text())
+        assert doc.get("tier") == "live", f"Expected tier=live (override), got {doc.get('tier')}"
+
+    def test_invalid_tier_rejected(self, tmp_path: Path) -> None:
+        """VAL-KIT-016: invalid --tier value is rejected."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        result = runner.invoke(
+            app,
+            [
+                "new",
+                "certificates/cert-manager",
+                "--project-dir",
+                str(tmp_path),
+                "--tier",
+                "invalid-tier",
+            ],
+        )
+        assert result.exit_code != 0, (
+            f"Expected non-zero exit for invalid tier, got {result.exit_code}"
+        )
+        combined = result.output + (result.stderr or "")
+        assert "invalid" in combined.lower() or "tier" in combined.lower(), (
+            f"Error should mention invalid tier, got: {combined}"
         )
 
 
@@ -643,6 +814,103 @@ class TestNewHelpAndUX:
         """new --dry-run is an accepted flag."""
         result = runner.invoke(app, ["new", "--help"])
         assert "--dry-run" in result.output, f"Missing --dry-run in help: {result.output}"
+
+
+# ── Integration template details (VAL-KIT-011) ──────────────────────────────
+
+
+class TestIntegrationTemplateDetails:
+    """VAL-KIT-011: integration template includes smoke-script assert + preinstall."""
+
+    def test_integration_has_smoke_script_assert(self, tmp_path: Path) -> None:
+        """Integration scenario includes a smoke-script assert referencing the scaffolded path."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            ["new", "certificates/cert-manager", "--project-dir", str(tmp_path)],
+        )
+
+        scenario = chart_test / "scenarios" / "certificates" / "certificates-cert-manager.yaml"
+        doc = yaml.safe_load(scenario.read_text())
+
+        smoke_asserts = [a for a in doc.get("asserts", []) if a.get("type") == "smoke-script"]
+        assert smoke_asserts, f"No smoke-script assert found in: {doc.get('asserts', [])}"
+        # The path must reference the scaffolded smoke script
+        assert "cert-manager-smoke.sh" in smoke_asserts[0].get("path", ""), (
+            f"Smoke script path does not reference scaffolded file: {smoke_asserts[0]}"
+        )
+
+    def test_integration_has_nonempty_preinstall(self, tmp_path: Path) -> None:
+        """Integration scenario has a non-empty cluster.preinstall (primer-driven)."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            ["new", "certificates/cert-manager", "--project-dir", str(tmp_path)],
+        )
+
+        scenario = chart_test / "scenarios" / "certificates" / "certificates-cert-manager.yaml"
+        doc = yaml.safe_load(scenario.read_text())
+
+        preinstall = doc.get("cluster", {}).get("preinstall", [])
+        assert preinstall, "Integration scenario should have a non-empty cluster.preinstall"
+        # At least one preinstall item must have kind=helm
+        helm_items = [p for p in preinstall if p.get("kind") == "helm"]
+        assert helm_items, "Preinstall must include at least one helm item"
+
+
+# ── Fixture gate (VAL-KIT-012) ──────────────────────────────────────────────
+
+
+class TestFixtureGate:
+    """VAL-KIT-012: scaffolded fixture values file gates the helm-test injection."""
+
+    def test_integration_fixture_has_chartTestSwarm_enabled(self, tmp_path: Path) -> None:
+        """Integration fixture begins with chartTestSwarm.enabled: true gate."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            ["new", "certificates/cert-manager", "--project-dir", str(tmp_path)],
+        )
+
+        fixture = chart_test / "fixtures" / "certificates" / "cert-manager-values.yaml"
+        doc = yaml.safe_load(fixture.read_text())
+        assert doc.get("chartTestSwarm", {}).get("enabled") is True, (
+            f"Fixture missing chartTestSwarm.enabled: true, got: {doc}"
+        )
+
+    def test_capability_fixture_has_chartTestSwarm_enabled(self, tmp_path: Path) -> None:
+        """Capability fixture begins with chartTestSwarm.enabled: true gate."""
+        chart_test = tmp_path / "chart-test"
+        chart_test.mkdir()
+        (chart_test / "scenarios").mkdir()
+        (chart_test / "fixtures").mkdir()
+        (chart_test / "assertions").mkdir()
+
+        runner.invoke(
+            app,
+            ["new", "capability/my-check", "--project-dir", str(tmp_path)],
+        )
+
+        fixture = chart_test / "fixtures" / "capability" / "my-check-values.yaml"
+        doc = yaml.safe_load(fixture.read_text())
+        assert doc.get("chartTestSwarm", {}).get("enabled") is True, (
+            f"Fixture missing chartTestSwarm.enabled: true, got: {doc}"
+        )
 
 
 # ── Integration with existing list command ──────────────────────────────────

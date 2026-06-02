@@ -440,11 +440,12 @@ def _scaffold_integration(
     dry_run: bool = False,
     force: bool = False,
     project_dir: str | None = None,
+    tier_override: str | None = None,
 ) -> None:
     """Scaffold integration test files (fixture + scenario + smoke script)."""
     category = target.category
     integration = target.name
-    tier = _determine_tier(category, "integration")
+    tier = tier_override if tier_override else _determine_tier(category, "integration")
 
     _debug(f"Integration mode: category={category}, integration={integration}, tier={tier}")
 
@@ -562,10 +563,15 @@ def _scaffold_capability(
     force: bool = False,
     project_dir: str | None = None,
     assert_type: str | None = None,
+    tier_override: str | None = None,
 ) -> None:
     """Scaffold capability test files (fixture + scenario)."""
     capability_name = target.name
-    tier = _determine_tier(CAPABILITY_PSEUDO_CATEGORY, "capability")
+    tier = (
+        tier_override
+        if tier_override
+        else _determine_tier(CAPABILITY_PSEUDO_CATEGORY, "capability")
+    )
     effective_assert_type = assert_type or DEFAULT_CAPABILITY_ASSERT_TYPE
 
     # Validate assert_type if provided
@@ -674,6 +680,13 @@ def new_cmd(
     # Parse the target
     parsed = _parse_target(target)
 
+    # Validate --tier value if provided
+    if tier is not None and tier not in ("live", "authored-only", "capability"):
+        _die(
+            f"ERROR: invalid tier {tier!r}. Must be one of: live, authored-only, capability",
+            code=2,
+        )
+
     # Resolve directories
     # integrations_root: always the real repo's primer tree (independent of --project-dir)
     integrations_root = _resolve_integrations_root()
@@ -688,6 +701,7 @@ def new_cmd(
             force=force,
             project_dir=project_dir,
             assert_type=assert_type,
+            tier_override=tier,
         )
     else:
         _scaffold_integration(
@@ -697,4 +711,5 @@ def new_cmd(
             dry_run=dry_run,
             force=force,
             project_dir=project_dir,
+            tier_override=tier,
         )
