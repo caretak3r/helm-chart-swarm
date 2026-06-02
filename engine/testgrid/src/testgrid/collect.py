@@ -68,11 +68,18 @@ class Scenario:
     log_dir: str = ""
     fail_stage: str = ""
     fail_msg: str = ""
-    # F2.1: artifact links for the dashboard scenario card.
+    # F2.1 / M11: artifact links for the dashboard scenario card.
     # Keys: "scenario" (str), "overrides" (str), "fixtures" (list[str]),
     #       "manifests" (list[str]).
-    # Values are absolute file paths; empty dict means no artifacts/ bundle.
+    # Values are RELATIVE paths within the artifact bundle (relative to
+    # artifact_dir), e.g. "scenario.yaml", "fixtures/tls.crt".
+    # Empty dict means no artifacts/ bundle exists.
+    # After render.py processes these, they become relative hrefs for HTML.
     artifact_links: dict[str, Any] = field(default_factory=dict)
+    # M11: absolute source path of the artifacts/ directory, set by collect_run().
+    # Used by render.py to copy artifact files into the dist tree.
+    # None when no artifacts/ bundle exists for this scenario.
+    artifact_dir: Path | None = None
 
     @property
     def rolled_status(self) -> str:
@@ -234,41 +241,47 @@ def load_agent_results(run_dir: Path) -> list[Scenario]:
 
 
 def _collect_artifact_links(artifact_dir: Path) -> dict[str, Any]:
-    """Scan an ``artifacts/`` directory and return a dictionary of artifact links.
+    """Scan an ``artifacts/`` directory and return relative-path locators.
 
     Keys:
-      - ``"scenario"``: absolute path to ``artifacts/scenario.yaml``
-      - ``"overrides"``: absolute path to ``artifacts/applied-overrides.yaml``
-      - ``"fixtures"``: list of absolute paths to files under ``artifacts/fixtures/``
-      - ``"manifests"``: list of absolute paths to files under ``artifacts/manifests/``
+      - ``"scenario"``: relative path ``"scenario.yaml"`` (if the file exists)
+      - ``"overrides"``: relative path ``"applied-overrides.yaml"`` (if the file exists)
+      - ``"fixtures"``: list of relative paths to files under ``artifacts/fixtures/``
+        (e.g. ``["fixtures/tls.crt"]``); always present when ``fixtures/`` dir exists,
+        even if empty.
+      - ``"manifests"``: list of relative paths to YAML files under ``artifacts/manifests/``
+        (e.g. ``["manifests/deployment.yaml"]``); always present when ``manifests/`` dir
+        exists, even if empty.
 
-    Returns an empty dict if *artifact_dir* does not exist.
+    All paths are relative to *artifact_dir* so they are portable across machines.
+    Returns an empty dict if *artifact_dir* does not exist or is not a directory.
     """
     if not artifact_dir.is_dir():
         return {}
 
     links: dict[str, Any] = {}
 
-    scenario_yaml = artifact_dir / "scenario.yaml"
-    if scenario_yaml.is_file():
-        links["scenario"] = str(scenario_yaml.resolve())
+    if (artifact_dir / "scenario.yaml").is_file():
+        links["scenario"] = "scenario.yaml"
 
-    overrides_yaml = artifact_dir / "applied-overrides.yaml"
-    if overrides_yaml.is_file():
-        links["overrides"] = str(overrides_yaml.resolve())
+    if (artifact_dir / "applied-overrides.yaml").is_file():
+        links["overrides"] = "applied-overrides.yaml"
 
     fixtures_dir = artifact_dir / "fixtures"
     if fixtures_dir.is_dir():
-        fixture_files = sorted(str(p.resolve()) for p in fixtures_dir.iterdir() if p.is_file())
+        # Relative to artifact_dir: "fixtures/<name>"
+        fixture_files = sorted(
+            str(p.relative_to(artifact_dir)) for p in fixtures_dir.iterdir() if p.is_file()
+        )
         links["fixtures"] = fixture_files  # always present (empty list if no files)
 
     manifests_dir = artifact_dir / "manifests"
     if manifests_dir.is_dir():
         manifest_files: list[str] = []
-        # Recursively collect all YAML files under manifests/
+        # Recursively collect all YAML files under manifests/, relative to artifact_dir
         for p in sorted(manifests_dir.rglob("*.yaml")):
             if p.is_file():
-                manifest_files.append(str(p.resolve()))
+                manifest_files.append(str(p.relative_to(artifact_dir)))
         links["manifests"] = manifest_files  # always present (empty list if no files)
 
     return links
@@ -314,19 +327,24 @@ def collect_run(reports_dir: Path, run_id: str) -> Run:
         if s.cluster_provider in CLOUD_PROVIDERS:
             s.status = "AUTHORED"
 
-    # F2.1: populate artifact links per scenario.
+    # M11: populate artifact dir and relative links per scenario.
     # Group by agent to scan each agent's artifacts/ dir once.
-    agent_artifact_cache: dict[int | None, dict[str, Any]] = {}
+    # Cache: agent_n → (source_artifact_dir_or_None, relative_links_dict)
+    artifact_info_cache: dict[int | None, tuple[Path | None, dict[str, Any]]] = {}
     for s in scenarios:
         agent = s.agent
-        if agent not in agent_artifact_cache:
+        if agent not in artifact_info_cache:
             if agent is not None:
-                artifact_dir = run_dir / f"agent-{agent}" / "artifacts"
+                _adir: Path = run_dir / f"agent-{agent}" / "artifacts"
             else:
                 # UNTESTED / no agent assigned — try run-level artifacts as fallback
-                artifact_dir = run_dir / "artifacts"
-            agent_artifact_cache[agent] = _collect_artifact_links(artifact_dir)
-        s.artifact_links = dict(agent_artifact_cache[agent])
+                _adir = run_dir / "artifacts"
+            _links = _collect_artifact_links(_adir)
+            # Store None for artifact_dir when no artifacts exist (avoids spurious copies)
+            artifact_info_cache[agent] = (_adir if _links else None, _links)
+        _src_dir, _rel_links = artifact_info_cache[agent]
+        s.artifact_dir = _src_dir
+        s.artifact_links = dict(_rel_links)  # defensive copy per scenario
 
     meta = load_run_meta(run_dir)
     project = meta.get("project", {}) or {}

@@ -12,6 +12,7 @@ import shutil
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
@@ -224,6 +225,71 @@ def _copy_assets(out_dir: Path) -> None:
     shutil.copy(css_src, out_dir / "style.css")
 
 
+def _copy_artifact_bundle(
+    scenario_id: str,
+    artifact_dir: Path,
+    artifact_links: dict[str, Any],
+    run_out_dir: Path,
+) -> dict[str, Any]:
+    """Copy artifact files from *artifact_dir* into the dist tree and return relative hrefs.
+
+    For each key in *artifact_links* (which holds relative paths within the bundle,
+    e.g. ``"scenario.yaml"`` or ``["fixtures/tls.crt"]``), this function:
+
+    1. Copies the source file from ``artifact_dir/<rel_path>`` to
+       ``run_out_dir/<scenario_id>/artifacts/<rel_path>`` (byte-identical via
+       ``shutil.copy2``).
+    2. Returns a new dict whose values are relative hrefs suitable for use in
+       the rendered HTML, e.g. ``"<scenario_id>/artifacts/scenario.yaml"``.
+
+    Relative hrefs are relative to ``run_out_dir/index.html`` — the run page that
+    contains the scenario card.  They never begin with ``/``, ``file:``,
+    ``http(s):``, or a host filesystem prefix.
+
+    The original *artifact_dir* (under ``reports/``) is never modified.
+    Parent directories under the dest tree are created as needed.
+    Files are copied in deterministic (sorted) order for reproducible builds.
+    """
+    rel_hrefs: dict[str, Any] = {}
+    scenario_art_dir = run_out_dir / scenario_id / "artifacts"
+
+    if "scenario" in artifact_links:
+        src = artifact_dir / artifact_links["scenario"]
+        dst = scenario_art_dir / "scenario.yaml"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(str(src), str(dst))
+        rel_hrefs["scenario"] = f"{scenario_id}/artifacts/scenario.yaml"
+
+    if "overrides" in artifact_links:
+        src = artifact_dir / artifact_links["overrides"]
+        dst = scenario_art_dir / "applied-overrides.yaml"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(str(src), str(dst))
+        rel_hrefs["overrides"] = f"{scenario_id}/artifacts/applied-overrides.yaml"
+
+    if "fixtures" in artifact_links:
+        fixture_hrefs: list[str] = []
+        for rel_path in sorted(artifact_links["fixtures"]):
+            src = artifact_dir / rel_path
+            dst = scenario_art_dir / rel_path
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(str(src), str(dst))
+            fixture_hrefs.append(f"{scenario_id}/artifacts/{rel_path}")
+        rel_hrefs["fixtures"] = sorted(fixture_hrefs)
+
+    if "manifests" in artifact_links:
+        manifest_hrefs: list[str] = []
+        for rel_path in sorted(artifact_links["manifests"]):
+            src = artifact_dir / rel_path
+            dst = scenario_art_dir / rel_path
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(str(src), str(dst))
+            manifest_hrefs.append(f"{scenario_id}/artifacts/{rel_path}")
+        rel_hrefs["manifests"] = sorted(manifest_hrefs)
+
+    return rel_hrefs
+
+
 def render_run(run: Run, out_dir: Path) -> Path:
     env = _make_env()
     tpl = env.get_template("run.html.j2")
@@ -235,6 +301,15 @@ def render_run(run: Run, out_dir: Path) -> Path:
     run.scenarios.sort(key=lambda s: s.id)
     # Re-sort variant group members for deterministic sub-table ordering.
     # Also sort standalone scenarios within the run (already done above).
+
+    # M11: copy artifact files into dist tree and replace artifact_links with
+    # relative hrefs (relative to run_dir/index.html).  Scenarios without an
+    # artifact_dir (legacy runs or UNTESTED) are left with an empty dict.
+    for s in run.scenarios:
+        if s.artifact_dir is not None and s.artifact_links:
+            s.artifact_links = _copy_artifact_bundle(
+                s.id, s.artifact_dir, s.artifact_links, run_dir
+            )
 
     groups, standalone = build_variant_groups(run)
     # Ensure variant group members are sorted lexicographically.
