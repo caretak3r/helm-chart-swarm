@@ -123,10 +123,11 @@ check_rendered_rbac() {
 check_live_rbac() {
   local rbac_count=0 wire_fail=0
 
-  # ServiceAccounts
+  # ServiceAccounts — exclude the Kubernetes-auto-created "default" SA
+  # which is present in every namespace but never chart-produced.
   local sa_yaml
   sa_yaml=$(kubectl "${kubectl_args[@]}" get sa -n "$NS" -o yaml 2>/dev/null || echo "items: []")
-  local sa_count; sa_count=$(printf '%s' "$sa_yaml" | yq '.items | length' 2>/dev/null || echo "0")
+  local sa_count; sa_count=$(printf '%s' "$sa_yaml" | yq '[.items[] | select(.metadata.name != "default")] | length' 2>/dev/null || echo "0")
   rbac_count=$((rbac_count + sa_count))
 
   # Roles

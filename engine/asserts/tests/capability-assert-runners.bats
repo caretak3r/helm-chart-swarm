@@ -691,3 +691,118 @@ EOF
   [ $status -eq 0 ]
   [[ "$output" == *"PASS"* ]]
 }
+
+# ═══════════════════════════════════════════════════════════════════════
+# rbac-objects: default ServiceAccount exclusion
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "rbac-objects: rendered PASS excludes auto-created default SA correctly" {
+  # The rendered check never sees the k8s-auto-created 'default' SA,
+  # so expect_present=false should PASS on rendered source alone.
+  local s="$TEST_TMPDIR/rbac-default-sa.yaml"
+  cat > "$s" <<'EOF'
+id: rbac-default-sa
+name: rbac default SA exclusion
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: rbac-objects
+    namespace: sample
+    source: rendered
+    expect_present: false
+EOF
+  run_assert "rbac-objects.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# scheme-enforced: FAIL with invalid scheme value
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "scheme-enforced: FAIL with invalid scheme value" {
+  local s="$TEST_TMPDIR/scheme-invalid.yaml"
+  cat > "$s" <<'EOF'
+id: scheme-invalid
+name: scheme-enforced invalid value
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: scheme-enforced
+    namespace: sample
+    source: rendered
+    scheme: maybe-ftp
+EOF
+  run_assert "scheme-enforced.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# labels-present: PASS on pod template labels for workload kinds
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "labels-present: PASS for compliance label on pod template" {
+  local s="$TEST_TMPDIR/lbl-pod-tpl.yaml"
+  cat > "$s" <<'EOF'
+id: lbl-pod-tpl
+name: labels-present pod template test
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    policy.complianceLabels.pci-compliance: "true"
+asserts:
+  - type: labels-present
+    namespace: sample
+    source: rendered
+    labels:
+      pci-compliance: "true"
+    kinds:
+      - Deployment
+EOF
+  run_assert "labels-present.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# annotations-present: FAIL when annotation present on wrong kind
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "annotations-present: FAIL when checking annotation on Service (no annotations)" {
+  local s="$TEST_TMPDIR/ann-fail-svc.yaml"
+  cat > "$s" <<'EOF'
+id: ann-fail-svc
+name: annotations-present FAIL on Service
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: annotations-present
+    namespace: sample
+    source: rendered
+    annotations:
+      sidecar.istio.io/inject: "true"
+    kinds:
+      - Service
+EOF
+  # Service template has no annotations
+  run_assert "annotations-present.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"missing"* ]]
+}
