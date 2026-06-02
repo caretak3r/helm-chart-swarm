@@ -517,6 +517,78 @@ def generate_explore(
     )
 
 
+# -- new (F14.1 — scaffold integration / capability tests) -------------------
+
+
+@app.command(name="new", help="Scaffold a new integration or capability test.")
+def new_cmd_wrapper(
+    target: str = typer.Argument(
+        ...,
+        metavar="TARGET",
+        help="Target to scaffold: <category>/<integration> or capability/<name>.",
+    ),
+    project_dir: str | None = typer.Option(
+        None,
+        "--project-dir",
+        metavar="DIR",
+        help="Root of the consumer chart project (default: auto-detected).",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Overwrite existing files if they already exist.",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Print prospective file paths without writing anything.",
+    ),
+    tier: str | None = typer.Option(
+        None,
+        "--tier",
+        metavar="TIER",
+        help="Override the default tier (live | capability | authored-only).",
+    ),
+    assert_type: str | None = typer.Option(
+        None,
+        "--assert-type",
+        metavar="TYPE",
+        help="Capability assert type (labels-present, rbac-objects, etc.).",
+    ),
+) -> None:
+    """Scaffold a new integration or capability test.
+
+    Creates fixture values, scenario YAML, and (for integrations) an
+    executable smoke script under the chart-test/ tree. The chart's
+    values.yaml is never modified.
+
+    \b
+    TARGET format:
+      <category>/<integration>  — Integration mode (requires a primer)
+      capability/<name>         — Capability mode (addon-less, no primer)
+
+    \b
+    Examples:
+        chart-test-swarm new certificates/cert-manager
+        chart-test-swarm new capability/labels
+        chart-test-swarm new certificates/cert-manager --dry-run
+        chart-test-swarm new certificates/cert-manager --force
+        chart-test-swarm new networking/traefik --tier authored-only
+        chart-test-swarm new capability/my-check --assert-type rbac-objects
+    """
+    from chart_test_swarm.commands.new_cmd import new_cmd as _new_impl
+
+    _new_impl(
+        target=target,
+        project_dir=project_dir,
+        force=force,
+        dry_run=dry_run,
+        tier=tier,
+        assert_type=assert_type,
+    )
+
+
 # -- register sub-apps -------------------------------------------------------
 
 app.add_typer(list_app, name="list")
