@@ -1070,7 +1070,8 @@ class TestAuthoringKitTemplates:
         # Check that 'preinstall' does not appear as a YAML key
         # (it may appear in comments — that's fine)
         code_lines = [
-            line for line in content.splitlines()
+            line
+            for line in content.splitlines()
             if line.strip() and not line.lstrip().startswith("#")
         ]
         preinstall_keys = [ln for ln in code_lines if "preinstall" in ln]
@@ -1084,20 +1085,14 @@ class TestAuthoringKitTemplates:
     def test_integration_template_has_preinstall(self) -> None:
         """VAL-KIT-011: integration template includes a non-empty cluster.preinstall slot."""
         content = (ASSETS_DIR / "_scenario-integration.yaml.tmpl").read_text()
-        assert "preinstall" in content, (
-            "Integration template missing 'preinstall' field"
-        )
+        assert "preinstall" in content, "Integration template missing 'preinstall' field"
         # Must reference a helm chart (primer-driven)
-        assert "helm" in content, (
-            "Integration template preinstall must include a helm kind"
-        )
+        assert "helm" in content, "Integration template preinstall must include a helm kind"
 
     def test_integration_template_has_smoke_script(self) -> None:
         """VAL-KIT-011: integration template includes a smoke-script assert."""
         content = (ASSETS_DIR / "_scenario-integration.yaml.tmpl").read_text()
-        assert "smoke-script" in content, (
-            "Integration template missing 'smoke-script' assert"
-        )
+        assert "smoke-script" in content, "Integration template missing 'smoke-script' assert"
         # Must reference the scaffolded assert path
         assert "SMOKE_REL" in content or "assertions" in content, (
             "Integration template smoke-script must reference the scaffolded assert path"
@@ -1112,19 +1107,11 @@ class TestAuthoringKitTemplates:
         lines = content.splitlines()
         # Find the chartTestSwarm section
         has_gate = any(
-            "enabled: true" in line and "chartTestSwarm" not in line
-            for line in lines
-        ) or any(
-            "enabled: true" in line for line in lines
-        )
-        assert has_gate, (
-            f"Fixture template must contain 'enabled: true', "
-            f"got:\n{content[:500]}"
-        )
+            "enabled: true" in line and "chartTestSwarm" not in line for line in lines
+        ) or any("enabled: true" in line for line in lines)
+        assert has_gate, f"Fixture template must contain 'enabled: true', got:\n{content[:500]}"
         # Also check 'chartTestSwarm' key appears
-        assert "chartTestSwarm" in content, (
-            "Fixture template missing 'chartTestSwarm' key"
-        )
+        assert "chartTestSwarm" in content, "Fixture template missing 'chartTestSwarm' key"
 
     def test_fixture_gate_appears_before_overrides(self) -> None:
         """VAL-KIT-012: chartTestSwarm.enabled gate appears before any override block."""
