@@ -74,8 +74,8 @@ EOF
 }
 
 @test "pre-existing scenarios still validate after schema changes" {
-  for f in "$SCENARIOS_DIR"/*.yaml; do
+  while IFS= read -r f; do
     run validate_yaml "$f"
     [ "$status" -eq 0 ]
-  done
+  done < <(find "$SCENARIOS_DIR" -type f -name '*.yaml' | sort)
 }

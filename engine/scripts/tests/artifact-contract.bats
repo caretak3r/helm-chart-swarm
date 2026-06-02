@@ -52,7 +52,7 @@ teardown() {
 # VAL-ENGINE-041: Inline product.set preserved on 5 pre-mission scenarios
 # ---------------------------------------------------------------------------
 @test "minimal.yaml has no product.values file reference (preserves original style)" {
-  f="$SCEN_DIR/minimal.yaml"
+  f="$SCEN_DIR/capability/minimal.yaml"
   [ -f "$f" ]
   # product.values must be null/absent — no migration to values: file reference
   val=$(yq '.product.values // "null"' "$f")
@@ -63,7 +63,7 @@ teardown() {
 }
 
 @test "with-cert-manager.yaml has no product.values file reference (preserves original style)" {
-  f="$SCEN_DIR/with-cert-manager.yaml"
+  f="$SCEN_DIR/certificates/with-cert-manager.yaml"
   [ -f "$f" ]
   val=$(yq '.product.values // "null"' "$f")
   [ "$val" = "null" ]
@@ -72,7 +72,7 @@ teardown() {
 }
 
 @test "customer-A-istio.yaml preserves inline product.set with escaped dots" {
-  f="$SCEN_DIR/customer-A-istio.yaml"
+  f="$SCEN_DIR/service-mesh/customer-a-istio.yaml"
   [ -f "$f" ]
   set_type=$(yq '.product.set | type' "$f")
   [ "$set_type" = "!!map" ]
@@ -84,7 +84,7 @@ teardown() {
 }
 
 @test "customer-B-gatekeeper.yaml has no product.values file reference (preserves original style)" {
-  f="$SCEN_DIR/customer-B-gatekeeper.yaml"
+  f="$SCEN_DIR/policy/customer-b-gatekeeper.yaml"
   [ -f "$f" ]
   val=$(yq '.product.values // "null"' "$f")
   [ "$val" = "null" ]
@@ -93,7 +93,7 @@ teardown() {
 }
 
 @test "subchart-postgres-internal.yaml preserves inline product.set (type=!!map, values=null)" {
-  f="$SCEN_DIR/subchart-postgres-internal.yaml"
+  f="$SCEN_DIR/storage/subchart-postgres-internal.yaml"
   [ -f "$f" ]
   set_type=$(yq '.product.set | type' "$f")
   [ "$set_type" = "!!map" ]

@@ -89,7 +89,7 @@ _has_modern_bash() {
   _BENCH_TEMPFILES+=("$tmp_scenarios")
 
   # Copy minimal.yaml (fastest scenario) to temp dir
-  cp "$ROOT_DIR/examples/sample-product-chart/chart-test/scenarios/minimal.yaml" "$tmp_scenarios/"
+  cp "$ROOT_DIR/examples/sample-product-chart/chart-test/scenarios/capability/minimal.yaml" "$tmp_scenarios/"
 
   # Run benchmark with limit=1, using temp output CSV
   SCENARIOS_DIR="$tmp_scenarios" OUTPUT_CSV="$tmp_csv" LIMIT=1 \

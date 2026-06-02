@@ -238,10 +238,10 @@ EOF
 }
 
 @test "all pre-F1.2 scenarios still validate against the updated schema" {
-  for f in "$SCENARIOS_DIR"/*.yaml; do
+  while IFS= read -r f; do
     run validate_yaml "$f"
     [ "$status" -eq 0 ]
-  done
+  done < <(find "$SCENARIOS_DIR" -type f -name '*.yaml' | sort)
 }
 
 # ---- apply-scenario.sh dispatch tests (no real cluster) ----
@@ -317,7 +317,7 @@ EOF
 }
 
 @test "envoy-gateway scenario YAML validates against the schema" {
-  local eg_scen="$SCENARIOS_DIR/envoy-gateway.yaml"
+  local eg_scen="$SCENARIOS_DIR/gateway-api/envoy-gateway.yaml"
   [ -f "$eg_scen" ]
   run validate_yaml "$eg_scen"
   [ "$status" -eq 0 ]

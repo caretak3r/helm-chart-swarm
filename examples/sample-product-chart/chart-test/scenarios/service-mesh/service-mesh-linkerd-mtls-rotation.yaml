@@ -1,0 +1,63 @@
+---
+id: service-mesh-linkerd-mtls-rotation
+name: "Linkerd — mTLS Identity Rotation"
+description: >-
+  Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace for injection, deploys the product chart, and verifies that mTLS identities are issued and valid by running linkerd check --proxy and inspecting the identity issuer certificate. Documents the mTLS rotation window and trust-anchor expiry.
+labels: {customer: any, profile: mesh}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: linkerd/linkerd-crds
+      version: 1.8.0
+      release: linkerd-crds
+      namespace: linkerd
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    - kind: helm
+      chart: linkerd/linkerd-control-plane
+      version: 1.16.11
+      release: linkerd-control-plane
+      namespace: linkerd
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values: chart-test/fixtures/service-mesh/linkerd-control-plane-values.yaml
+      wait: none
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    scope.enabled: "true"
+    scope.service.port: 80
+asserts:
+  - type: helm-status-deployed
+    release: linkerd-crds
+    namespace: linkerd
+  - type: helm-status-deployed
+    release: linkerd-control-plane
+    namespace: linkerd
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/linkerd-gen-certs.sh
+  - type: pods-ready
+    namespace: linkerd
+    timeout: 3m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/linkerd-mtls-rotation.sh
+tags: [nightly]
+mechanisms: ['addon:linkerd', 'mesh:linkerd']
+category: service-mesh
+integration: linkerd
+tier: live

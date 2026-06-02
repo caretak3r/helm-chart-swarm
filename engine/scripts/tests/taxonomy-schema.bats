@@ -198,7 +198,8 @@ EOF
 
 @test "pre-existing scenarios lacking taxonomy fields still validate" {
   # These are the original 5 pre-mission scenarios (per architecture §3.6)
-  for f in minimal.yaml with-cert-manager.yaml customer-A-istio.yaml customer-B-gatekeeper.yaml subchart-postgres-internal.yaml; do
+  # After f12-3 reorg they live under category subdirs with taxonomy fields
+  for f in capability/minimal.yaml certificates/with-cert-manager.yaml service-mesh/customer-a-istio.yaml policy/customer-b-gatekeeper.yaml storage/subchart-postgres-internal.yaml; do
     scenario="$SCENARIOS_DIR/$f"
     [ -f "$scenario" ] || continue
     run validate_yaml "$scenario"
@@ -207,6 +208,6 @@ EOF
 }
 
 @test "full jsonschema sweep over all scenarios exits 0" {
-  run bash -c 'for f in '"$SCENARIOS_DIR"'/*.yaml '"$SCENARIOS_DIR"'/**/*.yaml; do [ -f "$f" ] || continue; yq -o=json "$f" | jsonschema -i /dev/stdin '"$SCHEMA"' || exit 1; done'
+  run bash -c 'find '"$SCENARIOS_DIR"' -type f -name "*.yaml" | sort | while read -r f; do [ -f "$f" ] || continue; yq -o=json "$f" | jsonschema -i /dev/stdin '"$SCHEMA"' || exit 1; done'
   [ "$status" -eq 0 ]
 }

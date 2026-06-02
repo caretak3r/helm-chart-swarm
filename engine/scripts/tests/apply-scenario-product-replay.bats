@@ -58,7 +58,7 @@ _has_modern_bash() {
 }
 
 @test "apply-scenario.sh rejects unknown flag with error" {
-  run $BASH_CMD "$SCRIPTS_DIR/apply-scenario.sh" --not-a-flag "$SCEN_DIR/minimal.yaml"
+  run $BASH_CMD "$SCRIPTS_DIR/apply-scenario.sh" --not-a-flag "$SCEN_DIR/capability/minimal.yaml"
   [ "$status" -ne 0 ]
   [[ "$output" == *"unknown option"* ]]
 }
@@ -173,7 +173,7 @@ _has_modern_bash() {
     KEEP_CLUSTER=0 KEEP_ON_FAILURE=0 \
     REPORTS_DIR="$tmp_reports" \
     PROJECT_DIR="$PROJECT_DIR" \
-    $BASH_CMD "$SCRIPTS_DIR/run-scenario.sh" "$SCEN_DIR/minimal.yaml"
+    $BASH_CMD "$SCRIPTS_DIR/run-scenario.sh" "$SCEN_DIR/capability/minimal.yaml"
 
   echo "run-scenario.sh output: $output"
   [ "$status" -eq 0 ]
@@ -254,7 +254,7 @@ _has_modern_bash() {
   # Run apply-scenario.sh --preinstall-only with minimal scenario
   # (minimal has no preinstall items, so it should exit 0 early)
   run env PROJECT_DIR="$PROJECT_DIR" \
-    $BASH_CMD "$SCRIPTS_DIR/apply-scenario.sh" --preinstall-only "$SCEN_DIR/minimal.yaml"
+    $BASH_CMD "$SCRIPTS_DIR/apply-scenario.sh" --preinstall-only "$SCEN_DIR/capability/minimal.yaml"
   echo "apply-scenario.sh --preinstall-only output: $output"
   [ "$status" -eq 0 ]
 
@@ -264,13 +264,13 @@ _has_modern_bash() {
 
   # Product chart should NOT be installed (helm list in sample namespace should be empty or not contain sample)
   local ns
-  ns=$(yq '.product.namespace' "$SCEN_DIR/minimal.yaml")
+  ns=$(yq '.product.namespace' "$SCEN_DIR/capability/minimal.yaml")
   run helm --kube-context "kind-${cluster}" list -n "$ns" -o json
   # If status is non-zero (no releases) that's fine
   if [ "$status" -eq 0 ]; then
     # If helm list succeeded, the release should NOT be present
     local release_name
-    release_name=$(yq '.product.release' "$SCEN_DIR/minimal.yaml")
+    release_name=$(yq '.product.release' "$SCEN_DIR/capability/minimal.yaml")
     echo "$output" | { ! grep -q "$release_name" || true; }
   fi
 
@@ -294,7 +294,7 @@ _has_modern_bash() {
 
   # Run apply-scenario.sh WITHOUT --preinstall-only against minimal scenario
   run env PROJECT_DIR="$PROJECT_DIR" \
-    $BASH_CMD "$SCRIPTS_DIR/apply-scenario.sh" "$SCEN_DIR/minimal.yaml"
+    $BASH_CMD "$SCRIPTS_DIR/apply-scenario.sh" "$SCEN_DIR/capability/minimal.yaml"
   echo "apply-scenario.sh (no flag) output: $output"
   [ "$status" -eq 0 ]
 
@@ -304,8 +304,8 @@ _has_modern_bash() {
 
   # Product helm release should be deployed
   local ns release_name
-  ns=$(yq '.product.namespace' "$SCEN_DIR/minimal.yaml")
-  release_name=$(yq '.product.release' "$SCEN_DIR/minimal.yaml")
+  ns=$(yq '.product.namespace' "$SCEN_DIR/capability/minimal.yaml")
+  release_name=$(yq '.product.release' "$SCEN_DIR/capability/minimal.yaml")
 
   run helm --kube-context "kind-${cluster}" list -n "$ns" -o json
   echo "helm list output: $output"

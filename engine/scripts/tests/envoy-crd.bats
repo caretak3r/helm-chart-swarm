@@ -77,7 +77,7 @@ _has_modern_bash() {
 }
 
 @test "envoy-gateway scenario YAML has single helm preinstall (CRDs bundled in chart crds/)" {
-  local eg_scen="$SCEN_DIR/envoy-gateway.yaml"
+  local eg_scen="$SCEN_DIR/gateway-api/envoy-gateway.yaml"
   [ -f "$eg_scen" ]
 
   # There should be exactly 1 preinstall item (the envoy-gateway helm chart).
@@ -115,7 +115,7 @@ _has_modern_bash() {
     KEEP_CLUSTER=0 KEEP_ON_FAILURE=0 \
     REPORTS_DIR="$tmp_reports" \
     PROJECT_DIR="$PROJECT_DIR" \
-    $BASH_CMD "$SCRIPTS_DIR/run-scenario.sh" "$SCEN_DIR/envoy-gateway.yaml"
+    $BASH_CMD "$SCRIPTS_DIR/run-scenario.sh" "$SCEN_DIR/gateway-api/envoy-gateway.yaml"
 
   echo "run-scenario.sh output: $output"
   echo "exit status: $status"
@@ -170,7 +170,7 @@ _has_modern_bash() {
     KEEP_CLUSTER=0 KEEP_ON_FAILURE=0 \
     REPORTS_DIR="$tmp_reports" \
     PROJECT_DIR="$PROJECT_DIR" \
-    $BASH_CMD "$SCRIPTS_DIR/run-scenario.sh" "$SCEN_DIR/envoy-gateway.yaml"
+    $BASH_CMD "$SCRIPTS_DIR/run-scenario.sh" "$SCEN_DIR/gateway-api/envoy-gateway.yaml"
 
   echo "run-scenario.sh output: $output"
   [ "$status" -eq 0 ]

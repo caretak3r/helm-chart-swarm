@@ -127,7 +127,7 @@ def run_cmd(
 
     \b
     Examples:
-        chart-test-swarm run --scenario examples/.../scenarios/minimal.yaml
+        chart-test-swarm run --scenario examples/.../scenarios/capability/minimal.yaml
         chart-test-swarm run --integration cert-manager --backend minikube -p 2
         chart-test-swarm run --suite all --project-dir ./my-chart
         chart-test-swarm run --all

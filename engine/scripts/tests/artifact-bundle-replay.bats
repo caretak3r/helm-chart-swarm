@@ -148,7 +148,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "minimal scenario run produces artifacts/chart/ with Chart.yaml" {
-  local scenario="$SCEN_DIR/minimal.yaml"
+  local scenario="$SCEN_DIR/capability/minimal.yaml"
   [ -f "$scenario" ]
 
   # Create a temporary reports dir

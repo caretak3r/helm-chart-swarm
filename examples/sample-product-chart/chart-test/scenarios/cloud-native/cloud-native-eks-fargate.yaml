@@ -1,0 +1,40 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, kubeval, yamllint.
+# Apply to your own EKS cluster per the EKS primer instructions.
+---
+id: cloud-native-eks-fargate
+name: "EKS Fargate"
+description: "Pods scheduled onto AWS Fargate serverless compute via Fargate profile selector; no EC2 worker nodes; smoke-script verifies Fargate runtime characteristics."
+labels:
+  customer: any
+  profile: eks
+  chart-test-swarm/target-k8s-version: eks-1.30
+cluster:
+  provider: eks
+  k8s_version: "1.30"
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    eks.fargate.enabled: "true"
+    eks.fargate.fargateProfileName: "<REPLACE_WITH_FARGATE_PROFILE_NAME>"
+    podSecurityContext.fsGroup: "65534"
+    resources.requests.cpu: "256m"
+    resources.requests.memory: "512Mi"
+    resources.limits.cpu: "512m"
+    resources.limits.memory: "1Gi"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 10m
+  - type: smoke-script
+    path: chart-test/assertions/cloud-native/eks/fargate.sh
+tags: [cloud-native]
+mechanisms: ['cloud:eks', 'addon:fargate']
+category: cloud-native
+tier: authored-only
+integration: eks-fargate
