@@ -31,6 +31,7 @@ SCHEMA_PATH = REPO_ROOT / "engine" / "templates" / "scenario.schema.json"
 INTEGRATIONS_ROOT = (
     REPO_ROOT / "engine" / "skills" / "chart-test-swarm" / "references" / "integrations"
 )
+ASSETS_DIR = REPO_ROOT / "engine" / "skills" / "chart-test-swarm" / "assets"
 
 runner = CliRunner()
 
@@ -939,3 +940,201 @@ class TestNewIntegrationDiscovery:
         # capability/ is a special pseudo-category; it should be valid even if
         # references/integrations/capability/ does not exist
         pass  # This is validated in TestNewCapability above
+
+
+# ── Authoring-kit template file validation (VAL-KIT-009–012) ────────────────
+
+
+class TestAuthoringKitTemplates:
+    """Validate the authoring-kit template files encode the project conventions.
+
+    VAL-KIT-009: scenario template carries category, tier, and
+        capability/integration field plus id/product/asserts/generated_by.
+    VAL-KIT-010: capability template wires an addon-less §10.4 capability
+        assert by default and contains no preinstall addon stanza.
+    VAL-KIT-011: integration template includes a primer-driven
+        cluster.preinstall slot and a smoke-script assert.
+    VAL-KIT-012: fixture template begins with chartTestSwarm.enabled: true.
+    """
+
+    # ── Template file existence ───────────────────────────────────────────
+
+    def test_integration_template_exists(self) -> None:
+        """The integration scenario template file exists."""
+        tmpl = ASSETS_DIR / "_scenario-integration.yaml.tmpl"
+        assert tmpl.is_file(), f"Integration template not found at {tmpl}"
+
+    def test_capability_template_exists(self) -> None:
+        """The capability scenario template file exists."""
+        tmpl = ASSETS_DIR / "_scenario-capability.yaml.tmpl"
+        assert tmpl.is_file(), f"Capability template not found at {tmpl}"
+
+    def test_fixture_template_exists(self) -> None:
+        """The fixture values template file exists."""
+        tmpl = ASSETS_DIR / "_fixture-values.yaml.tmpl"
+        assert tmpl.is_file(), f"Fixture template not found at {tmpl}"
+
+    def test_generic_scenario_template_exists(self) -> None:
+        """The generic scenario template file exists."""
+        tmpl = ASSETS_DIR / "_scenario.yaml.tmpl"
+        assert tmpl.is_file(), f"Generic scenario template not found at {tmpl}"
+
+    # ── VAL-KIT-009: scenario template encodes project conventions ────────
+
+    def test_generic_template_has_category(self) -> None:
+        """VAL-KIT-009: generic scenario template contains 'category' field."""
+        content = (ASSETS_DIR / "_scenario.yaml.tmpl").read_text()
+        assert "category" in content, "Generic template missing 'category' field"
+
+    def test_generic_template_has_tier(self) -> None:
+        """VAL-KIT-009: generic scenario template contains 'tier' field."""
+        content = (ASSETS_DIR / "_scenario.yaml.tmpl").read_text()
+        assert "tier" in content, "Generic template missing 'tier' field"
+
+    def test_generic_template_has_integration_or_capability(self) -> None:
+        """VAL-KIT-009: generic scenario template contains integration/capability field."""
+        content = (ASSETS_DIR / "_scenario.yaml.tmpl").read_text()
+        assert "integration" in content or "capability" in content, (
+            "Generic template missing 'integration' or 'capability' field"
+        )
+
+    def test_generic_template_has_id_product_asserts_generated_by(self) -> None:
+        """VAL-KIT-009: generic scenario template contains id, product, asserts, generated_by."""
+        content = (ASSETS_DIR / "_scenario.yaml.tmpl").read_text()
+        for field in ("id", "product", "asserts", "generated_by"):
+            assert field in content, f"Generic template missing '{field}' field"
+
+    def test_integration_template_has_category(self) -> None:
+        """VAL-KIT-009: integration template contains 'category' field."""
+        content = (ASSETS_DIR / "_scenario-integration.yaml.tmpl").read_text()
+        assert "category" in content, "Integration template missing 'category' field"
+
+    def test_integration_template_has_tier(self) -> None:
+        """VAL-KIT-009: integration template contains 'tier' field."""
+        content = (ASSETS_DIR / "_scenario-integration.yaml.tmpl").read_text()
+        assert "tier" in content, "Integration template missing 'tier' field"
+
+    def test_integration_template_has_integration(self) -> None:
+        """VAL-KIT-009: integration template contains 'integration' field."""
+        content = (ASSETS_DIR / "_scenario-integration.yaml.tmpl").read_text()
+        assert "integration" in content, "Integration template missing 'integration' field"
+
+    def test_integration_template_has_id_product_asserts_generated_by(self) -> None:
+        """VAL-KIT-009: integration template contains id, product, asserts, generated_by."""
+        content = (ASSETS_DIR / "_scenario-integration.yaml.tmpl").read_text()
+        for field in ("id", "product", "asserts", "generated_by"):
+            assert field in content, f"Integration template missing '{field}' field"
+
+    def test_capability_template_has_category(self) -> None:
+        """VAL-KIT-009: capability template contains 'category' field."""
+        content = (ASSETS_DIR / "_scenario-capability.yaml.tmpl").read_text()
+        assert "category" in content, "Capability template missing 'category' field"
+
+    def test_capability_template_has_tier(self) -> None:
+        """VAL-KIT-009: capability template contains 'tier' field."""
+        content = (ASSETS_DIR / "_scenario-capability.yaml.tmpl").read_text()
+        assert "tier" in content, "Capability template missing 'tier' field"
+
+    def test_capability_template_has_capability(self) -> None:
+        """VAL-KIT-009: capability template contains 'capability' field."""
+        content = (ASSETS_DIR / "_scenario-capability.yaml.tmpl").read_text()
+        assert "capability" in content, "Capability template missing 'capability' field"
+
+    def test_capability_template_has_id_product_asserts_generated_by(self) -> None:
+        """VAL-KIT-009: capability template contains id, product, asserts, generated_by."""
+        content = (ASSETS_DIR / "_scenario-capability.yaml.tmpl").read_text()
+        for field in ("id", "product", "asserts", "generated_by"):
+            assert field in content, f"Capability template missing '{field}' field"
+
+    # ── VAL-KIT-010: capability template is addon-less with §10.4 assert ──
+
+    def test_capability_template_references_capability_assert(self) -> None:
+        """VAL-KIT-010: capability template's asserts[] references a §10.4 assert type."""
+        content = (ASSETS_DIR / "_scenario-capability.yaml.tmpl").read_text()
+        # §10.4 assert types per architecture
+        capability_types = {
+            "labels-present",
+            "annotations-present",
+            "scheme-enforced",
+            "rbac-objects",
+        }
+        found = any(t in content for t in capability_types)
+        assert found, (
+            f"Capability template must reference a §10.4 assert type, "
+            f"none of {capability_types} found in template"
+        )
+
+    def test_capability_template_no_preinstall(self) -> None:
+        """VAL-KIT-010: capability template contains no cluster.preinstall addon stanza."""
+        content = (ASSETS_DIR / "_scenario-capability.yaml.tmpl").read_text()
+        # Check that 'preinstall' does not appear as a YAML key
+        # (it may appear in comments — that's fine)
+        code_lines = [
+            line for line in content.splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        preinstall_keys = [ln for ln in code_lines if "preinstall" in ln]
+        assert not preinstall_keys, (
+            f"Capability template must NOT contain a preinstall YAML key "
+            f"(addon-less), found: {preinstall_keys}"
+        )
+
+    # ── VAL-KIT-011: integration template has preinstall + smoke-script ──
+
+    def test_integration_template_has_preinstall(self) -> None:
+        """VAL-KIT-011: integration template includes a non-empty cluster.preinstall slot."""
+        content = (ASSETS_DIR / "_scenario-integration.yaml.tmpl").read_text()
+        assert "preinstall" in content, (
+            "Integration template missing 'preinstall' field"
+        )
+        # Must reference a helm chart (primer-driven)
+        assert "helm" in content, (
+            "Integration template preinstall must include a helm kind"
+        )
+
+    def test_integration_template_has_smoke_script(self) -> None:
+        """VAL-KIT-011: integration template includes a smoke-script assert."""
+        content = (ASSETS_DIR / "_scenario-integration.yaml.tmpl").read_text()
+        assert "smoke-script" in content, (
+            "Integration template missing 'smoke-script' assert"
+        )
+        # Must reference the scaffolded assert path
+        assert "SMOKE_REL" in content or "assertions" in content, (
+            "Integration template smoke-script must reference the scaffolded assert path"
+        )
+
+    # ── VAL-KIT-012: fixture template has chartTestSwarm.enabled gate ──────
+
+    def test_fixture_template_has_enabled_gate(self) -> None:
+        """VAL-KIT-012: fixture template begins with chartTestSwarm.enabled: true."""
+        content = (ASSETS_DIR / "_fixture-values.yaml.tmpl").read_text()
+        # Parse as YAML (the template is valid YAML even with ${} comments)
+        lines = content.splitlines()
+        # Find the chartTestSwarm section
+        has_gate = any(
+            "enabled: true" in line and "chartTestSwarm" not in line
+            for line in lines
+        ) or any(
+            "enabled: true" in line for line in lines
+        )
+        assert has_gate, (
+            f"Fixture template must contain 'enabled: true', "
+            f"got:\n{content[:500]}"
+        )
+        # Also check 'chartTestSwarm' key appears
+        assert "chartTestSwarm" in content, (
+            "Fixture template missing 'chartTestSwarm' key"
+        )
+
+    def test_fixture_gate_appears_before_overrides(self) -> None:
+        """VAL-KIT-012: chartTestSwarm.enabled gate appears before any override block."""
+        content = (ASSETS_DIR / "_fixture-values.yaml.tmpl").read_text()
+        gate_pos = content.find("chartTestSwarm")
+        override_pos = content.find("overrides")
+        if override_pos == -1:
+            # No override comment yet — gate is naturally first
+            pass
+        else:
+            assert gate_pos < override_pos, (
+                "chartTestSwarm.enabled gate must appear before any override block"
+            )

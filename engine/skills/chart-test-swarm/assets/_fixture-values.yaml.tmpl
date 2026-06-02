@@ -1,0 +1,10 @@
+# Fixture values scaffolded by chart-test-swarm new.
+#
+# The chartTestSwarm.enabled gate ensures helm-test pods only inject
+# when the test framework is active.  This gate MUST appear before any
+# integration/capability-specific override block (per Phase 7 workflow).
+chartTestSwarm:
+  enabled: true
+
+# ${OVERRIDE_COMMENT}
+# Add product values overrides below.

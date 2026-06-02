@@ -1,0 +1,66 @@
+# Integration scenario template for chart-test-swarm new.
+# Rendered by: chart-test-swarm new <category>/<integration>
+#
+# This template carries the project conventions for integration-mode scenarios:
+#   - category, tier, and integration self-description fields
+#   - primer-driven cluster.preinstall slot
+#   - smoke-script assert referencing the scaffolded assert path
+#   - generated_by provenance block
+#
+# Placeholders use ${VAR} syntax, substituted by the CLI at render time.
+
+id: ${SCENARIO_ID}
+name: "${INTEGRATION} integration test"
+description: >-
+  Integration test for ${INTEGRATION} under the ${CATEGORY} category.
+  Scaffolded by chart-test-swarm new — customize preinstall,
+  product overrides, and assertions as needed.
+labels:
+  customer: any
+  profile: integration
+
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    # Primer-driven preinstall block — fill in from the integration primer's
+    # "Cluster preinstall" section.  The block below is a placeholder showing
+    # the expected structure; replace chart/version/repo with real values.
+    - kind: helm
+      chart: TODO/${INTEGRATION}
+      version: TODO
+      release: ${INTEGRATION}
+      namespace: ${INTEGRATION}
+      repo:
+        name: TODO
+        url: "https://charts.TODO.example.com/"
+      wait: pods-ready
+      wait_timeout: 3m
+
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  values: ${FIXTURE_REL}
+
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 3m
+  - type: smoke-script
+    path: ${SMOKE_REL}
+
+tags: [pr-subset]
+category: ${CATEGORY}
+integration: ${INTEGRATION}
+tier: ${TIER}
+mechanisms:
+  - "addon:${INTEGRATION}"
+
+generated_by:
+  by: chart-test-swarm-new
+  integration: ${INTEGRATION}
+  at: ${GENERATED_AT}

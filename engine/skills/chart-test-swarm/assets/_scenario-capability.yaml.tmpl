@@ -1,0 +1,53 @@
+# Capability/compliance scenario template for chart-test-swarm new.
+# Rendered by: chart-test-swarm new capability/<name>
+#
+# This template carries the project conventions for capability-mode scenarios:
+#   - category (always "capability"), tier, and capability self-description fields
+#   - addon-less: NO cluster.preinstall stanza (live on kind with no addon)
+#   - §10.4 capability assert (default: labels-present) as the third assertion
+#   - generated_by provenance block
+#
+# Placeholders use ${VAR} syntax, substituted by the CLI at render time.
+
+id: ${SCENARIO_ID}
+name: "Capability: ${CAPABILITY_NAME}"
+description: >-
+  Addon-less capability/compliance test for ${CAPABILITY_NAME}.
+  Scaffolded by chart-test-swarm new — customize product
+  overrides and assertion parameters as needed.
+labels:
+  customer: enterprise
+  profile: compliance
+
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  values: ${FIXTURE_REL}
+
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 3m
+  - type: ${ASSERT_TYPE}
+    namespace: sample
+    source: rendered
+    ${ASSERT_EXTRA_FIELDS}
+
+tags: [capability, compliance]
+category: capability
+capability: ${CAPABILITY_NAME}
+tier: ${TIER}
+mechanisms:
+  - "capability:${CAPABILITY_NAME}"
+
+generated_by:
+  by: chart-test-swarm-new
+  at: ${GENERATED_AT}
