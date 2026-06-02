@@ -156,7 +156,7 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects"] },
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy"] },
         "timeout": { "type": "string", "default": "5m" }
       },
       "oneOf": [
@@ -231,6 +231,28 @@
             "type":           { "const": "rbac-objects" },
             "namespace":      { "type": "string", "description": "Product namespace." },
             "expect_present": { "type": "boolean", "description": "true: RBAC objects MUST exist and be wired. false: zero RBAC-kind objects." },
+            "source":         { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: pod-level and container-level securityContext knobs are rendered with configured values (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":                      { "const": "security-context" },
+            "namespace":                 { "type": "string", "description": "Product namespace." },
+            "expect_present":            { "type": "boolean", "description": "true: pod-level and container-level securityContext fields MUST appear with configured values. false: no securityContext block on any workload." },
+            "source":                    { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "podSecurityContext":        { "type": "object", "description": "Expected pod-level securityContext fields (e.g. runAsNonRoot, seccompProfile.type). Checked when expect_present=true.", "additionalProperties": true },
+            "containerSecurityContext":  { "type": "object", "description": "Expected container-level securityContext fields (e.g. readOnlyRootFilesystem, allowPrivilegeEscalation, capabilities). Checked when expect_present=true.", "additionalProperties": true }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: networkPolicy.enabled=true yields a NetworkPolicy selecting the product pods; false yields none.",
+          "properties": {
+            "type":           { "const": "network-policy" },
+            "namespace":      { "type": "string", "description": "Product namespace." },
+            "expect_present": { "type": "boolean", "description": "true: at least one NetworkPolicy MUST exist selecting the workload. false: zero NetworkPolicy documents." },
             "source":         { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
           },
           "required": ["namespace", "expect_present"]

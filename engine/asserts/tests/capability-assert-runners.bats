@@ -806,3 +806,248 @@ EOF
   [ $status -ne 0 ]
   [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"missing"* ]]
 }
+
+# ═══════════════════════════════════════════════════════════════════════
+# security-context
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "security-context: PASS (expect_present=false) when no securityContext in rendered output" {
+  local s="$TEST_TMPDIR/secctx-off-pass.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-off-pass
+name: security-context OFF PASS
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+    expect_present: false
+EOF
+  run_assert "security-context.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "security-context: FAIL (expect_present=true) when chart lacks securityContext knobs" {
+  local s="$TEST_TMPDIR/secctx-on-fail.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-on-fail
+name: security-context ON FAIL
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    podSecurityContext.runAsNonRoot: true
+    securityContext.readOnlyRootFilesystem: true
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+    expect_present: true
+    podSecurityContext:
+      runAsNonRoot: true
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+EOF
+  # Chart has no securityContext templates, so setting values has no effect
+  run_assert "security-context.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"missing"* ]]
+}
+
+@test "security-context: FAIL with invalid expect_present value" {
+  local s="$TEST_TMPDIR/secctx-invalid.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-invalid
+name: security-context invalid expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+    expect_present: maybe
+EOF
+  run_assert "security-context.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"expect_present"* ]]
+}
+
+@test "security-context: schema validates security-context assertion" {
+  local s="$TEST_TMPDIR/secctx-schema.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-schema
+name: security-context schema valid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+    expect_present: true
+    podSecurityContext:
+      runAsNonRoot: true
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+EOF
+  yq -o=json "$s" | jsonschema -i /dev/stdin "$SCHEMA_FILE"
+}
+
+@test "security-context: schema rejects security-context without expect_present" {
+  local s="$TEST_TMPDIR/secctx-schema-noexpect.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-schema-noexpect
+name: security-context schema missing expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -ne 0 ]
+}
+
+@test "security-context.sh is executable" {
+  [ -x "$ASSERTS_DIR/security-context.sh" ]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# network-policy
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "network-policy: PASS (expect_present=false) when no NetworkPolicy in rendered output" {
+  local s="$TEST_TMPDIR/netpol-off-pass.yaml"
+  cat > "$s" <<'EOF'
+id: netpol-off-pass
+name: network-policy OFF PASS
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    networkPolicy.enabled: false
+asserts:
+  - type: network-policy
+    namespace: sample
+    source: rendered
+    expect_present: false
+EOF
+  run_assert "network-policy.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "network-policy: FAIL (expect_present=true) when chart lacks NetworkPolicy template" {
+  local s="$TEST_TMPDIR/netpol-on-fail.yaml"
+  cat > "$s" <<'EOF'
+id: netpol-on-fail
+name: network-policy ON FAIL
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  set:
+    networkPolicy.enabled: true
+asserts:
+  - type: network-policy
+    namespace: sample
+    source: rendered
+    expect_present: true
+EOF
+  # Chart has no NetworkPolicy template, so setting networkPolicy.enabled has no effect
+  run_assert "network-policy.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"expected NetworkPolicy"* ]]
+}
+
+@test "network-policy: FAIL with invalid expect_present value" {
+  local s="$TEST_TMPDIR/netpol-invalid.yaml"
+  cat > "$s" <<'EOF'
+id: netpol-invalid
+name: network-policy invalid expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: network-policy
+    namespace: sample
+    source: rendered
+    expect_present: maybe
+EOF
+  run_assert "network-policy.sh" "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"expect_present"* ]]
+}
+
+@test "network-policy: schema validates network-policy assertion" {
+  local s="$TEST_TMPDIR/netpol-schema.yaml"
+  cat > "$s" <<'EOF'
+id: netpol-schema
+name: network-policy schema valid
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: network-policy
+    namespace: sample
+    source: rendered
+    expect_present: true
+EOF
+  yq -o=json "$s" | jsonschema -i /dev/stdin "$SCHEMA_FILE"
+}
+
+@test "network-policy: schema rejects network-policy without expect_present" {
+  local s="$TEST_TMPDIR/netpol-schema-noexpect.yaml"
+  cat > "$s" <<'EOF'
+id: netpol-schema-noexpect
+name: network-policy schema missing expect
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: network-policy
+    namespace: sample
+    source: rendered
+EOF
+  run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
+  [ $status -ne 0 ]
+}
+
+@test "network-policy.sh is executable" {
+  [ -x "$ASSERTS_DIR/network-policy.sh" ]
+}
