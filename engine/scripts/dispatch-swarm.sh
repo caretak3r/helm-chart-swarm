@@ -21,7 +21,9 @@ Options:
 
 Arguments:
   project-dir  Path to the consumer chart project (containing chart-test-swarm.yaml)
-  suite        Suite name defined in chart-test-swarm.yaml (default: pr-subset)
+  suite        Suite name defined in chart-test-swarm.yaml, or "all" to
+               enumerate every scenario recursively across category subdirs
+               (VAL-CAT-002). Default: pr-subset
   num-agents   Number of parallel agents (default: 2)
   run-id       Run identifier (default: run-<timestamp>)
 
@@ -80,17 +82,19 @@ SCEN_REL=$(yq    '.scenarios_dir // "chart-test/scenarios"' "$CONFIG")
 SCEN_DIR="$PROJECT_DIR/$SCEN_REL"
 [ -d "$SCEN_DIR" ] || { echo "ERROR: scenarios dir missing: $SCEN_DIR" >&2; exit 1; }
 
-# Tag filter for this suite (JSON array)
-TAG_FILTER=$(yq -o=json ".suites.\"$SUITE\".tag_filter // []" "$CONFIG")
-if [ "$(echo "$TAG_FILTER" | jq 'length')" -eq 0 ]; then
-  echo "ERROR: suite '$SUITE' not defined or has empty tag_filter in $CONFIG" >&2
-  exit 1
-fi
+# ---- Suite resolution ─────────────────────────────────────────────────────
+# Special suite name "all": enumerate every YAML file under the scenarios dir
+# recursively, bypassing tag filtering entirely.  This supports
+# `chart-test-swarm run --all` / `dispatch-swarm.sh <project> all` which
+# discovers scenarios across category subdirectories (VAL-CAT-002).
+#
+# Regular suites: read tag_filter from chart-test-swarm.yaml and match.
+#
+# CTS_SCENARIOS (from CLI wrapper) takes precedence over both paths:
+# newline-separated list of absolute scenario file paths.
 
-# Collect matching scenarios (any tag overlap with filter).
-# CTS_SCENARIOS (from CLI wrapper) takes precedence: newline-separated list of
-# absolute scenario file paths.
 if [ -n "${CTS_SCENARIOS:-}" ]; then
+  # ── CTS_SCENARIOS provided (CLI --scenario / --integration / --all) ────
   MATCHED=()
   while IFS= read -r f; do
     [ -n "$f" ] && MATCHED+=("$f")
@@ -101,7 +105,46 @@ if [ -n "${CTS_SCENARIOS:-}" ]; then
     exit 1
   fi
   echo "==> CLI provided $COUNT scenario(s); dispatching to $NUM_AGENTS agent(s)"
+elif [ "$SUITE" = "all" ]; then
+  # ── Suite "all": enumerate every YAML recursively (VAL-CAT-002) ────────
+  ALL_FILES=()
+  while IFS= read -r f; do
+    ALL_FILES+=("$f")
+  done < <(find "$SCEN_DIR" -type f \( -name "*.yaml" -o -name "*.yml" \) | sort)
+
+  # Filter by tier: skip authored-only cloud-native scenarios unless opted in.
+  # Local-backend scenarios of any tier (live, capability) are included.
+  _CLOUD_INCLUDE="${CTS_INCLUDE_CLOUD_NATIVE:-0}"
+
+  MATCHED=()
+  for f in "${ALL_FILES[@]}"; do
+    _tier=$(yq '.tier // ""' "$f")
+    _prov=$(yq '.cluster.provider // ""' "$f")
+    # Skip authored-only scenarios unless explicitly opted in
+    if [ "$_tier" = "authored-only" ] && [ "$_CLOUD_INCLUDE" != "1" ]; then
+      continue
+    fi
+    # Also skip cloud-provider scenarios (gke/eks/aks) unless opted in
+    if echo "$_prov" | grep -qE 'gke|eks|aks' && [ "$_CLOUD_INCLUDE" != "1" ]; then
+      continue
+    fi
+    MATCHED+=("$f")
+  done
+
+  COUNT=${#MATCHED[@]}
+  if [ "$COUNT" -eq 0 ]; then
+    echo "ERROR: no runnable scenarios found under $SCEN_DIR (after filtering authored-only)" >&2
+    exit 1
+  fi
+  echo "==> Suite 'all' matched $COUNT scenario(s) (recursive walk); dispatching to $NUM_AGENTS agent(s)"
 else
+  # ── Regular suite: tag-based filtering ─────────────────────────────────
+  TAG_FILTER=$(yq -o=json ".suites.\"$SUITE\".tag_filter // []" "$CONFIG")
+  if [ "$(echo "$TAG_FILTER" | jq 'length')" -eq 0 ]; then
+    echo "ERROR: suite '$SUITE' not defined or has empty tag_filter in $CONFIG" >&2
+    exit 1
+  fi
+
   # Bash 3.2 compatible: avoid mapfile, use while-read loop
   ALL_FILES=()
   while IFS= read -r f; do
@@ -128,7 +171,7 @@ fi
 # Cloud-native scenarios (gke, eks, aks) are authored only — they must NOT
 # trigger any cluster operations, cloud CLI calls, or kubectl --context.
 # Filter them out unless CTS_INCLUDE_CLOUD_NATIVE=1 is set.
-CLOUD_PROVIDERS='gke\|eks\|aks'
+CLOUD_PROVIDERS='gke|eks|aks'
 _LOCAL_ONLY=()
 _CLOUD_SKIPPED=()
 _CLOUD_INCLUDE="${CTS_INCLUDE_CLOUD_NATIVE:-0}"
@@ -149,7 +192,9 @@ done
 
 # If ALL matched scenarios are cloud-native and not explicitly included,
 # emit the skip message and exit 0 — do not start any cluster ops.
-if [ "${#_CLOUD_SKIPPED[@]}" -gt 0 ] && [ "${#_LOCAL_ONLY[@]}" -eq "${#_CLOUD_SKIPPED[@]}" ]; then
+# Fix: check that _LOCAL_ONLY is empty (zero entries), not that it equals
+# the cloud-skipped count (which is wrong when counts happen to match).
+if [ "${#_LOCAL_ONLY[@]}" -eq 0 ] && [ "${#_CLOUD_SKIPPED[@]}" -gt 0 ]; then
   echo "==> All ${#_CLOUD_SKIPPED[@]} matched scenario(s) are cloud-native — authored only; skipping cluster operations." >&2
   echo "    Re-run with CTS_INCLUDE_CLOUD_NATIVE=1 to include them (note: they will still be" >&2
   echo "    authored only — no real GKE/EKS/AKS cluster operations are invoked)." >&2

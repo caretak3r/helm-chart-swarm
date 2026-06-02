@@ -195,6 +195,50 @@ def _find_scenarios_by_integration(project_dir: Path, integration: str) -> list[
     return matched
 
 
+def _find_all_scenarios(project_dir: Path) -> list[Path]:
+    """Walk the project's scenarios directory recursively and return every
+    ``*.yaml`` / ``*.yml`` file (VAL-CAT-002).
+
+    Authored-only and cloud-provider scenarios are *not* filtered here —
+    ``dispatch-swarm.sh`` handles that at runtime.  This function simply
+    enumerates the on-disk tree so that ``--all`` discovers scenarios in
+    category subdirectories.
+
+    Raises SystemExit with a "no scenarios found" message if zero files match.
+    """
+    config = project_dir / "chart-test-swarm.yaml"
+    if config.exists():
+        import yaml as _yaml_lib
+
+        with open(config) as fh:
+            cfg = _yaml_lib.safe_load(fh) or {}
+        scenarios_rel = cfg.get("scenarios_dir", "chart-test/scenarios")
+    else:
+        scenarios_rel = "chart-test/scenarios"
+
+    scn_dir = (project_dir / scenarios_rel).resolve()
+    if not scn_dir.is_dir():
+        _die(
+            f"ERROR: scenarios directory not found: {scn_dir}",
+            code=1,
+        )
+
+    matched: list[Path] = []
+    for f in sorted(scn_dir.rglob("*.yaml")):
+        if f.is_file():
+            matched.append(f)
+    for f in sorted(scn_dir.rglob("*.yml")):
+        if f.is_file():
+            matched.append(f)
+
+    if not matched:
+        _die(
+            f"ERROR: no scenarios found in {scn_dir}",
+            code=1,
+        )
+    return matched
+
+
 def _build_env(
     *,
     backend: str | None,
@@ -318,6 +362,7 @@ def run(
     project_dir: str | None = None,
     suite: str | None = None,
     include_cloud_native: bool = False,
+    run_all: bool = False,
 ) -> None:
     """Run scenarios against a Kubernetes cluster.
 
@@ -354,11 +399,22 @@ def run(
     elif integration is not None:
         # Filter by integration name (VAL-CLI-008)
         scenarios = _find_scenarios_by_integration(resolved_project_dir, integration)
+    elif run_all:
+        # --all mode: enumerate every scenario recursively across category
+        # subdirectories (VAL-CAT-002). Cloud-native/authored-only are
+        # filtered by dispatch-swarm.sh unless --include-cloud-native.
+        scenarios = _find_all_scenarios(resolved_project_dir)
     else:
         # Suite mode — let dispatch-swarm.sh resolve scenarios from tags
         scenarios = []
 
     # ── 3. Dispatch ─────────────────────────────────────────────────────
+    # When --all is used, pass suite="all" so dispatch-swarm.sh uses its
+    # recursive enumeration mode (VAL-CAT-002).
+    effective_suite = suite
+    if run_all and not suite:
+        effective_suite = "all"
+
     rc = _call_dispatch(
         script,
         scenarios,
@@ -368,7 +424,7 @@ def run(
         run_id=resolved_run_id,
         reports_dir=reports_dir,
         project_dir=resolved_project_dir,
-        suite=suite,
+        suite=effective_suite,
         include_cloud_native=include_cloud_native,
     )
 

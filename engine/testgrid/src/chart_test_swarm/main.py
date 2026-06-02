@@ -111,6 +111,14 @@ def run_cmd(
         help="Include cloud-native scenarios (gke/eks/aks). "
         "Authored-only — no real cloud cluster operations are performed.",
     ),
+    run_all: bool = typer.Option(
+        False,
+        "--all",
+        help="Run ALL scenarios recursively across category subdirectories "
+        "(VAL-CAT-002). Bypasses tag-based suite filtering; discovers every "
+        "*.yaml under scenarios/ including category subdirs. Authored-only "
+        "scenarios are skipped unless --include-cloud-native is also set.",
+    ),
 ) -> None:
     """Run scenarios against a Kubernetes cluster.
 
@@ -122,6 +130,8 @@ def run_cmd(
         chart-test-swarm run --scenario examples/.../scenarios/minimal.yaml
         chart-test-swarm run --integration cert-manager --backend minikube -p 2
         chart-test-swarm run --suite all --project-dir ./my-chart
+        chart-test-swarm run --all
+        chart-test-swarm run --all --include-cloud-native
     """
     from chart_test_swarm.commands.run_cmd import run as _run_impl
 
@@ -136,6 +146,7 @@ def run_cmd(
         project_dir=project_dir,
         suite=suite,
         include_cloud_native=include_cloud_native,
+        run_all=run_all,
     )
 
 
