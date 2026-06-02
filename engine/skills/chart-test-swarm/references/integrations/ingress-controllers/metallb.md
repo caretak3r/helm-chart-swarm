@@ -85,7 +85,7 @@ MetalLB cannot assign an external IP and the scenario will fail.
   namespace: metallb
   repo:
     name: metallb
-    url: "https://metallb.github.io/charts"
+    url: "https://metallb.github.io/metallb"
   values:
     controller:
       resources:
