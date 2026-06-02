@@ -16,6 +16,7 @@ from typing import Any
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+from .catalog import NOT_YET_RUN, generate_catalog
 from .collect import CLOUD_PROVIDERS, STATUS_RANK, Run, Scenario
 
 STATUS_CSS = {
@@ -337,6 +338,248 @@ def render_index(runs: list[Run], out_dir: Path) -> Path:
     runs_sorted = sorted(runs, key=lambda r: r.run_id, reverse=True)
     html = tpl.render(runs=runs_sorted)
     out_path = out_dir / "index.html"
+    out_path.write_text(html, encoding="utf-8")
+    _copy_assets(out_dir)
+    return out_path
+
+
+# ---------------------------------------------------------------------------
+# Support matrix (f12-5, VAL-CAT-008..011)
+# ---------------------------------------------------------------------------
+
+AUTHORED_ONLY_TIERS: frozenset[str] = frozenset({"authored-only"})
+"""Tier values that indicate a scenario was authored but not run locally."""
+
+
+@dataclass
+class SupportMatrixEntry:
+    """A single scenario row in the support-matrix view.
+
+    Derived from the catalog and cross-referenced with run results.
+    """
+
+    scenario_id: str
+    name: str
+    category: str
+    integration_key: str
+    tier: str | None
+    status: str
+    scenario_href: str | None
+    """Relative href to the scenario YAML in the dist tree, or None."""
+    overrides_href: str | None
+    """Relative href to the applied-overrides YAML in the dist tree, or None."""
+    is_authored_only: bool
+    """True when tier is authored-only or provider is a cloud platform."""
+
+    @property
+    def display_status(self) -> str:
+        """Status to display in the matrix cell.
+
+        Authored-only entries always display ``AUTHORED`` regardless of
+        any stored status, per VAL-CAT-010.
+        """
+        if self.is_authored_only:
+            return "AUTHORED"
+        return self.status
+
+
+def _resolve_scenario_status(
+    scenario_id: str,
+    runs: list[Run],
+) -> str:
+    """Find the latest run status for *scenario_id* across all runs.
+
+    Returns ``"UNTESTED"`` when no run contains the scenario.
+    """
+    latest_status = "UNTESTED"
+    for run in runs:
+        for s in run.scenarios:
+            if s.id == scenario_id:
+                latest_status = s.status
+    return latest_status
+
+
+def _copy_catalog_scenario_yaml(
+    scenarios_dir: Path,
+    catalog_entry: dict[str, Any],
+    catalog_dist_dir: Path,
+) -> str:
+    """Copy a scenario YAML from the scenarios tree into dist/catalog/.
+
+    Returns the relative href (from the support-matrix page) to the
+    copied file, e.g. ``catalog/certificates/cert-manager-self-signed.yaml``.
+    """
+    rel_path: str = str(catalog_entry["path"])
+    src = scenarios_dir / rel_path
+    if not src.is_file():
+        return rel_path  # Graceful: href points at would-be location
+
+    dst = catalog_dist_dir / rel_path
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(str(src), str(dst))
+    return f"catalog/{rel_path}"
+
+
+def _copy_catalog_overrides(
+    reports_dir: Path | None,
+    catalog_entry: dict[str, Any],
+    catalog_dist_dir: Path,
+) -> str | None:
+    """Copy applied-overrides from the reports tree into dist/catalog/.
+
+    Returns the relative href (from the support-matrix page) to the
+    copied file, e.g. ``catalog/overrides/<scenario-id>.yaml``,
+    or ``None`` when no overrides are available.
+    """
+    overrides_ref = catalog_entry.get("overrides")
+    if overrides_ref is None or overrides_ref == NOT_YET_RUN or reports_dir is None:
+        return None
+
+    src = reports_dir / overrides_ref
+    if not src.is_file():
+        return None
+
+    scenario_id = catalog_entry["id"]
+    dst = catalog_dist_dir / "overrides" / f"{scenario_id}.yaml"
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(str(src), str(dst))
+    return f"catalog/overrides/{scenario_id}.yaml"
+
+
+def build_support_matrix(
+    scenarios_dir: Path,
+    reports_dir: Path | None,
+    runs: list[Run],
+    catalog_dist_dir: Path,
+) -> dict[str, list[SupportMatrixEntry]]:
+    """Build the support-matrix data structure from the catalog + runs.
+
+    Copies scenario YAMLs and overrides into *catalog_dist_dir* so
+    they can be served over HTTP.  Returns a mapping of
+    ``category → [SupportMatrixEntry, ...]``, sorted lexicographically
+    at every level.
+
+    Authored-only entries (tier=authored-only or cloud provider) are
+    marked ``is_authored_only=True`` so the template can display them
+    with the AUTHORED badge and exclude them from run counts.
+    """
+    catalog_dist_dir.mkdir(parents=True, exist_ok=True)
+    catalog = generate_catalog(scenarios_dir, reports_dir=reports_dir)
+
+    matrix: dict[str, list[SupportMatrixEntry]] = {}
+    for category, integrations in catalog.items():
+        entries: list[SupportMatrixEntry] = []
+        for integration_key, scenario_entries in integrations.items():
+            for entry in scenario_entries:
+                scenario_id = entry["id"]
+                tier = entry.get("tier")
+
+                # Determine if this is an authored-only entry.
+                # Tier takes priority; also check cluster provider for
+                # backward-compat scenarios without the tier field.
+                is_authored = tier in AUTHORED_ONLY_TIERS
+                # If tier is not set, check if the scenario YAML itself
+                # declares a cloud provider.
+                if not is_authored:
+                    scenario_src = scenarios_dir / entry["path"]
+                    scenario_doc = _load_scenario_yaml(scenario_src)
+                    if scenario_doc is not None:
+                        provider = ""
+                        cluster = scenario_doc.get("cluster")
+                        if isinstance(cluster, dict):
+                            provider = cluster.get("provider", "")
+                        if provider in CLOUD_PROVIDERS:
+                            is_authored = True
+
+                # Resolve status from latest run.
+                raw_status = _resolve_scenario_status(scenario_id, runs)
+                status = "AUTHORED" if is_authored else raw_status
+
+                # Copy scenario YAML and overrides into dist tree.
+                scenario_href = _copy_catalog_scenario_yaml(scenarios_dir, entry, catalog_dist_dir)
+                overrides_href = _copy_catalog_overrides(reports_dir, entry, catalog_dist_dir)
+
+                entries.append(
+                    SupportMatrixEntry(
+                        scenario_id=scenario_id,
+                        name=entry.get("name", ""),
+                        category=category,
+                        integration_key=integration_key,
+                        tier=tier,
+                        status=status,
+                        scenario_href=scenario_href,
+                        overrides_href=overrides_href,
+                        is_authored_only=is_authored,
+                    )
+                )
+        # Sort entries lexicographically for determinism.
+        entries.sort(key=lambda e: (e.integration_key, e.scenario_id))
+        matrix[category] = entries
+
+    # Sort categories lexicographically.
+    return dict(sorted(matrix.items()))
+
+
+def _load_scenario_yaml(path: Path) -> dict[str, Any] | None:
+    """Load a scenario YAML, returning None on parse errors."""
+    import yaml
+
+    try:
+        with path.open(encoding="utf-8") as f:
+            doc = yaml.safe_load(f)
+        if isinstance(doc, dict):
+            return doc
+    except (yaml.YAMLError, OSError):
+        pass
+    return None
+
+
+def support_matrix_run_counts(
+    entries: list[SupportMatrixEntry],
+) -> dict[str, int]:
+    """Compute run/pass/fail counts EXCLUDING authored-only entries.
+
+    Per VAL-CAT-010, authored-only scenarios must not inflate the
+    run/pass/fail tallies.
+    """
+    counts: dict[str, int] = {"run": 0, "PASS": 0, "FAIL": 0}
+    for e in entries:
+        if e.is_authored_only:
+            continue
+        if e.status not in ("UNTESTED",):
+            counts["run"] += 1
+        if e.status in STATUS_RANK:
+            counts[e.status] = counts.get(e.status, 0) + 1
+    return counts
+
+
+def render_support_matrix(
+    scenarios_dir: Path,
+    reports_dir: Path | None,
+    runs: list[Run],
+    out_dir: Path,
+) -> Path:
+    """Render the support-matrix page into *out_dir*.
+
+    Returns the path to the written ``support-matrix.html``.
+    """
+    catalog_dist_dir = out_dir / "catalog"
+    matrix = build_support_matrix(scenarios_dir, reports_dir, runs, catalog_dist_dir)
+
+    # Compute global counts (excluding authored-only).
+    all_entries: list[SupportMatrixEntry] = []
+    for entries in matrix.values():
+        all_entries.extend(entries)
+    global_counts = support_matrix_run_counts(all_entries)
+
+    env = _make_env()
+    tpl = env.get_template("support_matrix.html.j2")
+    html = tpl.render(
+        matrix=matrix,
+        global_counts=global_counts,
+        support_matrix_run_counts=support_matrix_run_counts,
+    )
+    out_path = out_dir / "support-matrix.html"
     out_path.write_text(html, encoding="utf-8")
     _copy_assets(out_dir)
     return out_path

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .catalog import catalog_to_yaml, generate_catalog
 from .collect import OrphanRunError, Run, collect_run, list_runs
-from .render import render_index, render_run
+from .render import render_index, render_run, render_support_matrix
 
 # chart-test-swarm repo root: cli.py is at engine/testgrid/src/testgrid/cli.py
 DEFAULT_ROOT = Path(__file__).resolve().parents[4]
@@ -20,11 +20,9 @@ DEFAULT_SCENARIOS = DEFAULT_ROOT / "examples" / "sample-product-chart" / "chart-
 def cmd_build(args: argparse.Namespace) -> int:
     reports = Path(args.reports).resolve()
     out = Path(args.out).resolve()
+    scenarios_dir = Path(args.scenarios).resolve() if args.scenarios else None
 
     run_ids = [args.run] if args.run else list_runs(reports)
-    if not run_ids:
-        print(f"no runs under {reports}/", file=sys.stderr)
-        return 1
 
     for rid in run_ids:
         try:
@@ -42,12 +40,27 @@ def cmd_build(args: argparse.Namespace) -> int:
         except (FileNotFoundError, OrphanRunError):
             continue
 
-    if not all_runs:
-        return 1
+    if all_runs:
+        index_path = render_index(all_runs, out)
+        print(f"  {'index':30s}  ({len(all_runs)} run(s))             →  {index_path}")
+    else:
+        print(f"no runs under {reports}/", file=sys.stderr)
 
-    index_path = render_index(all_runs, out)
-    print(f"  {'index':30s}  ({len(all_runs)} run(s))             →  {index_path}")
-    return 0
+    # f12-5: render support matrix if scenarios_dir is provided.
+    # This is rendered even when there are no runs — the matrix shows
+    # all catalog scenarios with UNTESTED/AUTHORED status.
+    if scenarios_dir and scenarios_dir.is_dir():
+        sm_path = render_support_matrix(
+            scenarios_dir=scenarios_dir,
+            reports_dir=reports if reports.is_dir() else None,
+            runs=all_runs,
+            out_dir=out,
+        )
+        print(f"  {'support-matrix':30s}  →  {sm_path}")
+
+    # Return 0 if we produced at least a support-matrix or an index.
+    has_output = (out / "support-matrix.html").is_file() or (out / "index.html").is_file()
+    return 0 if has_output else 1
 
 
 def cmd_catalog(args: argparse.Namespace) -> int:
@@ -87,6 +100,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     build.add_argument("--out", default=str(DEFAULT_OUT), help="output dir for static HTML")
     build.add_argument("--run", help="render only this run id (e.g. run-20260520-101500)")
+    build.add_argument(
+        "--scenarios",
+        default=str(DEFAULT_SCENARIOS),
+        help="scenarios dir for support matrix generation",
+    )
     build.set_defaults(func=cmd_build)
 
     catalog = sub.add_parser("catalog", help="generate catalog.yaml from the scenarios tree")
