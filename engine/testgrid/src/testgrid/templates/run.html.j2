@@ -171,7 +171,7 @@
       <dt class="error-summary">Error</dt><dd class="error-summary pitfall">{{ s.fail_msg }}</dd>
       {% endif %}
       {% if s.log_dir %}
-      <dt class="error-log">Log</dt><dd class="error-log"><a href="{{ s.log_dir }}">{{ s.log_dir | basename }}</a></dd>
+      <dt class="error-log">Log</dt><dd class="error-log"><code>{{ s.log_dir }}</code></dd>
       {% endif %}
       {% if s.fail_stage and not s.fail_msg %}
       <dt>Failed at</dt><dd class="pitfall">{{ s.fail_stage }}</dd>
