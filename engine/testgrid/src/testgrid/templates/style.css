@@ -49,6 +49,7 @@ a:hover { text-decoration: underline; }
 .status-misread { background: var(--misread); }
 .status-unknown { background: #757575; }
 .status-authored { background: #5e35b1; }
+.status-interrupted { background: #6d4c41; }
 
 
 /* ── Cloud platform badge (F2.3) ── */

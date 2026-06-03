@@ -30,8 +30,9 @@ STATUS_RANK = {
     "PARTIAL": 1,
     "UNTESTED": 2,
     "INCONCLUSIVE": 3,
-    "AUTHORED": 4,
-    "PASS": 5,
+    "INTERRUPTED": 4,
+    "AUTHORED": 5,
+    "PASS": 6,
 }
 
 KNOWN_STATUSES = frozenset(STATUS_RANK.keys()) | {"UNKNOWN"}
@@ -240,6 +241,114 @@ def load_agent_results(run_dir: Path) -> list[Scenario]:
     return out
 
 
+def load_scenario_results(run_dir: Path) -> list[tuple[Scenario, Path]]:
+    """Discover scenario-*/result.yaml docs under *run_dir*.
+
+    The curated-live dispatch writes per-scenario results as
+    ``scenario-<id>-<ts>/result.yaml`` (run-scenario.sh output format).
+    This function discovers those files and returns
+    ``(Scenario, artifact_dir_path)`` tuples so the caller can also
+    locate the per-scenario ``artifacts/`` bundle.
+
+    When a per-scenario result.yaml fails to parse (e.g. inconsistent
+    indentation in multi-line notes), a minimal Scenario record is
+    created with the status from the aggregate result.yaml fallback.
+
+    Returns a list of ``(scenario, artifact_dir)`` tuples.  The
+    ``artifact_dir`` may point to a non-existent path if the scenario
+    had no artifacts/ bundle.
+    """
+    # Load top-level result.yaml as fallback for malformed per-scenario files.
+    fallback: dict[str, str] = {}
+    top_result_path = run_dir / "result.yaml"
+    if top_result_path.is_file():
+        try:
+            top_doc = _load_yaml(top_result_path) or {}
+            for entry in top_doc.get("scenarios", []) or []:
+                sid = entry.get("id", "")
+                sst = entry.get("status", "")
+                if sid and sst:
+                    fallback[sid] = sst
+        except yaml.YAMLError:
+            pass
+
+    out: list[tuple[Scenario, Path]] = []
+    # Track which scenario ids we successfully parsed from per-scenario files.
+    parsed_ids: set[str] = set()
+    for path in sorted(glob.glob(str(run_dir / "scenario-*/result.yaml"))):
+        scenario_dir = Path(path).parent
+        artifact_dir = scenario_dir / "artifacts"
+        try:
+            doc = _load_yaml(Path(path)) or {}
+        except yaml.YAMLError as exc:
+            # Try to extract the scenario_id from the directory name.
+            # Format: scenario-<id>-<timestamp>
+            scenario_id = _extract_scenario_id_from_dir(scenario_dir.name)
+            if scenario_id and scenario_id in fallback:
+                out.append((
+                    Scenario(
+                        id=scenario_id,
+                        status=fallback[scenario_id],
+                        agent=None,
+                        log_dir="",
+                        fail_msg="result.yaml had parse errors; status from aggregate",
+                    ),
+                    artifact_dir,
+                ))
+                parsed_ids.add(scenario_id)
+            else:
+                print(
+                    f"warn: skipping malformed {path}: {exc}",
+                    file=sys.stderr,
+                )
+            continue
+        if "scenario_id" not in doc:
+            continue
+        scenario = _scenario_from_result(doc, agent=None)
+        out.append((scenario, artifact_dir))
+        parsed_ids.add(scenario.id)
+
+    # Fill in any scenarios from the top-level fallback that weren't
+    # found in per-scenario dirs (e.g. cloud-authored scenarios that
+    # were never dispatched but still appear in the aggregate).
+    for sid, sst in fallback.items():
+        if sid not in parsed_ids:
+            out.append((
+                Scenario(id=sid, status=sst, agent=None),
+                run_dir / "artifacts",  # fallback, may not exist
+            ))
+
+    return out
+
+
+def _extract_scenario_id_from_dir(dir_name: str) -> str:
+    """Extract the scenario id from a ``scenario-<id>-<ts>`` directory name.
+
+    The timestamp suffix is the last two hyphen-separated parts
+    (date + time, e.g. ``20260602-234626``). Everything between
+    ``scenario-`` and the timestamp is the scenario id with hyphens
+    restored.
+
+    Example: ``scenario-ingress-controllers-contour-basic-httpproxy-20260602-235135``
+    → ``ingress-controllers-contour-basic-httpproxy``
+    """
+    if not dir_name.startswith("scenario-"):
+        return ""
+    body = dir_name[len("scenario-"):]
+    # The timestamp suffix is <YYYYMMDD>-<HHMMSS> — the last two parts.
+    parts = body.rsplit("-", 2)
+    if len(parts) < 3:
+        return ""
+    # parts[0] is the scenario id, parts[1] and parts[2] are the timestamp.
+    # Validate that the last two parts look like a timestamp.
+    ts_candidate = f"{parts[-2]}-{parts[-1]}"
+    if len(ts_candidate) == 15 and ts_candidate[8] == "-":
+        return parts[0]
+    # Fallback: if the timestamp doesn't match, return the whole body
+    # minus the last two parts.
+    return body[: -(len(parts[-1]) + len(parts[-2]) + 2)]
+
+
 def _collect_artifact_links(artifact_dir: Path) -> dict[str, Any]:
     """Scan an ``artifacts/`` directory and return relative-path locators.
 
@@ -292,21 +401,26 @@ def collect_run(reports_dir: Path, run_id: str) -> Run:
     if not run_dir.is_dir():
         raise FileNotFoundError(f"run dir not found: {run_dir}")
 
-    # Detect orphaned run dirs: no scenarios-snapshot.yaml AND no agent-*/result.yaml files.
+    # Detect orphaned run dirs: no scenarios-snapshot.yaml AND no
+    # agent-*/result.yaml files AND no scenario-*/result.yaml files.
     has_snapshot = (run_dir / "scenarios-snapshot.yaml").exists()
     has_agent_results = any(run_dir.glob("agent-*/result.yaml"))
-    if not has_snapshot and not has_agent_results:
+    has_scenario_results = any(run_dir.glob("scenario-*/result.yaml"))
+    if not has_snapshot and not has_agent_results and not has_scenario_results:
         print(
-            f"warn: skipped orphaned run dir {run_dir.name} (no snapshot, no agent results)",
+            f"warn: skipped orphaned run dir {run_dir.name}"
+            f" (no snapshot, no agent/scenario results)",
             file=sys.stderr,
         )
         raise OrphanRunError(run_dir)
 
     scenarios = load_snapshot(run_dir)
     agent_results = load_agent_results(run_dir)
+    scenario_results = load_scenario_results(run_dir)
 
     by_id = {s.id: s for s in scenarios}
 
+    # Merge agent results into snapshot scenarios.
     for res in agent_results:
         if res.id in by_id:
             s = by_id[res.id]
@@ -321,6 +435,23 @@ def collect_run(reports_dir: Path, run_id: str) -> Run:
             # Result without a snapshot entry — keep it; surfaces as orphan.
             scenarios.append(res)
 
+    # Merge per-scenario results (from scenario-<id>-<ts>/result.yaml).
+    # Also build a lookup: scenario_id → artifact_dir for per-scenario
+    # artifact population below.
+    scenario_artifact_dirs: dict[str, Path] = {}
+    for res, art_dir in scenario_results:
+        scenario_artifact_dirs[res.id] = art_dir
+        if res.id in by_id:
+            s = by_id[res.id]
+            s.status = res.status
+            s.asserts = res.asserts
+            s.duration_s = res.duration_s
+            s.log_dir = res.log_dir
+            s.fail_stage = res.fail_stage
+            s.fail_msg = res.fail_msg
+        else:
+            scenarios.append(res)
+
     # F2.3: cloud-platform scenarios (gke, eks, aks) always display AUTHORED
     # because they were authored but never actually run locally.
     for s in scenarios:
@@ -328,10 +459,23 @@ def collect_run(reports_dir: Path, run_id: str) -> Run:
             s.status = "AUTHORED"
 
     # M11: populate artifact dir and relative links per scenario.
-    # Group by agent to scan each agent's artifacts/ dir once.
+    # Three resolution paths:
+    #   1. Per-scenario artifact dirs from scenario-<id>-<ts>/artifacts/
+    #   2. Per-agent artifact dirs from agent-<n>/artifacts/
+    #   3. Run-level artifacts/ as fallback
     # Cache: agent_n → (source_artifact_dir_or_None, relative_links_dict)
     artifact_info_cache: dict[int | None, tuple[Path | None, dict[str, Any]]] = {}
     for s in scenarios:
+        # First: check per-scenario artifact dir (from scenario-*/ directories)
+        per_scenario_art_dir = scenario_artifact_dirs.get(s.id)
+        if per_scenario_art_dir is not None and per_scenario_art_dir.is_dir():
+            _links = _collect_artifact_links(per_scenario_art_dir)
+            if _links:
+                s.artifact_dir = per_scenario_art_dir
+                s.artifact_links = _links
+                continue
+
+        # Second: check per-agent artifact dir
         agent = s.agent
         if agent not in artifact_info_cache:
             if agent is not None:

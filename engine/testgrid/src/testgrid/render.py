@@ -24,6 +24,7 @@ STATUS_CSS = {
     "FAIL": "status-fail",
     "PARTIAL": "status-partial",
     "INCONCLUSIVE": "status-inconclusive",
+    "INTERRUPTED": "status-interrupted",
     "UNTESTED": "status-untested",
     "AUTHORED": "status-authored",
     "UNKNOWN": "status-unknown",
