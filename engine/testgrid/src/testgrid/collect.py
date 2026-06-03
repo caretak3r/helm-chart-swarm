@@ -285,16 +285,18 @@ def load_scenario_results(run_dir: Path) -> list[tuple[Scenario, Path]]:
             # Format: scenario-<id>-<timestamp>
             scenario_id = _extract_scenario_id_from_dir(scenario_dir.name)
             if scenario_id and scenario_id in fallback:
-                out.append((
-                    Scenario(
-                        id=scenario_id,
-                        status=fallback[scenario_id],
-                        agent=None,
-                        log_dir="",
-                        fail_msg="result.yaml had parse errors; status from aggregate",
-                    ),
-                    artifact_dir,
-                ))
+                out.append(
+                    (
+                        Scenario(
+                            id=scenario_id,
+                            status=fallback[scenario_id],
+                            agent=None,
+                            log_dir="",
+                            fail_msg="result.yaml had parse errors; status from aggregate",
+                        ),
+                        artifact_dir,
+                    )
+                )
                 parsed_ids.add(scenario_id)
             else:
                 print(
@@ -313,10 +315,12 @@ def load_scenario_results(run_dir: Path) -> list[tuple[Scenario, Path]]:
     # were never dispatched but still appear in the aggregate).
     for sid, sst in fallback.items():
         if sid not in parsed_ids:
-            out.append((
-                Scenario(id=sid, status=sst, agent=None),
-                run_dir / "artifacts",  # fallback, may not exist
-            ))
+            out.append(
+                (
+                    Scenario(id=sid, status=sst, agent=None),
+                    run_dir / "artifacts",  # fallback, may not exist
+                )
+            )
 
     return out
 
@@ -334,7 +338,7 @@ def _extract_scenario_id_from_dir(dir_name: str) -> str:
     """
     if not dir_name.startswith("scenario-"):
         return ""
-    body = dir_name[len("scenario-"):]
+    body = dir_name[len("scenario-") :]
     # The timestamp suffix is <YYYYMMDD>-<HHMMSS> — the last two parts.
     parts = body.rsplit("-", 2)
     if len(parts) < 3:

@@ -606,6 +606,10 @@ def generate_explore(  # noqa: PLR0913, PLR0912, PLR0915
                         if isinstance(s_status, str):
                             run_status = s_status
                         prior_result_summary = _format_result_summary(result_data)
+                    else:
+                        prior_result_summary = (
+                            f"Run dispatched as {run_id} but result.yaml not found"
+                        )
                 else:
                     run_status = "PASS"  # stub mode
                     prior_result_summary = f"Run completed: {run_result.stdout[:200]}"

@@ -860,8 +860,13 @@ class TestStatusRankOrdering:
         ranks = [
             STATUS_RANK[k]
             for k in [
-                "FAIL", "PARTIAL", "UNTESTED", "INCONCLUSIVE",
-                "INTERRUPTED", "AUTHORED", "PASS",
+                "FAIL",
+                "PARTIAL",
+                "UNTESTED",
+                "INCONCLUSIVE",
+                "INTERRUPTED",
+                "AUTHORED",
+                "PASS",
             ]
         ]
         assert ranks == sorted(ranks), f"STATUS_RANK should be monotonic: {ranks}"
