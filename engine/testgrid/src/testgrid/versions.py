@@ -560,9 +560,7 @@ def write_version_edit(
     # Safety guard: ensure we are NOT writing to engine defaults.
     resolved_defaults = engine_defaults_path or DEFAULT_ENGINE_VERSIONS
     if project_yaml_path.resolve() == resolved_defaults.resolve():
-        raise ValueError(
-            "write_version_edit() must never write to engine/defaults/versions.yaml"
-        )
+        raise ValueError("write_version_edit() must never write to engine/defaults/versions.yaml")
 
     # Capture old value before any write.
     old_value = _get_old_value(section, key, project_dir, engine_defaults_path)
