@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — support matrix</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— Support Matrix</span></h1>
+    <p class="hint">Capability coverage across all catalog scenarios. Green = supported; red = gap to build next.</p>
+  </div>
+  <nav>
+    <a href="index.html" class="up">← all runs</a>
+  </nav>
+</header>
+
+<section class="support-matrix-summary">
+  <h2>Run summary</h2>
+  <p class="hint">Counts exclude authored-only (cloud) scenarios.</p>
+  <div class="counts">
+    <span class="badge status-pass">PASS · 13</span>
+    <span class="badge status-fail">FAIL · 7</span>
+    <span class="count-label">Run: 20</span>
+  </div>
+</section>
+
+<section class="support-matrix">
+  <h2>Capabilities</h2>
+  <p class="hint">One row per scenario. Cells link to the exact scenario YAML and applied overrides.
+  Authored-only entries are marked <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span> and excluded from run counts.</p>
+
+  <div class="sm-category">
+    <h3>capability</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row" data-scenario-id="scheduling-affinity-on" data-tier="capability">
+          <th class="row-head">
+            <code>scheduling-affinity-on</code>
+<div class="hint">Capability: affinity settable on ALL workloads (ON)</div>            <div class="hint"><code>capability/affinity</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/scheduling-affinity-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="annotations-off" data-tier="capability">
+          <th class="row-head">
+            <code>annotations-off</code>
+<div class="hint">Capability: no custom annotation leaks when unset (OFF)</div>            <div class="hint"><code>capability/annotate-all-objects</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/annotations-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="annotations-on" data-tier="capability">
+          <th class="row-head">
+            <code>annotations-on</code>
+<div class="hint">Capability: custom annotations stamped on every object (ON)</div>            <div class="hint"><code>capability/annotate-all-objects</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-fail">FAIL</span>
+          </td>
+          <td>
+              <a href="catalog/capability/annotations-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="minimal" data-tier="capability">
+          <th class="row-head">
+            <code>minimal</code>
+<div class="hint">Vanilla cluster — no preinstalled addons</div>            <div class="hint"><code>capability/baseline-deploy</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/capability/minimal.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <a href="catalog/overrides/minimal.yaml" data-artifact="overrides">applied-overrides.yaml</a>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="imagepullsecrets-off" data-tier="capability">
+          <th class="row-head">
+            <code>imagepullsecrets-off</code>
+<div class="hint">Capability: no imagePullSecrets when unset (OFF)</div>            <div class="hint"><code>capability/imagepullsecrets</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/imagepullsecrets-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="imagepullsecrets-on" data-tier="capability">
+          <th class="row-head">
+            <code>imagepullsecrets-on</code>
+<div class="hint">Capability: imagePullSecrets propagate to every pod spec + ServiceAccount (ON)</div>            <div class="hint"><code>capability/imagepullsecrets</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/imagepullsecrets-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="labels-off" data-tier="capability">
+          <th class="row-head">
+            <code>labels-off</code>
+<div class="hint">Capability: no extra-label keys leak when unset (OFF)</div>            <div class="hint"><code>capability/label-all-objects</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/labels-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="labels-on" data-tier="capability">
+          <th class="row-head">
+            <code>labels-on</code>
+<div class="hint">Capability: extra labels stamped on every object (ON)</div>            <div class="hint"><code>capability/label-all-objects</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-fail">FAIL</span>
+          </td>
+          <td>
+              <a href="catalog/capability/labels-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="network-policy-off" data-tier="capability">
+          <th class="row-head">
+            <code>network-policy-off</code>
+<div class="hint">Capability: no NetworkPolicy when disabled (OFF)</div>            <div class="hint"><code>capability/network-policy</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/network-policy-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="network-policy-on" data-tier="capability">
+          <th class="row-head">
+            <code>network-policy-on</code>
+<div class="hint">Capability: NetworkPolicy present when enabled (ON)</div>            <div class="hint"><code>capability/network-policy</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/network-policy-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="scheduling-nodeselector-on" data-tier="capability">
+          <th class="row-head">
+            <code>scheduling-nodeselector-on</code>
+<div class="hint">Capability: nodeSelector settable on ALL workloads (ON)</div>            <div class="hint"><code>capability/node-selector</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/scheduling-nodeselector-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="security-context-off" data-tier="capability">
+          <th class="row-head">
+            <code>security-context-off</code>
+<div class="hint">Capability: no securityContext when knobs unset (OFF)</div>            <div class="hint"><code>capability/pod-security</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/security-context-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="security-context-on" data-tier="capability">
+          <th class="row-head">
+            <code>security-context-on</code>
+<div class="hint">Capability: pod/container securityContext knobs set (ON)</div>            <div class="hint"><code>capability/pod-security</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/security-context-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="priority-class-off" data-tier="capability">
+          <th class="row-head">
+            <code>priority-class-off</code>
+<div class="hint">Capability: no priorityClassName when unset (OFF)</div>            <div class="hint"><code>capability/priority-class-name</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/priority-class-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="priority-class-on" data-tier="capability">
+          <th class="row-head">
+            <code>priority-class-on</code>
+<div class="hint">Capability: priorityClassName settable on ALL workloads (ON)</div>            <div class="hint"><code>capability/priority-class-name</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/priority-class-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="scheme-allow-http" data-tier="capability">
+          <th class="row-head">
+            <code>scheme-allow-http</code>
+<div class="hint">Capability: HTTP baseline scheme (OFF)</div>            <div class="hint"><code>capability/protocol-scheme</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/scheme-allow-http.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="scheme-https-only" data-tier="capability">
+          <th class="row-head">
+            <code>scheme-https-only</code>
+<div class="hint">Capability: HTTPS-only scheme enforcement (ON)</div>            <div class="hint"><code>capability/protocol-scheme</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-fail">FAIL</span>
+          </td>
+          <td>
+              <a href="catalog/capability/scheme-https-only.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="rbac-off" data-tier="capability">
+          <th class="row-head">
+            <code>rbac-off</code>
+<div class="hint">Capability: no RBAC objects when disabled (OFF)</div>            <div class="hint"><code>capability/rbac-toggle</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/rbac-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="rbac-on" data-tier="capability">
+          <th class="row-head">
+            <code>rbac-on</code>
+<div class="hint">Capability: RBAC objects present when enabled (ON)</div>            <div class="hint"><code>capability/rbac-toggle</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-fail">FAIL</span>
+          </td>
+          <td>
+              <a href="catalog/capability/rbac-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="resources-off" data-tier="capability">
+          <th class="row-head">
+            <code>resources-off</code>
+<div class="hint">Capability: no populated resources block when unset (OFF)</div>            <div class="hint"><code>capability/resource-limits</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/resources-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="resources-on" data-tier="capability">
+          <th class="row-head">
+            <code>resources-on</code>
+<div class="hint">Capability: resource requests/limits set on ALL workloads (ON)</div>            <div class="hint"><code>capability/resource-limits</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/resources-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="scheduling-off" data-tier="capability">
+          <th class="row-head">
+            <code>scheduling-off</code>
+<div class="hint">Capability: no scheduling fields when unset (OFF)</div>            <div class="hint"><code>capability/scheduling-off</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/scheduling-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="serviceaccount-annotations-off" data-tier="capability">
+          <th class="row-head">
+            <code>serviceaccount-annotations-off</code>
+<div class="hint">Capability: ServiceAccount identity annotations absent when unset (OFF)</div>            <div class="hint"><code>capability/serviceaccount-identity</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/serviceaccount-annotations-off.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="serviceaccount-annotations-on" data-tier="capability">
+          <th class="row-head">
+            <code>serviceaccount-annotations-on</code>
+<div class="hint">Capability: ServiceAccount cloud-identity annotations settable (ON)</div>            <div class="hint"><code>capability/serviceaccount-identity</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/serviceaccount-annotations-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="scheduling-tolerations-on" data-tier="capability">
+          <th class="row-head">
+            <code>scheduling-tolerations-on</code>
+<div class="hint">Capability: tolerations settable on ALL workloads (ON)</div>            <div class="hint"><code>capability/tolerations</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/scheduling-tolerations-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="scheduling-topology-spread-on" data-tier="capability">
+          <th class="row-head">
+            <code>scheduling-topology-spread-on</code>
+<div class="hint">Capability: topologySpreadConstraints settable on ALL workloads (ON)</div>            <div class="hint"><code>capability/topology-spread-constraints</code></div>
+          </th>
+          <td>
+            <code>capability</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/capability/scheduling-topology-spread-on.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>certificates</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row" data-scenario-id="certificates-cert-manager-jks-pkcs12" data-tier="live">
+          <th class="row-head">
+            <code>certificates-cert-manager-jks-pkcs12</code>
+<div class="hint">cert-manager JKS/PKCS12 keystore bundle</div>            <div class="hint"><code>certificates/cert-manager</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-cert-manager-jks-pkcs12.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-cert-manager-lets-encrypt-staging" data-tier="live">
+          <th class="row-head">
+            <code>certificates-cert-manager-lets-encrypt-staging</code>
+<div class="hint">cert-manager Let&#39;s Encrypt staging issuer</div>            <div class="hint"><code>certificates/cert-manager</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-cert-manager-lets-encrypt-staging.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-cert-manager-self-signed-ca" data-tier="live">
+          <th class="row-head">
+            <code>certificates-cert-manager-self-signed-ca</code>
+<div class="hint">cert-manager self-signed CA issuer</div>            <div class="hint"><code>certificates/cert-manager</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-cert-manager-self-signed-ca.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-cert-manager-wildcard" data-tier="live">
+          <th class="row-head">
+            <code>certificates-cert-manager-wildcard</code>
+<div class="hint">cert-manager wildcard certificate</div>            <div class="hint"><code>certificates/cert-manager</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-cert-manager-wildcard.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="tls-cert-manager-self-signed" data-tier="live">
+          <th class="row-head">
+            <code>tls-cert-manager-self-signed</code>
+<div class="hint">cert-manager self-signed Issuer -&gt; CA Cert -&gt; CA Issuer -&gt; leaf Cert</div>            <div class="hint"><code>certificates/cert-manager</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/tls-cert-manager-self-signed.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="with-cert-manager" data-tier="live">
+          <th class="row-head">
+            <code>with-cert-manager</code>
+<div class="hint">Customer ships cert-manager preinstalled</div>            <div class="hint"><code>certificates/cert-manager</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/with-cert-manager.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-manual-tls-secret-basic" data-tier="live">
+          <th class="row-head">
+            <code>certificates-manual-tls-secret-basic</code>
+<div class="hint">manual-tls-secret basic</div>            <div class="hint"><code>certificates/manual-tls-secret</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-manual-tls-secret-basic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-manual-tls-secret-ecdsa" data-tier="live">
+          <th class="row-head">
+            <code>certificates-manual-tls-secret-ecdsa</code>
+<div class="hint">manual-tls-secret ECDSA key</div>            <div class="hint"><code>certificates/manual-tls-secret</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-manual-tls-secret-ecdsa.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-manual-tls-secret-multiple-sans" data-tier="live">
+          <th class="row-head">
+            <code>certificates-manual-tls-secret-multiple-sans</code>
+<div class="hint">manual-tls-secret multiple SANs</div>            <div class="hint"><code>certificates/manual-tls-secret</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-manual-tls-secret-multiple-sans.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="tls-manual-secret" data-tier="live">
+          <th class="row-head">
+            <code>tls-manual-secret</code>
+<div class="hint">Manual TLS Secret via raw_manifest</div>            <div class="hint"><code>certificates/manual-tls-secret</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/tls-manual-secret.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-mounted-tls-certs-csi-secret-store" data-tier="live">
+          <th class="row-head">
+            <code>certificates-mounted-tls-certs-csi-secret-store</code>
+<div class="hint">mounted-tls-certs csi-secret-store</div>            <div class="hint"><code>certificates/mounted-tls-certs</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-mounted-tls-certs-csi-secret-store.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-mounted-tls-certs-projected-volume" data-tier="live">
+          <th class="row-head">
+            <code>certificates-mounted-tls-certs-projected-volume</code>
+<div class="hint">mounted-tls-certs projected-volume</div>            <div class="hint"><code>certificates/mounted-tls-certs</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-mounted-tls-certs-projected-volume.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="certificates-mounted-tls-certs-pvc-mount" data-tier="live">
+          <th class="row-head">
+            <code>certificates-mounted-tls-certs-pvc-mount</code>
+<div class="hint">mounted-tls-certs pvc-mount</div>            <div class="hint"><code>certificates/mounted-tls-certs</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/certificates-mounted-tls-certs-pvc-mount.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="tls-mounted-projected" data-tier="live">
+          <th class="row-head">
+            <code>tls-mounted-projected</code>
+<div class="hint">TLS via projected volume</div>            <div class="hint"><code>certificates/mounted-tls-certs</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/tls-mounted-projected.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="tls-mounted-pvc" data-tier="live">
+          <th class="row-head">
+            <code>tls-mounted-pvc</code>
+<div class="hint">TLS via persistentVolumeClaim</div>            <div class="hint"><code>certificates/mounted-tls-certs</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/certificates/tls-mounted-pvc.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>cloud-native</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-aks-agic" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-aks-agic</code>
+<div class="hint">AKS Application Gateway Ingress Controller (AGIC)</div>            <div class="hint"><code>cloud-native/aks-agic</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-aks-agic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-aks-app-routing" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-aks-app-routing</code>
+<div class="hint">AKS App Routing Addon</div>            <div class="hint"><code>cloud-native/aks-app-routing</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-aks-app-routing.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-aks-azure-policy" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-aks-azure-policy</code>
+<div class="hint">AKS Azure Policy</div>            <div class="hint"><code>cloud-native/aks-azure-policy</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-aks-azure-policy.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-aks-workload-identity" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-aks-workload-identity</code>
+<div class="hint">AKS Workload Identity</div>            <div class="hint"><code>cloud-native/aks-workload-identity</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-aks-workload-identity.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-eks-ack-s3" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-eks-ack-s3</code>
+<div class="hint">EKS ACK (AWS Controllers for Kubernetes) S3</div>            <div class="hint"><code>cloud-native/aws-ack-s3</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-eks-ack-s3.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-eks-alb-ingress" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-eks-alb-ingress</code>
+<div class="hint">EKS ALB Ingress Controller</div>            <div class="hint"><code>cloud-native/aws-load-balancer-controller</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-eks-alb-ingress.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-eks-fargate" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-eks-fargate</code>
+<div class="hint">EKS Fargate</div>            <div class="hint"><code>cloud-native/eks-fargate</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-eks-fargate.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-eks-irsa" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-eks-irsa</code>
+<div class="hint">EKS IRSA (IAM Roles for Service Accounts)</div>            <div class="hint"><code>cloud-native/eks-irsa</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-eks-irsa.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-gke-gateway-controller" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-gke-gateway-controller</code>
+<div class="hint">GKE Gateway Controller</div>            <div class="hint"><code>cloud-native/gke-gateway-controller</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-gke-gateway-controller.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-gke-iap" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-gke-iap</code>
+<div class="hint">GKE Identity-Aware Proxy</div>            <div class="hint"><code>cloud-native/gke-iap</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-gke-iap.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-gke-regional-networking" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-gke-regional-networking</code>
+<div class="hint">GKE Regional Cluster Networking</div>            <div class="hint"><code>cloud-native/gke-regional-networking</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-gke-regional-networking.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="cloud-native-gke-workload-identity" data-tier="authored-only">
+          <th class="row-head">
+            <code>cloud-native-gke-workload-identity</code>
+<div class="hint">GKE Workload Identity</div>            <div class="hint"><code>cloud-native/gke-workload-identity</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/cloud-native/cloud-native-gke-workload-identity.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>gateway-api</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row" data-scenario-id="gateway-api-contour-gateway-api-basic" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-contour-gateway-api-basic</code>
+<div class="hint">Contour Gateway API Basic</div>            <div class="hint"><code>gateway-api/contour</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-contour-gateway-api-basic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-contour-gateway-api-response-header-modifier" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-contour-gateway-api-response-header-modifier</code>
+<div class="hint">Contour Gateway API Response Header Modifier</div>            <div class="hint"><code>gateway-api/contour</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-contour-gateway-api-response-header-modifier.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-contour-gateway-api-route-precedence" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-contour-gateway-api-route-precedence</code>
+<div class="hint">Contour Gateway API Route Precedence</div>            <div class="hint"><code>gateway-api/contour</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-contour-gateway-api-route-precedence.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="envoy-gateway" data-tier="live">
+          <th class="row-head">
+            <code>envoy-gateway</code>
+<div class="hint">Envoy Gateway (Gateway API)</div>            <div class="hint"><code>gateway-api/envoy-gateway</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/envoy-gateway.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-envoy-gateway-cert-manager-tls" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-envoy-gateway-cert-manager-tls</code>
+<div class="hint">Envoy Gateway + cert-manager TLS</div>            <div class="hint"><code>gateway-api/envoy-gateway</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-envoy-gateway-cert-manager-tls.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-envoy-gateway-grpcroute" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-envoy-gateway-grpcroute</code>
+<div class="hint">Envoy Gateway GRPCRoute</div>            <div class="hint"><code>gateway-api/envoy-gateway</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-envoy-gateway-grpcroute.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-envoy-gateway-httproute" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-envoy-gateway-httproute</code>
+<div class="hint">Envoy Gateway HTTPRoute</div>            <div class="hint"><code>gateway-api/envoy-gateway</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-envoy-gateway-httproute.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-envoy-gateway-security-policy-attach" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-envoy-gateway-security-policy-attach</code>
+<div class="hint">Envoy Gateway SecurityPolicy (CORS)</div>            <div class="hint"><code>gateway-api/envoy-gateway</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-envoy-gateway-security-policy-attach.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-istio-gateway-api-backend-tls-policy" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-istio-gateway-api-backend-tls-policy</code>
+<div class="hint">Istio Gateway API BackendTLSPolicy</div>            <div class="hint"><code>gateway-api/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-istio-gateway-api-backend-tls-policy.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-istio-gateway-api-basic" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-istio-gateway-api-basic</code>
+<div class="hint">Istio Gateway API Basic</div>            <div class="hint"><code>gateway-api/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-istio-gateway-api-basic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-istio-gateway-api-multi-listener" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-istio-gateway-api-multi-listener</code>
+<div class="hint">Istio Gateway API Multi-Listener</div>            <div class="hint"><code>gateway-api/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-istio-gateway-api-multi-listener.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-istio-ingress" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-istio-ingress</code>
+<div class="hint">Istio Gateway API Ingress</div>            <div class="hint"><code>gateway-api/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-istio-ingress.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="gateway-api-istio-egress" data-tier="live">
+          <th class="row-head">
+            <code>gateway-api-istio-egress</code>
+<div class="hint">Istio Gateway API Egress</div>            <div class="hint"><code>gateway-api/istio-egress</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/gateway-api/gateway-api-istio-egress.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>networking</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-contour-basic-httpproxy" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-contour-basic-httpproxy</code>
+<div class="hint">Contour basic HTTPProxy (gap-probe)</div>            <div class="hint"><code>networking/contour</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-fail">FAIL</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-contour-basic-httpproxy.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-contour-rate-limit" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-contour-rate-limit</code>
+<div class="hint">Contour rate limit</div>            <div class="hint"><code>networking/contour</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-contour-rate-limit.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-contour-tls-delegation" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-contour-tls-delegation</code>
+<div class="hint">Contour TLS delegation</div>            <div class="hint"><code>networking/contour</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-contour-tls-delegation.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="networking-kong-ingress" data-tier="live">
+          <th class="row-head">
+            <code>networking-kong-ingress</code>
+<div class="hint">Kong Ingress (className=kong)</div>            <div class="hint"><code>networking/kong</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-kong-ingress.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="networking-metallb-loadbalancer" data-tier="live">
+          <th class="row-head">
+            <code>networking-metallb-loadbalancer</code>
+<div class="hint">MetalLB LoadBalancer (service.type=LoadBalancer)</div>            <div class="hint"><code>networking/metallb</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-metallb-loadbalancer.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-nginx-ingress-basic" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-nginx-ingress-basic</code>
+<div class="hint">NGINX Ingress basic routing</div>            <div class="hint"><code>networking/nginx-ingress</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-nginx-ingress-basic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-nginx-ingress-canary" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-nginx-ingress-canary</code>
+<div class="hint">NGINX Ingress canary traffic splitting</div>            <div class="hint"><code>networking/nginx-ingress</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-nginx-ingress-canary.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-nginx-ingress-default-backend" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-nginx-ingress-default-backend</code>
+<div class="hint">NGINX Ingress custom default backend</div>            <div class="hint"><code>networking/nginx-ingress</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-nginx-ingress-default-backend.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-nginx-ingress-snippet-annotations" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-nginx-ingress-snippet-annotations</code>
+<div class="hint">NGINX Ingress snippet annotations</div>            <div class="hint"><code>networking/nginx-ingress</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-nginx-ingress-snippet-annotations.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-nginx-ingress-tls-cert-manager" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-nginx-ingress-tls-cert-manager</code>
+<div class="hint">NGINX Ingress TLS with cert-manager</div>            <div class="hint"><code>networking/nginx-ingress</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-nginx-ingress-tls-cert-manager.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-traefik-basic" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-traefik-basic</code>
+<div class="hint">Traefik basic IngressRoute</div>            <div class="hint"><code>networking/traefik</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-traefik-basic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-traefik-ingressroute-crd" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-traefik-ingressroute-crd</code>
+<div class="hint">Traefik IngressRoute CRD</div>            <div class="hint"><code>networking/traefik</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-traefik-ingressroute-crd.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-traefik-middleware-chain" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-traefik-middleware-chain</code>
+<div class="hint">Traefik middleware chain</div>            <div class="hint"><code>networking/traefik</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-traefik-middleware-chain.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="ingress-controllers-traefik-tls-passthrough" data-tier="live">
+          <th class="row-head">
+            <code>ingress-controllers-traefik-tls-passthrough</code>
+<div class="hint">Traefik TLS passthrough</div>            <div class="hint"><code>networking/traefik</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/ingress-controllers-traefik-tls-passthrough.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="networking-traefik-ingress" data-tier="live">
+          <th class="row-head">
+            <code>networking-traefik-ingress</code>
+<div class="hint">Traefik Ingress (className=traefik)</div>            <div class="hint"><code>networking/traefik</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-traefik-ingress.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>networking/ingress-lb</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row authored-row" data-scenario-id="networking-aws-lbc-alb-ingress" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-aws-lbc-alb-ingress</code>
+<div class="hint">AWS LBC ALB Ingress</div>            <div class="hint"><code>networking/ingress-lb/aws-load-balancer-controller</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-aws-lbc-alb-ingress.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="networking-aws-lbc-gateway-api" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-aws-lbc-gateway-api</code>
+<div class="hint">AWS LBC Gateway API</div>            <div class="hint"><code>networking/ingress-lb/aws-load-balancer-controller</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-aws-lbc-gateway-api.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="networking-aws-lbc-nlb-service" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-aws-lbc-nlb-service</code>
+<div class="hint">AWS LBC NLB Service</div>            <div class="hint"><code>networking/ingress-lb/aws-load-balancer-controller</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-aws-lbc-nlb-service.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="networking-azure-lb-agic" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-azure-lb-agic</code>
+<div class="hint">Azure LB AGIC Ingress</div>            <div class="hint"><code>networking/ingress-lb/azure-lb</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-azure-lb-agic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="networking-azure-lb-internal" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-azure-lb-internal</code>
+<div class="hint">Azure LB Internal</div>            <div class="hint"><code>networking/ingress-lb/azure-lb</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-azure-lb-internal.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="networking-azure-lb-public" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-azure-lb-public</code>
+<div class="hint">Azure LB Public</div>            <div class="hint"><code>networking/ingress-lb/azure-lb</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-azure-lb-public.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="networking-gcp-lb-external" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-gcp-lb-external</code>
+<div class="hint">GCP LB External HTTP(S)</div>            <div class="hint"><code>networking/ingress-lb/gcp-lb</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-gcp-lb-external.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="networking-gcp-lb-gateway-api" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-gcp-lb-gateway-api</code>
+<div class="hint">GCP LB Gateway API</div>            <div class="hint"><code>networking/ingress-lb/gcp-lb</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-gcp-lb-gateway-api.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="networking-gcp-lb-internal" data-tier="authored-only">
+          <th class="row-head">
+            <code>networking-gcp-lb-internal</code>
+<div class="hint">GCP LB Internal HTTP(S)</div>            <div class="hint"><code>networking/ingress-lb/gcp-lb</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/networking/networking-gcp-lb-internal.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>policy</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row" data-scenario-id="policy-kyverno-generate" data-tier="live">
+          <th class="row-head">
+            <code>policy-kyverno-generate</code>
+<div class="hint">Kyverno generate: ConfigMap in labeled namespaces</div>            <div class="hint"><code>policy/kyverno</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/policy/policy-kyverno-generate.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="policy-kyverno-image-verify" data-tier="live">
+          <th class="row-head">
+            <code>policy-kyverno-image-verify</code>
+<div class="hint">Kyverno image-verify: only approved registries</div>            <div class="hint"><code>policy/kyverno</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/policy/policy-kyverno-image-verify.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="policy-kyverno-mutate" data-tier="live">
+          <th class="row-head">
+            <code>policy-kyverno-mutate</code>
+<div class="hint">Kyverno mutate: auto-add annotation to Pods</div>            <div class="hint"><code>policy/kyverno</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/policy/policy-kyverno-mutate.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="policy-kyverno-validate" data-tier="live">
+          <th class="row-head">
+            <code>policy-kyverno-validate</code>
+<div class="hint">Kyverno validate: require labels on Deployments</div>            <div class="hint"><code>policy/kyverno</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/policy/policy-kyverno-validate.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="customer-b-gatekeeper" data-tier="live">
+          <th class="row-head">
+            <code>customer-b-gatekeeper</code>
+<div class="hint">Customer B — OPA Gatekeeper admission policies</div>            <div class="hint"><code>policy/opa-gatekeeper</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/policy/customer-b-gatekeeper.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="policy-opa-gatekeeper-image-allowlist" data-tier="live">
+          <th class="row-head">
+            <code>policy-opa-gatekeeper-image-allowlist</code>
+<div class="hint">OPA Gatekeeper image allowlist enforcement</div>            <div class="hint"><code>policy/opa-gatekeeper</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/policy/policy-opa-gatekeeper-image-allowlist.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="policy-opa-gatekeeper-required-labels" data-tier="live">
+          <th class="row-head">
+            <code>policy-opa-gatekeeper-required-labels</code>
+<div class="hint">OPA Gatekeeper required labels enforcement (gap-probe)</div>            <div class="hint"><code>policy/opa-gatekeeper</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-fail">FAIL</span>
+          </td>
+          <td>
+              <a href="catalog/policy/policy-opa-gatekeeper-required-labels.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="policy-opa-gatekeeper-resource-limits" data-tier="live">
+          <th class="row-head">
+            <code>policy-opa-gatekeeper-resource-limits</code>
+<div class="hint">OPA Gatekeeper resource limits enforcement</div>            <div class="hint"><code>policy/opa-gatekeeper</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/policy/policy-opa-gatekeeper-resource-limits.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="policy-opa-gatekeeper-sync-config" data-tier="live">
+          <th class="row-head">
+            <code>policy-opa-gatekeeper-sync-config</code>
+<div class="hint">OPA Gatekeeper sync configuration</div>            <div class="hint"><code>policy/opa-gatekeeper</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/policy/policy-opa-gatekeeper-sync-config.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>service-mesh</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row" data-scenario-id="customer-a-istio" data-tier="live">
+          <th class="row-head">
+            <code>customer-a-istio</code>
+<div class="hint">Customer A — Istio mesh + cert-manager</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/customer-a-istio.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-ingress-gateway-basic" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-ingress-gateway-basic</code>
+<div class="hint">Istio Ingress Gateway — Basic</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-ingress-gateway-basic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-ingress-gateway-jwt" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-ingress-gateway-jwt</code>
+<div class="hint">Istio Ingress Gateway — JWT Authentication</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-ingress-gateway-jwt.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-ingress-gateway-multi-host" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-ingress-gateway-multi-host</code>
+<div class="hint">Istio Ingress Gateway — Multi-Host</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-ingress-gateway-multi-host.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-ingress-gateway-request-authentication" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-ingress-gateway-request-authentication</code>
+<div class="hint">Istio Ingress Gateway — RequestAuthentication (No Deny)</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-ingress-gateway-request-authentication.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-service-mesh-cert-manager-tls" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-service-mesh-cert-manager-tls</code>
+<div class="hint">Istio Service Mesh + cert-manager TLS Gateway</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-service-mesh-cert-manager-tls.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-service-mesh-peer-authentication" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-service-mesh-peer-authentication</code>
+<div class="hint">Istio Service Mesh — PeerAuthentication lifecycle</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-service-mesh-peer-authentication.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-service-mesh-sidecar-injection" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-service-mesh-sidecar-injection</code>
+<div class="hint">Istio Service Mesh — Sidecar Injection</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-service-mesh-sidecar-injection.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-service-mesh-strict-mtls" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-service-mesh-strict-mtls</code>
+<div class="hint">Istio Service Mesh — strict mTLS</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-service-mesh-strict-mtls.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-service-mesh-telemetry-v2" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-service-mesh-telemetry-v2</code>
+<div class="hint">Istio Service Mesh — Telemetry v2</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-service-mesh-telemetry-v2.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-sidecar-live" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-sidecar-live</code>
+<div class="hint">Istio Sidecar Mesh — Live mTLS Verification</div>            <div class="hint"><code>service-mesh/istio</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-sidecar-live.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-istio-ambient-live" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-istio-ambient-live</code>
+<div class="hint">Istio Ambient Mesh — Live mTLS Verification (ztunnel/HBONE)</div>            <div class="hint"><code>service-mesh/istio-ambient</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-istio-ambient-live.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-linkerd-basic-mesh" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-linkerd-basic-mesh</code>
+<div class="hint">Linkerd — Basic Mesh (Sidecar Injection)</div>            <div class="hint"><code>service-mesh/linkerd</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-linkerd-basic-mesh.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-linkerd-live" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-linkerd-live</code>
+<div class="hint">Linkerd — Live mTLS Sidecar Mesh</div>            <div class="hint"><code>service-mesh/linkerd</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-fail">FAIL</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-linkerd-live.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-linkerd-mtls-rotation" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-linkerd-mtls-rotation</code>
+<div class="hint">Linkerd — mTLS Identity Rotation</div>            <div class="hint"><code>service-mesh/linkerd</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-linkerd-mtls-rotation.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-linkerd-multi-cluster-preview" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-linkerd-multi-cluster-preview</code>
+<div class="hint">Linkerd — Multi-Cluster Preview</div>            <div class="hint"><code>service-mesh/linkerd</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-linkerd-multi-cluster-preview.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="service-mesh-linkerd-service-profile" data-tier="live">
+          <th class="row-head">
+            <code>service-mesh-linkerd-service-profile</code>
+<div class="hint">Linkerd — ServiceProfile (Per-Route Observability)</div>            <div class="hint"><code>service-mesh/linkerd</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-untested">UNTESTED</span>
+          </td>
+          <td>
+              <a href="catalog/service-mesh/service-mesh-linkerd-service-profile.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>storage</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row" data-scenario-id="subchart-postgres-internal" data-tier="live">
+          <th class="row-head">
+            <code>subchart-postgres-internal</code>
+<div class="hint">Internal postgres subchart enabled</div>            <div class="hint"><code>storage/postgres-subchart</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/storage/subchart-postgres-internal.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <a href="catalog/overrides/subchart-postgres-internal.yaml" data-artifact="overrides">applied-overrides.yaml</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>storage/csi</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row authored-row" data-scenario-id="storage-aws-ebs-csi-dynamic" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-aws-ebs-csi-dynamic</code>
+<div class="hint">AWS EBS CSI Dynamic Provision</div>            <div class="hint"><code>storage/csi/aws-ebs-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-aws-ebs-csi-dynamic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="storage-aws-ebs-csi-resize" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-aws-ebs-csi-resize</code>
+<div class="hint">AWS EBS CSI Resize</div>            <div class="hint"><code>storage/csi/aws-ebs-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-aws-ebs-csi-resize.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="storage-aws-ebs-csi-snapshot" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-aws-ebs-csi-snapshot</code>
+<div class="hint">AWS EBS CSI Snapshot</div>            <div class="hint"><code>storage/csi/aws-ebs-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-aws-ebs-csi-snapshot.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="storage-azure-disk-csi-dynamic" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-azure-disk-csi-dynamic</code>
+<div class="hint">Azure Disk CSI Dynamic Provision</div>            <div class="hint"><code>storage/csi/azure-disk-file-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-azure-disk-csi-dynamic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="storage-azure-disk-csi-snapshot" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-azure-disk-csi-snapshot</code>
+<div class="hint">Azure Disk CSI Snapshot</div>            <div class="hint"><code>storage/csi/azure-disk-file-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-azure-disk-csi-snapshot.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="storage-azure-file-csi-shared" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-azure-file-csi-shared</code>
+<div class="hint">Azure File CSI Shared Volume</div>            <div class="hint"><code>storage/csi/azure-disk-file-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-azure-file-csi-shared.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="storage-gcp-pd-csi-dynamic" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-gcp-pd-csi-dynamic</code>
+<div class="hint">GCP PD CSI Dynamic Provision</div>            <div class="hint"><code>storage/csi/gcp-pd-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-gcp-pd-csi-dynamic.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="storage-gcp-pd-csi-regional" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-gcp-pd-csi-regional</code>
+<div class="hint">GCP PD CSI Regional PD</div>            <div class="hint"><code>storage/csi/gcp-pd-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-gcp-pd-csi-regional.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+        <tr class="sm-row authored-row" data-scenario-id="storage-gcp-pd-csi-snapshot" data-tier="authored-only">
+          <th class="row-head">
+            <code>storage-gcp-pd-csi-snapshot</code>
+<div class="hint">GCP PD CSI Snapshot</div>            <div class="hint"><code>storage/csi/gcp-pd-csi</code></div>
+          </th>
+          <td>
+            <code>authored-only</code>
+              <span class="badge cloud" title="authored, not run locally" aria-label="authored, not run locally">☁ AUTHORED</span>
+          </td>
+          <td>
+            <span class="badge status-authored">AUTHORED</span>
+          </td>
+          <td>
+              <a href="catalog/storage/storage-gcp-pd-csi-snapshot.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+</body>
+</html>

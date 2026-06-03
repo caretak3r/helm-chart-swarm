@@ -1,0 +1,36 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, kubeval, yamllint.
+# Apply to your own AKS cluster per the azure-lb primer instructions.
+---
+id: networking-azure-lb-public
+name: "Azure LB Public"
+description: >-
+  AKS provisions a public Azure Standard Load Balancer from a Service of type
+  LoadBalancer; smoke-script curls the public IP over HTTP.
+labels:
+  customer: any
+  profile: aks
+  chart-test-swarm/target-k8s-version: aks-1.30
+cluster:
+  provider: aks
+  k8s_version: "1.30"
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    service.type: "LoadBalancer"
+    service.annotations.service.beta.kubernetes.io/azure-load-balancer-resource-group: "<REPLACE_WITH_RG_NAME>"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/cloud-native/aks/public-lb.sh
+tags: [cloud-native]
+mechanisms: ['cloud:aks', 'addon:azure-lb', 'addon:public-lb']
+category: networking/ingress-lb
+tier: authored-only
+integration: azure-lb

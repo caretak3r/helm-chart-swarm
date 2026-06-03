@@ -1,0 +1,17 @@
+<nav class="top-nav" aria-label="Main navigation">
+  <a href="{{ base_path | default('') }}home.html"
+     class="nav-item{% if active_page == 'home' %} nav-active{% endif %}"
+     {% if active_page == 'home' %}aria-current="page"{% endif %}>Home</a>
+  <a href="{{ base_path | default('') }}support-matrix.html"
+     class="nav-item{% if active_page == 'matrix' %} nav-active{% endif %}"
+     {% if active_page == 'matrix' %}aria-current="page"{% endif %}>Matrix</a>
+  <a href="{{ base_path | default('') }}runs.html"
+     class="nav-item{% if active_page == 'runs' %} nav-active{% endif %}"
+     {% if active_page == 'runs' %}aria-current="page"{% endif %}>Runs</a>
+  <a href="{{ base_path | default('') }}recommendations.html"
+     class="nav-item{% if active_page == 'recommendations' %} nav-active{% endif %}"
+     {% if active_page == 'recommendations' %}aria-current="page"{% endif %}>Recommendations</a>
+  <a href="{{ base_path | default('') }}versions.html"
+     class="nav-item{% if active_page == 'versions' %} nav-active{% endif %}"
+     {% if active_page == 'versions' %}aria-current="page"{% endif %}>Versions</a>
+</nav>

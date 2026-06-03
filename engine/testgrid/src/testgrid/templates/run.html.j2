@@ -10,7 +10,7 @@
 <header class="run-header">
   <div class="brand">
     <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— {{ run.run_id }}</span></h1>
-    <a href="../index.html" class="up">← all runs</a>
+    {% include "_nav.html.j2" %}
   </div>
   <dl>
     <dt>Time (UTC)</dt><dd>{{ run.timestamp_utc or '—' }}</dd>

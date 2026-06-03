@@ -325,6 +325,8 @@ def render_run(run: Run, out_dir: Path) -> Path:
         variant_groups=groups,
         standalone_scenarios=standalone,
         VariantGroup=VariantGroup,
+        active_page="runs",
+        base_path="../",
     )
     (run_dir / "index.html").write_text(html, encoding="utf-8")
     (run_dir / "run.json").write_text(_run_to_json(run), encoding="utf-8")
@@ -355,7 +357,7 @@ def render_runs(runs: list[Run], out_dir: Path) -> Path:
     tpl = env.get_template("runs.html.j2")
     out_dir.mkdir(parents=True, exist_ok=True)
     runs_sorted = sorted(runs, key=lambda r: r.run_id, reverse=True)
-    html = tpl.render(runs=runs_sorted)
+    html = tpl.render(runs=runs_sorted, active_page="runs", base_path="")
     out_path = out_dir / "runs.html"
     out_path.write_text(html, encoding="utf-8")
     _copy_assets(out_dir)
@@ -406,8 +408,44 @@ def render_home(summary: HomeSummary, out_dir: Path) -> Path:
         coverage_pct=summary.coverage_pct,
         open_rec_count=summary.open_rec_count,
         version_status=summary.version_status,
+        active_page="home",
+        base_path="",
     )
     out_path = out_dir / "home.html"
+    out_path.write_text(html, encoding="utf-8")
+    _copy_assets(out_dir)
+    return out_path
+
+
+def render_recommendations(out_dir: Path) -> Path:
+    """Render the recommendations placeholder page as ``recommendations.html``.
+
+    The full recommendations engine (f1-3+) will populate this page with
+    FAIL-derived recommendation cards.  This stub produces a valid page
+    that includes the nav bar so navigation works end-to-end.
+    """
+    env = _make_env()
+    tpl = env.get_template("recommendations.html.j2")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    html = tpl.render(active_page="recommendations", base_path="")
+    out_path = out_dir / "recommendations.html"
+    out_path.write_text(html, encoding="utf-8")
+    _copy_assets(out_dir)
+    return out_path
+
+
+def render_versions(out_dir: Path) -> Path:
+    """Render the versions placeholder page as ``versions.html``.
+
+    The version management feature will populate this page with the merged
+    version config table.  This stub produces a valid page that includes
+    the nav bar so navigation works end-to-end.
+    """
+    env = _make_env()
+    tpl = env.get_template("versions.html.j2")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    html = tpl.render(active_page="versions", base_path="")
+    out_path = out_dir / "versions.html"
     out_path.write_text(html, encoding="utf-8")
     _copy_assets(out_dir)
     return out_path
@@ -648,6 +686,8 @@ def render_support_matrix(
         matrix=matrix,
         global_counts=global_counts,
         support_matrix_run_counts=support_matrix_run_counts,
+        active_page="matrix",
+        base_path="",
     )
     out_path = out_dir / "support-matrix.html"
     out_path.write_text(html, encoding="utf-8")

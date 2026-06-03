@@ -26,8 +26,7 @@ from testgrid.render import HomeSummary, render_home, render_runs
 def _make_run(run_id: str, scenario_count: int = 2) -> Run:
     """Create a minimal Run with *scenario_count* PASS scenarios."""
     scenarios = [
-        Scenario(id=f"scn-{i}", name=f"Scenario {i}", status="PASS")
-        for i in range(scenario_count)
+        Scenario(id=f"scn-{i}", name=f"Scenario {i}", status="PASS") for i in range(scenario_count)
     ]
     return Run(run_id=run_id, scenarios=scenarios)
 

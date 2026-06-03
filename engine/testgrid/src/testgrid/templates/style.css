@@ -316,6 +316,49 @@ a:hover { text-decoration: underline; }
   font-size: 0.75rem;
 }
 
+/* ── Top navigation bar (f1-2) ── */
+
+.top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.nav-item {
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--accent);
+  text-decoration: none;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.nav-item:hover {
+  background: #f0f4ff;
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
+.nav-active,
+.nav-item.nav-active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.nav-active:hover,
+.nav-item.nav-active:hover {
+  background: #1565c0;
+  border-color: #1565c0;
+  text-decoration: none;
+}
+
 /* ── Home page cards (f1-1) ── */
 
 .home-cards h2 {

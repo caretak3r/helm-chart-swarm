@@ -142,9 +142,7 @@ def _load_open_rec_count(reports_dir: Path) -> int:
         return 0
     try:
         data = _json.loads(rec_json.read_text(encoding="utf-8"))
-        return sum(
-            1 for r in data.get("recommendations", []) if r.get("status") == "open"
-        )
+        return sum(1 for r in data.get("recommendations", []) if r.get("status") == "open")
     except Exception:
         return 0
 

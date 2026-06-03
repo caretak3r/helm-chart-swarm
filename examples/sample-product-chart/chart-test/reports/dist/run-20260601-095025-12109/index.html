@@ -1,0 +1,99 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — run-20260601-095025-12109</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="run-header">
+  <div class="brand">
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— run-20260601-095025-12109</span></h1>
+    <a href="../index.html" class="up">← all runs</a>
+  </div>
+  <dl>
+    <dt>Time (UTC)</dt><dd>2026-06-01 09:50:25+00:00</dd>
+    <dt>Project</dt><dd>sample-product-chart</dd>
+    <dt>Chart</dt><dd><code>sample-product:0.1.0</code></dd>
+    <dt>Suite</dt><dd>pr-subset</dd>
+    <dt>Cluster</dt><dd>kind · k8s <code>v1.30.0</code></dd>
+    <dt>Agents</dt><dd>2</dd>
+  </dl>
+  <div class="counts">
+      <span class="badge status-untested">UNTESTED · 1</span>
+  </div>
+</header>
+
+<section class="mechanism-rollup">
+  <h2>Mechanism coverage</h2>
+  <p class="hint">Worst status across all scenarios that exercise each mechanism. Covers: addons (cert-manager, istio, gatekeeper, …), subchart variants, customer profiles.</p>
+    <div class="mech-group">
+      <h3>addon</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>addon:none</code></span>
+            <span class="mech-status status-untested">UNTESTED</span>
+            <span class="mech-caps">
+<a href="#minimal">minimal</a>            </span>
+          </li>
+      </ul>
+    </div>
+</section>
+
+<section class="matrix">
+  <h2>Scenarios</h2>
+  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.
+</p>
+
+  <table class="standalone-table">
+    <thead>
+      <tr>
+        <th class="row-head">Scenario</th>
+        <th>Cluster shape</th>
+        <th>Tags</th>
+        <th>Asserts</th>
+        <th>Status</th>
+        <th>Agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="untested-row">
+        <th class="row-head">
+          <a href="#minimal"><code>minimal</code></a>
+<div class="hint">Vanilla cluster — no preinstalled addons</div>        </th>
+        <td>
+          <code>kind</code>
+        </td>
+        <td><code class="mech-tag">pr-subset</code><code class="mech-tag">nightly</code></td>
+        <td class="cell status-untested">0/0</td>
+        <td><span class="badge status-untested">UNTESTED</span></td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+</section>
+
+<section class="cap-details">
+  <h2>Scenarios — details</h2>
+  <details id="minimal" class="cap" data-status="UNTESTED" data-run-id="run-20260601-095025-12109">
+    <summary>
+      <span class="cap-id"><code>minimal</code></span>
+      <span class="cap-name">Vanilla cluster — no preinstalled addons</span>
+      <span class="badge status-untested">UNTESTED</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Baseline: chart installs and pods come up on a stock kind cluster.</dd>      <dt>Cluster</dt><dd><code>kind</code>
+      </dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:none</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">pr-subset</code><code class="mech-tag">nightly</code></dd>
+      <dt>Labels</dt><dd><code>customer=none</code> <code>profile=baseline</code> </dd>
+    </dl>
+    <p class="no-results">⚠ no agent reported on this scenario — UNTESTED</p>
+  </details>
+</section>
+
+</body>
+</html>

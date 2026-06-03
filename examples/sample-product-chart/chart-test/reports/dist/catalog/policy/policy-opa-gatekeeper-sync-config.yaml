@@ -1,0 +1,53 @@
+---
+id: policy-opa-gatekeeper-sync-config
+name: "OPA Gatekeeper sync configuration"
+description: >-
+  Installs OPA Gatekeeper, applies Gatekeeper Config with sync.syncOnly listing Namespace, Pod, and Ingress kinds for OPA cache sync. Verifies Config exists with non-empty syncOnly, controller Ready.
+labels: {customer: any, profile: policy}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: gatekeeper/gatekeeper
+      version: "3.17.1"
+      release: gatekeeper
+      namespace: gatekeeper-system
+      repo:
+        name: gatekeeper
+        url: "https://open-policy-agent.github.io/gatekeeper/charts"
+      values:
+        auditInterval: 10
+        constraintViolationsLimit: 20
+        enableExternalData: false
+        postInstall:
+          labelNamespace:
+            enabled: false
+      wait: pods-ready
+      wait_timeout: 4m
+    - kind: raw_manifest
+      path: chart-test/fixtures/policy/gatekeeper-sync-config.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: gatekeeper-system
+    timeout: 4m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/opa-gatekeeper-sync-config.sh
+tags: [nightly]
+mechanisms: ['addon:opa-gatekeeper']
+category: policy
+integration: opa-gatekeeper
+tier: live

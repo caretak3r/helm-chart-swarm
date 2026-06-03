@@ -1,0 +1,23 @@
+---
+# Linkerd control-plane values for live scenario.
+# The trust anchor ConfigMap is pre-created via raw_manifest (linkerd-identity-secret.yaml),
+# so externalCA=true tells the chart to skip creating it.
+# The issuer cert/key are provided here (required by the chart) to create the Secret.
+# REPLACE_AT_RUNTIME markers are substituted with ephemeral ECDSA P-256 certs
+# by the linkerd-live.sh assertion script — DO NOT add real private key material.
+proxy:
+  resources:
+    cpu:
+      limit: "250m"
+      request: "100m"
+    memory:
+      limit: "256Mi"
+      request: "64Mi"
+identity:
+  externalCA: true
+  issuer:
+    scheme: linkerd.io/tls
+    tls:
+      crtPEM: REPLACE_AT_RUNTIME
+      keyPEM: REPLACE_AT_RUNTIME
+identityTrustAnchorsPEM: REPLACE_AT_RUNTIME
