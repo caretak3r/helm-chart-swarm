@@ -64,7 +64,7 @@ asserts:
     timeout: 3m
   - type: smoke-script
     path: chart-test/assertions/traefik-ingress.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:traefik']
 category: networking
 integration: traefik

@@ -27,7 +27,7 @@ asserts:
     labels:
       team: platform
       cost-center: "42"
-tags: [capability, compliance]
+tags: [capability, compliance, curated-live]
 category: capability
 capability: label-all-objects
 tier: capability

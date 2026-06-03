@@ -61,7 +61,7 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/istio-strict-mtls.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
 category: service-mesh
 integration: istio

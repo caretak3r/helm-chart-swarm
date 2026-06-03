@@ -34,7 +34,7 @@ asserts:
     namespace: sample
     source: rendered
     scheme: https-only
-tags: [capability, compliance]
+tags: [capability, compliance, curated-live]
 category: capability
 capability: protocol-scheme
 tier: capability

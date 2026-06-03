@@ -26,7 +26,7 @@ asserts:
     source: rendered
     annotations:
       example.com/owner: team-x
-tags: [capability, compliance]
+tags: [capability, compliance, curated-live]
 category: capability
 capability: annotate-all-objects
 tier: capability

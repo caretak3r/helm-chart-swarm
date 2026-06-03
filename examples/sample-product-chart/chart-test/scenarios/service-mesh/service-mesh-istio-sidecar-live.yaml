@@ -72,7 +72,7 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/istio-sidecar-live.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'mesh:istio-sidecar']
 category: service-mesh
 integration: istio

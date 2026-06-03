@@ -40,7 +40,7 @@ asserts:
     timeout: 3m
   - type: smoke-script
     path: chart-test/assertions/contour-basic.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:contour']
 category: networking
 integration: contour

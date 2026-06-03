@@ -54,7 +54,7 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/tls-cert-manager-self-signed.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:cert-manager']
 category: certificates
 integration: cert-manager

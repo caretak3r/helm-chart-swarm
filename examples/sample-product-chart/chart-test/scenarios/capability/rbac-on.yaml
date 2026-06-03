@@ -26,7 +26,7 @@ asserts:
     namespace: sample
     source: rendered
     expect_present: true
-tags: [capability, compliance]
+tags: [capability, compliance, curated-live]
 category: capability
 capability: rbac-toggle
 tier: capability

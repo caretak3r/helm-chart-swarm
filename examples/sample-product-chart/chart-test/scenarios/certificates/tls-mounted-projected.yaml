@@ -32,7 +32,7 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/mounted-tls-projected-volume.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:mounted-tls-certs']
 category: certificates
 integration: mounted-tls-certs

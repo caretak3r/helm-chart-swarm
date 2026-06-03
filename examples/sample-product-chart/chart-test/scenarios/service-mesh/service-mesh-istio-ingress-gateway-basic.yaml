@@ -85,7 +85,7 @@ asserts:
     timeout: 3m
   - type: smoke-script
     path: chart-test/assertions/istio-ingress-gateway-basic.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'mesh:istio-ingress-gateway']
 category: service-mesh
 integration: istio

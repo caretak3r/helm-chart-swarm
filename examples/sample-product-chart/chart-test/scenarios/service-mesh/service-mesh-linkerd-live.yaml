@@ -70,7 +70,7 @@ asserts:
   - type: pods-ready
     namespace: sample
     timeout: 5m
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:linkerd', 'mesh:linkerd']
 category: service-mesh
 integration: linkerd

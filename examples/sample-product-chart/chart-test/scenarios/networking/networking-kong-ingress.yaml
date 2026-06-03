@@ -65,7 +65,7 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/kong-ingress.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:kong']
 category: networking
 integration: kong

@@ -65,7 +65,7 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/istio-gateway-api-basic.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'gateway-api:istio']
 category: gateway-api
 integration: istio

@@ -75,7 +75,7 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/opa-gatekeeper-required-labels.sh
-tags: [nightly]
+tags: [nightly, curated-live]
 mechanisms: ['addon:opa-gatekeeper', 'addon:nginx-ingress']
 category: policy
 integration: opa-gatekeeper
