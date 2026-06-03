@@ -89,8 +89,10 @@ def cmd_build(args: argparse.Namespace) -> int:
     recs = generate_recommendations(all_runs, existing=existing_recs)
     if recs:
         rec_path = save_recommendations(reports, recs)
-        print(f"  {'recommendations.json':30s}  ({len(recs)} rec(s), "
-              f"{sum(1 for r in recs if r.status == 'open')} open)  →  {rec_path}")
+        print(
+            f"  {'recommendations.json':30s}  ({len(recs)} rec(s), "
+            f"{sum(1 for r in recs if r.status == 'open')} open)  →  {rec_path}"
+        )
 
     # Compute open recommendation count from recommendations.json.
     open_rec_count = count_open_recommendations(reports)

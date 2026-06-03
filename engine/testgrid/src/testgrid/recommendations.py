@@ -518,9 +518,12 @@ def generate_recommendations(
     - Existing recommendations whose ``(scenario_id, failure_type)`` is
       still failing in *runs* preserve their current ``status``, ``dismissed_reason``,
       and ``created_at``.
-    - Existing recommendations that are no longer failing (i.e. the scenario
-      now passes or is absent from all runs) have their ``status`` set to
-      ``"fixed"``.
+    - Existing recommendations with status ``"open"`` or ``"in_progress"``
+      that are no longer failing have their ``status`` set to ``"fixed"``.
+    - Existing recommendations with status ``"dismissed"`` are preserved
+      as-is — the user explicitly dismissed them and they should not
+      silently vanish.
+    - Existing recommendations with status ``"fixed"`` stay ``"fixed"``.
     - New failures create new recommendations with ``status = "open"``.
 
     Parameters
@@ -595,13 +598,17 @@ def generate_recommendations(
                 )
 
     # Carry forward existing recommendations whose failures are no longer
-    # present in the new runs — mark them as "fixed".
+    # present in the new runs.
     for rec_id, existing_rec in existing_by_id.items():
-        if rec_id not in new_recs and existing_rec.status == "open":
-            # Build a new Recommendation with status "fixed".
+        if rec_id not in new_recs:
             d = asdict(existing_rec)
-            d["status"] = "fixed"
             d["updated_at"] = now
+            if existing_rec.status in ("open", "in_progress"):
+                # No longer failing — mark as "fixed".
+                d["status"] = "fixed"
+            # "dismissed" recommendations are preserved as-is — the user
+            # explicitly dismissed them and they should not silently vanish.
+            # "fixed" recommendations stay "fixed".
             new_recs[rec_id] = Recommendation(**d)
 
     return list(new_recs.values())

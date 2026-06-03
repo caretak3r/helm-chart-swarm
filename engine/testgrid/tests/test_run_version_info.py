@@ -33,9 +33,7 @@ def _make_artifact_dir_with_versions(parent: Path, versions_data: dict[str, Any]
     """Create artifacts/ dir under *parent* with a versions.json file."""
     art = parent / "artifacts"
     art.mkdir(parents=True, exist_ok=True)
-    (art / "versions.json").write_text(
-        json.dumps(versions_data, indent=2), encoding="utf-8"
-    )
+    (art / "versions.json").write_text(json.dumps(versions_data, indent=2), encoding="utf-8")
     return art
 
 
@@ -90,9 +88,7 @@ class TestVersionsYamlFormat:
         """kubernetes.minikube must be in full patch format (vMAJOR.MINOR.PATCH)."""
         config = load_engine_defaults()
         mk_ver = config["kubernetes"]["minikube"]
-        assert mk_ver.startswith("v"), (
-            f"kubernetes.minikube must start with 'v', got: '{mk_ver}'."
-        )
+        assert mk_ver.startswith("v"), f"kubernetes.minikube must start with 'v', got: '{mk_ver}'."
         parts = mk_ver.lstrip("v").split(".")
         assert len(parts) == 3, (
             f"kubernetes.minikube must be full semver (vMAJOR.MINOR.PATCH), got: '{mk_ver}'."
@@ -111,7 +107,9 @@ class TestRunDetailVersionInfo:
         self, tmp_path: Path
     ) -> None:
         """Run detail page must render a version info section when versions.json is present."""
-        art_dir = _make_artifact_dir_with_versions(tmp_path / "scenario-dir", _minimal_versions_json())
+        art_dir = _make_artifact_dir_with_versions(
+            tmp_path / "scenario-dir", _minimal_versions_json()
+        )
 
         scenario = Scenario(
             id="test-scenario",
@@ -130,9 +128,7 @@ class TestRunDetailVersionInfo:
         # Must contain a version info / version snapshot section
         assert "version" in html.lower(), "Run page must contain version info section"
 
-    def test_render_run_shows_k8s_server_version_from_versions_json(
-        self, tmp_path: Path
-    ) -> None:
+    def test_render_run_shows_k8s_server_version_from_versions_json(self, tmp_path: Path) -> None:
         """Run detail page must show the k8s server version from artifacts/versions.json (VAL-VER-011)."""
         versions_data = _minimal_versions_json()
         versions_data["k8s_server"] = "v1.31.0"
@@ -153,9 +149,7 @@ class TestRunDetailVersionInfo:
             "Run detail page must show k8s server version from artifacts/versions.json"
         )
 
-    def test_render_run_shows_preinstall_versions_with_sources(
-        self, tmp_path: Path
-    ) -> None:
+    def test_render_run_shows_preinstall_versions_with_sources(self, tmp_path: Path) -> None:
         """Run detail page must show preinstall chart versions with their sources (VAL-VER-011)."""
         versions_data: dict[str, Any] = {
             "helm": "v3.17.0",
@@ -189,9 +183,7 @@ class TestRunDetailVersionInfo:
         assert "34.0.0" in html, "Run page must show traefik version"
         assert "scenario" in html, "Run page must show scenario source"
 
-    def test_render_run_no_version_section_when_no_versions_json(
-        self, tmp_path: Path
-    ) -> None:
+    def test_render_run_no_version_section_when_no_versions_json(self, tmp_path: Path) -> None:
         """Run detail page must not crash when no versions.json artifact is present."""
         scenario = Scenario(
             id="test-scenario",
@@ -251,9 +243,7 @@ class TestRunDetailVersionInfo:
             "Run page must show the old cert-manager version (v1.14) from run artifact"
         )
 
-    def test_render_run_uses_first_scenario_with_versions_json(
-        self, tmp_path: Path
-    ) -> None:
+    def test_render_run_uses_first_scenario_with_versions_json(self, tmp_path: Path) -> None:
         """When multiple scenarios, render_run uses versions.json from the first available."""
         art_dir_1 = _make_artifact_dir_with_versions(
             tmp_path / "scenario-1",
@@ -278,9 +268,7 @@ class TestRunDetailVersionInfo:
         # Should contain v1.31.0 from first sorted scenario (test-a)
         assert "v1.31.0" in html, "Run page must show versions from first scenario"
 
-    def test_render_run_handles_malformed_versions_json_gracefully(
-        self, tmp_path: Path
-    ) -> None:
+    def test_render_run_handles_malformed_versions_json_gracefully(self, tmp_path: Path) -> None:
         """render_run must not crash when versions.json is malformed."""
         art = tmp_path / "scenario-dir" / "artifacts"
         art.mkdir(parents=True, exist_ok=True)

@@ -114,18 +114,30 @@ class TestEngineProducesRecommendations:
     def test_six_fail_scenarios_produce_six_recs(self) -> None:
         """Curated-live style: 6 FAIL scenarios → 6 recommendations."""
         scenarios = [
-            _make_fail_scenario("annotations-on", "annotations-present",
-                                notes="Service/sample missing annotation example.com/owner"),
-            _make_fail_scenario("labels-on", "labels-present",
-                                notes="Deployment/sample missing label cost-center"),
-            _make_fail_scenario("rbac-on", "rbac-objects",
-                                notes="No ServiceAccount found in namespace sample"),
-            _make_fail_scenario("scheme-https-only", "scheme-enforced",
-                                notes="Service has HTTP port 80 exposed"),
-            _make_fail_scenario("ingress-controllers-contour-basic-httpproxy", "pods-ready",
-                                notes="HTTPProxy not emitted by chart"),
-            _make_fail_scenario("policy-opa-gatekeeper-required-labels", "pods-ready",
-                                notes="Ingress rejected by gatekeeper constraint"),
+            _make_fail_scenario(
+                "annotations-on",
+                "annotations-present",
+                notes="Service/sample missing annotation example.com/owner",
+            ),
+            _make_fail_scenario(
+                "labels-on", "labels-present", notes="Deployment/sample missing label cost-center"
+            ),
+            _make_fail_scenario(
+                "rbac-on", "rbac-objects", notes="No ServiceAccount found in namespace sample"
+            ),
+            _make_fail_scenario(
+                "scheme-https-only", "scheme-enforced", notes="Service has HTTP port 80 exposed"
+            ),
+            _make_fail_scenario(
+                "ingress-controllers-contour-basic-httpproxy",
+                "pods-ready",
+                notes="HTTPProxy not emitted by chart",
+            ),
+            _make_fail_scenario(
+                "policy-opa-gatekeeper-required-labels",
+                "pods-ready",
+                notes="Ingress rejected by gatekeeper constraint",
+            ),
         ]
         run = _make_run("run-curated-001", scenarios)
         recs = generate_recommendations([run])
@@ -329,10 +341,16 @@ class TestAllFieldsPopulated:
     def test_required_fields_for_all_six_scenarios(self) -> None:
         """All 6 curated scenarios must have fully populated recommendations."""
         scenarios = [
-            _make_fail_scenario("annotations-on", "annotations-present",
-                                notes="Service/sample missing annotation example.com/owner"),
-            _make_fail_scenario("labels-on", "labels-present",
-                                notes="Deployment/sample missing label cost-center=42"),
+            _make_fail_scenario(
+                "annotations-on",
+                "annotations-present",
+                notes="Service/sample missing annotation example.com/owner",
+            ),
+            _make_fail_scenario(
+                "labels-on",
+                "labels-present",
+                notes="Deployment/sample missing label cost-center=42",
+            ),
             _make_fail_scenario("rbac-on", "rbac-objects"),
             _make_fail_scenario("scheme-https-only", "scheme-enforced"),
             _make_fail_scenario("ingress-controllers-contour-basic-httpproxy", "pods-ready"),
@@ -342,8 +360,17 @@ class TestAllFieldsPopulated:
         recs = generate_recommendations([run])
         assert len(recs) == 6
 
-        required_fields = ["id", "scenario_id", "category", "severity",
-                           "title", "detail", "status", "run_refs", "fix_prompt"]
+        required_fields = [
+            "id",
+            "scenario_id",
+            "category",
+            "severity",
+            "title",
+            "detail",
+            "status",
+            "run_refs",
+            "fix_prompt",
+        ]
         for rec in recs:
             for field_name in required_fields:
                 val = getattr(rec, field_name)
@@ -361,12 +388,10 @@ class TestDeduplication:
     def test_same_scenario_in_two_runs_produces_one_rec(self) -> None:
         """Same failing scenario in run-1 and run-2 → one rec with both run_refs."""
         scenario1 = _make_fail_scenario(
-            "labels-on", "labels-present",
-            notes="Deployment/sample missing label cost-center=42"
+            "labels-on", "labels-present", notes="Deployment/sample missing label cost-center=42"
         )
         scenario2 = _make_fail_scenario(
-            "labels-on", "labels-present",
-            notes="Deployment/sample missing label cost-center=42"
+            "labels-on", "labels-present", notes="Deployment/sample missing label cost-center=42"
         )
         run1 = _make_run("run-001", [scenario1])
         run2 = _make_run("run-002", [scenario2])
@@ -418,8 +443,7 @@ class TestFixPromptContent:
 
     def test_fix_prompt_mentions_scenario_id(self) -> None:
         s = _make_fail_scenario(
-            "labels-on", "labels-present",
-            notes="Deployment/sample missing label cost-center=42"
+            "labels-on", "labels-present", notes="Deployment/sample missing label cost-center=42"
         )
         run = _make_run("run-001", [s])
         recs = generate_recommendations([run])
@@ -433,20 +457,24 @@ class TestFixPromptContent:
 
     def test_fix_prompt_mentions_affected_objects(self) -> None:
         s = _make_fail_scenario(
-            "labels-on", "labels-present",
-            notes="Deployment/sample missing label cost-center=42. Service/sample also affected."
+            "labels-on",
+            "labels-present",
+            notes="Deployment/sample missing label cost-center=42. Service/sample also affected.",
         )
         run = _make_run("run-001", [s])
         recs = generate_recommendations([run])
         # Notes mention Deployment and Service → should appear in fix_prompt
-        assert "Deployment" in recs[0].fix_prompt or "Deployment" in recs[0].affected_objects or len(recs[0].affected_objects) >= 0
+        # or affected_objects list
+        assert "Deployment" in recs[0].fix_prompt or "Deployment" in recs[0].affected_objects
 
     def test_fix_prompt_non_empty_for_all_categories(self) -> None:
         """Fix prompt must be non-empty for all four categories."""
         scenarios = [
             _make_fail_scenario("labels-on", "labels-present"),  # chart-fix
             _make_scenario("infra-fail", status="FAIL", fail_msg="CNI not ready"),  # infrastructure
-            _make_fail_scenario("ingress-controllers-contour-basic-httpproxy", "pods-ready"),  # gap-probe
+            _make_fail_scenario(
+                "ingress-controllers-contour-basic-httpproxy", "pods-ready"
+            ),  # gap-probe
             _make_fail_scenario("misc", "unknown-type"),  # schema-missing
         ]
         run = _make_run("run-001", scenarios)
@@ -729,3 +757,52 @@ class TestDashboardRebuildUpdates:
         updated_recs = generate_recommendations([run2], existing=recs)
         save_recommendations(tmp_path, updated_recs)
         assert count_open_recommendations(tmp_path) == 0
+
+    def test_in_progress_rec_marked_fixed_when_resolved(self) -> None:
+        """When a previously in_progress recommendation's failure resolves, it is marked fixed."""
+        s_fail = _make_fail_scenario("rbac-on", "rbac-objects")
+        run1 = _make_run("run-001", [s_fail])
+        existing_recs = generate_recommendations([run1])
+        # Simulate user setting status to in_progress
+        existing_recs[0].status = "in_progress"
+
+        # Run 2: rbac-on now passes
+        s_pass = _make_scenario("rbac-on", status="PASS")
+        run2 = _make_run("run-002", [s_pass])
+
+        recs_after_run2 = generate_recommendations([run2], existing=existing_recs)
+        assert len(recs_after_run2) == 1
+        assert recs_after_run2[0].status == "fixed"
+
+    def test_dismissed_rec_preserved_when_resolved(self) -> None:
+        """When a dismissed recommendation's failure resolves, it stays dismissed."""
+        s_fail = _make_fail_scenario("labels-on", "labels-present")
+        run1 = _make_run("run-001", [s_fail])
+        existing_recs = generate_recommendations([run1])
+        # Simulate user dismissing the recommendation
+        existing_recs[0].status = "dismissed"
+        existing_recs[0].dismissed_reason = "Not applicable to this chart"
+
+        # Run 2: labels-on now passes
+        s_pass = _make_scenario("labels-on", status="PASS")
+        run2 = _make_run("run-002", [s_pass])
+
+        recs_after_run2 = generate_recommendations([run2], existing=existing_recs)
+        assert len(recs_after_run2) == 1
+        assert recs_after_run2[0].status == "dismissed"
+        assert recs_after_run2[0].dismissed_reason == "Not applicable to this chart"
+
+    def test_fixed_rec_stays_fixed_when_resolved(self) -> None:
+        """When a fixed recommendation's failure remains resolved, it stays fixed."""
+        s_fail = _make_fail_scenario("annotations-on", "annotations-present")
+        run1 = _make_run("run-001", [s_fail])
+        existing_recs = generate_recommendations([run1])
+        existing_recs[0].status = "fixed"
+
+        # Run 2: annotations-on still passes
+        s_pass = _make_scenario("annotations-on", status="PASS")
+        run2 = _make_run("run-002", [s_pass])
+
+        recs_after_run2 = generate_recommendations([run2], existing=existing_recs)
+        assert len(recs_after_run2) == 1
+        assert recs_after_run2[0].status == "fixed"
