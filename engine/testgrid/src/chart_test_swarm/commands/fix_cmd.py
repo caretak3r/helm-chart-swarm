@@ -236,8 +236,17 @@ def apply_llm_suggestion(chart_dir: Path, llm_output: str) -> str:
 
 
 def _write_chart_file(chart_dir: Path, relative_path: str, content: str) -> None:
-    """Write *content* to *chart_dir* / *relative_path*."""
-    target = chart_dir / relative_path
+    """Write *content* to *chart_dir* / *relative_path*.
+
+    Raises ``ValueError`` if the resolved target path escapes *chart_dir*
+    (path traversal protection).
+    """
+    target = (chart_dir / relative_path).resolve()
+    if not target.is_relative_to(chart_dir.resolve()):
+        raise ValueError(
+            f"Refusing to write {relative_path}: resolved path "
+            f"{target} escapes chart directory {chart_dir.resolve()}"
+        )
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
     _debug(f"Wrote chart file: {target}")
@@ -327,20 +336,54 @@ def rerun_scenario(
         )
 
 
-def _determine_rerun_status(exit_code: int, stdout: str) -> str:
-    """Determine re-run status from exit code and stdout.
-
-    Returns ``"PASS"`` if exit code is 0 and stdout contains PASS,
-    or ``"FAIL"`` otherwise.
-    """
-    if exit_code == 0 and "PASS" in stdout:
-        return "PASS"
-    return "FAIL"
-
-
 def _timestamp_short() -> str:
     """Return a short timestamp string for run IDs: ``YYYYmmdd-HHMMSS``."""
     return datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+
+
+# ── Scenario path resolution ────────────────────────────────────────────────
+
+
+def _resolve_scenarios_dir(project_dir: Path) -> Path:
+    """Return the path to the scenario catalog under the project directory.
+
+    The default location is
+    ``<project_dir>/chart-test/scenarios/``.  Override via
+    ``CTS_SCENARIOS_DIR`` env var (for testing with stubs).
+    """
+    env_override = os.environ.get("CTS_SCENARIOS_DIR")
+    if env_override:
+        return Path(env_override)
+    return project_dir / "chart-test" / "scenarios"
+
+
+def resolve_scenario_path(scenario_id: str, scenarios_dir: Path) -> Path | None:
+    """Resolve a ``scenario_id`` to an actual file path under *scenarios_dir*.
+
+    Scans ``<scenarios_dir>/<category>/<scenario_id>.yaml`` for a file
+    whose YAML ``id`` field matches *scenario_id*.  Returns the first
+    matching ``Path`` or ``None`` if no match is found.
+    """
+    if not scenarios_dir.is_dir():
+        return None
+
+    for candidate in sorted(scenarios_dir.rglob("*.yaml")):
+        if not candidate.is_file():
+            continue
+        # Fast path: filename matches scenario_id
+        if candidate.stem == scenario_id:
+            # Verify the id field matches (for correctness)
+            try:
+                import yaml
+
+                with candidate.open(encoding="utf-8") as f:
+                    doc = yaml.safe_load(f)
+                if isinstance(doc, dict) and doc.get("id") == scenario_id:
+                    return candidate
+            except Exception:
+                continue
+
+    return None
 
 
 # ── Step 5: Update recommendation status ────────────────────────────────────
@@ -591,8 +634,8 @@ def fix_cmd(
 
     Core flow:
       1. Read ``reports/fixes/<rec-id>/.fix-prompt.json``
-      2. Resolve ``CTS_LLM_CMD``
-      3. Invoke LLM with the fix prompt
+      2. Resolve scenario_id to file path via scenario catalog
+      3. Invoke LLM with the fix prompt (validates CTS_LLM_CMD)
       4. Apply suggested change to chart
       5. Re-run scenario on kind
       6. Update recommendation status
@@ -624,10 +667,43 @@ def fix_cmd(
     _debug(f"  Chart path: {ctx.chart_dir}")
     _debug(f"  Scenario path: {ctx.scenario_path}")
 
-    # ── 3. Resolve LLM command (validates CTS_LLM_CMD is set) ──────────
-    _resolve_llm_cmd()  # validates CTS_LLM_CMD is set; dies if not
+    # ── 3. Resolve scenario path (scenario_id → file path) ───────────
+    # The .fix-prompt.json may contain either:
+    #  (a) a full file path like "chart-test/scenarios/capability/labels-on.yaml"
+    #  (b) a bare scenario_id like "labels-on" (when render.py writes
+    #      rec.get("scenario_id", "") into scenario_path)
+    # Try the path as-is first; if not found, resolve via scenario catalog.
+    scenario_path = ctx.scenario_path
+    scenario_file = Path(scenario_path)
+    resolved_scenario_path: str | None = None
 
-    # ── 4. Invoke LLM ──────────────────────────────────────────────────
+    if scenario_file.is_file():
+        # Case (a): already a valid file path
+        resolved_scenario_path = scenario_path
+    else:
+        # Try interpreting scenario_path relative to project_dir
+        candidate = resolved_project / scenario_path
+        if candidate.is_file():
+            resolved_scenario_path = str(candidate)
+        else:
+            # Case (b): bare scenario_id — resolve via scenario catalog
+            scenarios_dir = _resolve_scenarios_dir(resolved_project)
+            resolved = resolve_scenario_path(scenario_path, scenarios_dir)
+            if resolved is not None:
+                resolved_scenario_path = str(resolved)
+                _debug(f"Resolved scenario_id '{scenario_path}' → {resolved_scenario_path}")
+
+    if resolved_scenario_path is None:
+        _die(
+            f"ERROR: Cannot resolve scenario '{scenario_path}' to a file.\n"
+            f"  Tried as-is: {scenario_path}\n"
+            f"  Tried relative to project: {resolved_project / scenario_path}\n"
+            f"  Also searched scenario catalog under: {_resolve_scenarios_dir(resolved_project)}\n"
+            f"  The scenario YAML must exist under chart-test/scenarios/<category>/<scenario>.yaml",
+            code=22,
+        )
+
+    # ── 4. Invoke LLM (also validates CTS_LLM_CMD is set) ──────────────
     fix_prompt = prompt_data.get("fix_prompt", "")
     if not fix_prompt:
         _die(
@@ -646,9 +722,9 @@ def fix_cmd(
         _debug("No diff produced (LLM may not have changed any files)")
 
     # ── 6. Re-run scenario ─────────────────────────────────────────────
-    print(f"[fix] Re-running scenario: {ctx.scenario_path}")
+    print(f"[fix] Re-running scenario: {resolved_scenario_path}")
     rerun_status = rerun_scenario(
-        scenario_path=ctx.scenario_path,
+        scenario_path=resolved_scenario_path,
         reports_dir=str(ctx.reports_dir),
         project_dir=str(ctx.project_dir),
         timeout=run_timeout,
@@ -658,7 +734,9 @@ def fix_cmd(
     # ── 7. Update recommendation status ─────────────────────────────────
     new_status = "fixed" if rerun_status == "PASS" else "open"
     result_str = new_status
-    update_recommendation_status(ctx.reports_dir, rec_id, rerun_status)
+    updated = update_recommendation_status(ctx.reports_dir, rec_id, rerun_status)
+    if not updated:
+        _debug(f"Warning: recommendation {rec_id} not found in recommendations.json")
     print(f"[fix] Recommendation {rec_id} → status: {new_status}")
 
     # ── 8. Append history entry ─────────────────────────────────────────

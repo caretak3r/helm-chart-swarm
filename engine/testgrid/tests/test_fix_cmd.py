@@ -34,6 +34,7 @@ from chart_test_swarm.commands.fix_cmd import (
     fix_cmd,
     load_fix_prompt,
     read_recommendations_json,
+    resolve_scenario_path,
     rerun_scenario,
     update_recommendation_status,
     write_fix_prompt_file,
@@ -50,7 +51,7 @@ def _make_fix_prompt_json(rec_id: str = "rec-abc123") -> dict[str, str]:
     return {
         "recommendation_id": rec_id,
         "fix_prompt": "Add the label cost-center=42 to all Deployments.",
-        "scenario_path": "examples/sample-product-chart/chart-test/scenarios/capability/labels-on.yaml",
+        "scenario_path": "labels-on",
         "chart_path": "examples/sample-product-chart/chart",
         "created_at": "2026-06-03T12:00:00Z",
     }
@@ -604,10 +605,19 @@ class TestReadRecommendationsJson:
 class TestFixCmdEndToEnd:
     """Integration test for fix_cmd with mocked dependencies."""
 
+    @staticmethod
+    def _setup_scenario_catalog(tmp_path: Path) -> None:
+        """Create a minimal scenario catalog under project so scenario resolution works."""
+        scenarios_dir = tmp_path / "chart-test" / "scenarios" / "capability"
+        scenarios_dir.mkdir(parents=True, exist_ok=True)
+        scenario_file = scenarios_dir / "labels-on.yaml"
+        scenario_file.write_text("id: labels-on\n", encoding="utf-8")
+
     def test_fix_cmd_pass_path(self, tmp_path: Path) -> None:
         """End-to-end: fix with PASS re-run → status fixed."""
         _write_fix_prompt(tmp_path, "rec-abc123")
         _write_recommendations_json(tmp_path)
+        self._setup_scenario_catalog(tmp_path)
 
         llm_stub = _make_stub_script(
             tmp_path, "llm-pass", stdout="CHANGED FILE: templates/deployment.yaml"
@@ -651,6 +661,7 @@ class TestFixCmdEndToEnd:
         """End-to-end: fix with FAIL re-run → status back to open."""
         _write_fix_prompt(tmp_path, "rec-abc123")
         _write_recommendations_json(tmp_path)
+        self._setup_scenario_catalog(tmp_path)
 
         llm_stub = _make_stub_script(
             tmp_path, "llm-fail", stdout="CHANGED FILE: templates/deployment.yaml"
@@ -674,3 +685,152 @@ class TestFixCmdEndToEnd:
         )
         rec = next(r for r in recs["recommendations"] if r["id"] == "rec-abc123")
         assert rec["status"] == "open"
+
+
+# ---------------------------------------------------------------------------
+# Path traversal vulnerability fix
+# ---------------------------------------------------------------------------
+
+
+class TestPathTraversalBlocked:
+    """apply_llm_suggestion() must reject paths that escape chart_dir."""
+
+    def test_traversal_with_dotdot_rejected(self, tmp_path: Path) -> None:
+        """LLM output containing ../../etc/passwd must raise ValueError."""
+        chart_dir = tmp_path / "chart"
+        chart_dir.mkdir()
+        llm_output = "CHANGED FILE: ../../etc/passwd\nmalicious content"
+        with pytest.raises(ValueError, match="escapes chart directory"):
+            apply_llm_suggestion(chart_dir, llm_output)
+
+    def test_absolute_path_outside_chart_rejected(self, tmp_path: Path) -> None:
+        """LLM output containing /etc/passwd must raise ValueError."""
+        chart_dir = tmp_path / "chart"
+        chart_dir.mkdir()
+        llm_output = "CHANGED FILE: /etc/passwd\nmalicious content"
+        with pytest.raises(ValueError, match="escapes chart directory"):
+            apply_llm_suggestion(chart_dir, llm_output)
+
+    def test_valid_relative_path_accepted(self, tmp_path: Path) -> None:
+        """Valid relative paths within chart_dir should work without error."""
+        chart_dir = tmp_path / "chart"
+        (chart_dir / "templates").mkdir(parents=True)
+        llm_output = "CHANGED FILE: templates/deployment.yaml\nnew content"
+        # Should not raise
+        apply_llm_suggestion(chart_dir, llm_output)
+        assert (chart_dir / "templates" / "deployment.yaml").is_file()
+
+    def test_symlink_escape_rejected(self, tmp_path: Path) -> None:
+        """A symlink inside chart_dir pointing outside must be rejected."""
+        chart_dir = tmp_path / "chart"
+        chart_dir.mkdir()
+        outside_dir = tmp_path / "outside"
+        outside_dir.mkdir()
+        # Create a symlink inside chart_dir that points outside
+        link = chart_dir / "evil_link"
+        link.symlink_to(outside_dir)
+        llm_output = "CHANGED FILE: evil_link/pwned.txt\nmalicious"
+        with pytest.raises(ValueError, match="escapes chart directory"):
+            apply_llm_suggestion(chart_dir, llm_output)
+
+
+# ---------------------------------------------------------------------------
+# Scenario ID resolution to file path
+# ---------------------------------------------------------------------------
+
+
+class TestScenarioIdResolvedToFile:
+    """resolve_scenario_path must convert a scenario_id to an actual file path."""
+
+    def test_resolves_known_scenario_id(self, tmp_path: Path) -> None:
+        """A scenario_id like 'labels-on' resolves to the YAML file under scenarios/."""
+        scenarios_dir = tmp_path / "scenarios"
+        cap_dir = scenarios_dir / "capability"
+        cap_dir.mkdir(parents=True)
+        scenario_file = cap_dir / "labels-on.yaml"
+        scenario_file.write_text("id: labels-on\n", encoding="utf-8")
+
+        resolved = resolve_scenario_path("labels-on", scenarios_dir)
+        assert resolved is not None
+        assert resolved.is_file()
+        assert resolved.name == "labels-on.yaml"
+
+    def test_returns_none_for_unknown_id(self, tmp_path: Path) -> None:
+        """An unknown scenario_id returns None."""
+        scenarios_dir = tmp_path / "scenarios"
+        scenarios_dir.mkdir()
+        resolved = resolve_scenario_path("nonexistent-scenario", scenarios_dir)
+        assert resolved is None
+
+    def test_finds_nested_scenario(self, tmp_path: Path) -> None:
+        """Scenario files in subdirectories like networking/ are found."""
+        scenarios_dir = tmp_path / "scenarios"
+        net_dir = scenarios_dir / "networking"
+        net_dir.mkdir(parents=True)
+        scenario_file = net_dir / "istio-gateway.yaml"
+        scenario_file.write_text("id: istio-gateway\n", encoding="utf-8")
+
+        resolved = resolve_scenario_path("istio-gateway", scenarios_dir)
+        assert resolved is not None
+        assert "networking" in str(resolved)
+
+
+# ---------------------------------------------------------------------------
+# Missing scenario file exits
+# ---------------------------------------------------------------------------
+
+
+class TestMissingScenarioFileExits:
+    """When the scenario file cannot be found, fix_cmd must exit non-zero."""
+
+    def test_missing_scenario_exits_nonzero(self, tmp_path: Path) -> None:
+        """If scenario_id cannot be resolved to a file, fix_cmd exits non-zero."""
+        _write_fix_prompt(tmp_path, "rec-miss-sce")
+        _write_recommendations_json(
+            tmp_path,
+            [
+                {
+                    "id": "rec-miss-sce",
+                    "scenario_id": "nonexistent-scenario",
+                    "category": "chart-fix",
+                    "severity": "medium",
+                    "title": "Missing",
+                    "detail": "Detail",
+                    "affected_objects": [],
+                    "status": "open",
+                    "run_refs": [],
+                    "fix_prompt": "Fix it",
+                    "dismissed_reason": "",
+                    "created_at": "2026-06-03T12:00:00Z",
+                    "updated_at": "2026-06-03T12:00:00Z",
+                }
+            ],
+        )
+        # The fix-prompt has scenario_path as just "nonexistent-scenario"
+        # which cannot be resolved to a file
+        fix_dir = tmp_path / "reports" / "fixes" / "rec-miss-sce"
+        prompt_file = fix_dir / ".fix-prompt.json"
+        prompt_data = json.loads(prompt_file.read_text(encoding="utf-8"))
+        # Override scenario_path to be a bare scenario_id
+        prompt_data["scenario_path"] = "nonexistent-scenario"
+        prompt_file.write_text(json.dumps(prompt_data), encoding="utf-8")
+
+        llm_stub = _make_stub_script(
+            tmp_path, "llm-miss", stdout="NO CHANGE"
+        )
+
+        with (
+            patch.dict(os.environ, {"CTS_LLM_CMD": str(llm_stub)}, clear=False),
+            patch("chart_test_swarm.commands.fix_cmd._resolve_project_dir", return_value=tmp_path),
+            patch(
+                "chart_test_swarm.commands.fix_cmd._resolve_scenarios_dir",
+                return_value=tmp_path / "nonexistent-scenarios",
+            ),
+        ):
+            with pytest.raises(SystemExit) as exc_info:
+                fix_cmd(
+                    rec_id="rec-miss-sce",
+                    reports_dir=str(tmp_path / "reports"),
+                    project_dir=str(tmp_path),
+                )
+            assert exc_info.value.code != 0
