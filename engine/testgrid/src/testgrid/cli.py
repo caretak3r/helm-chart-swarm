@@ -14,9 +14,11 @@ from .render import (
     build_support_matrix,
     render_home,
     render_index,
+    render_recommendations,
     render_run,
     render_runs,
     render_support_matrix,
+    render_versions,
     support_matrix_run_counts,
 )
 
@@ -96,6 +98,12 @@ def cmd_build(args: argparse.Namespace) -> int:
     )
     home_path = render_home(summary, out)
     print(f"  {'home':30s}  →  {home_path}")
+
+    # Stub pages for navigation end-to-end
+    recs_path = render_recommendations(out)
+    print(f"  {'recommendations':30s}  →  {recs_path}")
+    vers_path = render_versions(out)
+    print(f"  {'versions':30s}  →  {vers_path}")
 
     # Return 0 if we produced at least a support-matrix, runs.html, home.html, or index.html.
     has_output = (
