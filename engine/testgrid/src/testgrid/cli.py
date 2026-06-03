@@ -120,7 +120,7 @@ def cmd_build(args: argparse.Namespace) -> int:
     from dataclasses import asdict as _asdict
 
     rec_dicts = [_asdict(r) for r in recs] if recs else []
-    recs_path = render_recommendations(out, recommendations=rec_dicts)
+    recs_path = render_recommendations(out, recommendations=rec_dicts, reports_dir=reports)
     print(f"  {'recommendations':30s}  →  {recs_path}")
 
     # Versions dashboard — pass merged config + project overrides for full display.

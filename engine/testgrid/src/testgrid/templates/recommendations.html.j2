@@ -26,6 +26,15 @@
   <span class="rec-summary-item rec-status-dismissed">{{ status_counts.get('dismissed', 0) }} Dismissed</span>
 </div>
 
+{# Tab bar — filters cards by status #}
+<div class="rec-tabs">
+  <button class="rec-tab rec-tab-active" data-tab="all" onclick="switchTab('all')">All</button>
+  <button class="rec-tab" data-tab="open" onclick="switchTab('open')">Open</button>
+  <button class="rec-tab" data-tab="in_progress" onclick="switchTab('in_progress')">In Progress</button>
+  <button class="rec-tab" data-tab="fixed" onclick="switchTab('fixed')">Fixed</button>
+  <button class="rec-tab" data-tab="dismissed" onclick="switchTab('dismissed')">Dismissed</button>
+</div>
+
 {# Filter controls #}
 <div class="rec-filters">
   <label for="rec-filter-category">Category:</label>
@@ -42,14 +51,6 @@
     <option value="high">high</option>
     <option value="medium">medium</option>
     <option value="low">low</option>
-  </select>
-  <label for="rec-filter-status">Status:</label>
-  <select id="rec-filter-status" onchange="filterRecommendations()">
-    <option value="all">All</option>
-    <option value="open">Open</option>
-    <option value="in_progress">In Progress</option>
-    <option value="fixed">Fixed</option>
-    <option value="dismissed">Dismissed</option>
   </select>
 </div>
 
@@ -71,7 +72,11 @@
       {% if rec.affected_objects %}
       <p><strong>Affected objects:</strong> {{ rec.affected_objects | join(', ') }}</p>
       {% endif %}
-      <p><strong>Run history:</strong> {{ rec.run_refs | join(', ') }}</p>
+      <p><strong>Run history:</strong>
+        {% for ref in rec.run_refs %}
+        <a href="{{ ref }}/index.html" class="rec-run-link">{{ ref }}</a>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </p>
       {% if rec.dismissed_reason %}
       <p><strong>Dismissed reason:</strong> {{ rec.dismissed_reason }}</p>
       {% endif %}
@@ -82,15 +87,38 @@
     <button class="rec-btn rec-btn-fix" onclick="handleFix('{{ rec.id }}')">FIX</button>
     <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('{{ rec.id }}')">Dismiss</button>
   </div>
+  {# FIX result panel — shown after clicking FIX #}
+  <div id="fix-result-{{ rec.id }}" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix {{ rec.id }}</code>
+      <button class="btn-copy" onclick="copyFixCmd('{{ rec.id }}')">Copy</button>
+    </div>
+  </div>
   {% endif %}
 </div>
 {% endfor %}
 
 <script>
+/* ---- Tab switching ---- */
+var currentTab = 'all';
+
+function switchTab(tab) {
+  currentTab = tab;
+  // Update tab button active state
+  document.querySelectorAll('.rec-tab').forEach(function(btn) {
+    btn.classList.toggle('rec-tab-active', btn.dataset.tab === tab);
+  });
+  // Also sync the status dropdown (removed but still filter)
+  filterRecommendations();
+}
+
+/* ---- Category / severity / tab filter ---- */
 function filterRecommendations() {
   var catFilter = document.getElementById('rec-filter-category').value;
   var sevFilter = document.getElementById('rec-filter-severity').value;
-  var statFilter = document.getElementById('rec-filter-status').value;
+  var statFilter = currentTab;  // tab acts as status filter
   var cards = document.querySelectorAll('.rec-card');
   cards.forEach(function(card) {
     var show = true;
@@ -101,14 +129,44 @@ function filterRecommendations() {
   });
 }
 
+/* ---- FIX button handler ---- */
 function handleFix(recId) {
-  alert('Run: chart-test-swarm fix ' + recId);
+  var panel = document.getElementById('fix-result-' + recId);
+  if (panel) {
+    panel.style.display = '';
+    panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  }
 }
 
+function copyFixCmd(recId) {
+  var cmd = 'chart-test-swarm fix ' + recId;
+  navigator.clipboard.writeText(cmd).then(function() {
+    var btns = document.querySelectorAll('#fix-result-' + recId + ' .btn-copy');
+    btns.forEach(function(btn) {
+      var orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = orig; }, 1500);
+    });
+  });
+}
+
+/* ---- Dismiss button handler ---- */
 function handleDismiss(recId) {
   var reason = prompt('Dismiss reason:');
   if (reason === null) return;
-  alert('Dismissed ' + recId + ': ' + reason);
+  // Display a CLI command for the user to run
+  var card = document.querySelector('.rec-card[data-status] button.rec-btn-dismiss[onclick*="' + recId + '"]');
+  if (card) {
+    var actionsDiv = card.closest('.rec-actions');
+    if (actionsDiv && !actionsDiv.querySelector('.dismiss-result')) {
+      var resultDiv = document.createElement('div');
+      resultDiv.className = 'dismiss-result';
+      resultDiv.innerHTML = '<strong>⚠️ Dismiss requested</strong>' +
+        '<p class="hint">Run the following command to dismiss:</p>' +
+        '<code class="fix-cmd">chart-test-swarm dismiss ' + recId + ' --reason "' + reason.replace(/"/g, '\\"') + '"</code>';
+      actionsDiv.appendChild(resultDiv);
+    }
+  }
 }
 </script>
 

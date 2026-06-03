@@ -462,14 +462,71 @@ def render_home(summary: HomeSummary, out_dir: Path) -> Path:
     return out_path
 
 
+def _write_fix_prompt_files(
+    reports_dir: Path,
+    recommendations: list[dict[str, Any]],
+) -> None:
+    """Write ``.fix-prompt.json`` files for open/in_progress recommendations.
+
+    For each recommendation with status ``"open"`` or ``"in_progress"``,
+    a ``reports/fixes/<rec-id>/.fix-prompt.json`` file is created containing
+    the recommendation ID, fix prompt text, scenario path, chart path, and
+    creation timestamp.  These files are consumed by the
+    ``chart-test-swarm fix <rec-id>`` CLI command.
+
+    Files for fixed or dismissed recommendations are NOT written (the fix
+    has already been applied or the recommendation was explicitly dismissed).
+
+    Parameters
+    ----------
+    reports_dir:
+        Reports root directory (where ``fixes/`` subdirectory is created).
+    recommendations:
+        List of recommendation dicts.
+    """
+    from datetime import UTC, datetime
+
+    fixes_dir = reports_dir / "fixes"
+    now = datetime.now(UTC).isoformat()
+
+    for rec in recommendations:
+        status = rec.get("status", "open")
+        if status not in ("open", "in_progress"):
+            continue
+
+        rec_id = rec.get("id", "")
+        if not rec_id:
+            continue
+
+        fix_dir = fixes_dir / rec_id
+        fix_dir.mkdir(parents=True, exist_ok=True)
+        fix_file = fix_dir / ".fix-prompt.json"
+
+        data: dict[str, Any] = {
+            "recommendation_id": rec_id,
+            "fix_prompt": rec.get("fix_prompt", ""),
+            "scenario_path": rec.get("scenario_id", ""),
+            "chart_path": "examples/sample-product-chart/chart",
+            "created_at": now,
+        }
+        fix_file.write_text(
+            json.dumps(data, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+
+
 def render_recommendations(
     out_dir: Path,
     recommendations: list[dict[str, Any]] | None = None,
+    reports_dir: Path | None = None,
 ) -> Path:
     """Render the recommendations page as ``recommendations.html``.
 
     Each recommendation is rendered as a card with status badge, category
     and severity tags, expandable detail section, and action buttons.
+    For open/in_progress recommendations, a ``.fix-prompt.json`` file
+    is written to ``reports_dir/fixes/<rec-id>/`` (or ``out_dir/fixes/``
+    when *reports_dir* is ``None``) for CLI consumption.
 
     Parameters
     ----------
@@ -478,6 +535,10 @@ def render_recommendations(
     recommendations:
         List of recommendation dicts (from ``recommendations.py``).  When
         ``None`` or empty, a placeholder message is shown.
+    reports_dir:
+        Reports root directory for writing ``fixes/`` subdirectories.
+        When ``None``, *out_dir* is used as the reports root (useful for
+        tests where both paths are the same temporary directory).
     """
     env = _make_env()
     tpl = env.get_template("recommendations.html.j2")
@@ -496,6 +557,11 @@ def render_recommendations(
     out_path = out_dir / "recommendations.html"
     out_path.write_text(html, encoding="utf-8")
     _copy_assets(out_dir)
+
+    # Write .fix-prompt.json files for open/in_progress recommendations
+    # so the CLI ``chart-test-swarm fix <rec-id>`` can consume them.
+    _write_fix_prompt_files(reports_dir or out_dir, recs)
+
     return out_path
 
 

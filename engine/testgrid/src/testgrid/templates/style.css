@@ -609,7 +609,7 @@ a:hover { text-decoration: underline; }
   overflow-y: auto;
 }
 
-.rec-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.rec-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
 .rec-btn {
   font-size: 0.8rem; font-weight: 600; padding: 0.3rem 0.8rem;
   border: 1px solid var(--border-strong); border-radius: 4px;
@@ -618,4 +618,52 @@ a:hover { text-decoration: underline; }
 .rec-btn:hover { background: #e3f2fd; }
 .rec-btn-fix { color: var(--accent); }
 .rec-btn-dismiss { color: var(--text-muted); }
+
+/* ── Recommendation tabs (f4-1) ── */
+
+.rec-tabs {
+  display: flex; gap: 0.25rem; margin-bottom: 0.8rem; flex-wrap: wrap;
+}
+.rec-tab {
+  font-size: 0.82rem; font-weight: 500; padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border); border-radius: 4px;
+  cursor: pointer; background: var(--surface); color: var(--text);
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.rec-tab:hover { background: #f0f4ff; border-color: var(--accent); }
+.rec-tab-active {
+  background: var(--accent); color: #ffffff; border-color: var(--accent);
+  font-weight: 700;
+}
+.rec-tab-active:hover { background: #1565c0; border-color: #1565c0; }
+
+/* ── Run detail links on recommendation cards ── */
+
+.rec-run-link {
+  font-size: 0.82rem; color: var(--accent); text-decoration: none;
+}
+.rec-run-link:hover { text-decoration: underline; }
+
+/* ── FIX result panel (f4-1) ── */
+
+.fix-result-panel {
+  margin: 0.5rem 0 0; padding: 0.7rem 0.9rem;
+  background: #e8f5e9; border: 1px solid #a5d6a7;
+  border-radius: 5px; max-width: 60rem;
+}
+.fix-result-inner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; }
+.fix-cmd {
+  background: #f5f5f5; border: 1px solid var(--border);
+  padding: 0.2rem 0.6rem; border-radius: 3px;
+  font-size: 0.82rem; font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  user-select: all;
+}
+
+/* ── Dismiss result (f4-1) ── */
+
+.dismiss-result {
+  margin-top: 0.5rem; padding: 0.7rem 0.9rem;
+  background: #fff3e0; border: 1px solid #ffcc80;
+  border-radius: 5px; max-width: 60rem;
+}
 
