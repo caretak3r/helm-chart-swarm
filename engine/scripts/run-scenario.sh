@@ -337,7 +337,69 @@ rewrite_scenario_for_bundle() {
 }
 rewrite_scenario_for_bundle
 
-# versions.json — capture tool versions immediately
+# ---- Resolve preinstall versions from versions.yaml config ----
+# Global associative arrays populated by _resolve_versions():
+#   _RESOLVED_VERSIONS[release_name] = resolved version string
+#   _RESOLVED_SOURCES[release_name]  = "scenario" | "versions-config"
+declare -A _RESOLVED_VERSIONS
+declare -A _RESOLVED_SOURCES
+
+# _resolve_versions: for each helm preinstall item in the scenario, determine
+# the resolved version and its source ("scenario" when the YAML specifies it
+# explicitly, "versions-config" when it is looked up from the merged
+# engine/defaults/versions.yaml + project chart-test/versions.yaml config).
+# Results are stored in _RESOLVED_VERSIONS and _RESOLVED_SOURCES.
+_resolve_versions() {
+  local engine_defaults="$ENGINE_DIR/defaults/versions.yaml"
+  local project_versions="$PROJECT_DIR/chart-test/versions.yaml"
+  local merged_yaml=""
+
+  # Build merged config YAML string (project wins over engine defaults)
+  if command -v yq >/dev/null 2>&1 && [ -f "$engine_defaults" ]; then
+    if [ -f "$project_versions" ]; then
+      # shellcheck disable=SC2016  # single quotes intentional: $item is a yq variable, not shell
+      merged_yaml=$(yq eval-all '. as $item ireduce ({}; . * $item)' \
+        "$engine_defaults" "$project_versions" 2>/dev/null || \
+        yq '.' "$engine_defaults" 2>/dev/null || echo "")
+    else
+      merged_yaml=$(yq '.' "$engine_defaults" 2>/dev/null || echo "")
+    fi
+  fi
+
+  local preinstall_count
+  preinstall_count=$(yq '.cluster.preinstall // [] | length' "$SCENARIO")
+  [ "$preinstall_count" -gt 0 ] || return 0
+
+  local i
+  for i in $(seq 0 $((preinstall_count - 1))); do
+    local item_kind
+    item_kind=$(yq ".cluster.preinstall[$i].kind // \"helm\"" "$SCENARIO")
+    [ "$item_kind" = "helm" ] || continue
+
+    local release version
+    release=$(yq ".cluster.preinstall[$i].release" "$SCENARIO")
+    [ -z "$release" ] || [ "$release" = "null" ] && continue
+
+    version=$(yq ".cluster.preinstall[$i].version // \"\"" "$SCENARIO")
+
+    if [ -n "$version" ] && [ "$version" != "null" ]; then
+      # Scenario YAML specifies version explicitly — takes precedence
+      _RESOLVED_VERSIONS["$release"]="$version"
+      _RESOLVED_SOURCES["$release"]="scenario"
+    elif [ -n "$merged_yaml" ]; then
+      # Look up from merged versions config
+      local config_version
+      config_version=$(echo "$merged_yaml" | yq ".preinstalls.\"$release\".version // \"\"" 2>/dev/null || echo "")
+      if [ -n "$config_version" ] && [ "$config_version" != "null" ] && [ "$config_version" != "" ]; then
+        _RESOLVED_VERSIONS["$release"]="$config_version"
+        _RESOLVED_SOURCES["$release"]="versions-config"
+      fi
+    fi
+  done
+}
+_resolve_versions || true
+
+# versions.json — capture tool versions immediately (including resolved preinstall info)
 write_versions_json() {
   local _helm="" _kubectl="" _kind="" _minikube="" _k8s_server=""
   _helm=$(helm version --short 2>/dev/null | head -1 || echo "unknown")
@@ -347,13 +409,35 @@ write_versions_json() {
   _k8s_server="unknown"
   # Try to get server version if cluster is reachable
   _k8s_server=$(kubectl_ctx version -o json 2>/dev/null | jq -r '.serverVersion.gitVersion // "unknown"' || echo "unknown")
-  jq -n \
+
+  # Base versions object (tool versions)
+  local base_json
+  base_json=$(jq -n \
     --arg helm "$_helm" \
     --arg kubectl "$_kubectl" \
     --arg kind "$_kind" \
     --arg minikube "$_minikube" \
     --arg k8s_server "$_k8s_server" \
-    '{helm: $helm, kubectl: $kubectl, kind: $kind, minikube: $minikube, k8s_server: $k8s_server}' \
+    '{helm: $helm, kubectl: $kubectl, kind: $kind, minikube: $minikube, k8s_server: $k8s_server}')
+
+  # Add preinstall version entries with 'source' tracking
+  # Each entry: { "release-name": { "version": "...", "source": "scenario"|"versions-config" } }
+  local preinstalls_json="{}"
+  if [ "${#_RESOLVED_VERSIONS[@]}" -gt 0 ]; then
+    local name
+    for name in "${!_RESOLVED_VERSIONS[@]}"; do
+      local ver="${_RESOLVED_VERSIONS[$name]}"
+      local src="${_RESOLVED_SOURCES[$name]:-versions-config}"
+      preinstalls_json=$(printf '%s' "$preinstalls_json" | jq \
+        --arg name "$name" \
+        --arg version "$ver" \
+        --arg source "$src" \
+        '. + {($name): {version: $version, source: $source}}')
+    done
+  fi
+
+  echo "$base_json" | jq --argjson preinstalls "$preinstalls_json" \
+    '. + {preinstalls: $preinstalls}' \
     > "$ARTIFACTS_DIR/versions.json"
 }
 write_versions_json || true

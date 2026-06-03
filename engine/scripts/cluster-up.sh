@@ -47,8 +47,43 @@ K8S_VERSION="${K8S_VERSION:-}"          # e.g. v1.30.0 — provider-specific nod
 KIND_CONFIG="${KIND_CONFIG:-}"          # optional path to a kind --config file (per-scenario)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Source the shared prefix guard — exits 1 if CLUSTER_NAME doesn't match ^chart-test-swarm-[a-z0-9-]+$
 . "$SCRIPT_DIR/lib/prefix-check.sh"
+
+# _read_k8s_version_from_config: read kubernetes.<provider> version from merged versions config.
+# Reads engine/defaults/versions.yaml, optionally deep-merges with
+# <PROJECT_DIR>/chart-test/versions.yaml (project values win on conflict).
+# Usage: _read_k8s_version_from_config <provider>   (e.g. "kind" or "minikube")
+# Outputs the raw version string from config, or empty if not found / yq unavailable.
+_read_k8s_version_from_config() {
+  local provider="$1"
+  local engine_defaults="$ENGINE_DIR/defaults/versions.yaml"
+  command -v yq >/dev/null 2>&1 || { echo ""; return; }
+  [ -f "$engine_defaults" ] || { echo ""; return; }
+
+  local project_versions="${PROJECT_DIR:-}/chart-test/versions.yaml"
+  if [ -n "${PROJECT_DIR:-}" ] && [ -f "$project_versions" ]; then
+    # shellcheck disable=SC2016  # single quotes intentional: $item is a yq variable, not shell
+    yq eval-all '. as $item ireduce ({}; . * $item)' \
+      "$engine_defaults" "$project_versions" 2>/dev/null \
+      | yq ".kubernetes.\"$provider\" // \"\"" 2>/dev/null || echo ""
+  else
+    yq ".kubernetes.\"$provider\" // \"\"" "$engine_defaults" 2>/dev/null || echo ""
+  fi
+}
+
+# If K8S_VERSION is not explicitly provided, read from versions.yaml config.
+# Scenario-specified k8s_version takes precedence (run-scenario.sh exports K8S_VERSION
+# from scenario YAML before invoking cluster-up.sh, so a non-empty K8S_VERSION here
+# means the scenario or the caller already made an explicit choice).
+if [ -z "$K8S_VERSION" ]; then
+  _cfg_k8s_ver="$(_read_k8s_version_from_config "$PROVIDER")"
+  if [ -n "$_cfg_k8s_ver" ] && [ "$_cfg_k8s_ver" != "null" ] && [ "$_cfg_k8s_ver" != "" ]; then
+    K8S_VERSION="$_cfg_k8s_ver"
+    echo "==> kubernetes version from config: $K8S_VERSION (provider=$PROVIDER)"
+  fi
+fi
 
 # ---- Save the caller's current kubeconfig context so we can restore it ----
 SAVED_CONTEXT=""

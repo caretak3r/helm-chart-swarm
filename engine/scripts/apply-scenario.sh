@@ -62,6 +62,9 @@ SCENARIO="${1:?usage: apply-scenario.sh <scenario.yaml>}"
 command -v yq   >/dev/null 2>&1 || { echo "ERROR: yq required (brew install yq)" >&2; exit 1; }
 command -v kubectl >/dev/null 2>&1 || { echo "ERROR: kubectl required" >&2; exit 1; }
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 kubectl_ctx() {
   if [ -n "${KUBE_CONTEXT:-}" ]; then
     kubectl --context "$KUBE_CONTEXT" "$@"
@@ -112,6 +115,29 @@ resolve_path() {
     /*) echo "$1" ;;
     *)  echo "$PROJECT_DIR/$1" ;;
   esac
+}
+
+# _preinstall_version_from_config: look up a preinstall chart version from the
+# merged versions.yaml config.  Engine defaults are read from
+# engine/defaults/versions.yaml; project-level overrides from
+# <PROJECT_DIR>/chart-test/versions.yaml (project wins on conflict).
+# Usage: _preinstall_version_from_config <release_name>
+# Outputs the version string, or empty string if not found / yq unavailable.
+_preinstall_version_from_config() {
+  local name="$1"
+  local engine_defaults="$ENGINE_DIR/defaults/versions.yaml"
+  command -v yq >/dev/null 2>&1 || { echo ""; return; }
+  [ -f "$engine_defaults" ] || { echo ""; return; }
+
+  local project_versions="${PROJECT_DIR:-}/chart-test/versions.yaml"
+  if [ -n "${PROJECT_DIR:-}" ] && [ -f "$project_versions" ]; then
+    # shellcheck disable=SC2016  # single quotes intentional: $item is a yq variable, not shell
+    yq eval-all '. as $item ireduce ({}; . * $item)' \
+      "$engine_defaults" "$project_versions" 2>/dev/null \
+      | yq ".preinstalls.\"$name\".version // \"\"" 2>/dev/null || echo ""
+  else
+    yq ".preinstalls.\"$name\".version // \"\"" "$engine_defaults" 2>/dev/null || echo ""
+  fi
 }
 
 # Apply a raw_manifest preinstall item via kubectl apply -f.
@@ -188,6 +214,17 @@ apply_helm() {
   ns=$(yq      ".cluster.preinstall[$i].namespace"                    "$SCENARIO")
   wait_mode=$(yq ".cluster.preinstall[$i].wait // \"pods-ready\""     "$SCENARIO")
   wait_to=$(yq   ".cluster.preinstall[$i].wait_timeout // \"5m\""     "$SCENARIO")
+
+  # If version is absent from the scenario YAML, resolve from versions.yaml config.
+  # Scenario YAML version takes precedence (already captured above); config is the fallback.
+  if [ -z "$version" ] || [ "$version" = "null" ]; then
+    local _cfg_version
+    _cfg_version="$(_preinstall_version_from_config "$release")"
+    if [ -n "$_cfg_version" ] && [ "$_cfg_version" != "null" ] && [ "$_cfg_version" != "" ]; then
+      version="$_cfg_version"
+      echo "    (version resolved from versions-config: $version)"
+    fi
+  fi
   repo_name=$(yq ".cluster.preinstall[$i].repo.name // \"\""          "$SCENARIO")
   repo_url=$(yq  ".cluster.preinstall[$i].repo.url  // \"\""          "$SCENARIO")
   values_node=$(yq ".cluster.preinstall[$i].values // \"\""           "$SCENARIO")
