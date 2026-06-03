@@ -1,0 +1,10 @@
+# Placeholder-only fixture for AWS EBS CSI snapshot scenarios.
+# Replace <REPLACE_WITH_*> values before applying to your own EKS cluster.
+# No real AWS account IDs, ARNs, or access keys are stored here.
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: ebs-snapclass
+driver: ebs.csi.aws.com
+deletionPolicy: Delete

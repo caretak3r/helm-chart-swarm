@@ -1,0 +1,13 @@
+# Placeholder-only fixture for Azure File CSI scenarios.
+# Replace <REPLACE_WITH_*> values before applying to your own AKS cluster.
+# No real resource group names, storage account keys, or Azure tenant IDs are stored here.
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azurefile
+provisioner: file.csi.azure.com
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  skuName: Standard_LRS
+allowVolumeExpansion: true

@@ -1,0 +1,43 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, yamllint.
+# Apply to your own AKS cluster per the azure-disk-file-csi primer instructions.
+---
+id: storage-azure-file-csi-shared
+name: "Azure File CSI Shared Volume"
+description: >-
+  Azure File CSI Driver dynamically provisions an Azure File share from a PVC
+  with ReadWriteMany access mode. Multiple pods mount the same share and
+  verify consistent read/write access across pods.
+labels:
+  customer: any
+  profile: aks
+  chart-test-swarm/target-k8s-version: aks-1.30
+cluster:
+  provider: aks
+  k8s_version: "1.30"
+  preinstall:
+    - kind: raw_manifest
+      path: chart-test/fixtures/storage/azure-disk-file-csi/storageclass-file.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    darkroom.enabled: "true"
+    darkroom.persistence.enabled: "true"
+    darkroom.persistence.storageClassName: "azurefile"
+    darkroom.persistence.accessMode: "ReadWriteMany"
+    darkroom.persistence.size: "10Gi"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/storage/azure-disk-file-csi/file-shared.sh
+tags: [cloud-native, storage]
+mechanisms: ['cloud:aks', 'addon:azure-file-csi', 'feature:rwz-shared']
+category: storage/csi
+tier: authored-only
+integration: azure-disk-file-csi

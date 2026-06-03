@@ -1,0 +1,10 @@
+# Placeholder-only fixture for Azure Disk CSI snapshot scenarios.
+# Replace <REPLACE_WITH_*> values before applying to your own AKS cluster.
+# No real resource group names, storage account keys, or Azure tenant IDs are stored here.
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: azure-disk-snapclass
+driver: disk.csi.azure.com
+deletionPolicy: Delete

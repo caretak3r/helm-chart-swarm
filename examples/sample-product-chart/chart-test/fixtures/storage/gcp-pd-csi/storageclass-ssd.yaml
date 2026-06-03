@@ -1,0 +1,14 @@
+# Placeholder-only fixture for GCP PD CSI scenarios.
+# Replace <REPLACE_WITH_*> values before applying to your own GKE cluster.
+# No real project IDs, zone names, or disk names are stored here.
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: pd-ssd
+provisioner: pd.csi.storage.gke.io
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  type: pd-ssd
+  replication-type: none
+allowVolumeExpansion: true
