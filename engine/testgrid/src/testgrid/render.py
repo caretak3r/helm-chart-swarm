@@ -297,6 +297,40 @@ def _copy_artifact_bundle(
     return rel_hrefs
 
 
+def _load_run_versions(run: Run) -> dict[str, Any] | None:
+    """Load versions.json from the first scenario artifact directory that has one.
+
+    Scans scenarios in sorted order (same order as render_run) and returns
+    the parsed contents of the first ``artifacts/versions.json`` found.
+    Returns ``None`` when no scenario has a versions.json artifact — this
+    is the normal case for legacy runs or agent-dispatched runs where the
+    artifact bundle structure differs.
+
+    Parameters
+    ----------
+    run:
+        The run whose scenarios are scanned for a versions.json artifact.
+
+    Returns
+    -------
+    dict or None
+        Parsed JSON dict from the artifact, or ``None`` if unavailable or
+        malformed.
+    """
+    for s in sorted(run.scenarios, key=lambda s: s.id):
+        if s.artifact_dir is None:
+            continue
+        versions_path = s.artifact_dir / "versions.json"
+        if not versions_path.is_file():
+            continue
+        try:
+            data: dict[str, Any] = json.loads(versions_path.read_text(encoding="utf-8"))
+            return data
+        except (json.JSONDecodeError, OSError):
+            pass
+    return None
+
+
 def render_run(run: Run, out_dir: Path) -> Path:
     env = _make_env()
     tpl = env.get_template("run.html.j2")
@@ -308,6 +342,11 @@ def render_run(run: Run, out_dir: Path) -> Path:
     run.scenarios.sort(key=lambda s: s.id)
     # Re-sort variant group members for deterministic sub-table ordering.
     # Also sort standalone scenarios within the run (already done above).
+
+    # Load versions.json from artifact dirs BEFORE _copy_artifact_bundle
+    # replaces s.artifact_dir with relative hrefs.  The artifact_dir field
+    # itself is not modified by _copy_artifact_bundle, so this is safe.
+    run_versions = _load_run_versions(run)
 
     # M11: copy artifact files into dist tree and replace artifact_links with
     # relative hrefs (relative to run_dir/index.html).  Scenarios without an
@@ -326,6 +365,7 @@ def render_run(run: Run, out_dir: Path) -> Path:
 
     html = tpl.render(
         run=run,
+        run_versions=run_versions,
         mechanisms_by_category=mechanisms_by_category(run),
         variant_groups=groups,
         standalone_scenarios=standalone,

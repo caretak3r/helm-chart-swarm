@@ -8,8 +8,8 @@
 # Merge strategy: project values win on conflict; engine defaults fill gaps.
 
 kubernetes:
-  kind: "1.31"
-  minikube: "1.31"
+  kind: "v1.31.0"
+  minikube: "v1.31.0"
   gke: "1.30"
   eks: "1.30"
   aks: "1.30"

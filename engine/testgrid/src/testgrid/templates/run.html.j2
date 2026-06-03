@@ -18,6 +18,19 @@
     <dt>Chart</dt><dd><code>{{ run.chart_name or '—' }}{% if run.chart_version %}:{{ run.chart_version }}{% endif %}</code></dd>
     <dt>Suite</dt><dd>{{ run.suite or '—' }}</dd>
     <dt>Cluster</dt><dd>{{ run.cluster_provider or '—' }}{% if run.k8s_version %} · k8s <code>{{ run.k8s_version }}</code>{% endif %}</dd>
+    {% if run_versions %}
+    <dt>K8s Server</dt><dd><code>{{ run_versions.k8s_server or '—' }}</code></dd>
+    {% if run_versions.preinstalls %}
+    <dt>Preinstalls</dt>
+    <dd>
+      <ul class="version-preinstalls">
+      {% for name, info in run_versions.preinstalls.items() %}
+        <li><code>{{ name }}</code> <code>{{ info.version }}</code> <span class="version-source">{{ info.source }}</span></li>
+      {% endfor %}
+      </ul>
+    </dd>
+    {% endif %}
+    {% endif %}
     <dt>Agents</dt><dd>{{ run.num_agents }}</dd>
   </dl>
   <div class="counts">

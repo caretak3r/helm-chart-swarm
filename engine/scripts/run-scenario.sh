@@ -341,8 +341,8 @@ rewrite_scenario_for_bundle
 # Global associative arrays populated by _resolve_versions():
 #   _RESOLVED_VERSIONS[release_name] = resolved version string
 #   _RESOLVED_SOURCES[release_name]  = "scenario" | "versions-config"
-declare -A _RESOLVED_VERSIONS
-declare -A _RESOLVED_SOURCES
+declare -A _RESOLVED_VERSIONS=()
+declare -A _RESOLVED_SOURCES=()
 
 # _resolve_versions: for each helm preinstall item in the scenario, determine
 # the resolved version and its source ("scenario" when the YAML specifies it
@@ -378,7 +378,7 @@ _resolve_versions() {
 
     local release version
     release=$(yq ".cluster.preinstall[$i].release" "$SCENARIO")
-    [ -z "$release" ] || [ "$release" = "null" ] && continue
+    if [ -z "$release" ] || [ "$release" = "null" ]; then continue; fi
 
     version=$(yq ".cluster.preinstall[$i].version // \"\"" "$SCENARIO")
 
