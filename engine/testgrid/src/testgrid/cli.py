@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import argparse
-import json as _json
 import sys
 from pathlib import Path
 from typing import Any
 
 from .catalog import catalog_to_yaml, generate_catalog
 from .collect import OrphanRunError, Run, collect_run, list_runs
+from .recommendations import (
+    count_open_recommendations,
+    generate_recommendations,
+    load_recommendations,
+    save_recommendations,
+)
 from .render import (
     HomeSummary,
     build_support_matrix,
@@ -79,8 +84,16 @@ def cmd_build(args: argparse.Namespace) -> int:
             scenarios_dir, reports if reports.is_dir() else None, all_runs
         )
 
-    # Compute open recommendation count from reports/recommendations.json (if present).
-    open_rec_count = _load_open_rec_count(reports)
+    # f3-1: Generate recommendations from FAIL scenario results across all runs.
+    existing_recs = load_recommendations(reports)
+    recs = generate_recommendations(all_runs, existing=existing_recs)
+    if recs:
+        rec_path = save_recommendations(reports, recs)
+        print(f"  {'recommendations.json':30s}  ({len(recs)} rec(s), "
+              f"{sum(1 for r in recs if r.status == 'open')} open)  →  {rec_path}")
+
+    # Compute open recommendation count from recommendations.json.
+    open_rec_count = count_open_recommendations(reports)
 
     # Determine version config status (project versions.yaml presence).
     # The project dir is one level up from scenarios (chart-test/scenarios → chart-test).
@@ -101,8 +114,11 @@ def cmd_build(args: argparse.Namespace) -> int:
     home_path = render_home(summary, out)
     print(f"  {'home':30s}  →  {home_path}")
 
-    # Stub pages for navigation end-to-end
-    recs_path = render_recommendations(out)
+    # Render recommendations page with recommendation data.
+    from dataclasses import asdict as _asdict
+
+    rec_dicts = [_asdict(r) for r in recs] if recs else []
+    recs_path = render_recommendations(out, recommendations=rec_dicts)
     print(f"  {'recommendations':30s}  →  {recs_path}")
 
     # Versions dashboard — pass merged config + project overrides for full display.
@@ -159,21 +175,6 @@ def _compute_coverage_pct(
     if total_runnable == 0:
         return 0.0
     return round(counts.get("run", 0) / total_runnable * 100, 1)
-
-
-def _load_open_rec_count(reports_dir: Path) -> int:
-    """Read the open recommendation count from ``reports/recommendations.json``.
-
-    Returns 0 when the file does not exist or cannot be parsed.
-    """
-    rec_json = reports_dir / "recommendations.json"
-    if not rec_json.is_file():
-        return 0
-    try:
-        data = _json.loads(rec_json.read_text(encoding="utf-8"))
-        return sum(1 for r in data.get("recommendations", []) if r.get("status") == "open")
-    except Exception:
-        return 0
 
 
 def cmd_catalog(args: argparse.Namespace) -> int:

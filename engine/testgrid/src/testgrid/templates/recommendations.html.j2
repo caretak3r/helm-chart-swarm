@@ -16,8 +16,107 @@
 </header>
 
 <section class="recommendations">
+
+{% if recommendations %}
+{# Summary bar #}
+<div class="rec-summary-bar">
+  <span class="rec-summary-item rec-status-open">{{ status_counts.get('open', 0) }} Open</span>
+  <span class="rec-summary-item rec-status-in_progress">{{ status_counts.get('in_progress', 0) }} In Progress</span>
+  <span class="rec-summary-item rec-status-fixed">{{ status_counts.get('fixed', 0) }} Fixed</span>
+  <span class="rec-summary-item rec-status-dismissed">{{ status_counts.get('dismissed', 0) }} Dismissed</span>
+</div>
+
+{# Filter controls #}
+<div class="rec-filters">
+  <label for="rec-filter-category">Category:</label>
+  <select id="rec-filter-category" onchange="filterRecommendations()">
+    <option value="all">All</option>
+    <option value="chart-fix">chart-fix</option>
+    <option value="infrastructure">infrastructure</option>
+    <option value="gap-probe">gap-probe</option>
+    <option value="schema-missing">schema-missing</option>
+  </select>
+  <label for="rec-filter-severity">Severity:</label>
+  <select id="rec-filter-severity" onchange="filterRecommendations()">
+    <option value="all">All</option>
+    <option value="high">high</option>
+    <option value="medium">medium</option>
+    <option value="low">low</option>
+  </select>
+  <label for="rec-filter-status">Status:</label>
+  <select id="rec-filter-status" onchange="filterRecommendations()">
+    <option value="all">All</option>
+    <option value="open">Open</option>
+    <option value="in_progress">In Progress</option>
+    <option value="fixed">Fixed</option>
+    <option value="dismissed">Dismissed</option>
+  </select>
+</div>
+
+{# Recommendation cards #}
+{% for rec in recommendations %}
+<div class="rec-card" data-category="{{ rec.category }}" data-severity="{{ rec.severity }}" data-status="{{ rec.status }}">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-{{ rec.status }}">{{ rec.status }}</span>
+    <span class="rec-tag rec-tag-category">{{ rec.category }}</span>
+    <span class="rec-tag rec-tag-severity rec-severity-{{ rec.severity }}">{{ rec.severity }}</span>
+    <span class="rec-title">{{ rec.title }}</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> {{ rec.scenario_id }}</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">{{ rec.detail }}</pre>
+      {% if rec.affected_objects %}
+      <p><strong>Affected objects:</strong> {{ rec.affected_objects | join(', ') }}</p>
+      {% endif %}
+      <p><strong>Run history:</strong> {{ rec.run_refs | join(', ') }}</p>
+      {% if rec.dismissed_reason %}
+      <p><strong>Dismissed reason:</strong> {{ rec.dismissed_reason }}</p>
+      {% endif %}
+    </div>
+  </details>
+  {% if rec.status == 'open' or rec.status == 'in_progress' %}
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('{{ rec.id }}')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('{{ rec.id }}')">Dismiss</button>
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+<script>
+function filterRecommendations() {
+  var catFilter = document.getElementById('rec-filter-category').value;
+  var sevFilter = document.getElementById('rec-filter-severity').value;
+  var statFilter = document.getElementById('rec-filter-status').value;
+  var cards = document.querySelectorAll('.rec-card');
+  cards.forEach(function(card) {
+    var show = true;
+    if (catFilter !== 'all' && card.dataset.category !== catFilter) show = false;
+    if (sevFilter !== 'all' && card.dataset.severity !== sevFilter) show = false;
+    if (statFilter !== 'all' && card.dataset.status !== statFilter) show = false;
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+function handleFix(recId) {
+  alert('Run: chart-test-swarm fix ' + recId);
+}
+
+function handleDismiss(recId) {
+  var reason = prompt('Dismiss reason:');
+  if (reason === null) return;
+  alert('Dismissed ' + recId + ': ' + reason);
+}
+</script>
+
+{% else %}
   <h2>Recommendations</h2>
   <p class="hint">No recommendations available yet. Run scenarios to generate recommendations.</p>
+{% endif %}
+
 </section>
 
 </body>

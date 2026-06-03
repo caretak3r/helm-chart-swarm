@@ -462,17 +462,37 @@ def render_home(summary: HomeSummary, out_dir: Path) -> Path:
     return out_path
 
 
-def render_recommendations(out_dir: Path) -> Path:
-    """Render the recommendations placeholder page as ``recommendations.html``.
+def render_recommendations(
+    out_dir: Path,
+    recommendations: list[dict[str, Any]] | None = None,
+) -> Path:
+    """Render the recommendations page as ``recommendations.html``.
 
-    The full recommendations engine (f1-3+) will populate this page with
-    FAIL-derived recommendation cards.  This stub produces a valid page
-    that includes the nav bar so navigation works end-to-end.
+    Each recommendation is rendered as a card with status badge, category
+    and severity tags, expandable detail section, and action buttons.
+
+    Parameters
+    ----------
+    out_dir:
+        Output directory for the rendered HTML and assets.
+    recommendations:
+        List of recommendation dicts (from ``recommendations.py``).  When
+        ``None`` or empty, a placeholder message is shown.
     """
     env = _make_env()
     tpl = env.get_template("recommendations.html.j2")
     out_dir.mkdir(parents=True, exist_ok=True)
-    html = tpl.render(active_page="recommendations", base_path="")
+    recs = recommendations or []
+    status_counts: dict[str, int] = {}
+    for r in recs:
+        st = r.get("status", "open")
+        status_counts[st] = status_counts.get(st, 0) + 1
+    html = tpl.render(
+        active_page="recommendations",
+        base_path="",
+        recommendations=recs,
+        status_counts=status_counts,
+    )
     out_path = out_dir / "recommendations.html"
     out_path.write_text(html, encoding="utf-8")
     _copy_assets(out_dir)
