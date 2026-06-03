@@ -15,11 +15,18 @@ Usage: $(basename "$0") <project-dir> [suite] [num-agents] [run-id] [OPTIONS]
 
 Resolve a suite into a list of scenarios, round-robin them across N agents,
 write per-agent briefs + run-meta.yaml + scenarios-snapshot.yaml.
+When --run is specified, also execute each scenario sequentially on fresh
+kind clusters and write per-scenario result.yaml + artifacts/.
 
 Options:
   --help     Show this usage banner and exit
   --dry-run  Resolve scenarios only; print matched ids and exit 0
              without creating run directories or dispatching agents
+  --run      Execute each matched scenario via run-scenario.sh after
+             creating the run directory structure. Scenarios are run
+             sequentially with KEEP_CLUSTER=0 / KEEP_ON_FAILURE=0 so
+             clusters are always torn down. A run-level result.yaml
+             summarizing all scenario outcomes is written on completion.
 
 Arguments:
   project-dir  Path to the consumer chart project (containing chart-test-swarm.yaml)
@@ -38,6 +45,8 @@ Environment:
   REPORTS_DIR   Override reports root directory
   CTS_INCLUDE_CLOUD_NATIVE  Set to 1 to include authored-only cloud-native
                             scenarios in dispatch (default: 0)
+  KEEP_CLUSTER     Default 1 (keep on success); forced to 0 when --run
+  KEEP_ON_FAILURE  Default 0 (tear down on failure); forced to 0 when --run
 EOF
   exit 0
 }
@@ -46,13 +55,14 @@ case "${1:-}" in
   --help|-h) usage ;;
 esac
 
-# ---- Parse --dry-run flag from any argument position ----
+# ---- Parse flags from any argument position ----
 _DRY_RUN=0
-_set_dry_run=""
+_EXECUTE_RUN=0
 _args=()
 for _a in "$@"; do
   case "$_a" in
     --dry-run) _DRY_RUN=1 ;;
+    --run)     _EXECUTE_RUN=1 ;;
     *)         _args+=("$_a") ;;
   esac
 done
@@ -439,3 +449,154 @@ done
 
 echo "==> Briefs ready under $RUN_DIR/agent-*/brief.md"
 echo "==> RUN_ID=$RUN_ID"
+
+# ---- Execution phase (--run) ──────────────────────────────────────────
+# When --run is specified, execute each matched scenario sequentially via
+# run-scenario.sh.  Each scenario gets its own fresh kind cluster which is
+# always torn down after the scenario completes (PASS or FAIL).
+#
+# VAL-E2E-002: each live/capability/gap-probe member produces a result.yaml
+# VAL-E2E-010: no orphan kind clusters after completion
+# VAL-E2E-011: no orphan docker containers after completion
+
+if [ "$_EXECUTE_RUN" -eq 1 ]; then
+  echo ""
+  echo "==> --run: executing $COUNT scenario(s) sequentially..."
+
+  # Save the run id before clearing RUN_ID for run-scenario.sh
+  _dispatch_run_id="$RUN_ID"
+
+  # Force cluster teardown on both success and failure paths
+  export KEEP_CLUSTER=0
+  export KEEP_ON_FAILURE=0
+  # Point reports root at the run directory so scenario results land inside it
+  export REPORTS_DIR="$RUN_DIR"
+  # Unset RUN_ID for run-scenario.sh — we already set REPORTS_DIR to the
+  # run directory so scenario results go directly there without needing
+  # a RUN_ID-based subdirectory lookup.
+  export RUN_ID=""
+
+  _RUN_PASS=0
+  _RUN_FAIL=0
+  _RUN_SKIP=0
+  _RUN_IDX=0
+  _SCENARIO_RESULTS=()  # id=status pairs for run-level result.yaml
+
+  # Trap for cleanup on interrupt during execution
+  _exec_interrupted=0
+  _exec_cleanup() {
+    echo "" >&2
+    echo "==> SIGINT/SIGTERM received during execution — cleaning up" >&2
+    _exec_interrupted=1
+    for leftover in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' || true); do
+      echo "==> Removing leftover cluster: $leftover" >&2
+      kind delete cluster --name "$leftover" 2>/dev/null || true
+    done
+    exit 1
+  }
+  trap _exec_cleanup INT TERM
+
+  for f in "${MATCHED[@]}"; do
+    _RUN_IDX=$((_RUN_IDX + 1))
+    _sid=$(yq '.id' "$f")
+    # Use index-based cluster name to stay well under the 64-char hostname limit.
+    # kind appends -control-plane to the cluster name for the node hostname.
+    _cluster_name="chart-test-swarm-run-${_RUN_IDX}"
+
+    echo ""
+    echo "============================================================"
+    echo "==> [$_RUN_IDX/$COUNT] Running: $_sid"
+    echo "==> Cluster: $_cluster_name"
+    echo "==> Scenario file: $f"
+    echo "============================================================"
+
+    # Run the scenario — capture exit code
+    # REPORTS_DIR points at the run dir so scenario results land inside it
+    _scen_exit=0
+    env CLUSTER_NAME="$_cluster_name" \
+        KEEP_CLUSTER=0 \
+        KEEP_ON_FAILURE=0 \
+        REPORTS_DIR="$RUN_DIR" \
+        PROJECT_DIR="$PROJECT_DIR" \
+        bash "$SCRIPT_DIR/run-scenario.sh" "$f" \
+      || _scen_exit=$?
+
+    # Determine the scenario status from result.yaml
+    _scen_status="FAIL"
+    # Find the scenario result directory (under the run dir)
+    _scen_result_dir=""
+    _scen_result_dir=$(find "$RUN_DIR" -maxdepth 2 -type d -name "scenario-${_sid}-*" 2>/dev/null | sort | tail -1)
+
+    if [ -n "$_scen_result_dir" ] && [ -f "$_scen_result_dir/result.yaml" ]; then
+      # Use grep for status extraction — some result.yaml have multi-line
+      # notes that confuse yq's YAML parser (VAL-ENGINE-034)
+      _scen_status=$(grep -E '^status:' "$_scen_result_dir/result.yaml" 2>/dev/null | head -1 | sed 's/^status:[[:space:]]*//' || echo "")
+      if [ -z "$_scen_status" ]; then
+        _scen_status="FAIL"
+      fi
+    elif [ "$_scen_exit" -eq 0 ]; then
+      _scen_status="PASS"
+    fi
+
+    echo "==> RESULT: $_sid → $_scen_status (exit=$_scen_exit)"
+
+    # Track results
+    case "$_scen_status" in
+      PASS)     _RUN_PASS=$((_RUN_PASS + 1)) ;;
+      FAIL)     _RUN_FAIL=$((_RUN_FAIL + 1)) ;;
+      SKIP|INTERRUPTED) _RUN_SKIP=$((_RUN_SKIP + 1)) ;;
+      *)        _RUN_FAIL=$((_RUN_FAIL + 1)) ;;
+    esac
+
+    _SCENARIO_RESULTS+=("${_sid}=${_scen_status}")
+
+    # Ensure cluster is torn down regardless of result
+    if kind get clusters 2>/dev/null | grep -qx "$_cluster_name"; then
+      echo "==> Ensuring cluster $_cluster_name is removed..."
+      PROVIDER=kind CLUSTER_NAME="$_cluster_name" bash "$SCRIPT_DIR/cluster-down.sh" 2>/dev/null || true
+      kind delete cluster --name "$_cluster_name" 2>/dev/null || true
+    fi
+
+    # Check for interruption
+    if [ "${_exec_interrupted:-0}" = "1" ]; then
+      break
+    fi
+  done
+
+  # ---- Write run-level result.yaml ──────────────────────────────────
+  # Summarize all scenario results at the run level.
+  {
+    echo "run_id: $_dispatch_run_id"
+    echo "suite: $SUITE"
+    echo "timestamp_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "total: $COUNT"
+    echo "pass: $_RUN_PASS"
+    echo "fail: $_RUN_FAIL"
+    echo "skip: $_RUN_SKIP"
+    echo "scenarios:"
+    for entry in "${_SCENARIO_RESULTS[@]}"; do
+      _e_id="${entry%%=*}"
+      _e_status="${entry#*=}"
+      echo "  - id: $_e_id"
+      echo "    status: $_e_status"
+    done
+  } > "$RUN_DIR/result.yaml"
+
+  echo ""
+  echo "============================================================"
+  echo "==> Suite execution complete: $COUNT scenario(s)"
+  echo "==>   PASS: $_RUN_PASS"
+  echo "==>   FAIL: $_RUN_FAIL"
+  echo "==>   SKIP: $_RUN_SKIP"
+  echo "==>   Run dir: $RUN_DIR"
+  echo "============================================================"
+
+  # ---- Final cleanup: ensure no orphan clusters/containers ──────────
+  for leftover in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' || true); do
+    echo "WARN: removing leftover cluster: $leftover" >&2
+    kind delete cluster --name "$leftover" 2>/dev/null || true
+  done
+
+  # Reset trap to default
+  trap - INT TERM
+fi
