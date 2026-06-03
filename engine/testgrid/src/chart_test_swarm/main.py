@@ -185,6 +185,19 @@ def dashboard_cmd(
         metavar="SECONDS",
         help="Poll interval in seconds (default: 30, minimum: 5).",
     ),
+    serve: bool = typer.Option(
+        False,
+        "--serve",
+        help="Start a local HTTP server serving the dashboard.  Combined "
+        "with --watch, the served dashboard updates live as new results "
+        "land — no manual rebuild needed.",
+    ),
+    port: int = typer.Option(
+        8080,
+        "--port",
+        metavar="PORT",
+        help="Port for the HTTP server when --serve is used (default: 8080).",
+    ),
 ) -> None:
     """Build and view the test results dashboard.
 
@@ -195,6 +208,11 @@ def dashboard_cmd(
     monitors the reports directory for new or modified ``run-*``
     directories and rebuilds the dashboard automatically.
 
+    When ``--serve`` is set, starts a local HTTP server serving the
+    dashboard.  Combined with ``--watch``, successive HTTP fetches
+    of the served index.html show monotonically growing covered-result
+    content without a manual rebuild (VAL-E2E-014).
+
     \b
     Examples:
         chart-test-swarm dashboard
@@ -202,6 +220,9 @@ def dashboard_cmd(
         chart-test-swarm dashboard --reports-dir /path/to/reports
         chart-test-swarm dashboard --watch
         chart-test-swarm dashboard --watch --interval 10
+        chart-test-swarm dashboard --serve
+        chart-test-swarm dashboard --watch --serve
+        chart-test-swarm dashboard --watch --serve --port 3000
     """
     from chart_test_swarm.commands.dashboard_cmd import dashboard as _dashboard_impl
 
@@ -211,6 +232,8 @@ def dashboard_cmd(
         project_dir=project_dir,
         watch=watch,
         interval=interval,
+        serve=serve,
+        port=port,
     )
 
 

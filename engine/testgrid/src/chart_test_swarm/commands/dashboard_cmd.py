@@ -5,13 +5,20 @@ forwarding env vars for REPORTS_DIR, PROJECT_DIR, and DASHBOARD_OUT.
 
 When ``--watch`` is set, enters a polling loop that monitors the reports
 directory for new or modified run-* directories and rebuilds automatically.
+
+When ``--serve`` is set, starts a local HTTP server serving the dashboard
+dist directory.  Combined with ``--watch``, the served dashboard updates
+live as new results land — no manual rebuild needed (VAL-E2E-014).
 """
 
 from __future__ import annotations
 
+import http.server
 import os
+import socketserver
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import NoReturn
@@ -161,6 +168,67 @@ def _clamp_interval(interval: int) -> int:
     return interval
 
 
+def _serve_dir(
+    directory: Path, port: int = 8080
+) -> tuple[socketserver.TCPServer, threading.Thread]:
+    """Start a local HTTP server serving *directory* on *port*.
+
+    Returns a ``(server, thread)`` tuple.  The server runs in a daemon
+    thread so it is automatically cleaned up when the process exits.
+    Call ``server.shutdown()`` to stop the server and ``thread.join()``
+    to wait for the thread to finish.
+
+    When *port* is ``0``, the OS picks an available port; the actual
+    port is available via ``server.server_address[1]``.
+    """
+
+    # Use a custom handler that disables caching so fresh content
+    # is always returned after a rebuild (critical for VAL-E2E-014).
+    class _NoCacheHandler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            super().__init__(*args, directory=str(directory), **kwargs)  # type: ignore[arg-type]
+
+        def end_headers(self) -> None:
+            # Disable caching so successive fetches always see the latest build
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+            super().end_headers()
+
+        def log_message(self, format: str, *args: object) -> None:
+            # Suppress per-request log noise; only log to stderr in debug mode
+            if os.environ.get("CTS_DEBUG", "").strip() in ("1", "true", "yes"):
+                super().log_message(format, *args)
+
+    # allow_reuse_address so we don't get "Address already in use" on restart
+    server = socketserver.TCPServer(
+        ("127.0.0.1", port),
+        _NoCacheHandler,
+        bind_and_activate=True,
+    )
+
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return server, thread
+
+
+def _resolve_dist_dir(reports_dir: str | None, project_dir: str | None) -> Path:
+    """Resolve the dashboard dist directory for serving.
+
+    Mirrors ``build-dashboard.sh`` logic:
+      1. ``DASHBOARD_OUT`` env var
+      2. ``REPORTS_DIR/dist``
+      3. ``PROJECT_DIR/chart-test/reports/dist``
+      4. ``<repo_root>/reports/dist``
+    """
+    env_out = os.environ.get("DASHBOARD_OUT")
+    if env_out:
+        return Path(env_out)
+
+    resolved_reports = _resolve_reports_dir(reports_dir, project_dir)
+    return resolved_reports / "dist"
+
+
 def _watch_loop(
     script: Path,
     env: dict[str, str],
@@ -209,6 +277,8 @@ def dashboard(
     project_dir: str | None = None,
     watch: bool = False,
     interval: int = 30,
+    serve: bool = False,
+    port: int = 8080,
 ) -> None:
     """Build and view the test results dashboard.
 
@@ -218,6 +288,11 @@ def dashboard(
     When *watch* is ``True``, enters a polling loop that monitors the
     reports directory for new or modified ``run-*`` directories and
     rebuilds automatically.
+
+    When *serve* is ``True``, starts a local HTTP server serving the
+    dashboard dist directory.  Combined with *watch*, the served
+    dashboard updates live as new results land — no manual rebuild
+    needed (VAL-E2E-014).
     """
     # ── 1. Resolve script path ───────────────────────────────────────────
     script = _resolve_engine_script("build-dashboard.sh")
@@ -245,16 +320,38 @@ def dashboard(
 
     _debug(f"Invoking: bash {script} {' '.join(cmd_args)}")
 
-    # ── 4. Execute (watch or one-shot) ───────────────────────────────────
-    if watch:
-        clamped_interval = _clamp_interval(interval)
-        resolved_reports = _resolve_reports_dir(reports_dir, project_dir)
-        _debug(f"Watch mode: interval={clamped_interval}s, reports={resolved_reports}")
+    # ── 4. Start HTTP server (if --serve) ────────────────────────────────
+    server: socketserver.TCPServer | None = None
+    server_thread: threading.Thread | None = None
 
-        # Initial build
-        _run_build(script, env, cmd_args, exit_on_failure=True)
+    if serve:
+        dist_dir = _resolve_dist_dir(reports_dir, project_dir)
+        dist_dir.mkdir(parents=True, exist_ok=True)
+        server, server_thread = _serve_dir(dist_dir, port=port)
+        actual_port = server.server_address[1]
+        print(f"[serve] dashboard available at http://127.0.0.1:{actual_port}/")
+        _debug(f"Serving {dist_dir} on port {actual_port}")
 
-        # Enter polling loop
-        _watch_loop(script, env, resolved_reports, clamped_interval, cmd_args)
-    else:
-        _run_build(script, env, cmd_args, exit_on_failure=True)
+    # ── 5. Execute (watch or one-shot) ──────────────────────────────────
+    try:
+        if watch:
+            clamped_interval = _clamp_interval(interval)
+            resolved_reports = _resolve_reports_dir(reports_dir, project_dir)
+            _debug(f"Watch mode: interval={clamped_interval}s, reports={resolved_reports}")
+
+            # Initial build
+            _run_build(script, env, cmd_args, exit_on_failure=True)
+
+            # Enter polling loop
+            _watch_loop(script, env, resolved_reports, clamped_interval, cmd_args)
+        else:
+            _run_build(script, env, cmd_args, exit_on_failure=True)
+    except KeyboardInterrupt:
+        print("\n[watch] stopped.")
+    finally:
+        # ── 6. Stop HTTP server (if running) ─────────────────────────────
+        if server is not None and server_thread is not None:
+            _debug("Shutting down HTTP server")
+            server.shutdown()
+            server_thread.join(timeout=5.0)
+            print("[serve] server stopped.")
