@@ -6,6 +6,7 @@ import argparse
 import json as _json
 import sys
 from pathlib import Path
+from typing import Any
 
 from .catalog import catalog_to_yaml, generate_catalog
 from .collect import OrphanRunError, Run, collect_run, list_runs
@@ -21,6 +22,7 @@ from .render import (
     render_versions,
     support_matrix_run_counts,
 )
+from .versions import get_resolved_config, load_project_overrides
 
 # chart-test-swarm repo root: cli.py is at engine/testgrid/src/testgrid/cli.py
 DEFAULT_ROOT = Path(__file__).resolve().parents[4]
@@ -102,7 +104,26 @@ def cmd_build(args: argparse.Namespace) -> int:
     # Stub pages for navigation end-to-end
     recs_path = render_recommendations(out)
     print(f"  {'recommendations':30s}  →  {recs_path}")
-    vers_path = render_versions(out)
+
+    # Versions dashboard — pass merged config + project overrides for full display.
+    versions_project_dir: Path | None = None
+    versions_merged: dict[str, Any] | None = None
+    versions_overrides: dict[str, Any] | None = None
+    if scenarios_dir is not None:
+        # project_dir is two levels up from scenarios (scenarios → chart-test → project)
+        versions_project_dir = scenarios_dir.parent.parent
+        try:
+            versions_merged = get_resolved_config(project_dir=versions_project_dir)
+            versions_overrides = load_project_overrides(versions_project_dir)
+        except Exception:
+            versions_merged = None
+            versions_overrides = None
+    vers_path = render_versions(
+        out,
+        merged_config=versions_merged,
+        project_overrides=versions_overrides,
+        project_dir=versions_project_dir,
+    )
     print(f"  {'versions':30s}  →  {vers_path}")
 
     # Return 0 if we produced at least a support-matrix, runs.html, home.html, or index.html.

@@ -416,3 +416,130 @@ a:hover { text-decoration: underline; }
   line-height: 1.4;
 }
 
+/* ── Versions dashboard page ── */
+
+.versions-page h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 1.6rem 0 0.4rem;
+}
+
+.versions-section {
+  margin-bottom: 1.5rem;
+}
+
+.versions-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  width: 100%;
+  max-width: 80rem;
+}
+
+.versions-table th,
+.versions-table td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.8rem;
+  text-align: left;
+  background: var(--surface);
+}
+
+.versions-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--bg);
+}
+
+/* Rows with project overrides are visually distinct */
+.version-row-override {
+  background: #fffde7;
+}
+.version-row-override td {
+  background: #fffde7;
+}
+
+.ver-override {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Source badges */
+.badge-source {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-source.engine-default {
+  background: #eceff1;
+  color: #455a64;
+  border: 1px solid #b0bec5;
+}
+.badge-source.project-override {
+  background: #fff9c4;
+  color: #f57f17;
+  border: 1px solid #f9a825;
+  font-weight: 700;
+}
+
+/* Inline edit controls */
+.ver-input {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  width: 10rem;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.btn-edit-ver,
+.btn-save-ver,
+.btn-cancel-ver {
+  font-size: 0.75rem;
+  padding: 0.18rem 0.55rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--text);
+  margin-left: 0.3rem;
+}
+.btn-edit-ver:hover { background: #e3f2fd; border-color: var(--accent); color: var(--accent); }
+.btn-save-ver { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-save-ver:hover { opacity: 0.85; }
+.btn-cancel-ver:hover { background: #fafafa; }
+
+/* Edit result panel */
+.edit-result-panel {
+  margin: 1rem 0;
+  padding: 0.9rem 1.2rem;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 5px;
+  max-width: 60rem;
+}
+.edit-result-inner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; }
+.edit-cmd {
+  background: #f5f5f5;
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.82rem;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  user-select: all;
+}
+.btn-copy {
+  font-size: 0.75rem;
+  padding: 0.18rem 0.55rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  cursor: pointer;
+  background: var(--surface);
+}
+.btn-copy:hover { background: #e3f2fd; }
+

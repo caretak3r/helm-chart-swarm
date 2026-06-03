@@ -18,6 +18,11 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 from .catalog import NOT_YET_RUN, generate_catalog
 from .collect import CLOUD_PROVIDERS, STATUS_RANK, Run, Scenario
+from .versions import (
+    build_version_rows,
+    get_resolved_config,
+    load_project_overrides,
+)
 
 STATUS_CSS = {
     "PASS": "status-pass",
@@ -434,17 +439,59 @@ def render_recommendations(out_dir: Path) -> Path:
     return out_path
 
 
-def render_versions(out_dir: Path) -> Path:
-    """Render the versions placeholder page as ``versions.html``.
+def render_versions(
+    out_dir: Path,
+    merged_config: dict[str, Any] | None = None,
+    project_overrides: dict[str, Any] | None = None,
+    project_dir: Path | None = None,
+) -> Path:
+    """Render the versions dashboard page as ``versions.html``.
 
-    The version management feature will populate this page with the merged
-    version config table.  This stub produces a valid page that includes
-    the nav bar so navigation works end-to-end.
+    Displays the merged version config in tables per section (Kubernetes,
+    CLI Tools, Preinstalls, Product, Cloud).  Each row shows the component
+    name, version, and source (engine-default vs project-override).
+    Project overrides are rendered with a visually distinct CSS class.
+
+    Parameters
+    ----------
+    out_dir:
+        Output directory for the rendered HTML and assets.
+    merged_config:
+        The fully merged version config dict.  When ``None``, the engine
+        defaults are loaded from the bundled file (no project overrides).
+    project_overrides:
+        The raw project overrides dict (used for source labeling).  When
+        ``None`` and *project_dir* is provided, overrides are loaded from
+        ``<project_dir>/chart-test/versions.yaml``.
+    project_dir:
+        Root directory of the project (for loading overrides when
+        *project_overrides* is not provided directly).
     """
+    # Load merged config if not provided.
+    if merged_config is None:
+        try:
+            if project_dir is not None:
+                merged_config = get_resolved_config(project_dir=project_dir)
+                project_overrides = load_project_overrides(project_dir)
+            else:
+                merged_config = get_resolved_config()
+                project_overrides = None
+        except Exception:
+            merged_config = {}
+            project_overrides = None
+
+    version_rows = build_version_rows(merged_config, project_overrides)
+
     env = _make_env()
     tpl = env.get_template("versions.html.j2")
     out_dir.mkdir(parents=True, exist_ok=True)
-    html = tpl.render(active_page="versions", base_path="")
+    html = tpl.render(
+        active_page="versions",
+        base_path="",
+        version_rows=version_rows,
+        merged_config=merged_config,
+        has_project_overrides=(project_overrides is not None and bool(project_overrides)),
+    )
     out_path = out_dir / "versions.html"
     out_path.write_text(html, encoding="utf-8")
     _copy_assets(out_dir)
