@@ -3,7 +3,7 @@
 Swarm-test framework for product Helm charts. Validates a chart against
 many customer-shaped cluster scenarios (preinstalled addons like
 gatekeeper / cert-manager / istio, subchart combinations, cluster
-flavors) on every PR / nightly / customer-filed regression.
+flavors) on every PR / nightly / customer-regression.
 
 Pattern lifted from the HIP-0025 swarm harness, generalized so any
 product chart can plug in.
@@ -14,18 +14,20 @@ product chart can plug in.
 consumer chart repo                 chart-test-swarm engine
 └── chart-test/                     └── engine/
     ├── chart-test-swarm.yaml  ──▶      ├── scripts/    (cluster lifecycle, scenario runner, dispatch, dashboard, benchmark)
-    ├── scenarios/*.yaml                ├── asserts/    (50+ assertion scripts)
+    ├── scenarios/*.yaml                ├── asserts/    (60+ assertion scripts)
     ├── fixtures/*.yaml                 ├── templates/  (scenario schema, agent-brief, CI)
     └── assertions/*.sh                 ├── skills/     (integration primers)
-                                         └── testgrid/   (dashboard)
+                                         └── testgrid/   (dashboard, catalog, support matrix)
 ```
 
 A **scenario** is one YAML file declaring: cluster shape + preinstalled
 addons + product chart values + assertions + suite tags. Scenarios live
 in the consumer chart repo, versioned with the chart they protect.
 
-A **suite** is a tag filter (`pr-subset`, `nightly`, `customer-replica`)
-mapping to a trigger (manual, GH Actions PR, GH Actions nightly).
+A **suite** is a tag filter (`pr-subset`, `nightly`, `customer-replica`,
+`curated-live`) mapping to a trigger (manual, GH Actions PR, GH Actions
+nightly). The **curated-live suite** defines the agreed set of live
+integration + capability + gap-probe scenarios for end-to-end validation.
 
 ## Engine
 
@@ -37,7 +39,7 @@ mapping to a trigger (manual, GH Actions PR, GH Actions nightly).
 | `cluster-down.sh` | Idempotent teardown -- safe to re-run on already-removed clusters |
 | `apply-scenario.sh` | Apply a single scenario to a live cluster |
 | `run-scenario.sh` | Execute scenario + assertions, produce artifact bundle |
-| `dispatch-swarm.sh` | Fan out scenarios in parallel |
+| `dispatch-swarm.sh` | Fan out scenarios in parallel; `--run` for sequential execution, `--dry-run` for preview, `--include-cloud-native` / `CTS_INCLUDE_CLOUD_NATIVE` for opt-in cloud scenario dispatch |
 | `build-dashboard.sh` | Generate the static HTML dashboard |
 | `aggregate.sh` | Merge results across multiple runs |
 | `benchmark-scenarios.sh` | Per-feature regression tracking |
@@ -51,7 +53,7 @@ entry. Both raw manifest and Helm-based preinstall are supported.
 
 ## Assertions
 
-`engine/asserts/` contains 50+ assertion scripts organized by
+`engine/asserts/` contains 60+ assertion scripts organized by
 integration category:
 
 | Category | Assertions |
@@ -61,6 +63,7 @@ integration category:
 | Gateway API | envoy-gateway, istio-gateway-api, contour-gateway-api |
 | Service mesh | istio-service-mesh, istio-ingress-gateway, linkerd |
 | Policy | opa-gatekeeper, kyverno |
+| Capability compliance | labels-present, annotations-present, scheme-enforced, rbac-objects, security-context, network-policy, resources-present, imagepullsecrets-present, serviceaccount-annotations, scheduling-present, priority-class-present |
 
 All assertions use the `RAW_`+`grep -oE` pattern for `kubectl v1.36`
 compatibility. TLS fixtures use `REPLACE_AT_RUNTIME` placeholders with
@@ -73,10 +76,22 @@ runtime certificate generation.
 - Variant grouping across scenario runs
 - Status breakdown (pass / fail / skipped / interrupted)
 - Artifact links per scenario
-- Cloud-native AUTHORED ONLY badges
+- **support-matrix.html** page with capability-keyed table
+- **AUTHORIZED** badges for cloud-authored entries (EKS/AKS/GKE tier=authored-only scenarios appear as AUTHORED on the matrix, excluded from pass/fail totals; never applied to real cloud from this repo)
 - XSS-safe rendering (auto-escaping)
 - Deterministic rebuilds (content-hash keyed)
 - Multi-run aggregation
+- Live `--watch` mode with automatic rebuilds
+- `--serve` flag for HTTP serving
+- Curated-live suite support
+
+## Catalog + Support Matrix
+
+`engine/testgrid/` includes `catalog.py` (`generate_catalog`,
+`catalog_to_yaml`) for deterministic YAML catalog generation and renders
+`support-matrix.html` with a capability-keyed table showing integration
+coverage across cluster types. The catalog provides a single source of
+truth for which scenarios exist and which integrations they exercise.
 
 ## CLI
 
@@ -85,7 +100,8 @@ runtime certificate generation.
 | Command | Description |
 |---------|-------------|
 | `run` | Dispatch scenarios with `--scenario`, `--integration`, `--backend`, `--parallelism`, `--cluster-name`, `--reports-dir`, `--include-cloud-native` |
-| `dashboard` | Build dashboard with `--reports-dir`, `--project-dir`, `--watch`, `--interval` |
+| `dashboard` | Build dashboard with `--reports-dir`, `--project-dir`, `--watch`, `--interval`, `--serve`, `--port`; includes `catalog` and `support-matrix` sub-views |
+| `new <category>/<integration>` | Scaffold fixture + scenario + smoke script from templates |
 | `list integrations` | Discover available integration primers |
 | `list variants` | Discover available scenarios |
 | `generate pick` | Non-interactive scenario selector (`--category`, `--integration`) |
@@ -99,11 +115,13 @@ chart (skywatcher / scope / darkroom) with feature flags for ingress,
 gateway route, mesh injection, and policy compliance labels. Used for
 framework dogfood and CI.
 
-`examples/sample-product-chart/chart-test/scenarios/` contains 50+
-scenario YAMLs across 8 integration categories: certificates,
-ingress-controllers, gateway-api, service-mesh, policy, and cloud-native
-(authored-only GKE / EKS / AKS). All scenarios validate against
-`engine/templates/scenario.schema.json`.
+`examples/sample-product-chart/chart-test/scenarios/` contains 90+
+scenario YAMLs across 8 category subdirectories: capability/,
+certificates/, cloud-native/, gateway-api/, networking/, policy/,
+service-mesh/, storage/. Cloud-native scenarios use tier=authored-only
+for EKS/AKS/GKE and appear as AUTHORED on the matrix (excluded from
+pass/fail totals; never applied to real cloud from this repo). All
+scenarios validate against `engine/templates/scenario.schema.json`.
 
 ## Integration primers
 
@@ -112,16 +130,28 @@ reference documentation organized by category:
 
 ```
 references/integrations/
+├── capability/
 ├── certificates/
-├── ingress-controllers/
+├── cloud-native/
 ├── gateway-api/
-├── service-mesh/
+├── ingress-controllers/
+├── networking/
+│   └── ingress-lb/       (AWS LB, Azure LB, GCP LB cloud-authored primers)
 ├── policy/
-└── cloud-native/
+├── service-mesh/
+└── storage/
+    └── csi/              (AWS EBS CSI, Azure Disk/File CSI, GCP PD CSI cloud-authored primers)
 ```
 
-Each primer covers: What / When / How / Cluster preinstall / Variants /
-Assertions / Known gotchas.
+Each primer covers: What / When / How / Credential prerequisites /
+Cluster prerequisites / Variants / Assertions / Known gotchas.
+
+## Authoring kit
+
+`chart-test-swarm new <category>/<integration>` scaffolds a new scenario
+directory with fixture YAML, scenario YAML, and smoke assertion script
+from templates, so adding coverage for a new integration is a single
+command.
 
 ## Quickstart
 
@@ -145,6 +175,12 @@ chart-test-swarm run --all --backend kind
 
 # Build and watch dashboard (rebuilds every 30s)
 chart-test-swarm dashboard --watch --interval 30
+
+# Serve dashboard on port 8080
+chart-test-swarm dashboard --serve --port 8080
+
+# Scaffold a new scenario
+chart-test-swarm new policy/kyverno
 
 # List available integration primers
 chart-test-swarm list integrations
@@ -178,7 +214,7 @@ shellcheck engine/scripts/*.sh engine/asserts/*.sh
 helm lint examples/sample-product-chart/chart
 ```
 
-Test suite: 173+ bats tests, 458+ pytest tests, mypy --strict, ruff,
+Test suite: 305+ bats tests, 610+ pytest tests, mypy --strict, ruff,
 shellcheck, yamllint, helm lint.
 
 ## Layout
@@ -186,9 +222,9 @@ shellcheck, yamllint, helm lint.
 | Path | Role |
 |------|------|
 | `engine/scripts/` | swarm engine (cluster lifecycle, scenario runner, dispatch, dashboard, benchmark) |
-| `engine/asserts/` | 50+ built-in assertion scripts by integration category |
+| `engine/asserts/` | 60+ built-in assertion scripts by integration category |
 | `engine/templates/` | scenario JSON Schema, agent-brief template, CI workflow templates |
 | `engine/skills/` | integration primers and reference documentation |
-| `engine/testgrid/` | dashboard (Python + Jinja2 + Typer) |
+| `engine/testgrid/` | dashboard (Python + Jinja2 + Typer), catalog, support-matrix renderer |
 | `examples/sample-product-chart/` | working consumer chart used for framework dogfood + CI |
 | `docs/` | scenario authoring, CI integration, customer-scenario playbook |
