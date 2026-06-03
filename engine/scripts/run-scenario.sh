@@ -124,18 +124,23 @@ scenario_context() {
     kind) echo "kind-${CLUSTER_NAME}" ;;
     minikube) echo "${CLUSTER_NAME}" ;;
     k3d) echo "k3d-${CLUSTER_NAME}" ;;
-    gke|eks|aks)
-      echo "==> Cloud-native provider '$PROVIDER' — authored only; skipping cluster operations." >&2
-      echo "    This repo does not run cloud-native scenarios. Apply the scenario to your own" >&2
-      echo "    $PROVIDER cluster following the primer instructions." >&2
-      exit 0
-      ;;
-    *)
-      echo "ERROR: unknown PROVIDER='$PROVIDER' (supported: kind, minikube, k3d)" >&2
-      exit 1
-      ;;
+    *) echo "" ;;
   esac
 }
+
+# ---- Cloud-native authored-only guard (VAL-CLOUDX-008) ----
+# Cloud-native scenarios (gke, eks, aks) are authored only — they must NOT
+# trigger any cluster operations, cloud CLI calls, or kubectl --context.
+# Exit 0 from the MAIN script (not a subshell) with a skip message.
+case "$PROVIDER" in
+  gke|eks|aks)
+    echo "==> Cloud-native provider '$PROVIDER' — authored only; skipping cluster operations." >&2
+    echo "    This repo does not run cloud-native scenarios. Apply the scenario to your own" >&2
+    echo "    $PROVIDER cluster following the primer instructions." >&2
+    exit 0
+    ;;
+esac
+
 KUBE_CONTEXT="${KUBE_CONTEXT:-$(scenario_context)}"
 export KUBE_CONTEXT
 export HELM_KUBECONTEXT="$KUBE_CONTEXT"

@@ -17,7 +17,9 @@ Resolve a suite into a list of scenarios, round-robin them across N agents,
 write per-agent briefs + run-meta.yaml + scenarios-snapshot.yaml.
 
 Options:
-  --help    Show this usage banner and exit
+  --help     Show this usage banner and exit
+  --dry-run  Resolve scenarios only; print matched ids and exit 0
+             without creating run directories or dispatching agents
 
 Arguments:
   project-dir  Path to the consumer chart project (containing chart-test-swarm.yaml)
@@ -34,6 +36,8 @@ Environment:
   RUN_ID        Override run identifier
   CLUSTER_NAME  Cluster name (must match ^chart-test-swarm-[a-z0-9-]+\$)
   REPORTS_DIR   Override reports root directory
+  CTS_INCLUDE_CLOUD_NATIVE  Set to 1 to include authored-only cloud-native
+                            scenarios in dispatch (default: 0)
 EOF
   exit 0
 }
@@ -41,6 +45,18 @@ EOF
 case "${1:-}" in
   --help|-h) usage ;;
 esac
+
+# ---- Parse --dry-run flag from any argument position ----
+_DRY_RUN=0
+_set_dry_run=""
+_args=()
+for _a in "$@"; do
+  case "$_a" in
+    --dry-run) _DRY_RUN=1 ;;
+    *)         _args+=("$_a") ;;
+  esac
+done
+set -- "${_args[@]}"
 
 # ---- Bash version preflight (VAL-ENGINE-039) ----
 if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
@@ -217,6 +233,19 @@ if [ "$COUNT" -eq 0 ]; then
 fi
 
 echo "==> $COUNT local-backend scenario(s) will be dispatched."
+
+# ---- Dry-run: print matched scenario ids and exit 0 ----
+# (VAL-CLOUDX-009) Under --dry-run, only the resolved scenario list is printed;
+# no run directories, briefs, or cluster operations are created.
+if [ "$_DRY_RUN" -eq 1 ]; then
+  echo "==> --dry-run: resolved $COUNT scenario(s):"
+  for f in "${MATCHED[@]}"; do
+    _sid=$(yq '.id' "$f")
+    echo "  $_sid  ($f)"
+  done
+  echo "==> --dry-run complete; no dispatch performed."
+  exit 0
+fi
 
 # Reports root: explicit env > project's chart-test/reports > engine root reports
 if [ -n "${REPORTS_DIR:-}" ]; then
