@@ -3,3 +3,7 @@
 .dolt/
 *.db
 .beads-credential-key
+
+# Test artifact run dirs (run-stub.sh output) — never commit these
+engine/testgrid/reports/run-test-*
+reports/run-test-*

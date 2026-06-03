@@ -385,6 +385,16 @@ def discover_integrations(integrations_dir: Path) -> dict[str, list[str]]:
 
 
 def list_runs(reports_dir: Path) -> list[str]:
+    """List valid run directories under *reports_dir*.
+
+    Returns sorted directory names matching ``run-*`` but EXCLUDING
+    ``run-test-*`` — those are stub artifacts left by the integration
+    test suite and must never appear in the dashboard build.
+    """
     if not reports_dir.is_dir():
         return []
-    return sorted(p.name for p in reports_dir.iterdir() if p.is_dir() and p.name.startswith("run-"))
+    return sorted(
+        p.name
+        for p in reports_dir.iterdir()
+        if p.is_dir() and p.name.startswith("run-") and not p.name.startswith("run-test-")
+    )

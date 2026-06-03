@@ -38,11 +38,22 @@ runner = CliRunner()
 # ---------------------------------------------------------------------------
 
 
-def _make_env(extra: dict[str, str] | None = None) -> dict[str, str]:
-    """Build an environment dict with CTS_LLM_CMD + CTS_RUN_CMD pointing at stubs."""
+def _make_env(
+    extra: dict[str, str] | None = None, reports_dir: Path | None = None
+) -> dict[str, str]:
+    """Build an environment dict with CTS_LLM_CMD + CTS_RUN_CMD pointing at stubs.
+
+    Args:
+        extra: Additional env vars to overlay.
+        reports_dir: If provided, sets REPORTS_DIR so run-stub.sh writes
+            into this directory instead of an auto-generated temp dir.
+            Must be set for tests that need to inspect generated run dirs.
+    """
     env = os.environ.copy()
     env["CTS_LLM_CMD"] = f"bash {STUB_PATH}"
     env["CTS_RUN_CMD"] = f"bash {RUN_STUB_PATH}"
+    if reports_dir is not None:
+        env["REPORTS_DIR"] = str(reports_dir)
     if extra:
         env.update(extra)
     return env
