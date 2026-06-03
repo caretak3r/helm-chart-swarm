@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# Contour basic HTTPProxy smoke assertion.
+# Contour basic HTTPProxy smoke assertion (gap-probe).
 # Verifies: envoy pod Ready, HTTPProxy routes HTTP with Host header,
 #           HTTPProxy status.currentStatus is valid.
+# Gap-probe: chart does NOT natively emit a Contour HTTPProxy CRD —
+#            the HTTPProxy was created by the fixture, not a chart template.
+#            This is an honest gap (red cell); do NOT over-engineer the chart.
 # Receives: RELEASE, NAMESPACE, KUBECONFIG, KUBE_CONTEXT, PROJECT_DIR
 set -euo pipefail
 
@@ -73,3 +76,24 @@ else
 fi
 
 echo "PASS: Contour basic HTTPProxy integration verified"
+
+echo "==> GAP-PROBE: Checking if chart natively emits an HTTPProxy CRD"
+# A chart-emitted HTTPProxy would have Helm ownership labels/annotations.
+# The fixture-created HTTPProxy does not carry these markers.
+CHART_HTTPPROXIES=$(kctl -n "${NS}" get httpproxy \
+  -l "app.kubernetes.io/managed-by=Helm" \
+  -o name 2>/dev/null || echo "")
+HELM_ANNOTATED=$(kctl -n "${NS}" get httpproxy \
+  -o jsonpath='{range .items[?(@.metadata.annotations.meta\.helm\.sh/release-name)]}{.metadata.name}{"\n"}{end}' 2>/dev/null || echo "")
+
+if [ -n "${CHART_HTTPPROXIES}" ] || [ -n "${HELM_ANNOTATED}" ]; then
+  echo "INFO: Chart appears to emit HTTPProxy CRD(s): ${CHART_HTTPPROXIES}${HELM_ANNOTATED}"
+  echo "PASS: Chart natively emits Contour HTTPProxy CRD"
+else
+  echo "GAP-PROBE: No HTTPProxy emitted by the chart template found"
+  echo "  The HTTPProxy 'sample-basic' was created by the raw_manifest fixture,"
+  echo "  not by a Helm-managed chart template. The chart has no contour"
+  echo "  HTTPProxy template — this is an honest gap (red cell)."
+  echo "FAIL: Chart does not natively emit Contour HTTPProxy CRD — honest gap"
+  exit 1
+fi

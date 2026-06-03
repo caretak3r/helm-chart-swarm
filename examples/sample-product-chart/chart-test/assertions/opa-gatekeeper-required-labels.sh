@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# OPA Gatekeeper required-labels smoke assertion.
+# OPA Gatekeeper required-labels smoke assertion (gap-probe).
 # Verifies: ConstraintTemplate k8srequiredlabels Established, CRD Established,
 #           non-compliant Deployment denied, compliant Deployment accepted,
 #           non-compliant Ingress denied, compliant Ingress admitted + Ready.
 # Cross-feature compose: opa-gatekeeper (M7) + nginx-ingress (M4).
+# Gap-probe: the chart's Ingress template uses selectorLabels (just app: <release>)
+#            instead of the full common labels (which include app.kubernetes.io/name),
+#            so the chart's Ingress fails the required-labels constraint — an honest
+#            gap (red cell); do NOT over-engineer the chart.
 # Receives: RELEASE, NAMESPACE, KUBECONFIG, KUBE_CONTEXT, PROJECT_DIR
 set -euo pipefail
 
@@ -183,3 +187,62 @@ if [ "${ADMISSION_RESTORED}" -eq 0 ]; then
 fi
 
 echo "PASS: OPA Gatekeeper required-labels + nginx-ingress cross-feature compose verified"
+
+echo "==> Phase 5: GAP-PROBE — Does the chart's own Ingress pass the required-labels constraint?"
+# The chart's Ingress template uses sample-product.selectorLabels (just app: <release>)
+# instead of sample-product.labels (which includes app.kubernetes.io/name).
+# Render the chart's Ingress with ingress.enabled=true and dry-run it against the
+# active constraint to surface the honest gap.
+CHART_DIR="${PROJECT_DIR:-.}/chart"
+if [ -d "${CHART_DIR}" ]; then
+  echo "Rendering chart Ingress with ingress.enabled=true for gap-probe dry-run..."
+  INGRESS_MANIFEST=$(helm template "${RELEASE}" "${CHART_DIR}" \
+    --set ingress.enabled=true \
+    --set ingress.className=nginx \
+    --set ingress.host=sample.gap-probe.local \
+    2>/dev/null | yq 'select(.kind == "Ingress")' 2>/dev/null || echo "")
+
+  if [ -z "${INGRESS_MANIFEST}" ]; then
+    echo "NOTE: Could not render chart Ingress template for gap-probe (template may be missing)"
+    echo "GAP-PROBE: Chart has no Ingress template that can be rendered — honest gap"
+    echo "FAIL: Chart does not emit Ingress with app.kubernetes.io/name label — honest gap"
+    exit 1
+  fi
+
+  # Check if the rendered Ingress has the required label
+  HAS_LABEL=$(echo "${INGRESS_MANIFEST}" | yq '.metadata.labels["app.kubernetes.io/name"] // empty' 2>/dev/null || echo "")
+  if [ -n "${HAS_LABEL}" ]; then
+    echo "INFO: Chart Ingress has app.kubernetes.io/name label: ${HAS_LABEL}"
+    # Dry-run against the active constraint to confirm
+    if echo "${INGRESS_MANIFEST}" | kctl apply --dry-run=server -f - 2>/dev/null; then
+      echo "PASS: Chart's own Ingress passes the required-labels constraint"
+    else
+      echo "GAP-PROBE: Chart Ingress was denied by the constraint despite having the label"
+      echo "FAIL: Chart Ingress fails required-labels constraint — honest gap"
+      exit 1
+    fi
+  else
+    echo "GAP-PROBE: Chart Ingress does NOT have app.kubernetes.io/name label"
+    echo "  The chart's Ingress template uses selectorLabels (just 'app: <release>')"
+    echo "  instead of the full common labels (which include 'app.kubernetes.io/name')."
+    echo "  This is an honest gap — the Ingress would be denied in a cluster with"
+    echo "  the K8sRequiredLabels constraint active before chart installation."
+    # Verify by dry-running the rendered Ingress against the constraint
+    if echo "${INGRESS_MANIFEST}" | kctl apply --dry-run=server -f - 2>&1 | tee /tmp/gk-chart-ingress-gap.txt; then
+      echo "UNEXPECTED: Chart Ingress was accepted despite missing label (constraint may not target Ingress)"
+    else
+      if grep -q "admission webhook.*denied\|Missing required label" /tmp/gk-chart-ingress-gap.txt 2>/dev/null; then
+        echo "GAP-PROBE confirmed: Chart Ingress denied by required-labels constraint (honest gap, red cell)"
+      else
+        echo "GAP-PROBE: Chart Ingress was denied (likely by constraint) — honest gap"
+      fi
+    fi
+    echo "FAIL: Chart Ingress does not carry app.kubernetes.io/name label — honest gap (red cell)"
+    exit 1
+  fi
+else
+  echo "NOTE: Chart directory not found at ${CHART_DIR}; skipping Ingress gap-probe render"
+  echo "GAP-PROBE: Cannot render chart for Ingress gap-probe — honest gap assumed"
+  echo "FAIL: Chart Ingress gap-probe cannot be verified — honest gap (red cell)"
+  exit 1
+fi
