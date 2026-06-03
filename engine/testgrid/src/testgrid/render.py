@@ -344,6 +344,75 @@ def render_index(runs: list[Run], out_dir: Path) -> Path:
     return out_path
 
 
+def render_runs(runs: list[Run], out_dir: Path) -> Path:
+    """Render the run-history page as ``runs.html``.
+
+    This is the renamed successor to ``render_index()``.  Produces
+    ``runs.html`` (not ``index.html``) using the ``runs.html.j2`` template.
+    Runs are sorted in reverse order by run_id (newest first).
+    """
+    env = _make_env()
+    tpl = env.get_template("runs.html.j2")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    runs_sorted = sorted(runs, key=lambda r: r.run_id, reverse=True)
+    html = tpl.render(runs=runs_sorted)
+    out_path = out_dir / "runs.html"
+    out_path.write_text(html, encoding="utf-8")
+    _copy_assets(out_dir)
+    return out_path
+
+
+@dataclass
+class HomeSummary:
+    """Summary metrics displayed on the home page landing cards.
+
+    All fields have zero/default values so callers can supply only what
+    is known and leave the rest at their defaults.
+    """
+
+    run_count: int = 0
+    """Total number of runs available in the reports directory."""
+
+    coverage_pct: float = 0.0
+    """Percentage of catalog scenarios that have been run (0–100).
+
+    Authored-only (cloud) scenarios are excluded from both numerator
+    and denominator.
+    """
+
+    open_rec_count: int = 0
+    """Number of open recommendations in ``recommendations.json``."""
+
+    version_status: str = "default"
+    """Human-readable version config status.
+
+    Typical values: ``"configured"`` (project versions.yaml present) or
+    ``"default"`` (engine defaults only).
+    """
+
+
+def render_home(summary: HomeSummary, out_dir: Path) -> Path:
+    """Render the landing page as ``home.html``.
+
+    Produces a page with four navigation cards (Support Matrix, Run History,
+    Recommendations, Versions), each showing a summary metric derived from
+    *summary*.
+    """
+    env = _make_env()
+    tpl = env.get_template("home.html.j2")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    html = tpl.render(
+        run_count=summary.run_count,
+        coverage_pct=summary.coverage_pct,
+        open_rec_count=summary.open_rec_count,
+        version_status=summary.version_status,
+    )
+    out_path = out_dir / "home.html"
+    out_path.write_text(html, encoding="utf-8")
+    _copy_assets(out_dir)
+    return out_path
+
+
 # ---------------------------------------------------------------------------
 # Support matrix (f12-5, VAL-CAT-008..011)
 # ---------------------------------------------------------------------------

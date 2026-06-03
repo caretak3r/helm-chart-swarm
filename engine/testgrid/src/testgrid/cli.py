@@ -3,12 +3,22 @@
 from __future__ import annotations
 
 import argparse
+import json as _json
 import sys
 from pathlib import Path
 
 from .catalog import catalog_to_yaml, generate_catalog
 from .collect import OrphanRunError, Run, collect_run, list_runs
-from .render import render_index, render_run, render_support_matrix
+from .render import (
+    HomeSummary,
+    build_support_matrix,
+    render_home,
+    render_index,
+    render_run,
+    render_runs,
+    render_support_matrix,
+    support_matrix_run_counts,
+)
 
 # chart-test-swarm repo root: cli.py is at engine/testgrid/src/testgrid/cli.py
 DEFAULT_ROOT = Path(__file__).resolve().parents[4]
@@ -43,12 +53,15 @@ def cmd_build(args: argparse.Namespace) -> int:
     if all_runs:
         index_path = render_index(all_runs, out)
         print(f"  {'index':30s}  ({len(all_runs)} run(s))             →  {index_path}")
+        runs_path = render_runs(all_runs, out)
+        print(f"  {'runs':30s}  ({len(all_runs)} run(s))             →  {runs_path}")
     else:
         print(f"no runs under {reports}/", file=sys.stderr)
 
     # f12-5: render support matrix if scenarios_dir is provided.
     # This is rendered even when there are no runs — the matrix shows
     # all catalog scenarios with UNTESTED/AUTHORED status.
+    coverage_pct = 0.0
     if scenarios_dir and scenarios_dir.is_dir():
         sm_path = render_support_matrix(
             scenarios_dir=scenarios_dir,
@@ -57,10 +70,83 @@ def cmd_build(args: argparse.Namespace) -> int:
             out_dir=out,
         )
         print(f"  {'support-matrix':30s}  →  {sm_path}")
+        # Compute coverage % for the home page from the support-matrix output.
+        coverage_pct = _compute_coverage_pct(
+            scenarios_dir, reports if reports.is_dir() else None, all_runs
+        )
 
-    # Return 0 if we produced at least a support-matrix or an index.
-    has_output = (out / "support-matrix.html").is_file() or (out / "index.html").is_file()
+    # Compute open recommendation count from reports/recommendations.json (if present).
+    open_rec_count = _load_open_rec_count(reports)
+
+    # Determine version config status (project versions.yaml presence).
+    # The project dir is one level up from scenarios (chart-test/scenarios → chart-test).
+    version_status = "default"
+    if scenarios_dir is not None:
+        project_chart_test = scenarios_dir.parent
+        project_versions_yaml = project_chart_test / "versions.yaml"
+        if project_versions_yaml.is_file():
+            version_status = "configured"
+
+    # f1-1: render home page as the new landing page.
+    summary = HomeSummary(
+        run_count=len(all_runs),
+        coverage_pct=coverage_pct,
+        open_rec_count=open_rec_count,
+        version_status=version_status,
+    )
+    home_path = render_home(summary, out)
+    print(f"  {'home':30s}  →  {home_path}")
+
+    # Return 0 if we produced at least a support-matrix, runs.html, home.html, or index.html.
+    has_output = (
+        (out / "support-matrix.html").is_file()
+        or (out / "index.html").is_file()
+        or (out / "runs.html").is_file()
+        or (out / "home.html").is_file()
+    )
     return 0 if has_output else 1
+
+
+def _compute_coverage_pct(
+    scenarios_dir: Path,
+    reports_dir: Path | None,
+    runs: list[Run],
+) -> float:
+    """Compute what fraction of runnable catalog scenarios have been run.
+
+    Authored-only (cloud) scenarios are excluded from both the numerator
+    and the denominator.  Returns 0.0 when there are no runnable scenarios.
+    """
+    import tempfile
+
+    # Build matrix in a temporary catalog dir so we don't clobber the real one.
+    with tempfile.TemporaryDirectory() as tmp:
+        catalog_dist = Path(tmp) / "catalog"
+        matrix = build_support_matrix(scenarios_dir, reports_dir, runs, catalog_dist)
+
+    all_entries = [e for entries in matrix.values() for e in entries]
+    counts = support_matrix_run_counts(all_entries)
+    total_runnable = sum(1 for e in all_entries if not e.is_authored_only)
+    if total_runnable == 0:
+        return 0.0
+    return round(counts.get("run", 0) / total_runnable * 100, 1)
+
+
+def _load_open_rec_count(reports_dir: Path) -> int:
+    """Read the open recommendation count from ``reports/recommendations.json``.
+
+    Returns 0 when the file does not exist or cannot be parsed.
+    """
+    rec_json = reports_dir / "recommendations.json"
+    if not rec_json.is_file():
+        return 0
+    try:
+        data = _json.loads(rec_json.read_text(encoding="utf-8"))
+        return sum(
+            1 for r in data.get("recommendations", []) if r.get("status") == "open"
+        )
+    except Exception:
+        return 0
 
 
 def cmd_catalog(args: argparse.Namespace) -> int:
