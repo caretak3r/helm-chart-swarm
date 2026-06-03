@@ -1,0 +1,58 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, kubeval, yamllint.
+# Apply to your own EKS cluster per the aws-load-balancer-controller primer
+# instructions.
+---
+id: networking-aws-lbc-nlb-service
+name: "AWS LBC NLB Service"
+description: >-
+  AWS Load Balancer Controller provisions a Network Load Balancer from a
+  Service of type LoadBalancer with cross-zone load balancing; smoke-script
+  curls the NLB DNS name over HTTP.
+labels:
+  customer: any
+  profile: eks
+  chart-test-swarm/target-k8s-version: eks-1.30
+cluster:
+  provider: eks
+  k8s_version: "1.30"
+  preinstall:
+    - kind: helm
+      repo:
+        name: eks
+        url: https://aws.github.io/eks-charts
+      chart: aws-load-balancer-controller
+      version: "1.8.0"
+      release: aws-load-balancer-controller
+      namespace: kube-system
+      values:
+        clusterName: "<REPLACE_WITH_CLUSTER_NAME>"
+        serviceAccount:
+          create: true
+          name: aws-load-balancer-controller
+          annotations:
+            eks.amazonaws.com/role-arn: "<REPLACE_WITH_LBC_ROLE_ARN>"
+      wait: pods-ready
+      wait_timeout: 5m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    service.type: "LoadBalancer"
+    service.annotations.service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.annotations.service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    service.annotations.service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/cloud-native/eks/nlb-service.sh
+tags: [cloud-native]
+mechanisms: ['cloud:eks', 'addon:aws-lbc', 'addon:nlb-service']
+category: networking/ingress-lb
+tier: authored-only
+integration: aws-load-balancer-controller

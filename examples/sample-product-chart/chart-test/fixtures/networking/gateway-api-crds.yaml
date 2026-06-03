@@ -1,0 +1,37 @@
+# Gateway API CRDs: Standard channel CRDs for Gateway API v1.1.0.
+# Install on EKS before deploying the AWS Load Balancer Controller with
+# Gateway API support (LBC v2.8+).
+# chart-test-swarm/target-k8s-version: eks-1.30
+#
+# AUTHORED ONLY — this fixture is a placeholder reference.
+# In a real EKS deployment, install CRDs via:
+#   kubectl apply -k github.com/kubernetes-sigs/gateway-api?ref=v1.1.0
+#
+# The raw manifest below is intentionally minimal because the full CRD
+# bundle is best sourced from the upstream kustomize ref. This placeholder
+# is sufficient for kubectl --dry-run=client validation.
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: gateways.gateway.networking.k8s.io
+  annotations:
+    gateway.networking.k8s.io/bundle-version: v1.1.0
+spec:
+  group: gateway.networking.k8s.io
+  names:
+    kind: Gateway
+    listKind: GatewayList
+    plural: gateways
+    singular: gateway
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}
