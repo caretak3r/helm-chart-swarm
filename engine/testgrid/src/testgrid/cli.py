@@ -10,6 +10,7 @@ from typing import Any
 from .catalog import catalog_to_yaml, generate_catalog
 from .collect import OrphanRunError, Run, collect_run, list_runs
 from .recommendations import (
+    count_fixed_recommendations,
     count_open_recommendations,
     generate_recommendations,
     load_recommendations,
@@ -97,6 +98,9 @@ def cmd_build(args: argparse.Namespace) -> int:
     # Compute open recommendation count from recommendations.json.
     open_rec_count = count_open_recommendations(reports)
 
+    # Compute fixed recommendation count from recommendations.json.
+    fixed_rec_count = count_fixed_recommendations(reports)
+
     # Determine version config status (project versions.yaml presence).
     # The project dir is one level up from scenarios (chart-test/scenarios → chart-test).
     version_status = "default"
@@ -111,6 +115,7 @@ def cmd_build(args: argparse.Namespace) -> int:
         run_count=len(all_runs),
         coverage_pct=coverage_pct,
         open_rec_count=open_rec_count,
+        fixed_rec_count=fixed_rec_count,
         version_status=version_status,
     )
     home_path = render_home(summary, out)
