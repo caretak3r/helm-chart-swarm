@@ -395,6 +395,29 @@ class TestFixButton:
         html = _render_html(recs, tmp_path)
         assert f"chart-test-swarm fix {rec_id}" in html
 
+    def test_fix_prompt_file_has_project_relative_chart_path(
+        self, tmp_path: Path
+    ) -> None:
+        """.fix-prompt.json chart_path is project-relative (just 'chart').
+
+        This ensures fix_cmd.py can resolve it as project_dir / chart_path
+        without doubling the path.
+        """
+        reports_dir = tmp_path / "reports"
+        reports_dir.mkdir()
+        out_dir = tmp_path / "dist"
+        out_dir.mkdir()
+        rec_id = "rec-chartpath-test"
+        recs = [_make_rec(rec_id=rec_id, status="open")]
+        render_recommendations(out_dir, recommendations=recs, reports_dir=reports_dir)
+
+        fix_file = reports_dir / "fixes" / rec_id / ".fix-prompt.json"
+        assert fix_file.is_file()
+        data = json.loads(fix_file.read_text(encoding="utf-8"))
+        # chart_path should be project-relative, not repo-root-relative
+        assert data["chart_path"] == "chart"
+        assert "examples/sample-product-chart" not in data["chart_path"]
+
 
 # ---------------------------------------------------------------------------
 # VAL-RECPAGE-010: Dismiss button updates status

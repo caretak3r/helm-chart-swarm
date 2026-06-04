@@ -145,7 +145,23 @@ class TestRenderHome:
         assert summary.run_count == 0
         assert summary.coverage_pct == 0.0
         assert summary.open_rec_count == 0
+        assert summary.fixed_rec_count == 0
         assert summary.version_status == "default"
+
+    def test_home_html_shows_fixed_rec_count(self, tmp_path: Path) -> None:
+        """home.html must display the fixed recommendation count when > 0."""
+        summary = HomeSummary(run_count=2, coverage_pct=40.0, open_rec_count=3, fixed_rec_count=2)
+        render_home(summary, tmp_path)
+        html = (tmp_path / "home.html").read_text(encoding="utf-8")
+        assert "3 Open, 2 Fixed" in html
+
+    def test_home_html_shows_open_rec_count_only_when_fixed_is_zero(self, tmp_path: Path) -> None:
+        """home.html shows only open count when fixed_rec_count is 0."""
+        summary = HomeSummary(run_count=2, coverage_pct=40.0, open_rec_count=3, fixed_rec_count=0)
+        render_home(summary, tmp_path)
+        html = (tmp_path / "home.html").read_text(encoding="utf-8")
+        assert "3 Open" in html
+        assert "Fixed" not in html
 
     def test_render_home_creates_output_dir(self, tmp_path: Path) -> None:
         """render_home() must create the output dir if it does not exist."""

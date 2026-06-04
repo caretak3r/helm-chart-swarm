@@ -430,6 +430,9 @@ class HomeSummary:
     open_rec_count: int = 0
     """Number of open recommendations in ``recommendations.json``."""
 
+    fixed_rec_count: int = 0
+    """Number of fixed recommendations in ``recommendations.json``."""
+
     version_status: str = "default"
     """Human-readable version config status.
 
@@ -452,6 +455,7 @@ def render_home(summary: HomeSummary, out_dir: Path) -> Path:
         run_count=summary.run_count,
         coverage_pct=summary.coverage_pct,
         open_rec_count=summary.open_rec_count,
+        fixed_rec_count=summary.fixed_rec_count,
         version_status=summary.version_status,
         active_page="home",
         base_path="",
@@ -506,7 +510,7 @@ def _write_fix_prompt_files(
             "recommendation_id": rec_id,
             "fix_prompt": rec.get("fix_prompt", ""),
             "scenario_path": rec.get("scenario_id", ""),
-            "chart_path": "examples/sample-product-chart/chart",
+            "chart_path": "chart",
             "created_at": now,
         }
         fix_file.write_text(

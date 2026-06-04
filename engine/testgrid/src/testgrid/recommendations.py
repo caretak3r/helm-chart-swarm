@@ -700,3 +700,17 @@ def count_open_recommendations(reports_dir: Path) -> int:
     """
     recs = load_recommendations(reports_dir)
     return sum(1 for r in recs if r.status == "open")
+
+
+def count_fixed_recommendations(reports_dir: Path) -> int:
+    """Count recommendations with ``status == "fixed"`` in the persisted JSON.
+
+    Returns 0 when the file does not exist or cannot be parsed.
+
+    Parameters
+    ----------
+    reports_dir:
+        Directory containing ``recommendations.json``.
+    """
+    recs = load_recommendations(reports_dir)
+    return sum(1 for r in recs if r.status == "fixed")

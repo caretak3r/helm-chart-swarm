@@ -45,7 +45,7 @@
       <div class="home-card-icon">💡</div>
       <div class="home-card-title">Recommendations</div>
       <div class="home-card-metric">
-        {{ open_rec_count }} Open
+        {{ open_rec_count }} Open{% if fixed_rec_count > 0 %}, {{ fixed_rec_count }} Fixed{% endif %}
       </div>
       <div class="home-card-hint">Actionable chart-fix suggestions from FAIL results</div>
     </a>

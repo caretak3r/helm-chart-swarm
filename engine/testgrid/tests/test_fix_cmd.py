@@ -47,12 +47,16 @@ from chart_test_swarm.commands.fix_cmd import (
 
 
 def _make_fix_prompt_json(rec_id: str = "rec-abc123") -> dict[str, str]:
-    """Return a minimal but valid .fix-prompt.json structure."""
+    """Return a minimal but valid .fix-prompt.json structure.
+
+    chart_path is project-relative (just "chart") since fix_cmd.py
+    resolves it as project_dir / chart_path.
+    """
     return {
         "recommendation_id": rec_id,
         "fix_prompt": "Add the label cost-center=42 to all Deployments.",
         "scenario_path": "labels-on",
-        "chart_path": "examples/sample-product-chart/chart",
+        "chart_path": "chart",
         "created_at": "2026-06-03T12:00:00Z",
     }
 
@@ -528,6 +532,70 @@ class TestMultipleFixAttempts:
 
 
 # ---------------------------------------------------------------------------
+# VAL-FIX-005: Suggested change is applied to the chart (chart_path resolution)
+# ---------------------------------------------------------------------------
+
+
+class TestChartPathResolution:
+    """chart_path in .fix-prompt.json is project-relative, not repo-root-relative."""
+
+    def test_chart_path_is_project_relative(self, tmp_path: Path) -> None:
+        """FixContext resolves project_dir / chart_path correctly when chart_path is project-relative."""  # noqa: E501
+        project_dir = tmp_path / "examples" / "sample-product-chart"
+        project_dir.mkdir(parents=True)
+        chart_dir = project_dir / "chart"
+        chart_dir.mkdir()
+
+        # chart_path is project-relative (just "chart")
+        fix_prompt_data: dict[str, str] = {
+            "recommendation_id": "rec-test123",
+            "fix_prompt": "Add labels",
+            "scenario_path": "labels-on",
+            "chart_path": "chart",  # project-relative
+        }
+
+        ctx = FixContext(
+            rec_id="rec-test123",
+            reports_dir=tmp_path / "reports",
+            project_dir=project_dir,
+            fix_prompt_data=fix_prompt_data,
+        )
+
+        # chart_dir should be project_dir / "chart" = correct chart directory
+        assert ctx.chart_dir == chart_dir
+        assert ctx.chart_dir.is_relative_to(project_dir)
+
+    def test_chart_path_project_relative_does_not_double_path(self, tmp_path: Path) -> None:
+        """Project-relative chart_path does not produce doubled path."""
+        project_dir = tmp_path / "examples" / "sample-product-chart"
+        project_dir.mkdir(parents=True)
+        chart_dir = project_dir / "chart"
+        chart_dir.mkdir()
+
+        # If chart_path were repo-root-relative, it would double the path
+        # Wrong: "examples/sample-product-chart/chart" -> doubles path
+        # Correct: "chart" -> project_dir / "chart"
+        fix_prompt_data: dict[str, str] = {
+            "recommendation_id": "rec-test456",
+            "fix_prompt": "Fix it",
+            "scenario_path": "test-on",
+            "chart_path": "chart",
+        }
+
+        ctx = FixContext(
+            rec_id="rec-test456",
+            reports_dir=tmp_path / "reports",
+            project_dir=project_dir,
+            fix_prompt_data=fix_prompt_data,
+        )
+
+        # Verify the chart_dir does NOT contain doubled path components
+        assert "examples/sample-product-chart/examples" not in str(ctx.chart_dir)
+        assert str(ctx.chart_dir).endswith("/chart")
+        assert ctx.chart_dir == chart_dir
+
+
+# ---------------------------------------------------------------------------
 # Integration: write_fix_prompt_file (used by recommendations page FIX button)
 # ---------------------------------------------------------------------------
 
@@ -536,7 +604,11 @@ class TestWriteFixPromptFile:
     """Tests for write_fix_prompt_file — used by recommendations page."""
 
     def test_writes_fix_prompt_json(self, tmp_path: Path) -> None:
-        """write_fix_prompt_file creates the .fix-prompt.json in the correct location."""
+        """write_fix_prompt_file creates the .fix-prompt.json in the correct location.
+
+        chart_path is project-relative (just "chart") since fix_cmd.py
+        resolves it as project_dir / chart_path.
+        """
         reports_dir = tmp_path / "reports"
         rec_id = "rec-xyz789"
         rec_data = {
@@ -557,7 +629,8 @@ class TestWriteFixPromptFile:
         scenario_path = (
             "examples/sample-product-chart/chart-test/scenarios/capability/labels-on.yaml"
         )
-        chart_path = "examples/sample-product-chart/chart"
+        # chart_path is project-relative (not repo-root-relative)
+        chart_path = "chart"
 
         path = write_fix_prompt_file(
             reports_dir=reports_dir,
@@ -573,6 +646,8 @@ class TestWriteFixPromptFile:
         assert data["fix_prompt"] == "Add the label cost-center=42"
         assert data["scenario_path"] == scenario_path
         assert data["chart_path"] == chart_path
+        # chart_path should be project-relative, not repo-root-relative
+        assert data["chart_path"] == "chart"
         assert "created_at" in data
 
 
