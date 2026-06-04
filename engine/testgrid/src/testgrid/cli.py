@@ -19,6 +19,9 @@ from .recommendations import (
 from .render import (
     HomeSummary,
     build_support_matrix,
+    check_cluster_status,
+    detect_prerequisites,
+    render_getting_started,
     render_home,
     render_index,
     render_recommendations,
@@ -148,6 +151,19 @@ def cmd_build(args: argparse.Namespace) -> int:
         project_dir=versions_project_dir,
     )
     print(f"  {'versions':30s}  →  {vers_path}")
+
+    # f-gs-1: Render Getting Started page with prerequisite detection and cluster status.
+    prereqs = detect_prerequisites()
+    cluster_running = check_cluster_status()
+    gs_path = render_getting_started(
+        prereqs=prereqs,
+        cluster_running=cluster_running,
+        out_dir=out,
+    )
+    tool_count = sum(prereqs.values())
+    cluster_status = "running" if cluster_running else "stopped"
+    gs_status = f"({tool_count}/{len(prereqs)} tools, {cluster_status})"
+    print(f"  {'getting-started':30s}  {gs_status}  →  {gs_path}")
 
     # Return 0 if we produced at least a support-matrix, runs.html, home.html, or index.html.
     has_output = (

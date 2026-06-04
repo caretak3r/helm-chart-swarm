@@ -2,6 +2,9 @@
   <a href="{{ base_path | default('') }}home.html"
      class="nav-item{% if active_page == 'home' %} nav-active{% endif %}"
      {% if active_page == 'home' %}aria-current="page"{% endif %}>Home</a>
+  <a href="{{ base_path | default('') }}getting-started.html"
+     class="nav-item{% if active_page == 'getting-started' %} nav-active{% endif %}"
+     {% if active_page == 'getting-started' %}aria-current="page"{% endif %}>Getting Started</a>
   <a href="{{ base_path | default('') }}support-matrix.html"
      class="nav-item{% if active_page == 'matrix' %} nav-active{% endif %}"
      {% if active_page == 'matrix' %}aria-current="page"{% endif %}>Matrix</a>

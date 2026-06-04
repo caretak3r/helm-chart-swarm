@@ -874,3 +874,169 @@ def render_support_matrix(
 
 def _run_to_json(run: Run) -> str:
     return json.dumps(dataclasses.asdict(run), indent=2, default=str)
+
+
+# -----------------------------------------------------------------------------
+# Getting Started page (f-gs-1, VAL-GS-001..008)
+# -----------------------------------------------------------------------------
+
+
+@dataclass
+class PrereqStatus:
+    """Status of a prerequisite tool.
+
+    Represents whether a required tool is installed and provides
+    an optional install hint for missing tools.
+    """
+
+    name: str
+    """Tool name (e.g., 'kind', 'kubectl')."""
+
+    installed: bool
+    """True if the tool is available in PATH."""
+
+    install_hint: str = ""
+    """Optional installation command or hint for missing tools."""
+
+
+# Install hints for missing tools
+INSTALL_HINTS: dict[str, str] = {
+    "kind": "brew install kind",
+    "kubectl": "brew install kubectl",
+    "helm": "brew install helm",
+    "yq": "brew install yq",
+    "jq": "brew install jq",
+    "uv": "curl -LsSf https://astral.sh/uv/install.sh | sh",
+}
+
+# Required tools for getting started
+REQUIRED_TOOLS = ["kind", "kubectl", "helm", "yq", "jq", "uv"]
+
+
+def detect_prerequisites(
+    tools: list[str] | None = None,
+) -> dict[str, bool]:
+    """Detect which prerequisite tools are installed.
+
+    Uses shutil.which() to check if each tool is available in PATH.
+
+    Parameters
+    ----------
+    tools:
+        List of tool names to check. When None, uses REQUIRED_TOOLS.
+
+    Returns
+    -------
+    dict mapping tool name -> bool (True if installed).
+
+    Examples
+    --------
+    >>> prereqs = detect_prerequisites()
+    >>> prereqs["kind"]
+    True  # if kind is installed
+    """
+    import shutil
+
+    tools = tools or REQUIRED_TOOLS
+    return {tool: shutil.which(tool) is not None for tool in tools}
+
+
+def check_cluster_status() -> bool:
+    """Check if a chart-test-swarm kind cluster is running.
+
+    Runs ``kind get clusters`` and checks if any chart-test-swarm-*
+    cluster is present.
+
+    Returns
+    -------
+    True if a chart-test-swarm cluster is running, False otherwise.
+
+    Examples
+    --------
+    >>> is_running = check_cluster_status()
+    >>> is_running
+    True  # if chart-test-swarm-test cluster exists
+    """
+    import subprocess
+
+    try:
+        result = subprocess.run(
+            ["kind", "get", "clusters"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            return False
+        clusters = result.stdout.strip()
+        if not clusters:
+            return False
+        # Check for chart-test-swarm-* cluster names
+        return any(
+            line.strip().startswith("chart-test-swarm-") for line in clusters.split("\n")
+        )
+    except (FileNotFoundError, subprocess.SubprocessError, OSError):
+        return False
+
+
+def render_getting_started(
+    prereqs: dict[str, bool],
+    cluster_running: bool,
+    hints: dict[str, str] | None = None,
+    out_dir: Path | None = None,
+) -> Path:
+    """Render the Getting Started page as ``getting-started.html``.
+
+    Produces a page with:
+    - Prerequisites section with tool detection results (checkmarks/X)
+    - Cluster status section (running/not running)
+    - 6-step numbered workflow with copy-able commands
+    - Links to runs.html (Step 4) and recommendations.html (Step 5)
+
+    Parameters
+    ----------
+    prereqs:
+        Dict mapping tool name -> bool indicating installation status.
+    cluster_running:
+        True if a kind cluster is currently running.
+    hints:
+        Optional dict mapping tool name -> install hint string.
+        When None, uses default INSTALL_HINTS.
+    out_dir:
+        Output directory for the rendered HTML. When None, uses
+        the default dist directory.
+
+    Returns
+    -------
+    Path to the written ``getting-started.html``.
+    """
+    env = _make_env()
+    tpl = env.get_template("getting-started.html.j2")
+
+    if out_dir is None:
+        # Default to engine/testgrid/dist relative to this file
+        out_dir = Path(__file__).resolve().parents[4] / "engine" / "testgrid" / "dist"
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Build PrereqStatus list with hints
+    hints = hints or INSTALL_HINTS
+    prereq_statuses = [
+        PrereqStatus(
+            name=tool,
+            installed=prereqs.get(tool, False),
+            install_hint=hints.get(tool, ""),
+        )
+        for tool in REQUIRED_TOOLS
+    ]
+
+    html = tpl.render(
+        prereqs=prereq_statuses,
+        cluster_running=cluster_running,
+        active_page="getting-started",
+        base_path="",
+    )
+    out_path = out_dir / "getting-started.html"
+    out_path.write_text(html, encoding="utf-8")
+    _copy_assets(out_dir)
+    return out_path

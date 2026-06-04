@@ -667,3 +667,228 @@ a:hover { text-decoration: underline; }
   border-radius: 5px; max-width: 60rem;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Getting Started page (f-gs-1, VAL-GS-001..008)                            */
+/* -------------------------------------------------------------------------- */
+
+.gs-section {
+  margin-bottom: 2rem;
+}
+
+.gs-section h2 {
+  margin-bottom: 0.8rem;
+}
+
+/* Prerequisites section */
+.prereq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 60rem;
+}
+
+.prereq-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.prereq-item.prereq-installed {
+  border-left: 3px solid var(--pass);
+}
+
+.prereq-item.prereq-missing {
+  border-left: 3px solid var(--fail);
+  flex-wrap: wrap;
+}
+
+.prereq-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.status-icon {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.status-icon.status-pass {
+  color: var(--pass);
+}
+
+.status-icon.status-fail {
+  color: var(--fail);
+}
+
+.prereq-name {
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  min-width: 6rem;
+}
+
+.prereq-hint {
+  margin-left: auto;
+  font-size: 0.78rem;
+  background: #f5f5f5;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  color: var(--text-muted);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Cluster status section */
+.cluster-status {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  max-width: 40rem;
+}
+
+.cluster-status.cluster-running {
+  border-left: 3px solid var(--pass);
+}
+
+.cluster-status.cluster-stopped {
+  border-left: 3px solid var(--fail);
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.cluster-status .hint {
+  margin: 0;
+}
+
+/* Step cards */
+.step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 60rem;
+}
+
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+
+.step-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  background: #f5f5f5;
+  border-bottom: 1px solid var(--border);
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 50%;
+}
+
+.step-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.step-content {
+  padding: 1rem;
+}
+
+.step-content p {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.step-content .hint {
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+}
+
+/* Code blocks with copy button */
+.code-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: #f5f5f5;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.6rem 0.8rem;
+  margin: 0.5rem 0;
+}
+
+.code-block pre {
+  margin: 0;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.code-block code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.85rem;
+  color: var(--text);
+  user-select: all;
+}
+
+.btn-copy {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--text);
+  flex-shrink: 0;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.btn-copy:hover {
+  background: #e3f2fd;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-copy-success {
+  background: var(--pass) !important;
+  border-color: var(--pass) !important;
+  color: white !important;
+}
+
+/* Step links */
+.step-link {
+  margin: 0.5rem 0;
+}
+
