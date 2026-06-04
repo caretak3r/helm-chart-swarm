@@ -1,0 +1,71 @@
+scenario_id: service-mesh-istio-ingress-gateway-basic
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/service-mesh/service-mesh-istio-ingress-gateway-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-03T03:58:44Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-ingressgateway in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-15 -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-454xp condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-454xp   1/1     Running   0          12s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-15 -n istio-system wait --for=condition=Ready pods --timeout=3m -l app=istio-ingressgateway
+      pod/istio-ingressgateway-8584b67974-67rxn condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istio-ingressgateway)
+      NAME                                    READY   STATUS    RESTARTS   AGE
+      istio-ingressgateway-8584b67974-67rxn   1/1     Running   0          8s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-15 -n sample wait --for=condition=Ready pods --timeout=3m --all
+      pod/sample-7dcd986bd4-cbj2b condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-cbj2b   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-basic.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Creating Istio Gateway + VirtualService
+      gateway.networking.istio.io/sample-igw created
+      virtualservice.networking.istio.io/sample-vs created
+      ==> Waiting for istiod to reconcile Gateway (15s)
+      ==> Verifying Gateway resource is admitted
+        ✓ Gateway sample-igw exists
+      ==> Verifying VirtualService resource exists
+        ✓ VirtualService sample-vs exists
+      ==> Getting istio-ingressgateway pod IP
+        Gateway pod IP: 10.244.0.6
+      ==> Probing product through istio ingress gateway
+      HTTP response through gateway: 200
+      PASS: traffic routed through istio ingress gateway
+      PASS: istio ingress gateway basic integration verified
+status: PASS
+finished_at: 2026-06-03T03:59:46Z
+log_dir: examples/sample-product-chart/chart-test/reports/run-curated-live-20260602-234624-95262/scenario-service-mesh-istio-ingress-gateway-basic-20260602-235844/artifacts/logs

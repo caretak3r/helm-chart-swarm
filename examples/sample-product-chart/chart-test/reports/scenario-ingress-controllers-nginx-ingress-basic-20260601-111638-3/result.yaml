@@ -1,0 +1,48 @@
+scenario_id: ingress-controllers-nginx-ingress-basic
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/ingress-controllers-nginx-ingress-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T15:16:38Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-27 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-mj4xx condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-mj4xx   1/1     Running   0          3s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-27 -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/ingress-nginx-controller-d74c658c5-2fjcf condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      ingress-nginx-controller-d74c658c5-2fjcf   1/1     Running   0          28s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-basic.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for nginx controller pod Ready (3m max)
+      pod/ingress-nginx-controller-d74c658c5-2fjcf condition met
+      PASS: nginx controller pod Ready
+      ==> Waiting for product pod Ready (3m max)
+      pod/sample-69469cb4c6-mj4xx condition met
+      PASS: product pods Ready
+      ==> Verifying Ingress exists with ingressClassName: nginx
+      Ingress class: nginx
+      PASS: Ingress carries ingressClassName: nginx
+      ==> Getting nginx controller pod IP
+      NGINX pod IP: 10.244.0.6
+      ==> Probing HTTP with Host header (expect 200)
+      HTTP response (with Host): 503
+      FAIL: expected HTTP 200 with Host header, got 503
+status: FAIL
+finished_at: 2026-06-01T15:17:49Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-nginx-ingress-basic-20260601-111638-3/artifacts/logs

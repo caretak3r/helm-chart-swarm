@@ -1,0 +1,30 @@
+scenarios:
+  - id: ingress-controllers-traefik-basic
+    name: "Traefik basic IngressRoute"
+    description: "Installs Traefik, creates an IngressRoute for the product Service, and verifies HTTP routing."
+    cluster:
+      provider: kind
+      k8s_version: v1.30.0
+      preinstall:
+        - kind: helm
+          repo:
+            name: traefik
+            url: https://helm.traefik.io/traefik
+          chart: traefik/traefik
+          release: traefik
+          namespace: traefik-system
+    mechanisms:
+      - addon:traefik
+      - ingress:ingressroute
+    tags:
+      - ingress
+    labels:
+      profile: ingress
+    product:
+      chart: examples/sample-product-chart/chart
+      release: sample
+      namespace: sample
+    asserts:
+      - type: pods-ready
+        namespace: sample
+        selector: app.kubernetes.io/instance=sample

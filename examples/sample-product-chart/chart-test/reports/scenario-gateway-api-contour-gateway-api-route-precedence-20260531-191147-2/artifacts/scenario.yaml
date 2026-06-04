@@ -1,0 +1,36 @@
+---
+id: gateway-api-contour-gateway-api-route-precedence
+name: "Contour Gateway API Route Precedence"
+description: "Installs Gateway API CRDs + Contour Gateway Provisioner, creates GatewayClass contour + Gateway + two HTTPRoutes with overlapping prefixes, verifies more specific route wins."
+labels: {customer: any, profile: gateway-api}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: raw_manifest
+      path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+    - kind: raw_manifest
+      path: https://projectcontour.io/quickstart/contour-gateway-provisioner.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "nginx"
+    image.tag: "1.27-alpine"
+    gatewayRoute.enabled: "false"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: projectcontour
+    selector: control-plane=contour-gateway-provisioner
+    timeout: 5m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/contour-gateway-api-route-precedence.sh
+tags: [nightly]
+mechanisms: ['addon:contour', 'gateway-api:contour']

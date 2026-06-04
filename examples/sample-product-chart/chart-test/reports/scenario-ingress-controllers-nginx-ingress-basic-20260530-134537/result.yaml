@@ -1,0 +1,51 @@
+scenario_id: ingress-controllers-nginx-ingress-basic
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-nginx-ingress-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T17:45:37Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-bwd27 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-bwd27   1/1     Running   0          3s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/ingress-nginx-controller-d74c658c5-dmqr8 condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      ingress-nginx-controller-d74c658c5-dmqr8   1/1     Running   0          28s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-basic.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for nginx controller pod Ready (3m max)
+      pod/ingress-nginx-controller-d74c658c5-dmqr8 condition met
+      PASS: nginx controller pod Ready
+      ==> Waiting for product pod Ready (3m max)
+      pod/sample-69469cb4c6-bwd27 condition met
+      PASS: product pods Ready
+      ==> Verifying Ingress exists with ingressClassName: nginx
+      Ingress class: nginx
+      PASS: Ingress carries ingressClassName: nginx
+      ==> Getting nginx controller pod IP
+      NGINX pod IP: 10.244.0.6
+      ==> Probing HTTP with Host header (expect 200)
+      HTTP response (with Host): 200
+      PASS: HTTP 200 with Host header
+      ==> Verifying nginx controller logs show request matched product Service
+      PASS: controller logs reference product Service 'sample'
+      PASS: NGINX Ingress basic integration verified
+status: PASS
+finished_at: 2026-05-30T17:46:46Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-nginx-ingress-basic-20260530-134537/artifacts/logs

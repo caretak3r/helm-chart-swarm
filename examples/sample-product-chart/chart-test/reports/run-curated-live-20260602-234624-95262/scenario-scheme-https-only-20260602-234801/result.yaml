@@ -1,0 +1,17 @@
+scenario_id: scheme-https-only
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/scheme-https-only.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-03T03:48:01Z
+provider: kind
+asserts:
+  - type: scheme-enforced
+    status: FAIL
+    notes: |
+        HTTP port 80 on Service/sample
+        HTTP containerPort 80 on Deployment/sample
+        HTTP httpGet probe on port 80 on Deployment/sample
+        HTTP rule on Ingress/sample
+      FAIL: 4 HTTP exposure(s) found (scheme=https-only)
+status: FAIL
+finished_at: 2026-06-03T03:48:34Z
+log_dir: examples/sample-product-chart/chart-test/reports/run-curated-live-20260602-234624-95262/scenario-scheme-https-only-20260602-234801/artifacts/logs

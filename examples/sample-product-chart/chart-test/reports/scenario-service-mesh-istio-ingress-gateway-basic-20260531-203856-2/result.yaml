@@ -1,0 +1,60 @@
+scenario_id: service-mesh-istio-ingress-gateway-basic
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-istio-ingress-gateway-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T00:38:56Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-ingressgateway in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-7r4jw condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-7r4jw   1/1     Running   0          13s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=3m -l app=istio-ingressgateway
+      pod/istio-ingressgateway-8584b67974-f228c condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istio-ingressgateway)
+      NAME                                    READY   STATUS    RESTARTS   AGE
+      istio-ingressgateway-8584b67974-f228c   1/1     Running   0          7s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=3m --all
+      pod/sample-7dcd986bd4-bxhck condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-bxhck   1/1     Running   0          4s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-basic.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Creating Istio Gateway + VirtualService
+      the namespace from the provided object "SAMPLE-NS" does not match the namespace "sample". You must pass '--namespace=SAMPLE-NS' to perform this operation.
+      the namespace from the provided object "SAMPLE-NS" does not match the namespace "sample". You must pass '--namespace=SAMPLE-NS' to perform this operation.
+status: FAIL
+finished_at: 2026-06-01T00:39:40Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-ingress-gateway-basic-20260531-203856-2/artifacts/logs

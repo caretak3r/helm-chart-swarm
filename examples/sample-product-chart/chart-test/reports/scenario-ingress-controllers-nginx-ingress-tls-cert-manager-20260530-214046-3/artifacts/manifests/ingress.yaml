@@ -1,0 +1,33 @@
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    creationTimestamp: "2026-05-31T01:42:06Z"
+    generation: 1
+    name: sample-tls
+    namespace: sample
+    resourceVersion: "894"
+    uid: e8d15259-41dd-4585-8885-27c29ed3d166
+  spec:
+    ingressClassName: nginx
+    rules:
+    - host: sample.test.local
+      http:
+        paths:
+        - backend:
+            service:
+              name: sample
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+    tls:
+    - hosts:
+      - sample.test.local
+      secretName: sample-tls
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

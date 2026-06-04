@@ -1,0 +1,53 @@
+scenario_id: gateway-api-contour-gateway-api-basic
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-contour-gateway-api-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T23:09:48Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n projectcontour wait --for=condition=Ready pods --timeout=5m -l control-plane=contour-gateway-provisioner
+      pod/contour-gateway-provisioner-555bf78b46-x5hzx condition met
+      PASS: pods Ready in ns/projectcontour (selector=control-plane=contour-gateway-provisioner)
+      NAME                                           READY   STATUS    RESTARTS   AGE
+      contour-gateway-provisioner-555bf78b46-x5hzx   1/1     Running   0          4s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-jcbbr condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-jcbbr   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      ==> Waiting for GatewayClass contour Accepted=True (3m max)
+      PASS: GatewayClass contour Accepted=True
+      ==> Waiting for Gateway listener http Programmed=True (5m max)
+      PASS: Gateway listener http Programmed=True
+      ==> Verifying auto-provisioned Envoy Deployment in sample namespace
+      PASS: auto-provisioned Envoy Deployment found (1)
+      ==> Waiting for Envoy pods Ready (3m max)
+      pod/contour-sample-gw-7c77855479-d8kts condition met
+      pod/contour-sample-gw-7c77855479-vkpjb condition met
+      pod/envoy-sample-gw-s8ctl condition met
+      PASS: Envoy pods Ready
+      ==> Verifying HTTPRoute sample-route Accepted=True
+      PASS: HTTPRoute sample-route Accepted=True
+      ==> Getting Envoy Service ClusterIP in sample
+      Envoy Service: envoy-sample-gw IP: 10.96.69.87
+      ==> Probing backend via gateway (retry up to 2m for data-plane ready)
+      HTTP response: 200 (attempt 1)
+      HTTP response: 200
+      PASS: HTTP 200 through Contour Gateway API
+      PASS: contour-gateway-api basic integration verified
+status: PASS
+finished_at: 2026-05-31T23:10:34Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-contour-gateway-api-basic-20260531-190948-3/artifacts/logs

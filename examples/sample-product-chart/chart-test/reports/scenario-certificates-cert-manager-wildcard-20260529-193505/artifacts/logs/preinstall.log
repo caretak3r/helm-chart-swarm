@@ -1,0 +1,42 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: cert-manager (jetstack/cert-manager @ v1.14.0) in ns/cert-manager
+    repo 'jetstack' already exists with URL https://charts.jetstack.io (skipping add)
+Release "cert-manager" does not exist. Installing it now.
+NAME: cert-manager
+LAST DEPLOYED: Fri May 29 19:35:32 2026
+NAMESPACE: cert-manager
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+cert-manager v1.14.0 has been deployed successfully!
+
+In order to begin issuing certificates, you will need to set up a ClusterIssuer
+or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
+
+More information on the different types of issuers and how to configure them
+can be found in our documentation:
+
+https://cert-manager.io/docs/configuration/
+
+For information on how to configure cert-manager to automatically provision
+Certificates for Ingress resources, take a look at the `ingress-shim`
+documentation:
+
+https://cert-manager.io/docs/usage/ingress/
+pod/cert-manager-c69c859c4-gt46q condition met
+pod/cert-manager-cainjector-d6d64f75f-wtwml condition met
+pod/cert-manager-webhook-566849c7fc-dqxq4 condition met
+
+==> [2/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+clusterissuer.cert-manager.io/chart-test-swarm-selfsigned serverside-applied
+
+==> [3/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/wildcard-tls-certificate.yaml
+Error from server (NotFound): namespaces "sample" not found
+ERROR: kubectl apply failed for raw_manifest path=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/certificates/wildcard-tls-certificate.yaml

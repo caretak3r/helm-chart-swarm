@@ -1,0 +1,14 @@
+scenario_id: imagepullsecrets-on
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/imagepullsecrets-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T14:03:31Z
+provider: kind
+asserts:
+  - type: imagepullsecrets-present
+    status: FAIL
+    notes: |
+        Deployment/sample: missing imagePullSecrets on pod spec
+      FAIL: 1 imagePullSecrets check(s) failed across 1 workload(s) (no ServiceAccount rendered — documented gap)
+status: FAIL
+finished_at: 2026-06-02T14:03:32Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-imagepullsecrets-on-20260602-100330/artifacts/logs

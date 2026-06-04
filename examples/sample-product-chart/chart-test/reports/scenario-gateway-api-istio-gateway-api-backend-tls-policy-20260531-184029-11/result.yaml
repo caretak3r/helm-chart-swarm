@@ -1,0 +1,75 @@
+scenario_id: gateway-api-istio-gateway-api-backend-tls-policy
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-istio-gateway-api-backend-tls-policy.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T22:40:29Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-istio-btls -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-68c4759fc-585tl condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                     READY   STATUS    RESTARTS   AGE
+      istiod-68c4759fc-585tl   1/1     Running   0          9s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-gateway-api-gen-backend-tls-certs.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Generating self-signed CA and TLS cert for backend
+      ==> Creating/updating TLS Secret backend-tls-cert
+      secret/backend-tls-cert created
+      PASS: TLS Secret backend-tls-cert created
+      ==> Creating/updating CA ConfigMap backend-ca-cert
+      configmap/backend-ca-cert created
+      PASS: CA ConfigMap backend-ca-cert created
+      PASS: Backend TLS certs generated and applied
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-istio-btls -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-pwxft condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-pwxft   1/1     Running   0          3s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      gatewayclass.gateway.networking.k8s.io/istio configured
+      gateway.gateway.networking.k8s.io/sample-gw created
+      httproute.gateway.networking.k8s.io/sample-route created
+      ==> Waiting for GatewayClass istio Accepted=True (3m max)
+      PASS: GatewayClass istio Accepted=True
+      ==> Waiting for Gateway listener http Programmed=True (5m max)
+      PASS: Gateway listener http Programmed=True
+      ==> Verifying HTTPRoute sample-route Accepted=True
+      PASS: HTTPRoute sample-route Accepted=True
+      ==> Getting Istio data-plane Service ClusterIP
+      Gateway Service IP: 10.96.27.33
+      ==> Probing backend via gateway (before BackendTLSPolicy, retry up to 2m)
+      HTTP response: 200 (attempt 2)
+      HTTP response: 200
+      PASS: HTTP 200 through Istio Gateway API
+      ==> Applying BackendTLSPolicy
+      backendtlspolicy.gateway.networking.k8s.io/sample-backend-tls created
+      ==> Waiting for BackendTLSPolicy Accepted=True (2m max)
+      PASS: BackendTLSPolicy sample-backend-tls Accepted=True
+      PASS: istio-gateway-api BackendTLSPolicy integration verified
+status: PASS
+finished_at: 2026-05-31T22:41:20Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-istio-gateway-api-backend-tls-policy-20260531-184029-11/artifacts/logs

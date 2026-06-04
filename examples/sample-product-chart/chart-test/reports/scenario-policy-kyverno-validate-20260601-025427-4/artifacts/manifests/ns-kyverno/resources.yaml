@@ -1,0 +1,2874 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generateName: kyverno-admission-controller-6c47f7875-
+    labels:
+      app.kubernetes.io/component: admission-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-admission-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+      pod-template-hash: 6c47f7875
+    name: kyverno-admission-controller-6c47f7875-fcdqx
+    namespace: kyverno
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: kyverno-admission-controller-6c47f7875
+      uid: be3e32e6-1a62-445c-b6b6-2594adab0eaf
+    resourceVersion: "761"
+    uid: 467dccc5-9032-482a-a2a7-f2f2136bdb7c
+  spec:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                - admission-controller
+            topologyKey: kubernetes.io/hostname
+          weight: 1
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - --caSecretName=kyverno-svc.kyverno.svc.kyverno-tls-ca
+      - --tlsSecretName=kyverno-svc.kyverno.svc.kyverno-tls-pair
+      - --tlsKeyAlgorithm=RSA
+      - --backgroundServiceAccountName=system:serviceaccount:kyverno:kyverno-background-controller
+      - --reportsServiceAccountName=system:serviceaccount:kyverno:kyverno-reports-controller
+      - --servicePort=443
+      - --webhookServerPort=9443
+      - --resyncPeriod=15m
+      - --crdWatcher=false
+      - --disableMetrics=false
+      - --otelConfig=prometheus
+      - --metricsPort=8000
+      - --admissionReports=true
+      - --maxAdmissionReports=1000
+      - --autoUpdateWebhooks=true
+      - --enableConfigMapCaching=true
+      - --controllerRuntimeMetricsAddress=:8080
+      - --enableDeferredLoading=true
+      - --dumpPayload=false
+      - --forceFailurePolicyIgnore=false
+      - --generateValidatingAdmissionPolicy=true
+      - --generateMutatingAdmissionPolicy=false
+      - --dumpPatches=false
+      - --maxAPICallResponseLength=2000000
+      - --apiCallTimeout=30s
+      - --loggingFormat=text
+      - --v=2
+      - --omitEvents=PolicyApplied,PolicySkipped
+      - --enablePolicyException=false
+      - --protectManagedResources=false
+      - --allowInsecureRegistry=false
+      - --registryCredentialHelpers=default,google,amazon,azure,github
+      - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+      env:
+      - name: INIT_CONFIG
+        value: kyverno
+      - name: METRICS_CONFIG
+        value: kyverno-metrics
+      - name: KYVERNO_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: KYVERNO_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: KYVERNO_SERVICEACCOUNT_NAME
+        value: kyverno-admission-controller
+      - name: KYVERNO_ROLE_NAME
+        value: kyverno:admission-controller
+      - name: KYVERNO_SVC
+        value: kyverno-svc
+      - name: TUF_ROOT
+        value: /.sigstore
+      - name: KYVERNO_DEPLOYMENT
+        value: kyverno-admission-controller
+      image: reg.kyverno.io/kyverno/kyverno:v1.18.1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 2
+        httpGet:
+          path: /health/liveness
+          port: 9443
+          scheme: HTTPS
+        initialDelaySeconds: 15
+        periodSeconds: 30
+        successThreshold: 1
+        timeoutSeconds: 5
+      name: kyverno
+      ports:
+      - containerPort: 9443
+        name: https
+        protocol: TCP
+      - containerPort: 8000
+        name: metrics-port
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 6
+        httpGet:
+          path: /health/readiness
+          port: 9443
+          scheme: HTTPS
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
+      resources:
+        limits:
+          memory: 384Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      startupProbe:
+        failureThreshold: 20
+        httpGet:
+          path: /health/liveness
+          port: 9443
+          scheme: HTTPS
+        initialDelaySeconds: 2
+        periodSeconds: 6
+        successThreshold: 1
+        timeoutSeconds: 1
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /.sigstore
+        name: sigstore
+      - mountPath: /var/run/secrets/kyverno/apicall
+        name: apicall-token
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-v62j7
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    initContainers:
+    - args:
+      - --loggingFormat=text
+      - --v=2
+      - --openreportsEnabled=false
+      env:
+      - name: KYVERNO_SERVICEACCOUNT_NAME
+        value: kyverno-admission-controller
+      - name: KYVERNO_ROLE_NAME
+        value: kyverno:admission-controller
+      - name: INIT_CONFIG
+        value: kyverno
+      - name: METRICS_CONFIG
+        value: kyverno-metrics
+      - name: KYVERNO_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: KYVERNO_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: KYVERNO_DEPLOYMENT
+        value: kyverno-admission-controller
+      - name: KYVERNO_SVC
+        value: kyverno-svc
+      image: reg.kyverno.io/kyverno/kyvernopre:v1.18.1
+      imagePullPolicy: IfNotPresent
+      name: kyverno-pre
+      resources:
+        limits:
+          cpu: 100m
+          memory: 256Mi
+        requests:
+          cpu: 10m
+          memory: 64Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-v62j7
+        readOnly: true
+    nodeName: chart-test-swarm-policy-kv-v-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: kyverno-admission-controller
+    serviceAccountName: kyverno-admission-controller
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - emptyDir: {}
+      name: sigstore
+    - name: apicall-token
+      projected:
+        defaultMode: 292
+        sources:
+        - serviceAccountToken:
+            audience: kyverno-svc.kyverno.io
+            expirationSeconds: 3600
+            path: token
+    - name: kube-api-access-v62j7
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:58Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:59Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:14Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:14Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:55Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://7b69c999a4c9898758aaa3152dfbc5b372a8cde95a551a1c474d22c891768db0
+      image: reg.kyverno.io/kyverno/kyverno:v1.18.1
+      imageID: reg.kyverno.io/kyverno/kyverno@sha256:dcd8cf6de2158cd8334fc728f9c4eb521e2c006320a59d69a9b91af87ac8f41c
+      lastState: {}
+      name: kyverno
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-01T06:55:07Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    initContainerStatuses:
+    - containerID: containerd://ce9502281e699b1cfb9a8e0324ab9eb4005c7f791799c5756a1a2ae447fad5f4
+      image: reg.kyverno.io/kyverno/kyvernopre:v1.18.1
+      imageID: reg.kyverno.io/kyverno/kyvernopre@sha256:e72b2309cde1d77de494c17e519dfe1dff9c1ee4d64327e80298a018bb612628
+      lastState: {}
+      name: kyverno-pre
+      ready: true
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: containerd://ce9502281e699b1cfb9a8e0324ab9eb4005c7f791799c5756a1a2ae447fad5f4
+          exitCode: 0
+          finishedAt: "2026-06-01T06:54:58Z"
+          reason: Completed
+          startedAt: "2026-06-01T06:54:58Z"
+    phase: Running
+    podIP: 10.244.0.6
+    podIPs:
+    - ip: 10.244.0.6
+    qosClass: Burstable
+    startTime: "2026-06-01T06:54:55Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generateName: kyverno-background-controller-546f9479c7-
+    labels:
+      app.kubernetes.io/component: background-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-background-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+      pod-template-hash: 546f9479c7
+    name: kyverno-background-controller-546f9479c7-qffbh
+    namespace: kyverno
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: kyverno-background-controller-546f9479c7
+      uid: fe536eb9-2b24-44a8-81b9-f2fe902c6333
+    resourceVersion: "668"
+    uid: 8c621a25-cd09-428a-b8bb-aa4e3ffbb5d9
+  spec:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                - background-controller
+            topologyKey: kubernetes.io/hostname
+          weight: 1
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - --disableMetrics=false
+      - --otelConfig=prometheus
+      - --metricsPort=8000
+      - --resyncPeriod=15m
+      - --enableConfigMapCaching=true
+      - --controllerRuntimeMetricsAddress=:8080
+      - --enableDeferredLoading=true
+      - --maxAPICallResponseLength=2000000
+      - --apiCallTimeout=30s
+      - --loggingFormat=text
+      - --v=2
+      - --omitEvents=PolicyApplied,PolicySkipped
+      - --enablePolicyException=false
+      - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+      env:
+      - name: KYVERNO_SERVICEACCOUNT_NAME
+        value: kyverno-background-controller
+      - name: KYVERNO_DEPLOYMENT
+        value: kyverno-background-controller
+      - name: INIT_CONFIG
+        value: kyverno
+      - name: METRICS_CONFIG
+        value: kyverno-metrics
+      - name: KYVERNO_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: KYVERNO_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: reg.kyverno.io/kyverno/background-controller:v1.18.1
+      imagePullPolicy: IfNotPresent
+      name: controller
+      ports:
+      - containerPort: 9443
+        name: https
+        protocol: TCP
+      - containerPort: 8000
+        name: metrics
+        protocol: TCP
+      resources:
+        limits:
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 64Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kyverno/apicall
+        name: apicall-token
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-bwgd8
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-policy-kv-v-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: kyverno-background-controller
+    serviceAccountName: kyverno-background-controller
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: apicall-token
+      projected:
+        defaultMode: 292
+        sources:
+        - serviceAccountToken:
+            audience: kyverno-svc.kyverno.io
+            expirationSeconds: 3600
+            path: token
+    - name: kube-api-access-bwgd8
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:00Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:55Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:00Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:00Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:55Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://c05405028a9999959c3e139c42ce2bf0637446c0bc03b3d63f8dfb78b0bb3cb7
+      image: reg.kyverno.io/kyverno/background-controller:v1.18.1
+      imageID: reg.kyverno.io/kyverno/background-controller@sha256:33a19d2ae18ee0b8e650172f65985f35acd8909d6eeca4032465cca1ba022831
+      lastState: {}
+      name: controller
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-01T06:55:00Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.5
+    podIPs:
+    - ip: 10.244.0.5
+    qosClass: Burstable
+    startTime: "2026-06-01T06:54:55Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generateName: kyverno-cleanup-controller-5787967fcd-
+    labels:
+      app.kubernetes.io/component: cleanup-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-cleanup-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+      pod-template-hash: 5787967fcd
+    name: kyverno-cleanup-controller-5787967fcd-rtxst
+    namespace: kyverno
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: kyverno-cleanup-controller-5787967fcd
+      uid: ad68c2cc-e1a7-47ec-b988-0c8098560539
+    resourceVersion: "752"
+    uid: 65c16f3c-f66b-47aa-9341-c9363102aafd
+  spec:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                - cleanup-controller
+            topologyKey: kubernetes.io/hostname
+          weight: 1
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - --caSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-ca
+      - --tlsSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-pair
+      - --tlsKeyAlgorithm=RSA
+      - --servicePort=443
+      - --resyncPeriod=15m
+      - --cleanupServerPort=9443
+      - --disableMetrics=false
+      - --otelConfig=prometheus
+      - --metricsPort=8000
+      - --enableDeferredLoading=true
+      - --dumpPayload=false
+      - --maxAPICallResponseLength=2000000
+      - --apiCallTimeout=30s
+      - --loggingFormat=text
+      - --v=2
+      - --protectManagedResources=false
+      - --ttlReconciliationInterval=1m
+      env:
+      - name: KYVERNO_DEPLOYMENT
+        value: kyverno-cleanup-controller
+      - name: INIT_CONFIG
+        value: kyverno
+      - name: METRICS_CONFIG
+        value: kyverno-metrics
+      - name: KYVERNO_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: KYVERNO_SERVICEACCOUNT_NAME
+        value: kyverno-cleanup-controller
+      - name: KYVERNO_ROLE_NAME
+        value: kyverno:cleanup-controller
+      - name: KYVERNO_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: KYVERNO_SVC
+        value: kyverno-cleanup-controller
+      image: reg.kyverno.io/kyverno/cleanup-controller:v1.18.1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 2
+        httpGet:
+          path: /health/liveness
+          port: 9443
+          scheme: HTTPS
+        initialDelaySeconds: 15
+        periodSeconds: 30
+        successThreshold: 1
+        timeoutSeconds: 5
+      name: controller
+      ports:
+      - containerPort: 9443
+        name: https
+        protocol: TCP
+      - containerPort: 8000
+        name: metrics
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 6
+        httpGet:
+          path: /health/readiness
+          port: 9443
+          scheme: HTTPS
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
+      resources:
+        limits:
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 64Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      startupProbe:
+        failureThreshold: 20
+        httpGet:
+          path: /health/liveness
+          port: 9443
+          scheme: HTTPS
+        initialDelaySeconds: 2
+        periodSeconds: 6
+        successThreshold: 1
+        timeoutSeconds: 1
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kyverno/apicall
+        name: apicall-token
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-q82hp
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-policy-kv-v-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: kyverno-cleanup-controller
+    serviceAccountName: kyverno-cleanup-controller
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: apicall-token
+      projected:
+        defaultMode: 292
+        sources:
+        - serviceAccountToken:
+            audience: kyverno-svc.kyverno.io
+            expirationSeconds: 3600
+            path: token
+    - name: kube-api-access-q82hp
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:05Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:55Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:13Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:13Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:55Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://c7f07f71891a71a726a14d6df60691c5a67fc065f88a314215a67bbef1f82e04
+      image: reg.kyverno.io/kyverno/cleanup-controller:v1.18.1
+      imageID: reg.kyverno.io/kyverno/cleanup-controller@sha256:e9b3342264c82ae35f4fe3abd0e563e613bb54eae6ca493134f0fd4cbacfc0d1
+      lastState: {}
+      name: controller
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-01T06:55:04Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.7
+    podIPs:
+    - ip: 10.244.0.7
+    qosClass: Burstable
+    startTime: "2026-06-01T06:54:55Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generateName: kyverno-reports-controller-669cbff555-
+    labels:
+      app.kubernetes.io/component: reports-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-reports-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+      pod-template-hash: 669cbff555
+    name: kyverno-reports-controller-669cbff555-lbfd8
+    namespace: kyverno
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: kyverno-reports-controller-669cbff555
+      uid: 6dcddb09-d909-4450-ac8f-fc980f70a995
+    resourceVersion: "683"
+    uid: 6b05f1bc-ce26-442f-a5dd-470a97d6e71a
+  spec:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                - reports-controller
+            topologyKey: kubernetes.io/hostname
+          weight: 1
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - --disableMetrics=false
+      - --openreportsEnabled=false
+      - --otelConfig=prometheus
+      - --metricsPort=8000
+      - --resyncPeriod=15m
+      - --admissionReports=true
+      - --aggregateReports=true
+      - --policyReports=true
+      - --validatingAdmissionPolicyReports=true
+      - --mutatingAdmissionPolicyReports=false
+      - --backgroundScan=true
+      - --backgroundScanWorkers=2
+      - --backgroundScanInterval=1h
+      - --skipResourceFilters=true
+      - --enableConfigMapCaching=true
+      - --enableDeferredLoading=true
+      - --maxAPICallResponseLength=2000000
+      - --apiCallTimeout=30s
+      - --loggingFormat=text
+      - --v=2
+      - --omitEvents=PolicyApplied,PolicySkipped
+      - --enablePolicyException=false
+      - --allowInsecureRegistry=false
+      - --registryCredentialHelpers=default,google,amazon,azure,github
+      - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+      env:
+      - name: KYVERNO_SERVICEACCOUNT_NAME
+        value: kyverno-reports-controller
+      - name: KYVERNO_DEPLOYMENT
+        value: kyverno-reports-controller
+      - name: INIT_CONFIG
+        value: kyverno
+      - name: METRICS_CONFIG
+        value: kyverno-metrics
+      - name: KYVERNO_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: KYVERNO_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: TUF_ROOT
+        value: /.sigstore
+      image: reg.kyverno.io/kyverno/reports-controller:v1.18.1
+      imagePullPolicy: IfNotPresent
+      name: controller
+      ports:
+      - containerPort: 9443
+        name: https
+        protocol: TCP
+      - containerPort: 8000
+        name: metrics
+        protocol: TCP
+      resources:
+        limits:
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 64Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /.sigstore
+        name: sigstore
+      - mountPath: /var/run/secrets/kyverno/apicall
+        name: apicall-token
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-ql5dt
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-policy-kv-v-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: kyverno-reports-controller
+    serviceAccountName: kyverno-reports-controller
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - emptyDir: {}
+      name: sigstore
+    - name: apicall-token
+      projected:
+        defaultMode: 292
+        sources:
+        - serviceAccountToken:
+            audience: kyverno-svc.kyverno.io
+            expirationSeconds: 3600
+            path: token
+    - name: kube-api-access-ql5dt
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:03Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:55Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:03Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:55:03Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-01T06:54:55Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://97850b4744c21c0ed65235c576e223c3e90ce46bee569b3054f52163c75e6ef9
+      image: reg.kyverno.io/kyverno/reports-controller:v1.18.1
+      imageID: reg.kyverno.io/kyverno/reports-controller@sha256:4972c80bccbafecc65406ec938abf029f0a428c56ea86f4e5cd11f63d951aad9
+      lastState: {}
+      name: controller
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-01T06:55:02Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.8
+    podIPs:
+    - ip: 10.244.0.8
+    qosClass: Burstable
+    startTime: "2026-06-01T06:54:55Z"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    labels:
+      app.kubernetes.io/component: background-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-background-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-background-controller-metrics
+    namespace: kyverno
+    resourceVersion: "547"
+    uid: 2e9add82-8c83-4a7e-8222-80ed2aa5505c
+  spec:
+    clusterIP: 10.96.31.65
+    clusterIPs:
+    - 10.96.31.65
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: metrics-port
+      port: 8000
+      protocol: TCP
+      targetPort: 8000
+    selector:
+      app.kubernetes.io/component: background-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/part-of: kyverno
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    labels:
+      app.kubernetes.io/component: cleanup-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-cleanup-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-cleanup-controller
+    namespace: kyverno
+    resourceVersion: "549"
+    uid: 3983bad2-65bf-468e-b46b-0d7f53f29a38
+  spec:
+    clusterIP: 10.96.19.116
+    clusterIPs:
+    - 10.96.19.116
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - appProtocol: https
+      name: https
+      port: 443
+      protocol: TCP
+      targetPort: https
+    selector:
+      app.kubernetes.io/component: cleanup-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/part-of: kyverno
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    labels:
+      app.kubernetes.io/component: cleanup-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-cleanup-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-cleanup-controller-metrics
+    namespace: kyverno
+    resourceVersion: "554"
+    uid: 7e944dff-80c2-4d80-be78-1279f40e0520
+  spec:
+    clusterIP: 10.96.207.233
+    clusterIPs:
+    - 10.96.207.233
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: metrics-port
+      port: 8000
+      protocol: TCP
+      targetPort: 8000
+    selector:
+      app.kubernetes.io/component: cleanup-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/part-of: kyverno
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    labels:
+      app.kubernetes.io/component: reports-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-reports-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-reports-controller-metrics
+    namespace: kyverno
+    resourceVersion: "568"
+    uid: e8bf0875-d2ec-4272-ac71-f5e9d648b461
+  spec:
+    clusterIP: 10.96.23.217
+    clusterIPs:
+    - 10.96.23.217
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: metrics-port
+      port: 8000
+      protocol: TCP
+      targetPort: 8000
+    selector:
+      app.kubernetes.io/component: reports-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/part-of: kyverno
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    labels:
+      app.kubernetes.io/component: admission-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-admission-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-svc
+    namespace: kyverno
+    resourceVersion: "564"
+    uid: c0740342-bb8f-4791-8898-aa65e11c3b17
+  spec:
+    clusterIP: 10.96.119.115
+    clusterIPs:
+    - 10.96.119.115
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - appProtocol: https
+      name: https
+      port: 443
+      protocol: TCP
+      targetPort: https
+    selector:
+      app.kubernetes.io/component: admission-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/part-of: kyverno
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    labels:
+      app.kubernetes.io/component: admission-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-admission-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-svc-metrics
+    namespace: kyverno
+    resourceVersion: "559"
+    uid: 22292777-616a-4110-8156-38e30edfaa4b
+  spec:
+    clusterIP: 10.96.237.100
+    clusterIPs:
+    - 10.96.237.100
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: metrics-port
+      port: 8000
+      protocol: TCP
+      targetPort: 8000
+    selector:
+      app.kubernetes.io/component: admission-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/part-of: kyverno
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: admission-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-admission-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-admission-controller
+    namespace: kyverno
+    resourceVersion: "767"
+    uid: e7ac2696-26ad-4cab-977d-35d66b5cd6a8
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: admission-controller
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/part-of: kyverno
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 40%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: admission-controller
+          app.kubernetes.io/instance: kyverno
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: kyverno-admission-controller
+          app.kubernetes.io/part-of: kyverno
+          app.kubernetes.io/version: 3.8.1
+          helm.sh/chart: kyverno-3.8.1
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - admission-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --caSecretName=kyverno-svc.kyverno.svc.kyverno-tls-ca
+          - --tlsSecretName=kyverno-svc.kyverno.svc.kyverno-tls-pair
+          - --tlsKeyAlgorithm=RSA
+          - --backgroundServiceAccountName=system:serviceaccount:kyverno:kyverno-background-controller
+          - --reportsServiceAccountName=system:serviceaccount:kyverno:kyverno-reports-controller
+          - --servicePort=443
+          - --webhookServerPort=9443
+          - --resyncPeriod=15m
+          - --crdWatcher=false
+          - --disableMetrics=false
+          - --otelConfig=prometheus
+          - --metricsPort=8000
+          - --admissionReports=true
+          - --maxAdmissionReports=1000
+          - --autoUpdateWebhooks=true
+          - --enableConfigMapCaching=true
+          - --controllerRuntimeMetricsAddress=:8080
+          - --enableDeferredLoading=true
+          - --dumpPayload=false
+          - --forceFailurePolicyIgnore=false
+          - --generateValidatingAdmissionPolicy=true
+          - --generateMutatingAdmissionPolicy=false
+          - --dumpPatches=false
+          - --maxAPICallResponseLength=2000000
+          - --apiCallTimeout=30s
+          - --loggingFormat=text
+          - --v=2
+          - --omitEvents=PolicyApplied,PolicySkipped
+          - --enablePolicyException=false
+          - --protectManagedResources=false
+          - --allowInsecureRegistry=false
+          - --registryCredentialHelpers=default,google,amazon,azure,github
+          - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+          env:
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-admission-controller
+          - name: KYVERNO_ROLE_NAME
+            value: kyverno:admission-controller
+          - name: KYVERNO_SVC
+            value: kyverno-svc
+          - name: TUF_ROOT
+            value: /.sigstore
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-admission-controller
+          image: reg.kyverno.io/kyverno/kyverno:v1.18.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /health/liveness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: kyverno
+          ports:
+          - containerPort: 9443
+            name: https
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics-port
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /health/readiness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              memory: 384Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          startupProbe:
+            failureThreshold: 20
+            httpGet:
+              path: /health/liveness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 2
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 1
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /.sigstore
+            name: sigstore
+          - mountPath: /var/run/secrets/kyverno/apicall
+            name: apicall-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - args:
+          - --loggingFormat=text
+          - --v=2
+          - --openreportsEnabled=false
+          env:
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-admission-controller
+          - name: KYVERNO_ROLE_NAME
+            value: kyverno:admission-controller
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-admission-controller
+          - name: KYVERNO_SVC
+            value: kyverno-svc
+          image: reg.kyverno.io/kyverno/kyvernopre:v1.18.1
+          imagePullPolicy: IfNotPresent
+          name: kyverno-pre
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kyverno-admission-controller
+        serviceAccountName: kyverno-admission-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: sigstore
+        - name: apicall-token
+          projected:
+            defaultMode: 292
+            sources:
+            - serviceAccountToken:
+                audience: kyverno-svc.kyverno.io
+                expirationSeconds: 3600
+                path: token
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-01T06:55:14Z"
+      lastUpdateTime: "2026-06-01T06:55:14Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-01T06:54:55Z"
+      lastUpdateTime: "2026-06-01T06:55:14Z"
+      message: ReplicaSet "kyverno-admission-controller-6c47f7875" has successfully
+        progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: background-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-background-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-background-controller
+    namespace: kyverno
+    resourceVersion: "672"
+    uid: 626fdad4-90e1-4cb0-9793-01f88270f17f
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: background-controller
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/part-of: kyverno
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 40%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: background-controller
+          app.kubernetes.io/instance: kyverno
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: kyverno-background-controller
+          app.kubernetes.io/part-of: kyverno
+          app.kubernetes.io/version: 3.8.1
+          helm.sh/chart: kyverno-3.8.1
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - background-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --disableMetrics=false
+          - --otelConfig=prometheus
+          - --metricsPort=8000
+          - --resyncPeriod=15m
+          - --enableConfigMapCaching=true
+          - --controllerRuntimeMetricsAddress=:8080
+          - --enableDeferredLoading=true
+          - --maxAPICallResponseLength=2000000
+          - --apiCallTimeout=30s
+          - --loggingFormat=text
+          - --v=2
+          - --omitEvents=PolicyApplied,PolicySkipped
+          - --enablePolicyException=false
+          - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+          env:
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-background-controller
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-background-controller
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: reg.kyverno.io/kyverno/background-controller:v1.18.1
+          imagePullPolicy: IfNotPresent
+          name: controller
+          ports:
+          - containerPort: 9443
+            name: https
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/secrets/kyverno/apicall
+            name: apicall-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kyverno-background-controller
+        serviceAccountName: kyverno-background-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: apicall-token
+          projected:
+            defaultMode: 292
+            sources:
+            - serviceAccountToken:
+                audience: kyverno-svc.kyverno.io
+                expirationSeconds: 3600
+                path: token
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-01T06:55:00Z"
+      lastUpdateTime: "2026-06-01T06:55:00Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-01T06:54:55Z"
+      lastUpdateTime: "2026-06-01T06:55:00Z"
+      message: ReplicaSet "kyverno-background-controller-546f9479c7" has successfully
+        progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: cleanup-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-cleanup-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-cleanup-controller
+    namespace: kyverno
+    resourceVersion: "758"
+    uid: 29555dc1-3074-4a15-9b79-aa59257a70bd
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: cleanup-controller
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/part-of: kyverno
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 40%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: cleanup-controller
+          app.kubernetes.io/instance: kyverno
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: kyverno-cleanup-controller
+          app.kubernetes.io/part-of: kyverno
+          app.kubernetes.io/version: 3.8.1
+          helm.sh/chart: kyverno-3.8.1
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - cleanup-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --caSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-ca
+          - --tlsSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-pair
+          - --tlsKeyAlgorithm=RSA
+          - --servicePort=443
+          - --resyncPeriod=15m
+          - --cleanupServerPort=9443
+          - --disableMetrics=false
+          - --otelConfig=prometheus
+          - --metricsPort=8000
+          - --enableDeferredLoading=true
+          - --dumpPayload=false
+          - --maxAPICallResponseLength=2000000
+          - --apiCallTimeout=30s
+          - --loggingFormat=text
+          - --v=2
+          - --protectManagedResources=false
+          - --ttlReconciliationInterval=1m
+          env:
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-cleanup-controller
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-cleanup-controller
+          - name: KYVERNO_ROLE_NAME
+            value: kyverno:cleanup-controller
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: KYVERNO_SVC
+            value: kyverno-cleanup-controller
+          image: reg.kyverno.io/kyverno/cleanup-controller:v1.18.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /health/liveness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: controller
+          ports:
+          - containerPort: 9443
+            name: https
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /health/readiness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          startupProbe:
+            failureThreshold: 20
+            httpGet:
+              path: /health/liveness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 2
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 1
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/secrets/kyverno/apicall
+            name: apicall-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kyverno-cleanup-controller
+        serviceAccountName: kyverno-cleanup-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: apicall-token
+          projected:
+            defaultMode: 292
+            sources:
+            - serviceAccountToken:
+                audience: kyverno-svc.kyverno.io
+                expirationSeconds: 3600
+                path: token
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-01T06:55:13Z"
+      lastUpdateTime: "2026-06-01T06:55:13Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-01T06:54:55Z"
+      lastUpdateTime: "2026-06-01T06:55:13Z"
+      message: ReplicaSet "kyverno-cleanup-controller-5787967fcd" has successfully
+        progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: reports-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-reports-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+    name: kyverno-reports-controller
+    namespace: kyverno
+    resourceVersion: "687"
+    uid: 8e5ad862-e102-4ab6-bc25-ef581f095105
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: reports-controller
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/part-of: kyverno
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 40%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: reports-controller
+          app.kubernetes.io/instance: kyverno
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: kyverno-reports-controller
+          app.kubernetes.io/part-of: kyverno
+          app.kubernetes.io/version: 3.8.1
+          helm.sh/chart: kyverno-3.8.1
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - reports-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --disableMetrics=false
+          - --openreportsEnabled=false
+          - --otelConfig=prometheus
+          - --metricsPort=8000
+          - --resyncPeriod=15m
+          - --admissionReports=true
+          - --aggregateReports=true
+          - --policyReports=true
+          - --validatingAdmissionPolicyReports=true
+          - --mutatingAdmissionPolicyReports=false
+          - --backgroundScan=true
+          - --backgroundScanWorkers=2
+          - --backgroundScanInterval=1h
+          - --skipResourceFilters=true
+          - --enableConfigMapCaching=true
+          - --enableDeferredLoading=true
+          - --maxAPICallResponseLength=2000000
+          - --apiCallTimeout=30s
+          - --loggingFormat=text
+          - --v=2
+          - --omitEvents=PolicyApplied,PolicySkipped
+          - --enablePolicyException=false
+          - --allowInsecureRegistry=false
+          - --registryCredentialHelpers=default,google,amazon,azure,github
+          - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+          env:
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-reports-controller
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-reports-controller
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: TUF_ROOT
+            value: /.sigstore
+          image: reg.kyverno.io/kyverno/reports-controller:v1.18.1
+          imagePullPolicy: IfNotPresent
+          name: controller
+          ports:
+          - containerPort: 9443
+            name: https
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /.sigstore
+            name: sigstore
+          - mountPath: /var/run/secrets/kyverno/apicall
+            name: apicall-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kyverno-reports-controller
+        serviceAccountName: kyverno-reports-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: sigstore
+        - name: apicall-token
+          projected:
+            defaultMode: 292
+            sources:
+            - serviceAccountToken:
+                audience: kyverno-svc.kyverno.io
+                expirationSeconds: 3600
+                path: token
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-01T06:55:03Z"
+      lastUpdateTime: "2026-06-01T06:55:03Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-01T06:54:55Z"
+      lastUpdateTime: "2026-06-01T06:55:03Z"
+      message: ReplicaSet "kyverno-reports-controller-669cbff555" has successfully
+        progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: admission-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-admission-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+      pod-template-hash: 6c47f7875
+    name: kyverno-admission-controller-6c47f7875
+    namespace: kyverno
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: kyverno-admission-controller
+      uid: e7ac2696-26ad-4cab-977d-35d66b5cd6a8
+    resourceVersion: "766"
+    uid: be3e32e6-1a62-445c-b6b6-2594adab0eaf
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: admission-controller
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/part-of: kyverno
+        pod-template-hash: 6c47f7875
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: admission-controller
+          app.kubernetes.io/instance: kyverno
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: kyverno-admission-controller
+          app.kubernetes.io/part-of: kyverno
+          app.kubernetes.io/version: 3.8.1
+          helm.sh/chart: kyverno-3.8.1
+          pod-template-hash: 6c47f7875
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - admission-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --caSecretName=kyverno-svc.kyverno.svc.kyverno-tls-ca
+          - --tlsSecretName=kyverno-svc.kyverno.svc.kyverno-tls-pair
+          - --tlsKeyAlgorithm=RSA
+          - --backgroundServiceAccountName=system:serviceaccount:kyverno:kyverno-background-controller
+          - --reportsServiceAccountName=system:serviceaccount:kyverno:kyverno-reports-controller
+          - --servicePort=443
+          - --webhookServerPort=9443
+          - --resyncPeriod=15m
+          - --crdWatcher=false
+          - --disableMetrics=false
+          - --otelConfig=prometheus
+          - --metricsPort=8000
+          - --admissionReports=true
+          - --maxAdmissionReports=1000
+          - --autoUpdateWebhooks=true
+          - --enableConfigMapCaching=true
+          - --controllerRuntimeMetricsAddress=:8080
+          - --enableDeferredLoading=true
+          - --dumpPayload=false
+          - --forceFailurePolicyIgnore=false
+          - --generateValidatingAdmissionPolicy=true
+          - --generateMutatingAdmissionPolicy=false
+          - --dumpPatches=false
+          - --maxAPICallResponseLength=2000000
+          - --apiCallTimeout=30s
+          - --loggingFormat=text
+          - --v=2
+          - --omitEvents=PolicyApplied,PolicySkipped
+          - --enablePolicyException=false
+          - --protectManagedResources=false
+          - --allowInsecureRegistry=false
+          - --registryCredentialHelpers=default,google,amazon,azure,github
+          - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+          env:
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-admission-controller
+          - name: KYVERNO_ROLE_NAME
+            value: kyverno:admission-controller
+          - name: KYVERNO_SVC
+            value: kyverno-svc
+          - name: TUF_ROOT
+            value: /.sigstore
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-admission-controller
+          image: reg.kyverno.io/kyverno/kyverno:v1.18.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /health/liveness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: kyverno
+          ports:
+          - containerPort: 9443
+            name: https
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics-port
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /health/readiness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              memory: 384Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          startupProbe:
+            failureThreshold: 20
+            httpGet:
+              path: /health/liveness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 2
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 1
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /.sigstore
+            name: sigstore
+          - mountPath: /var/run/secrets/kyverno/apicall
+            name: apicall-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - args:
+          - --loggingFormat=text
+          - --v=2
+          - --openreportsEnabled=false
+          env:
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-admission-controller
+          - name: KYVERNO_ROLE_NAME
+            value: kyverno:admission-controller
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-admission-controller
+          - name: KYVERNO_SVC
+            value: kyverno-svc
+          image: reg.kyverno.io/kyverno/kyvernopre:v1.18.1
+          imagePullPolicy: IfNotPresent
+          name: kyverno-pre
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kyverno-admission-controller
+        serviceAccountName: kyverno-admission-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: sigstore
+        - name: apicall-token
+          projected:
+            defaultMode: 292
+            sources:
+            - serviceAccountToken:
+                audience: kyverno-svc.kyverno.io
+                expirationSeconds: 3600
+                path: token
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: background-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-background-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+      pod-template-hash: 546f9479c7
+    name: kyverno-background-controller-546f9479c7
+    namespace: kyverno
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: kyverno-background-controller
+      uid: 626fdad4-90e1-4cb0-9793-01f88270f17f
+    resourceVersion: "671"
+    uid: fe536eb9-2b24-44a8-81b9-f2fe902c6333
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: background-controller
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/part-of: kyverno
+        pod-template-hash: 546f9479c7
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: background-controller
+          app.kubernetes.io/instance: kyverno
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: kyverno-background-controller
+          app.kubernetes.io/part-of: kyverno
+          app.kubernetes.io/version: 3.8.1
+          helm.sh/chart: kyverno-3.8.1
+          pod-template-hash: 546f9479c7
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - background-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --disableMetrics=false
+          - --otelConfig=prometheus
+          - --metricsPort=8000
+          - --resyncPeriod=15m
+          - --enableConfigMapCaching=true
+          - --controllerRuntimeMetricsAddress=:8080
+          - --enableDeferredLoading=true
+          - --maxAPICallResponseLength=2000000
+          - --apiCallTimeout=30s
+          - --loggingFormat=text
+          - --v=2
+          - --omitEvents=PolicyApplied,PolicySkipped
+          - --enablePolicyException=false
+          - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+          env:
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-background-controller
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-background-controller
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: reg.kyverno.io/kyverno/background-controller:v1.18.1
+          imagePullPolicy: IfNotPresent
+          name: controller
+          ports:
+          - containerPort: 9443
+            name: https
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/secrets/kyverno/apicall
+            name: apicall-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kyverno-background-controller
+        serviceAccountName: kyverno-background-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: apicall-token
+          projected:
+            defaultMode: 292
+            sources:
+            - serviceAccountToken:
+                audience: kyverno-svc.kyverno.io
+                expirationSeconds: 3600
+                path: token
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: cleanup-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-cleanup-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+      pod-template-hash: 5787967fcd
+    name: kyverno-cleanup-controller-5787967fcd
+    namespace: kyverno
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: kyverno-cleanup-controller
+      uid: 29555dc1-3074-4a15-9b79-aa59257a70bd
+    resourceVersion: "757"
+    uid: ad68c2cc-e1a7-47ec-b988-0c8098560539
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: cleanup-controller
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/part-of: kyverno
+        pod-template-hash: 5787967fcd
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: cleanup-controller
+          app.kubernetes.io/instance: kyverno
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: kyverno-cleanup-controller
+          app.kubernetes.io/part-of: kyverno
+          app.kubernetes.io/version: 3.8.1
+          helm.sh/chart: kyverno-3.8.1
+          pod-template-hash: 5787967fcd
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - cleanup-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --caSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-ca
+          - --tlsSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-pair
+          - --tlsKeyAlgorithm=RSA
+          - --servicePort=443
+          - --resyncPeriod=15m
+          - --cleanupServerPort=9443
+          - --disableMetrics=false
+          - --otelConfig=prometheus
+          - --metricsPort=8000
+          - --enableDeferredLoading=true
+          - --dumpPayload=false
+          - --maxAPICallResponseLength=2000000
+          - --apiCallTimeout=30s
+          - --loggingFormat=text
+          - --v=2
+          - --protectManagedResources=false
+          - --ttlReconciliationInterval=1m
+          env:
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-cleanup-controller
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-cleanup-controller
+          - name: KYVERNO_ROLE_NAME
+            value: kyverno:cleanup-controller
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: KYVERNO_SVC
+            value: kyverno-cleanup-controller
+          image: reg.kyverno.io/kyverno/cleanup-controller:v1.18.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /health/liveness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: controller
+          ports:
+          - containerPort: 9443
+            name: https
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /health/readiness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          startupProbe:
+            failureThreshold: 20
+            httpGet:
+              path: /health/liveness
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 2
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 1
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/secrets/kyverno/apicall
+            name: apicall-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kyverno-cleanup-controller
+        serviceAccountName: kyverno-cleanup-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: apicall-token
+          projected:
+            defaultMode: 292
+            sources:
+            - serviceAccountToken:
+                audience: kyverno-svc.kyverno.io
+                expirationSeconds: 3600
+                path: token
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kyverno
+      meta.helm.sh/release-namespace: kyverno
+    creationTimestamp: "2026-06-01T06:54:55Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: reports-controller
+      app.kubernetes.io/instance: kyverno
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: kyverno-reports-controller
+      app.kubernetes.io/part-of: kyverno
+      app.kubernetes.io/version: 3.8.1
+      helm.sh/chart: kyverno-3.8.1
+      pod-template-hash: 669cbff555
+    name: kyverno-reports-controller-669cbff555
+    namespace: kyverno
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: kyverno-reports-controller
+      uid: 8e5ad862-e102-4ab6-bc25-ef581f095105
+    resourceVersion: "686"
+    uid: 6dcddb09-d909-4450-ac8f-fc980f70a995
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: reports-controller
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/part-of: kyverno
+        pod-template-hash: 669cbff555
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: reports-controller
+          app.kubernetes.io/instance: kyverno
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: kyverno-reports-controller
+          app.kubernetes.io/part-of: kyverno
+          app.kubernetes.io/version: 3.8.1
+          helm.sh/chart: kyverno-3.8.1
+          pod-template-hash: 669cbff555
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - reports-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --disableMetrics=false
+          - --openreportsEnabled=false
+          - --otelConfig=prometheus
+          - --metricsPort=8000
+          - --resyncPeriod=15m
+          - --admissionReports=true
+          - --aggregateReports=true
+          - --policyReports=true
+          - --validatingAdmissionPolicyReports=true
+          - --mutatingAdmissionPolicyReports=false
+          - --backgroundScan=true
+          - --backgroundScanWorkers=2
+          - --backgroundScanInterval=1h
+          - --skipResourceFilters=true
+          - --enableConfigMapCaching=true
+          - --enableDeferredLoading=true
+          - --maxAPICallResponseLength=2000000
+          - --apiCallTimeout=30s
+          - --loggingFormat=text
+          - --v=2
+          - --omitEvents=PolicyApplied,PolicySkipped
+          - --enablePolicyException=false
+          - --allowInsecureRegistry=false
+          - --registryCredentialHelpers=default,google,amazon,azure,github
+          - --enableReporting=validate,mutate,mutateExisting,imageVerify,generate
+          env:
+          - name: KYVERNO_SERVICEACCOUNT_NAME
+            value: kyverno-reports-controller
+          - name: KYVERNO_DEPLOYMENT
+            value: kyverno-reports-controller
+          - name: INIT_CONFIG
+            value: kyverno
+          - name: METRICS_CONFIG
+            value: kyverno-metrics
+          - name: KYVERNO_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: KYVERNO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: TUF_ROOT
+            value: /.sigstore
+          image: reg.kyverno.io/kyverno/reports-controller:v1.18.1
+          imagePullPolicy: IfNotPresent
+          name: controller
+          ports:
+          - containerPort: 9443
+            name: https
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /.sigstore
+            name: sigstore
+          - mountPath: /var/run/secrets/kyverno/apicall
+            name: apicall-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kyverno-reports-controller
+        serviceAccountName: kyverno-reports-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: sigstore
+        - name: apicall-token
+          projected:
+            defaultMode: 292
+            sources:
+            - serviceAccountToken:
+                audience: kyverno-svc.kyverno.io
+                expirationSeconds: 3600
+                path: token
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+kind: List
+metadata:
+  resourceVersion: ""

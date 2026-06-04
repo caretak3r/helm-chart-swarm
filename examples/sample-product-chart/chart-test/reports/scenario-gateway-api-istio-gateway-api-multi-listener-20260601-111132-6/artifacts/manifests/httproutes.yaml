@@ -1,0 +1,160 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-06-01T15:12:05Z"
+    generation: 1
+    labels:
+      app: sample
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "655"
+    uid: 3e0117e6-8088-4f77-860a-6808fcf5ad9f
+  spec:
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-06-01T15:12:08Z"
+        message: Route was valid
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-06-01T15:12:08Z"
+        message: All references resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: istio.io/gateway-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"sample-route","namespace":"sample"},"spec":{"parentRefs":[{"name":"sample-gw","sectionName":"http"}],"rules":[{"backendRefs":[{"name":"sample","port":80}],"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]}}
+    creationTimestamp: "2026-06-01T15:12:08Z"
+    generation: 1
+    name: sample-route
+    namespace: sample
+    resourceVersion: "654"
+    uid: 565083c1-81d2-43c4-83e6-79c030894698
+  spec:
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-06-01T15:12:08Z"
+        message: Route was valid
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-06-01T15:12:08Z"
+        message: All references resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: istio.io/gateway-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"sample-route-https","namespace":"sample"},"spec":{"hostnames":["sample.sample.svc.cluster.local"],"parentRefs":[{"name":"sample-gw","sectionName":"https"}],"rules":[{"backendRefs":[{"name":"sample","port":80}],"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]}}
+    creationTimestamp: "2026-06-01T15:12:08Z"
+    generation: 1
+    name: sample-route-https
+    namespace: sample
+    resourceVersion: "660"
+    uid: 760ce089-63bd-4ccd-b547-267ff0b40d6d
+  spec:
+    hostnames:
+    - sample.sample.svc.cluster.local
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: https
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-06-01T15:12:08Z"
+        message: Route was valid
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-06-01T15:12:08Z"
+        message: All references resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: istio.io/gateway-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: https
+kind: List
+metadata:
+  resourceVersion: ""

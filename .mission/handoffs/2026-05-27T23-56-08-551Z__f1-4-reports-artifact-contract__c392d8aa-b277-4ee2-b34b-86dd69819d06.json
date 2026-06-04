@@ -1,0 +1,154 @@
+{
+  "timestamp": "2026-05-27T23:56:08.551Z",
+  "workerSessionId": "c392d8aa-b277-4ee2-b34b-86dd69819d06",
+  "featureId": "f1-4-reports-artifact-contract",
+  "milestone": "engine-foundations",
+  "commitId": "c4f2847",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "successState": "success",
+  "returnToOrchestrator": true,
+  "handoff": {
+    "salientSummary": "Implemented F1.4 reports artifact contract: run-scenario.sh emits self-contained artifacts/ bundles, dispatch-swarm.sh includes product+asserts in snapshots with mixed-provider handling and RUN_ID collision detection, apply-scenario.sh is idempotent over helm repo add and cleans tempfiles on SIGTERM, aggregate.sh uses Python csv for proper round-trip.",
+    "whatWasImplemented": "1. run-scenario.sh artifact bundle (VAL-ENGINE-013/014/015, VAL-CROSS-013/014/029): emits artifacts/scenario.yaml, applied-overrides.yaml (helm_values map + raw_manifest_refs seq), fixtures/, manifests/, versions.json, logs/. 2. dispatch-swarm.sh fixes (VAL-ENGINE-031/036/037, VAL-CROSS-028): scenarios-snapshot includes product+asserts; run-meta reflects mixed providers as YAML list; RUN_ID collision detection; sed replaces envsubst for safe substitution. 3. apply-scenario.sh (VAL-ENGINE-032/033): idempotent helm repo add; SIGTERM tempfile cleanup via EXIT+INT+TERM trap. 4. aggregate.sh (VAL-ENGINE-034): Python csv module for commas/newlines/quotes round-trip; Bash 3.2 compatible. 5. 18 new bats test cases.",
+    "whatWasLeftUndone": "End-to-end integration test against a real kind cluster to verify actual artifact file contents at runtime is deferred to milestone scrutiny validation.",
+    "verification": {
+      "commandsRun": [
+        {
+          "command": "bats engine/scripts/tests/",
+          "exitCode": 0,
+          "observation": "58 tests passing (18 new artifact-contract + 40 pre-existing)"
+        },
+        {
+          "command": "shellcheck -S warning engine/scripts/*.sh engine/asserts/*.sh",
+          "exitCode": 0,
+          "observation": "All clean, no warnings at severity warning or above"
+        },
+        {
+          "command": "uv run --directory engine/testgrid pytest",
+          "exitCode": 0,
+          "observation": "18 passed in 0.02s"
+        },
+        {
+          "command": "Schema validation for all 6 scenarios via yq pipe",
+          "exitCode": 0,
+          "observation": "All 6 scenarios validate OK against engine/templates/scenario.schema.json"
+        },
+        {
+          "command": "kind get clusters | grep chart-test-swarm-",
+          "exitCode": 1,
+          "observation": "No chart-test-swarm-* clusters remain"
+        }
+      ]
+    },
+    "tests": {
+      "added": [
+        {
+          "file": "engine/scripts/tests/artifact-contract.bats",
+          "cases": [
+            {
+              "name": "minimal.yaml has no product.values file reference",
+              "verifies": "VAL-ENGINE-041"
+            },
+            {
+              "name": "with-cert-manager.yaml has no product.values file reference",
+              "verifies": "VAL-ENGINE-041"
+            },
+            {
+              "name": "customer-A-istio.yaml preserves inline product.set with escaped dots",
+              "verifies": "VAL-ENGINE-041 and VAL-CROSS-029"
+            },
+            {
+              "name": "customer-B-gatekeeper.yaml has no product.values file reference",
+              "verifies": "VAL-ENGINE-041"
+            },
+            {
+              "name": "subchart-postgres-internal.yaml preserves inline product.set",
+              "verifies": "VAL-ENGINE-041"
+            },
+            {
+              "name": "SKILL.md references resolve to category subdirs",
+              "verifies": "VAL-ENGINE-035"
+            },
+            {
+              "name": "workflow.md references resolve to category subdirs",
+              "verifies": "VAL-ENGINE-035"
+            },
+            {
+              "name": "existing primer files under category subdirs",
+              "verifies": "VAL-ENGINE-035"
+            },
+            {
+              "name": "apply-scenario.sh idempotent over helm repo add",
+              "verifies": "VAL-ENGINE-032"
+            },
+            {
+              "name": "apply-scenario.sh tempfile tracking and cleanup trap",
+              "verifies": "VAL-ENGINE-033"
+            },
+            {
+              "name": "aggregate.sh CSV proper quoting",
+              "verifies": "VAL-ENGINE-034"
+            },
+            {
+              "name": "dispatch-swarm.sh run-meta.yaml records provider as list",
+              "verifies": "VAL-ENGINE-036"
+            },
+            {
+              "name": "dispatch-swarm.sh does not use envsubst",
+              "verifies": "VAL-ENGINE-037"
+            },
+            {
+              "name": "dispatch-swarm.sh RUN_ID collision detection",
+              "verifies": "VAL-CROSS-028"
+            },
+            {
+              "name": "dispatch-swarm.sh snapshot includes product+asserts",
+              "verifies": "VAL-ENGINE-031"
+            },
+            {
+              "name": "run-scenario.sh preserves escaped-dot keys",
+              "verifies": "VAL-CROSS-029"
+            },
+            {
+              "name": "run-scenario.sh creates artifacts/ directory",
+              "verifies": "VAL-ENGINE-013 and VAL-ENGINE-014 and VAL-ENGINE-015"
+            },
+            {
+              "name": "run-scenario.sh writes applied-overrides.yaml with uniform shape",
+              "verifies": "VAL-CROSS-014"
+            }
+          ]
+        }
+      ],
+      "updated": [
+        "engine/scripts/run-scenario.sh",
+        "engine/scripts/dispatch-swarm.sh",
+        "engine/scripts/apply-scenario.sh",
+        "engine/scripts/aggregate.sh"
+      ],
+      "coverage": "18 bats tests covering VAL-ENGINE-013/014/015/031/032/033/034/035/036/037/041 and VAL-CROSS-013/014/028/029"
+    },
+    "discoveredIssues": [
+      {
+        "severity": "non_blocking",
+        "description": "Pre-existing: yamllint reports ~57 style errors on existing scenario YAMLs. Not in F1.4 scope.",
+        "suggestedFix": "Address in scenario-author features M3-M7"
+      },
+      {
+        "severity": "non_blocking",
+        "description": "Pre-existing: jsonschema CLI deprecated; warnings suggest check-jsonschema",
+        "suggestedFix": "Migrate to check-jsonschema in F1.5"
+      }
+    ],
+    "skillFeedback": {
+      "followedProcedure": true,
+      "deviations": [
+        {
+          "step": "Write the failing bats tests first",
+          "whatIDidInstead": "Some tests were structural grep-based rather than runtime-failing since they verify script source code patterns",
+          "why": "Running actual clusters for every test would be too resource-intensive; structural tests confirm code is present and E2E validation will confirm runtime behavior"
+        }
+      ]
+    }
+  }
+}

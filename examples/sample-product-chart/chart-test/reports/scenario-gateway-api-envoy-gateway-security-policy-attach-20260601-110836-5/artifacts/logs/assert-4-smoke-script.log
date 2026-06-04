@@ -1,0 +1,22 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/envoy-gateway-security-policy-attach.sh (RELEASE=sample NAMESPACE=sample)
+==> Applying GatewayClass + Gateway (staged)
+gatewayclass.gateway.networking.k8s.io/envoy created
+gateway.gateway.networking.k8s.io/sample-gw created
+==> Waiting for Gateway listener http Programmed=True (5m max)
+PASS: Gateway listener http Programmed=True
+==> Applying HTTPRoute + SecurityPolicy
+httproute.gateway.networking.k8s.io/sample-route created
+securitypolicy.gateway.envoyproxy.io/sample-cors-policy created
+==> Waiting for GatewayClass envoy Accepted=True (3m max)
+PASS: GatewayClass envoy Accepted=True
+==> Verifying HTTPRoute sample-route Accepted=True
+PASS: HTTPRoute sample-route Accepted=True
+==> Verifying SecurityPolicy Accepted=True
+PASS: SecurityPolicy sample-cors-policy Accepted=True
+==> Getting envoy data-plane Service ClusterIP
+Gateway Service IP: 10.96.244.200
+==> Probing CORS preflight (OPTIONS request)
+CORS response: access-control-allow-origin: http://example.com (attempt 2)
+CORS response: access-control-allow-origin: http://example.com
+PASS: CORS header present on preflight response
+PASS: envoy-gateway SecurityPolicy CORS integration verified

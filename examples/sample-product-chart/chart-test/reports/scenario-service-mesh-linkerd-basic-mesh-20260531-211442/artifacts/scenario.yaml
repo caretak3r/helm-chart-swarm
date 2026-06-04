@@ -1,0 +1,74 @@
+---
+id: service-mesh-linkerd-basic-mesh
+name: "Linkerd — Basic Mesh (Sidecar Injection)"
+description: >-
+  Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace with linkerd.io/inject=enabled, deploys the product chart with scope.enabled=true, and verifies every product pod has a linkerd-proxy sidecar alongside the app container (2-container pods), with linkerd check --proxy returning healthy.
+labels: {customer: any, profile: mesh}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: linkerd/linkerd-crds
+      version: 1.8.0
+      release: linkerd-crds
+      namespace: linkerd
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    - kind: helm
+      chart: linkerd/linkerd-control-plane
+      version: 1.16.11
+      release: linkerd-control-plane
+      namespace: linkerd
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values:
+        proxy:
+          resources:
+            cpu:
+              limit: "250m"
+              request: "100m"
+            memory:
+              limit: "256Mi"
+              request: "64Mi"
+        identity:
+          resources:
+            cpu:
+              limit: "250m"
+              request: "100m"
+            memory:
+              limit: "256Mi"
+              request: "64Mi"
+      wait: pods-ready
+      wait_timeout: 5m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    scope.enabled: "true"
+asserts:
+  - type: helm-status-deployed
+    release: linkerd-crds
+    namespace: linkerd
+  - type: helm-status-deployed
+    release: linkerd-control-plane
+    namespace: linkerd
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: linkerd
+    timeout: 3m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/linkerd-basic-mesh.sh
+tags: [nightly]
+mechanisms: ['addon:linkerd', 'mesh:linkerd']

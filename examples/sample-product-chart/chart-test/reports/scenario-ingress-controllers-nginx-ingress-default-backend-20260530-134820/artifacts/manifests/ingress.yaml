@@ -1,0 +1,29 @@
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    creationTimestamp: "2026-05-30T17:49:23Z"
+    generation: 1
+    name: sample-basic
+    namespace: sample
+    resourceVersion: "682"
+    uid: bd3c0dcb-01bc-4b60-83e4-67cc5149afae
+  spec:
+    ingressClassName: nginx
+    rules:
+    - host: sample.test.local
+      http:
+        paths:
+        - backend:
+            service:
+              name: sample
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

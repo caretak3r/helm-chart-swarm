@@ -1,0 +1,44 @@
+run_id: run-curated-live-20260602-234624-95262
+suite: curated-live
+timestamp_utc: 2026-06-03T04:05:22Z
+total: 18
+pass: 11
+fail: 7
+skip: 0
+scenarios:
+  - id: annotations-on
+    status: FAIL
+  - id: labels-on
+    status: FAIL
+  - id: rbac-on
+    status: FAIL
+  - id: scheme-https-only
+    status: FAIL
+  - id: tls-cert-manager-self-signed
+    status: PASS
+  - id: tls-manual-secret
+    status: PASS
+  - id: tls-mounted-projected
+    status: PASS
+  - id: gateway-api-istio-gateway-api-basic
+    status: PASS
+  - id: ingress-controllers-contour-basic-httpproxy
+    status: FAIL
+  - id: networking-kong-ingress
+    status: PASS
+  - id: networking-metallb-loadbalancer
+    status: PASS
+  - id: networking-traefik-ingress
+    status: PASS
+  - id: policy-opa-gatekeeper-required-labels
+    status: FAIL
+  - id: service-mesh-istio-ambient-live
+    status: PASS
+  - id: service-mesh-istio-ingress-gateway-basic
+    status: PASS
+  - id: service-mesh-istio-service-mesh-strict-mtls
+    status: PASS
+  - id: service-mesh-istio-sidecar-live
+    status: PASS
+  - id: service-mesh-linkerd-live
+    status: FAIL

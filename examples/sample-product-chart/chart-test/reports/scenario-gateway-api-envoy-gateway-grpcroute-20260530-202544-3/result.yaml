@@ -1,0 +1,11 @@
+scenario_id: gateway-api-envoy-gateway-grpcroute
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-envoy-gateway-grpcroute.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T00:25:44Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-envoy-gateway-grpcroute-20260530-202544-3/artifacts/logs/preinstall.log
+finished_at: 2026-05-31T00:26:31Z

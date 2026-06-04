@@ -1,0 +1,19 @@
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "1.27-alpine"
+service:
+  type: ClusterIP
+  port: 80
+tls:
+  enabled: false
+  secretName: ""
+  servicePort: 443
+  # -- Filesystem path where TLS cert+key are mounted. Defaults to /etc/tls.
+  mountPath: ""
+  # -- Volume type for the TLS material. Supported: secret (default), persistentVolumeClaim, projected, csi.
+  volumeType: "secret"
+  # -- PVC claim name (required when volumeType is persistentVolumeClaim).
+  pvcClaimName: ""
+  # -- SecretProviderClass name (required when volumeType is csi).
+  secretProviderClass: ""

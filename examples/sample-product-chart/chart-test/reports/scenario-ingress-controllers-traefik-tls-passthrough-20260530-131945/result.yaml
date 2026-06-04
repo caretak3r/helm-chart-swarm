@@ -1,0 +1,11 @@
+scenario_id: ingress-controllers-traefik-tls-passthrough
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-traefik-tls-passthrough.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T17:19:45Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-traefik-tls-passthrough-20260530-131945/artifacts/logs/preinstall.log
+finished_at: 2026-05-30T17:20:17Z

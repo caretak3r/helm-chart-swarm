@@ -898,10 +898,17 @@ class PrereqStatus:
     install_hint: str = ""
     """Optional installation command or hint for missing tools."""
 
+    display_name: str = ""
+    """Display label for the tool (e.g., 'Kubernetes (kind/k3d)').
+
+    When empty, the raw name is used.
+    """
+
 
 # Install hints for missing tools
 INSTALL_HINTS: dict[str, str] = {
     "kind": "brew install kind",
+    "k3d": "brew install k3d",
     "kubectl": "brew install kubectl",
     "helm": "brew install helm",
     "yq": "brew install yq",
@@ -910,7 +917,18 @@ INSTALL_HINTS: dict[str, str] = {
 }
 
 # Required tools for getting started
-REQUIRED_TOOLS = ["kind", "kubectl", "helm", "yq", "jq", "uv"]
+REQUIRED_TOOLS = ["kind", "k3d", "kubectl", "helm", "yq", "jq", "uv"]
+
+# Display names for prerequisite tools (for combined/grouped labels)
+TOOL_DISPLAY_NAMES: dict[str, str] = {
+    "kind": "Kubernetes (kind/k3d)",
+    "k3d": "Kubernetes (kind/k3d)",
+    "kubectl": "kubectl",
+    "helm": "helm",
+    "yq": "yq",
+    "jq": "jq",
+    "uv": "uv",
+}
 
 
 def detect_prerequisites(
@@ -972,9 +990,7 @@ def check_cluster_status() -> bool:
         if not clusters:
             return False
         # Check for chart-test-swarm-* cluster names
-        return any(
-            line.strip().startswith("chart-test-swarm-") for line in clusters.split("\n")
-        )
+        return any(line.strip().startswith("chart-test-swarm-") for line in clusters.split("\n"))
     except (FileNotFoundError, subprocess.SubprocessError, OSError):
         return False
 
@@ -1019,13 +1035,14 @@ def render_getting_started(
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Build PrereqStatus list with hints
+    # Build PrereqStatus list with hints and display names
     hints = hints or INSTALL_HINTS
     prereq_statuses = [
         PrereqStatus(
             name=tool,
             installed=prereqs.get(tool, False),
             install_hint=hints.get(tool, ""),
+            display_name=TOOL_DISPLAY_NAMES.get(tool, tool),
         )
         for tool in REQUIRED_TOOLS
     ]

@@ -1,0 +1,56 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: istio-base (istio/base @ 1.27.9) in ns/istio-system
+    repo 'istio' already exists with URL https://istio-release.storage.googleapis.com/charts (skipping add)
+Release "istio-base" does not exist. Installing it now.
+NAME: istio-base
+LAST DEPLOYED: Sun May 31 19:52:10 2026
+NAMESPACE: istio-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+Istio base successfully installed!
+
+To learn more about the release, try:
+  $ helm status istio-base -n istio-system
+  $ helm get all istio-base -n istio-system
+
+==> [2/2] kind=helm
+    helm: istiod (istio/istiod @ 1.27.9) in ns/istio-system
+    repo 'istio' already exists with URL https://istio-release.storage.googleapis.com/charts (skipping add)
+Release "istiod" does not exist. Installing it now.
+NAME: istiod
+LAST DEPLOYED: Sun May 31 19:52:11 2026
+NAMESPACE: istio-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+"istiod" successfully installed!
+
+To learn more about the release, try:
+  $ helm status istiod -n istio-system
+  $ helm get all istiod -n istio-system
+
+Next steps:
+  * Deploy a Gateway: https://istio.io/latest/docs/setup/additional-setup/gateway/
+  * Try out our tasks to get started on common configurations:
+    * https://istio.io/latest/docs/tasks/traffic-management
+    * https://istio.io/latest/docs/tasks/security/
+    * https://istio.io/latest/docs/tasks/policy-enforcement/
+  * Review the list of actively supported releases, CVE publications and our hardening guide:
+    * https://istio.io/latest/docs/releases/supported-releases/
+    * https://istio.io/latest/news/security/
+    * https://istio.io/latest/docs/ops/best-practices/security/
+
+For further documentation see https://istio.io website
+pod/istiod-54b585df85-k5pb7 condition met
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

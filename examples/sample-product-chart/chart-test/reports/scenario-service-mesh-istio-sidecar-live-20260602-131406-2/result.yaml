@@ -1,0 +1,63 @@
+scenario_id: service-mesh-istio-sidecar-live
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh/service-mesh-istio-sidecar-live.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T17:14:06Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-vz7db condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-vz7db   1/1     Running   0          13s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-6f8587999b-26hdv condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-6f8587999b-26hdv   2/2     Running   0          8s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      ==> VAL-MSH-003: Creating in-mesh probe pod with sidecar injection
+      pod/ct-sidecar-live-probe created
+        Waiting for probe pod to be ready (2m max)
+      pod/ct-sidecar-live-probe condition met
+        Probe pod containers: istio-proxy ct-sidecar-live-probe
+      ==> Probing product Service over the mesh from in-mesh pod
+        HTTP response from in-mesh probe: 200
+        ✓ in-mesh pod reached product Service with HTTP 200
+      ==> VAL-MSH-003: Confirming mTLS via istio-proxy stats
+        Checking istio-proxy stats on pod sample-6f8587999b-26hdv
+        ✓ mTLS confirmed — istio telemetry reports connection_security_policy=mutual_tls
+          (counter value: 1)
+      pod "ct-sidecar-live-probe" deleted from sample namespace
+      error: timed out waiting for the condition on pods/ct-sidecar-live-probe
+      
+      PASS: Istio sidecar mesh LIVE integration verified
+        - istiod Ready, injector webhook present, namespace labeled
+        - Product pods have 2 containers (app + istio-proxy)
+        - In-mesh traffic returns HTTP 200
+        - mTLS confirmed via istio-proxy stats
+status: PASS
+finished_at: 2026-06-02T17:15:24Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-sidecar-live-20260602-131406-2/artifacts/logs

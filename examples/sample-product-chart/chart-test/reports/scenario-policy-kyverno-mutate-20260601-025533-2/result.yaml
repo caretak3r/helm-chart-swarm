@@ -1,0 +1,59 @@
+scenario_id: policy-kyverno-mutate
+scenario_path: examples/sample-product-chart/chart-test/scenarios/policy-kyverno-mutate.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T06:55:34Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-policy-kv-m -n kyverno wait --for=condition=Ready pods --timeout=4m --all
+      pod/kyverno-admission-controller-6c47f7875-f54kh condition met
+      pod/kyverno-background-controller-546f9479c7-wshtj condition met
+      pod/kyverno-cleanup-controller-5787967fcd-pjh77 condition met
+      pod/kyverno-reports-controller-669cbff555-tvht8 condition met
+      PASS: pods Ready in ns/kyverno
+      NAME                                             READY   STATUS    RESTARTS   AGE
+      kyverno-admission-controller-6c47f7875-f54kh     1/1     Running   0          28s
+      kyverno-background-controller-546f9479c7-wshtj   1/1     Running   0          28s
+      kyverno-cleanup-controller-5787967fcd-pjh77      1/1     Running   0          28s
+      kyverno-reports-controller-669cbff555-tvht8      1/1     Running   0          28s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-policy-kv-m -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-tfqf2 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-tfqf2   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      pod/kyverno-reports-controller-669cbff555-tvht8 condition met
+      PASS: kyverno controller pods Ready
+      pod/sample-69469cb4c6-tfqf2 condition met
+      PASS: product pods Ready
+      ==> Phase 1: Verify ClusterPolicy applied
+      Waiting for ClusterPolicy add-managed-by-annotation to be ready (30s max)...
+      clusterpolicy.kyverno.io/add-managed-by-annotation condition met
+      PASS: ClusterPolicy add-managed-by-annotation Ready=True
+      ==> Clean up any prior test pod
+      ==> Phase 2: Apply Pod manifest (lacking target annotation)
+      pod/test-mutate-kyverno created
+      PASS: Pod test-mutate-kyverno applied
+      ==> Wait for Pod to be Ready (30s max)
+      pod/test-mutate-kyverno condition met
+      PASS: Pod test-mutate-kyverno Ready
+      ==> Phase 3: Verify annotation auto-added by mutating webhook
+      PASS: annotation kyverno.io/managed-by=chart-test-swarm auto-added by mutating webhook
+      ==> Clean up test pod
+      pod "test-mutate-kyverno" deleted from sample namespace
+      PASS: Kyverno mutate variant verified
+status: PASS
+finished_at: 2026-06-01T06:56:38Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-policy-kyverno-mutate-20260601-025533-2/artifacts/logs

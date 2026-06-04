@@ -1,0 +1,7 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-jwt.sh (RELEASE=sample NAMESPACE=sample)
+==> JWT key path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/../examples/sample-product-chart/chart-test/fixtures/service-mesh/jwt/jwt-key.pem
+==> Creating Istio Gateway + VirtualService
+gateway.networking.istio.io/sample-igw created
+virtualservice.networking.istio.io/sample-vs created
+==> Creating RequestAuthentication (JWT validation)
+FAIL: Could not read jwks.json fixture

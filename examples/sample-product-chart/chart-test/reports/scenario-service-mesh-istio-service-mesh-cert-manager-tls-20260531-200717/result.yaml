@@ -1,0 +1,107 @@
+scenario_id: service-mesh-istio-service-mesh-cert-manager-tls
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-istio-service-mesh-cert-manager-tls.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T00:07:17Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release cert-manager in ns/cert-manager is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-ingressgateway in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n cert-manager wait --for=condition=Ready pods --timeout=5m --all
+      pod/cert-manager-c69c859c4-tg8s6 condition met
+      pod/cert-manager-cainjector-d6d64f75f-qn469 condition met
+      pod/cert-manager-webhook-566849c7fc-htjjj condition met
+      PASS: pods Ready in ns/cert-manager
+      NAME                                      READY   STATUS    RESTARTS   AGE
+      cert-manager-c69c859c4-tg8s6              1/1     Running   0          31s
+      cert-manager-cainjector-d6d64f75f-qn469   1/1     Running   0          31s
+      cert-manager-webhook-566849c7fc-htjjj     1/1     Running   0          31s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m --all
+      pod/istio-ingressgateway-8584b67974-w8zgf condition met
+      pod/istiod-54b585df85-pj9dc condition met
+      PASS: pods Ready in ns/istio-system
+      NAME                                    READY   STATUS    RESTARTS   AGE
+      istio-ingressgateway-8584b67974-w8zgf   1/1     Running   0          8s
+      istiod-54b585df85-pj9dc                 1/1     Running   0          13s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-6f8587999b-bq99q condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-6f8587999b-bq99q   1/1     Running   0          4s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      ==> Waiting for cert-manager pods Ready (3m max)
+      pod/cert-manager-c69c859c4-tg8s6 condition met
+      PASS: cert-manager pods Ready
+      ==> Waiting for istiod pods Ready (3m max)
+      pod/istiod-54b585df85-pj9dc condition met
+      PASS: istiod pods Ready
+      ==> Waiting for istio-ingressgateway pods Ready (3m max)
+      pod/istio-ingressgateway-8584b67974-w8zgf condition met
+      PASS: istio-ingressgateway pods Ready
+      ==> Labeling namespace sample for istio injection
+      namespace/sample labeled
+      ==> Creating cert-manager Certificate for Gateway TLS Secret
+      certificate.cert-manager.io/sample-gw-tls created
+      PASS: Certificate sample-gw-tls created in sample
+      ==> Waiting for Certificate Ready (3m max)
+      certificate.cert-manager.io/sample-gw-tls condition met
+      PASS: Certificate Ready=True
+      ==> Verifying TLS Secret exists and contains expected keys
+      Secret keys: ca.crt
+      tls.crt
+      tls.key
+      PASS: TLS Secret contains tls.crt, tls.key, ca.crt
+      ==> Creating Istio Gateway with TLS (credentialName references cert-manager Secret)
+      gateway.networking.istio.io/sample-gw created
+      PASS: Istio Gateway sample-gw created with TLS credentialName=sample-gw-tls
+      ==> Verifying Gateway resource exists
+      PASS: Gateway sample-gw confirmed
+      ==> Verifying Gateway TLS credentialName references cert-manager Secret
+      Gateway credentialName: sample-gw-tls
+      PASS: Gateway credentialName matches cert-manager Secret
+      ==> Creating VirtualService to route traffic through Gateway
+      virtualservice.networking.istio.io/sample-vs created
+      PASS: VirtualService sample-vs created
+      ==> Running istioctl analyze (downloading if needed)
+        Downloading istioctl 1.27.9...
+      SKIP: istioctl not available; skipping analyze step
+      ==> Testing HTTPS through Istio Gateway with TLS
+      Gateway pod IP: 10.244.0.10
+      HTTPS response through Gateway: 000
+      FAIL: expected HTTPS 200 through Gateway, got 000
+status: FAIL
+finished_at: 2026-06-01T00:09:19Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-service-mesh-cert-manager-tls-20260531-200717/artifacts/logs

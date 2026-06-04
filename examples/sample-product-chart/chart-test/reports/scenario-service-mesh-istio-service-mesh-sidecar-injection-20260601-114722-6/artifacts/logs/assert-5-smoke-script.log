@@ -1,0 +1,26 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-sidecar-injection.sh (RELEASE=sample NAMESPACE=sample)
+==> Labeling namespace sample for istio injection
+namespace/sample labeled
+==> Restarting deployments to pick up sidecar injection
+  Restarting deployment/sample
+deployment.apps/sample restarted
+  Waiting for rollout of deployment/sample to complete (3m max)
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+PASS: all deployments rolled out
+==> Waiting 5s for old pods to terminate
+==> Verifying istio-proxy sidecar injected into every product pod
+  Pod sample-6dc665588c-wxk6s (deploy/sample) containers (2): app istio-proxy
+    ✓ istio-proxy sidecar present
+PASS: every Running product pod has exactly 2 containers including istio-proxy
+==> Probing product Service over the mesh from an in-mesh pod
+pod/ct-mesh-probe created
+  Waiting for probe pod to be ready with sidecar (2m max)
+pod/ct-mesh-probe condition met
+  Probe pod containers: ct-mesh-probe istio-proxy
+HTTP response from in-mesh probe: 200
+PASS: in-mesh pod reached product Service with HTTP 200
+pod "ct-mesh-probe" deleted from sample namespace
+error: timed out waiting for the condition on pods/ct-mesh-probe
+PASS: istio sidecar injection integration verified

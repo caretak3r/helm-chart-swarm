@@ -1,0 +1,6 @@
+scenario_id: c3bad-path
+scenario_path: /tmp/c3bad-path-scenario.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-05-29T18:58:06Z
+provider: kind
+asserts:

@@ -1,0 +1,11 @@
+kubectl --context kind-chart-test-swarm-default -n kyverno wait --for=condition=Ready pods --timeout=4m --all
+pod/kyverno-admission-controller-6c47f7875-trdtd condition met
+pod/kyverno-background-controller-546f9479c7-lrm9h condition met
+pod/kyverno-cleanup-controller-5787967fcd-82vxg condition met
+pod/kyverno-reports-controller-669cbff555-wz5h7 condition met
+PASS: pods Ready in ns/kyverno
+NAME                                             READY   STATUS    RESTARTS   AGE
+kyverno-admission-controller-6c47f7875-trdtd     1/1     Running   0          23s
+kyverno-background-controller-546f9479c7-lrm9h   1/1     Running   0          23s
+kyverno-cleanup-controller-5787967fcd-82vxg      1/1     Running   0          23s
+kyverno-reports-controller-669cbff555-wz5h7      1/1     Running   0          23s

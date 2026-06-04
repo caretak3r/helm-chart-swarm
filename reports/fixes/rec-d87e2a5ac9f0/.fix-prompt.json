@@ -1,0 +1,7 @@
+{
+  "recommendation_id": "rec-d87e2a5ac9f0",
+  "fix_prompt": "# Fix Recommendation: gatekeeper-required-labels\n\n**Scenario:** `gatekeeper-required-labels`\n**Category:** gap-probe\n\nThis is an honest integration gap — the chart does not include Gatekeeper constraints.",
+  "scenario_path": "gatekeeper-required-labels",
+  "chart_path": "examples/sample-product-chart/chart",
+  "created_at": "2026-06-03T22:58:21.764224+00:00"
+}

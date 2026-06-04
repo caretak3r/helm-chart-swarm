@@ -1,0 +1,13 @@
+scenario_id: network-policy-on
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/network-policy-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T13:38:52Z
+provider: kind
+asserts:
+  - type: network-policy
+    status: FAIL
+    notes: |
+      FAIL: expected NetworkPolicy but found 0
+status: FAIL
+finished_at: 2026-06-02T13:38:53Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-network-policy-on-20260602-093852/artifacts/logs

@@ -1,0 +1,1334 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      checksum/config: 8ad46ce4f1a6f121656387405c362297b26686ca4d428758b0de3c0fc3bcfd97
+    creationTimestamp: "2026-05-30T19:08:30Z"
+    generateName: contour-contour-5847f7c7f9-
+    labels:
+      app.kubernetes.io/component: contour
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: contour
+      app.kubernetes.io/version: 1.33.5
+      helm.sh/chart: contour-0.6.0
+      pod-template-hash: 5847f7c7f9
+    name: contour-contour-5847f7c7f9-qgjmz
+    namespace: projectcontour
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: contour-contour-5847f7c7f9
+      uid: 45db34df-fb69-458c-94c5-43613932bda1
+    resourceVersion: "647"
+    uid: 4583b3e2-d65e-4633-98b5-8e37ca7c08d6
+  spec:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: contour
+                app.kubernetes.io/instance: contour
+                app.kubernetes.io/name: contour
+            topologyKey: kubernetes.io/hostname
+          weight: 1
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - serve
+      - --incluster
+      - --xds-address=0.0.0.0
+      - --xds-port=8001
+      - --http-port=8000
+      - --envoy-service-http-port=8080
+      - --envoy-service-https-port=8443
+      - --contour-cafile=/certs/ca.crt
+      - --contour-cert-file=/certs/tls.crt
+      - --contour-key-file=/certs/tls.key
+      - --config-path=/config/contour.yaml
+      - --envoy-service-namespace=projectcontour
+      - --envoy-service-name=contour-envoy
+      - --leader-election-resource-name=projectcontour-contour-contour
+      - --log-format=text
+      - --kubernetes-debug=0
+      command:
+      - contour
+      env:
+      - name: CONTOUR_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: BITNAMI_DEBUG
+        value: "false"
+      image: ghcr.io/projectcontour/contour:v1.33.5
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 6
+        initialDelaySeconds: 120
+        periodSeconds: 20
+        successThreshold: 1
+        tcpSocket:
+          port: 8000
+        timeoutSeconds: 5
+      name: contour
+      ports:
+      - containerPort: 8001
+        name: xds
+        protocol: TCP
+      - containerPort: 8000
+        name: metrics
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 15
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
+      resources:
+        limits:
+          cpu: 150m
+          ephemeral-storage: 2Gi
+          memory: 192Mi
+        requests:
+          cpu: 100m
+          ephemeral-storage: 50Mi
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+        seLinuxOptions: {}
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /certs
+        name: contourcert
+        readOnly: true
+      - mountPath: /config
+        name: contour-config
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-9km4h
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-default-control-plane
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1001
+      fsGroupChangePolicy: Always
+    serviceAccount: contour-contour
+    serviceAccountName: contour-contour
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: contourcert
+      secret:
+        defaultMode: 420
+        secretName: contourcert
+    - configMap:
+        defaultMode: 420
+        items:
+        - key: contour.yaml
+          path: contour.yaml
+        name: contour
+      name: contour-config
+    - name: kube-api-access-9km4h
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:31Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:30Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:50Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:50Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:30Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://fafecd32a7ae4cb3cd0ba77efac381f0894dae0168dd9af144b5eaf5f65b0271
+      image: ghcr.io/projectcontour/contour:v1.33.5
+      imageID: ghcr.io/projectcontour/contour@sha256:fc005b50254df59fab555fc008501df4552ae2208783663f6c28931b3e5849e4
+      lastState: {}
+      name: contour
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-05-30T19:08:30Z"
+    hostIP: 172.20.0.3
+    hostIPs:
+    - ip: 172.20.0.3
+    phase: Running
+    podIP: 10.244.0.7
+    podIPs:
+    - ip: 10.244.0.7
+    qosClass: Burstable
+    startTime: "2026-05-30T19:08:30Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-05-30T19:08:30Z"
+    generateName: contour-envoy-
+    labels:
+      app.kubernetes.io/component: envoy
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: contour
+      app.kubernetes.io/version: 1.33.5
+      controller-revision-hash: 6b5ff8bb
+      helm.sh/chart: contour-0.6.0
+      pod-template-generation: "1"
+    name: contour-envoy-f4dld
+    namespace: projectcontour
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DaemonSet
+      name: contour-envoy
+      uid: 3e8ff12c-b810-4c4e-b2ef-c32d544f77fd
+    resourceVersion: "662"
+    uid: dd0ec3d5-a488-4157-9d38-0ccc085151e6
+  spec:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchFields:
+            - key: metadata.name
+              operator: In
+              values:
+              - chart-test-swarm-default-control-plane
+    automountServiceAccountToken: false
+    containers:
+    - args:
+      - envoy
+      - shutdown-manager
+      - --serve-port=8090
+      command:
+      - contour
+      image: ghcr.io/projectcontour/contour:v1.33.5
+      imagePullPolicy: IfNotPresent
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - contour
+            - envoy
+            - shutdown
+      livenessProbe:
+        failureThreshold: 6
+        initialDelaySeconds: 120
+        periodSeconds: 20
+        successThreshold: 1
+        tcpSocket:
+          port: http-shutdown
+        timeoutSeconds: 5
+      name: shutdown-manager
+      ports:
+      - containerPort: 8090
+        name: http-shutdown
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: http-shutdown
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 3
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          cpu: 150m
+          ephemeral-storage: 2Gi
+          memory: 192Mi
+        requests:
+          cpu: 100m
+          ephemeral-storage: 50Mi
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+        seLinuxOptions: {}
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /admin
+        name: empty-dir
+        subPath: app-admin-dir
+    - args:
+      - -c
+      - /config/envoy.json
+      - --service-cluster $(CONTOUR_NAMESPACE)
+      - --service-node $(ENVOY_POD_NAME)
+      - --log-level info
+      command:
+      - envoy
+      env:
+      - name: CONTOUR_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: ENVOY_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      image: docker.io/envoyproxy/envoy:v1.35.10
+      imagePullPolicy: IfNotPresent
+      lifecycle:
+        preStop:
+          httpGet:
+            path: /shutdown
+            port: 8090
+            scheme: HTTP
+      livenessProbe:
+        failureThreshold: 6
+        initialDelaySeconds: 120
+        periodSeconds: 20
+        successThreshold: 1
+        tcpSocket:
+          port: 8002
+        timeoutSeconds: 5
+      name: envoy
+      ports:
+      - containerPort: 8080
+        name: http
+        protocol: TCP
+      - containerPort: 8443
+        name: https
+        protocol: TCP
+      - containerPort: 8002
+        name: metrics
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /ready
+          port: 8002
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 3
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          cpu: 150m
+          ephemeral-storage: 2Gi
+          memory: 192Mi
+        requests:
+          cpu: 100m
+          ephemeral-storage: 50Mi
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+        seLinuxOptions: {}
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /config
+        name: empty-dir
+        subPath: app-conf-dir
+      - mountPath: /certs
+        name: envoycert
+        readOnly: true
+      - mountPath: /admin
+        name: empty-dir
+        subPath: app-admin-dir
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    initContainers:
+    - args:
+      - bootstrap
+      - /config/envoy.json
+      - --xds-address=contour
+      - --xds-port=8001
+      - --resources-dir=/config/resources
+      - --envoy-cafile=/certs/ca.crt
+      - --envoy-cert-file=/certs/tls.crt
+      - --envoy-key-file=/certs/tls.key
+      command:
+      - contour
+      env:
+      - name: CONTOUR_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: ghcr.io/projectcontour/contour:v1.33.5
+      imagePullPolicy: IfNotPresent
+      name: envoy-initconfig
+      resources:
+        limits:
+          cpu: 150m
+          ephemeral-storage: 2Gi
+          memory: 192Mi
+        requests:
+          cpu: 100m
+          ephemeral-storage: 50Mi
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+        seLinuxOptions: {}
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /config
+        name: empty-dir
+        subPath: app-conf-dir
+      - mountPath: /certs
+        name: envoycert
+        readOnly: true
+      - mountPath: /admin
+        name: empty-dir
+        subPath: app-admin-dir
+    nodeName: chart-test-swarm-default-control-plane
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 0
+      fsGroupChangePolicy: Always
+    serviceAccount: contour-envoy
+    serviceAccountName: contour-envoy
+    terminationGracePeriodSeconds: 300
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/disk-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/memory-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/pid-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/unschedulable
+      operator: Exists
+    volumes:
+    - emptyDir: {}
+      name: empty-dir
+    - name: envoycert
+      secret:
+        defaultMode: 420
+        secretName: envoycert
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:31Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:31Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:54Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:54Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-05-30T19:08:30Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://df8965b437f5f09b297d0a2c8122085ddf6d6d87911ae891ce2380d8942874ad
+      image: docker.io/envoyproxy/envoy:v1.35.10
+      imageID: docker.io/envoyproxy/envoy@sha256:8537189cdf7beb9369ed3584dc263141b8eeb556576d297182ba747591722ae5
+      lastState: {}
+      name: envoy
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-05-30T19:08:34Z"
+    - containerID: containerd://ced205a8e12c0087f26cf6b0efcead318340e93ebe6a2a1788670257e7044217
+      image: ghcr.io/projectcontour/contour:v1.33.5
+      imageID: ghcr.io/projectcontour/contour@sha256:fc005b50254df59fab555fc008501df4552ae2208783663f6c28931b3e5849e4
+      lastState: {}
+      name: shutdown-manager
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-05-30T19:08:31Z"
+    hostIP: 172.20.0.3
+    hostIPs:
+    - ip: 172.20.0.3
+    initContainerStatuses:
+    - containerID: containerd://b6def6e266bb1e9d708e5cc3d7ecfa1f4ad55c43503ab896f92b3ec5f03195d2
+      image: ghcr.io/projectcontour/contour:v1.33.5
+      imageID: ghcr.io/projectcontour/contour@sha256:fc005b50254df59fab555fc008501df4552ae2208783663f6c28931b3e5849e4
+      lastState: {}
+      name: envoy-initconfig
+      ready: true
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: containerd://b6def6e266bb1e9d708e5cc3d7ecfa1f4ad55c43503ab896f92b3ec5f03195d2
+          exitCode: 0
+          finishedAt: "2026-05-30T19:08:30Z"
+          reason: Completed
+          startedAt: "2026-05-30T19:08:30Z"
+    phase: Running
+    podIP: 10.244.0.6
+    podIPs:
+    - ip: 10.244.0.6
+    qosClass: Burstable
+    startTime: "2026-05-30T19:08:30Z"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: contour
+      meta.helm.sh/release-namespace: projectcontour
+    creationTimestamp: "2026-05-30T19:08:30Z"
+    labels:
+      app.kubernetes.io/component: contour
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: contour
+      app.kubernetes.io/version: 1.33.5
+      helm.sh/chart: contour-0.6.0
+    name: contour
+    namespace: projectcontour
+    resourceVersion: "551"
+    uid: 172250ab-09c8-4fd8-856d-2e6e4785c4e9
+  spec:
+    clusterIP: 10.96.18.234
+    clusterIPs:
+    - 10.96.18.234
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: tcp-xds
+      port: 8001
+      protocol: TCP
+      targetPort: xds
+    selector:
+      app.kubernetes.io/component: contour
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/name: contour
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: contour
+      meta.helm.sh/release-namespace: projectcontour
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+    creationTimestamp: "2026-05-30T19:08:30Z"
+    labels:
+      app.kubernetes.io/component: envoy
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: contour
+      app.kubernetes.io/version: 1.33.5
+      helm.sh/chart: contour-0.6.0
+    name: contour-envoy
+    namespace: projectcontour
+    resourceVersion: "556"
+    uid: 85be9002-2be2-4dbd-9ccb-e1ecc94dd416
+  spec:
+    allocateLoadBalancerNodePorts: true
+    clusterIP: 10.96.7.186
+    clusterIPs:
+    - 10.96.7.186
+    externalTrafficPolicy: Local
+    healthCheckNodePort: 31016
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      nodePort: 30375
+      port: 80
+      protocol: TCP
+      targetPort: http
+    - name: https
+      nodePort: 32099
+      port: 443
+      protocol: TCP
+      targetPort: https
+    selector:
+      app.kubernetes.io/component: envoy
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/name: contour
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: DaemonSet
+  metadata:
+    annotations:
+      deprecated.daemonset.template.generation: "1"
+      meta.helm.sh/release-name: contour
+      meta.helm.sh/release-namespace: projectcontour
+    creationTimestamp: "2026-05-30T19:08:30Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: envoy
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: contour
+      app.kubernetes.io/version: 1.33.5
+      helm.sh/chart: contour-0.6.0
+    name: contour-envoy
+    namespace: projectcontour
+    resourceVersion: "665"
+    uid: 3e8ff12c-b810-4c4e-b2ef-c32d544f77fd
+  spec:
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: envoy
+        app.kubernetes.io/instance: contour
+        app.kubernetes.io/name: contour
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: envoy
+          app.kubernetes.io/instance: contour
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: contour
+          app.kubernetes.io/version: 1.33.5
+          helm.sh/chart: contour-0.6.0
+      spec:
+        affinity: {}
+        automountServiceAccountToken: false
+        containers:
+        - args:
+          - envoy
+          - shutdown-manager
+          - --serve-port=8090
+          command:
+          - contour
+          image: ghcr.io/projectcontour/contour:v1.33.5
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - contour
+                - envoy
+                - shutdown
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            successThreshold: 1
+            tcpSocket:
+              port: http-shutdown
+            timeoutSeconds: 5
+          name: shutdown-manager
+          ports:
+          - containerPort: 8090
+            name: http-shutdown
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: http-shutdown
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /admin
+            name: empty-dir
+            subPath: app-admin-dir
+        - args:
+          - -c
+          - /config/envoy.json
+          - --service-cluster $(CONTOUR_NAMESPACE)
+          - --service-node $(ENVOY_POD_NAME)
+          - --log-level info
+          command:
+          - envoy
+          env:
+          - name: CONTOUR_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: ENVOY_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          image: docker.io/envoyproxy/envoy:v1.35.10
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              httpGet:
+                path: /shutdown
+                port: 8090
+                scheme: HTTP
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            successThreshold: 1
+            tcpSocket:
+              port: 8002
+            timeoutSeconds: 5
+          name: envoy
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          - containerPort: 8002
+            name: metrics
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: 8002
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /config
+            name: empty-dir
+            subPath: app-conf-dir
+          - mountPath: /certs
+            name: envoycert
+            readOnly: true
+          - mountPath: /admin
+            name: empty-dir
+            subPath: app-admin-dir
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - args:
+          - bootstrap
+          - /config/envoy.json
+          - --xds-address=contour
+          - --xds-port=8001
+          - --resources-dir=/config/resources
+          - --envoy-cafile=/certs/ca.crt
+          - --envoy-cert-file=/certs/tls.crt
+          - --envoy-key-file=/certs/tls.key
+          command:
+          - contour
+          env:
+          - name: CONTOUR_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: ghcr.io/projectcontour/contour:v1.33.5
+          imagePullPolicy: IfNotPresent
+          name: envoy-initconfig
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /config
+            name: empty-dir
+            subPath: app-conf-dir
+          - mountPath: /certs
+            name: envoycert
+            readOnly: true
+          - mountPath: /admin
+            name: empty-dir
+            subPath: app-admin-dir
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 0
+          fsGroupChangePolicy: Always
+        serviceAccount: contour-envoy
+        serviceAccountName: contour-envoy
+        terminationGracePeriodSeconds: 300
+        volumes:
+        - emptyDir: {}
+          name: empty-dir
+        - name: envoycert
+          secret:
+            defaultMode: 420
+            secretName: envoycert
+    updateStrategy:
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 1
+      type: RollingUpdate
+  status:
+    currentNumberScheduled: 1
+    desiredNumberScheduled: 1
+    numberAvailable: 1
+    numberMisscheduled: 0
+    numberReady: 1
+    observedGeneration: 1
+    updatedNumberScheduled: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: contour
+      meta.helm.sh/release-namespace: projectcontour
+    creationTimestamp: "2026-05-30T19:08:30Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: contour
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: contour
+      app.kubernetes.io/version: 1.33.5
+      helm.sh/chart: contour-0.6.0
+    name: contour-contour
+    namespace: projectcontour
+    resourceVersion: "651"
+    uid: ec63f014-0f2c-4340-90f6-2dbc945fecf4
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: contour
+        app.kubernetes.io/instance: contour
+        app.kubernetes.io/name: contour
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          checksum/config: 8ad46ce4f1a6f121656387405c362297b26686ca4d428758b0de3c0fc3bcfd97
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: contour
+          app.kubernetes.io/instance: contour
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: contour
+          app.kubernetes.io/version: 1.33.5
+          helm.sh/chart: contour-0.6.0
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: contour
+                    app.kubernetes.io/instance: contour
+                    app.kubernetes.io/name: contour
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - serve
+          - --incluster
+          - --xds-address=0.0.0.0
+          - --xds-port=8001
+          - --http-port=8000
+          - --envoy-service-http-port=8080
+          - --envoy-service-https-port=8443
+          - --contour-cafile=/certs/ca.crt
+          - --contour-cert-file=/certs/tls.crt
+          - --contour-key-file=/certs/tls.key
+          - --config-path=/config/contour.yaml
+          - --envoy-service-namespace=projectcontour
+          - --envoy-service-name=contour-envoy
+          - --leader-election-resource-name=projectcontour-contour-contour
+          - --log-format=text
+          - --kubernetes-debug=0
+          command:
+          - contour
+          env:
+          - name: CONTOUR_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: BITNAMI_DEBUG
+            value: "false"
+          image: ghcr.io/projectcontour/contour:v1.33.5
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            successThreshold: 1
+            tcpSocket:
+              port: 8000
+            timeoutSeconds: 5
+          name: contour
+          ports:
+          - containerPort: 8001
+            name: xds
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /certs
+            name: contourcert
+            readOnly: true
+          - mountPath: /config
+            name: contour-config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 1001
+          fsGroupChangePolicy: Always
+        serviceAccount: contour-contour
+        serviceAccountName: contour-contour
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: contourcert
+          secret:
+            defaultMode: 420
+            secretName: contourcert
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: contour.yaml
+              path: contour.yaml
+            name: contour
+          name: contour-config
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-05-30T19:08:50Z"
+      lastUpdateTime: "2026-05-30T19:08:50Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-05-30T19:08:30Z"
+      lastUpdateTime: "2026-05-30T19:08:50Z"
+      message: ReplicaSet "contour-contour-5847f7c7f9" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: contour
+      meta.helm.sh/release-namespace: projectcontour
+    creationTimestamp: "2026-05-30T19:08:30Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: contour
+      app.kubernetes.io/instance: contour
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: contour
+      app.kubernetes.io/version: 1.33.5
+      helm.sh/chart: contour-0.6.0
+      pod-template-hash: 5847f7c7f9
+    name: contour-contour-5847f7c7f9
+    namespace: projectcontour
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: contour-contour
+      uid: ec63f014-0f2c-4340-90f6-2dbc945fecf4
+    resourceVersion: "650"
+    uid: 45db34df-fb69-458c-94c5-43613932bda1
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: contour
+        app.kubernetes.io/instance: contour
+        app.kubernetes.io/name: contour
+        pod-template-hash: 5847f7c7f9
+    template:
+      metadata:
+        annotations:
+          checksum/config: 8ad46ce4f1a6f121656387405c362297b26686ca4d428758b0de3c0fc3bcfd97
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: contour
+          app.kubernetes.io/instance: contour
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: contour
+          app.kubernetes.io/version: 1.33.5
+          helm.sh/chart: contour-0.6.0
+          pod-template-hash: 5847f7c7f9
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: contour
+                    app.kubernetes.io/instance: contour
+                    app.kubernetes.io/name: contour
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - serve
+          - --incluster
+          - --xds-address=0.0.0.0
+          - --xds-port=8001
+          - --http-port=8000
+          - --envoy-service-http-port=8080
+          - --envoy-service-https-port=8443
+          - --contour-cafile=/certs/ca.crt
+          - --contour-cert-file=/certs/tls.crt
+          - --contour-key-file=/certs/tls.key
+          - --config-path=/config/contour.yaml
+          - --envoy-service-namespace=projectcontour
+          - --envoy-service-name=contour-envoy
+          - --leader-election-resource-name=projectcontour-contour-contour
+          - --log-format=text
+          - --kubernetes-debug=0
+          command:
+          - contour
+          env:
+          - name: CONTOUR_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: BITNAMI_DEBUG
+            value: "false"
+          image: ghcr.io/projectcontour/contour:v1.33.5
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            successThreshold: 1
+            tcpSocket:
+              port: 8000
+            timeoutSeconds: 5
+          name: contour
+          ports:
+          - containerPort: 8001
+            name: xds
+            protocol: TCP
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /certs
+            name: contourcert
+            readOnly: true
+          - mountPath: /config
+            name: contour-config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 1001
+          fsGroupChangePolicy: Always
+        serviceAccount: contour-contour
+        serviceAccountName: contour-contour
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: contourcert
+          secret:
+            defaultMode: 420
+            secretName: contourcert
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: contour.yaml
+              path: contour.yaml
+            name: contour
+          name: contour-config
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+kind: List
+metadata:
+  resourceVersion: ""

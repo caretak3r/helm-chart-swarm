@@ -1,0 +1,32 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: GatewayClass
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"GatewayClass","metadata":{"annotations":{},"name":"contour"},"spec":{"controllerName":"projectcontour.io/gateway-controller"}}
+    creationTimestamp: "2026-05-31T22:45:27Z"
+    generation: 1
+    name: contour
+    resourceVersion: "632"
+    uid: d0f1692a-a9a4-41a9-a343-b69538815c2f
+  spec:
+    controllerName: projectcontour.io/gateway-controller
+  status:
+    conditions:
+    - lastTransitionTime: "2026-05-31T22:45:28Z"
+      message: Gateway API CRD bundle version v1.3.0 is supported.
+      observedGeneration: 1
+      reason: SupportedVersion
+      status: "True"
+      type: SupportedVersion
+    - lastTransitionTime: "2026-05-31T22:45:28Z"
+      message: GatewayClass has been accepted by the controller
+      observedGeneration: 1
+      reason: Accepted
+      status: "True"
+      type: Accepted
+kind: List
+metadata:
+  resourceVersion: ""

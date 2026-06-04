@@ -1,0 +1,57 @@
+---
+id: policy-kyverno-mutate
+name: "Kyverno mutate: auto-add annotation to Pods"
+description: >-
+  Installs Kyverno, creates a ClusterPolicy that adds the annotation kyverno.io/managed-by: chart-test-swarm to Pods. Verifies a Pod manifest lacking the annotation gets it auto-added after the mutating webhook fires. Webhook failure mode: Fail.
+labels: {customer: any, profile: policy}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: kyverno/kyverno
+      version: "3.8.1"
+      release: kyverno
+      namespace: kyverno
+      repo:
+        name: kyverno
+        url: "https://kyverno.github.io/kyverno/"
+      values:
+        admissionController:
+          replicas: 1
+        backgroundController:
+          enabled: true
+        cleanupController:
+          enabled: true
+        reportsController:
+          enabled: true
+        features:
+          admissionReports:
+            enabled: true
+          policyReports:
+            enabled: true
+      wait: pods-ready
+      wait_timeout: 4m
+    - kind: raw_manifest
+      path: ./fixtures/kyverno-mutate-add-annotation.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: kyverno
+    timeout: 4m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/kyverno-mutate.sh
+tags: [nightly]
+mechanisms: ['addon:kyverno']

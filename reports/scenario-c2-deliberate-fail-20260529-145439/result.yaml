@@ -1,0 +1,11 @@
+scenario_id: c2-deliberate-fail
+scenario_path: /tmp/c2-fail-scenario.yaml
+project_dir: /
+started_at: 2026-05-29T18:54:39Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  chart not found at //./nonexistent-chart-path (and not an OCI/URL ref)
+finished_at: 2026-05-29T18:55:07Z

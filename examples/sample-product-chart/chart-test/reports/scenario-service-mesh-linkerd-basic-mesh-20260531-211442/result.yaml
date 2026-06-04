@@ -1,0 +1,11 @@
+scenario_id: service-mesh-linkerd-basic-mesh
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-linkerd-basic-mesh.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T01:14:43Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-basic-mesh-20260531-211442/artifacts/logs/preinstall.log
+finished_at: 2026-06-01T01:15:10Z

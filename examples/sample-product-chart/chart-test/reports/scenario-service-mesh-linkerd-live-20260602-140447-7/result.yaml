@@ -1,0 +1,118 @@
+scenario_id: service-mesh-linkerd-live
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh/service-mesh-linkerd-live.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T18:04:48Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-crds in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-control-plane in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: FAIL
+    notes: |
+        Type                        Status
+        PodReadyToStartContainers   True 
+        Initialized                 True 
+        Ready                       False 
+        ContainersReady             False 
+        PodScheduled                True 
+      Volumes:
+        config:
+          Type:      ConfigMap (a volume populated by a ConfigMap)
+          Name:      linkerd-config
+          Optional:  false
+        trust-roots:
+          Type:      ConfigMap (a volume populated by a ConfigMap)
+          Name:      linkerd-identity-trust-roots
+          Optional:  false
+        tls:
+          Type:        Secret (a volume populated by a Secret)
+          SecretName:  linkerd-proxy-injector-k8s-tls
+          Optional:    false
+        linkerd-proxy-init-xtables-lock:
+          Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+          Medium:     
+          SizeLimit:  <unset>
+        linkerd-identity-token:
+          Type:                    Projected (a volume that contains injected data from multiple sources)
+          TokenExpirationSeconds:  86400
+        linkerd-identity-end-entity:
+          Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+          Medium:     Memory
+          SizeLimit:  <unset>
+        kube-api-access-27pkm:
+          Type:                    Projected (a volume that contains injected data from multiple sources)
+          TokenExpirationSeconds:  3607
+          ConfigMapName:           kube-root-ca.crt
+          Optional:                false
+          DownwardAPI:             true
+      QoS Class:                   Burstable
+      Node-Selectors:              kubernetes.io/os=linux
+      Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                                   node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-8wmg2 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-8wmg2   1/1     Running   0          5m7s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+        curl -sL https://run.linkerd.io/install | sh
+      
+      Alternatively, you can download the CLI directly via the Linkerd releases page:
+      
+        https://github.com/linkerd/linkerd2/releases/
+      
+      To make sure everything works as expected, run the following:
+      
+        linkerd check
+      
+      The viz extension can be installed by running:
+      
+        helm install linkerd-viz linkerd/linkerd-viz
+      
+      Looking for more? Visit https://linkerd.io/2/getting-started/
+      ==> Waiting for linkerd control-plane rollout
+        Waiting for deployment/linkerd-destination rollout (5m max)...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      deployment "linkerd-destination" successfully rolled out
+        Waiting for deployment/linkerd-identity rollout (5m max)...
+      deployment "linkerd-identity" successfully rolled out
+        Waiting for deployment/linkerd-proxy-injector rollout (5m max)...
+      deployment "linkerd-proxy-injector" successfully rolled out
+      ==> Cleaning up any stuck old pods
+        Force-deleting stuck pod: linkerd-destination-6df4d7c47f-ntgdd
+      pod "linkerd-destination-6df4d7c47f-ntgdd" force deleted from linkerd namespace
+        Force-deleting stuck pod: linkerd-identity-69f4bbc8ff-tj49g
+      pod "linkerd-identity-69f4bbc8ff-tj49g" force deleted from linkerd namespace
+      PASS: linkerd-control-plane upgraded with ephemeral certs
+      ==> VAL-MSH-009: Verifying linkerd control-plane pods are Ready
+        ✓ linkerd control-plane pods are Ready
+      ==> VAL-MSH-009: Verifying linkerd-proxy-injector MutatingWebhookConfiguration
+        ✓ linkerd-proxy-injector webhook present: mutatingwebhookconfiguration.admissionregistration.k8s.io/linkerd-proxy-injector-webhook-config
+      ==> VAL-MSH-010: Verifying namespace sample is annotated linkerd.io/inject=enabled
+        ✓ Namespace sample annotated linkerd.io/inject=enabled
+      ==> VAL-MSH-010: Verifying product pods have linkerd-proxy sidecar
+        Pod sample-7dcd986bd4-8wmg2 (deploy/sample) containers (1): app
+      FAIL: Pod sample-7dcd986bd4-8wmg2 missing linkerd-proxy sidecar (containers: app)
+status: FAIL
+finished_at: 2026-06-02T18:11:00Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-live-20260602-140447-7/artifacts/logs

@@ -1,0 +1,67 @@
+scenario_id: policy-opa-gatekeeper-required-labels
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/policy-opa-gatekeeper-required-labels.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T15:35:50Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-42 -n gatekeeper-system wait --for=condition=Ready pods --timeout=4m --all
+      pod/gatekeeper-audit-65579cd9f9-s6mmx condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-gf2sj condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-kl244 condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-zcsmc condition met
+      PASS: pods Ready in ns/gatekeeper-system
+      NAME                                             READY   STATUS    RESTARTS   AGE
+      gatekeeper-audit-65579cd9f9-s6mmx                1/1     Running   0          46s
+      gatekeeper-controller-manager-64bbbfbdbb-gf2sj   1/1     Running   0          46s
+      gatekeeper-controller-manager-64bbbfbdbb-kl244   1/1     Running   0          46s
+      gatekeeper-controller-manager-64bbbfbdbb-zcsmc   1/1     Running   0          46s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-42 -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/ingress-nginx-controller-d74c658c5-bmmxz condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      ingress-nginx-controller-d74c658c5-bmmxz   1/1     Running   0          29s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-42 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-p7c64 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-p7c64   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      Scaling gatekeeper-controller-manager to 0 in gatekeeper-system (original replicas: 3)...
+      deployment.apps/gatekeeper-controller-manager scaled
+      pod/gatekeeper-controller-manager-64bbbfbdbb-gf2sj condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-kl244 condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-zcsmc condition met
+      PASS: gatekeeper controller scaled to 0
+      Attempting kubectl apply with webhook unavailable...
+      Error from server (InternalError): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-compliant.yaml": Internal error occurred: failed calling webhook "validation.gatekeeper.sh": failed to call webhook: Post "https://gatekeeper-webhook-service.gatekeeper-system.svc:443/v1/admit?timeout=3s": dial tcp 10.96.168.172:443: connect: connection refused
+      PASS: admission correctly blocked during webhook outage (Fail policy)
+      Restoring gatekeeper-controller-manager to 3 in gatekeeper-system...
+      deployment.apps/gatekeeper-controller-manager scaled
+      Waiting for gatekeeper controller pods to be Ready again...
+      pod/gatekeeper-controller-manager-64bbbfbdbb-fw6r7 condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-gwkj6 condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-zdk88 condition met
+      PASS: gatekeeper controller pods Ready
+      Waiting for admission webhook to accept requests (180s max, may be slow on resource-constrained clusters)...
+      deployment.apps/test-compliant created (server dry run)
+      PASS: admission restored after webhook recovery (attempt 1)
+      PASS: OPA Gatekeeper required-labels + nginx-ingress cross-feature compose verified
+status: PASS
+finished_at: 2026-06-01T15:37:39Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-policy-opa-gatekeeper-required-labels-20260601-113549-9/artifacts/logs

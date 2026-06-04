@@ -1,0 +1,30 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: linkerd-crds (linkerd/linkerd-crds @ 1.8.0) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-crds" does not exist. Installing it now.
+NAME: linkerd-crds
+LAST DEPLOYED: Sun May 31 21:36:23 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The linkerd-crds chart was successfully installed 🎉
+
+To complete the linkerd core installation, please now proceed to install the
+linkerd-control-plane chart in the linkerd namespace.
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+
+==> [2/2] kind=helm
+    helm: linkerd-control-plane (linkerd/linkerd-control-plane @ 1.16.11) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-control-plane" does not exist. Installing it now.
+Error: resource Deployment/linkerd/linkerd-destination not ready. status: InProgress, message: Available: 0/1
+resource Deployment/linkerd/linkerd-identity not ready. status: InProgress, message: Available: 0/1
+resource Deployment/linkerd/linkerd-proxy-injector not ready. status: InProgress, message: Available: 0/1
+context deadline exceeded

@@ -1,0 +1,73 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIL5yTB5LIRbswDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA1MzAxNDI3MTZaFw0zNjA1MjcxNDMyMTZaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDe/aVP/APYXrtbp1HUhGhLE6kgCmlKq2ikZqkmhC8GqirKT/eckKO6ZPZq
+      j0LUfJ2YXCY8JZ5pq1I6si+zWduyn7hh3Zo5H2pfLJGnHKvjq5x4DE30jbTO6e1f
+      Y42JfQcg/uTgSjt1Xm8R7/nJpWA7MGpoTfO8BE2MNUMRtzMcXgMmHQJJ+lfF/haU
+      2Ywne/EkIDehSvnRccbUSiOobb8MavxitARAa2CPKsIkgYZ20TZcpWCDfGeA/ywZ
+      1kvSyj1QFz51h1CTf0l+WnuY9h5FUePhpq8Hx74L/RVmBF4w/A7caqduouxqyYJN
+      LPg2T3Pgfdntz8oZHWIB0GfeMS8PAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQKXirUPZiGe9A6s+3jEmXbTBQP9jAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQDdZArWeOZQ
+      0jsyhXFnjQZxKRXwkoBSQwj+P7gLKVqrVFIS3Jnt2DprpPRIW/VOu5VOrebAtruc
+      awJn63oOYXDUY0JvVEpql0lMCgUj37z2j4rtlrexiwWkWKQ/jFUO/BES4n7a0xCv
+      FSLf8n0I0GP8CQx9jW+UEJspTVfyFMJMTSn3USsrwNAH7Hp2fN78yHUKCH9YEifo
+      gt8XNWhWHE6TDgRUCqg/64ses0z6m8D0Zj2vLik3TMxuQqwcJAgbNYXzKGC1bCCH
+      jtdom80A+8+onfQhL3J2O4Bt02PXxeshsejwwIHVR1Rr+wOhCg3ALSqY62eUCFWM
+      JNZaxyo7Rrh9
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    creationTimestamp: "2026-05-30T14:33:09Z"
+    name: kube-root-ca.crt
+    namespace: sample
+    resourceVersion: "657"
+    uid: ff26cc85-14b6-44eb-a291-488d23d4b720
+- apiVersion: v1
+  data:
+    default.conf: |
+      server {
+        listen 80;
+        server_name _;
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+        }
+      }
+      server {
+        listen 443 ssl;
+        server_name _;
+        ssl_certificate     /etc/tls/tls.crt;
+        ssl_certificate_key /etc/tls/tls.key;
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+        }
+      }
+  kind: ConfigMap
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-05-30T14:33:10Z"
+    labels:
+      app: sample
+      app.kubernetes.io/managed-by: Helm
+    name: sample-nginx-tls
+    namespace: sample
+    resourceVersion: "685"
+    uid: b8390420-0b3b-4b0b-9baf-369830ab05a7
+kind: List
+metadata:
+  resourceVersion: ""

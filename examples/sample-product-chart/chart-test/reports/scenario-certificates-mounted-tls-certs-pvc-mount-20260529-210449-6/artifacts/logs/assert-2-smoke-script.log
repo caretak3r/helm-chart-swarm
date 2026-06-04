@@ -1,0 +1,26 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/mounted-tls-pvc-mount.sh (RELEASE=sample NAMESPACE=sample)
+==> Checking PVC 'mounted-tls-pvc' exists
+OK: PVC is Bound
+==> Verifying pod has PVC-backed tls volume
+PASS: PVC volume 'tls' found
+==> Verifying mountPath matches tls.mountPath
+PASS: mountPath=/etc/tls
+==> Verifying volume source is persistentVolumeClaim
+PASS: volume source is persistentVolumeClaim (claim=mounted-tls-pvc)
+==> Waiting for pod Ready (3m max)
+pod/sample-6c94f9dbc-csskh condition met
+PASS: chart pods Ready
+==> Exec stat /etc/tls/tls.crt in pod
+Defaulted container "app" out of: app, wait-for-tls (init)
+  File: /etc/tls/tls.crt
+  Size: 1176      	Blocks: 8          IO Block: 4096   regular file
+Device: fe01h/65025d	Inode: 55599       Links: 1
+Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2026-05-30 01:05:21.962355009 +0000
+Modify: 2026-05-30 01:05:21.963355009 +0000
+Change: 2026-05-30 01:05:21.964355009 +0000
+PASS: tls.crt accessible at /etc/tls
+==> Verifying HTTPS reachable from in-cluster curl
+HTTPS response: 200
+PASS: HTTPS 200
+PASS: mounted-tls-certs pvc-mount scenario verified

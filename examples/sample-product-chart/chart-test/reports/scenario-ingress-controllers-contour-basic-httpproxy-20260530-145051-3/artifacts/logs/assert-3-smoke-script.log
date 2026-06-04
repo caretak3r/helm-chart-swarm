@@ -1,0 +1,22 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-basic.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for envoy pod Ready (3m max)
+pod/contour-envoy-w4xkw condition met
+PASS: envoy pod Ready
+==> Waiting for contour controller pod Ready (3m max)
+pod/contour-contour-5847f7c7f9-xbs4m condition met
+PASS: contour controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-9qcpx condition met
+PASS: product pods Ready
+==> Getting envoy pod IP (probe via pod IP)
+envoy pod IP: 10.244.0.6
+==> Verifying HTTPProxy exists and status is valid
+HTTPProxy status: valid
+PASS: HTTPProxy status is valid
+==> Probing HTTP with Host header (expect 200) on envoy container port 8080
+HTTP response (with Host): 200
+PASS: HTTP 200 with Host header
+==> Probing HTTP without Host header (expect 404) on envoy container port 8080
+HTTP response (without Host): 404
+PASS: HTTP 404 without Host header (envoy default)
+PASS: Contour basic HTTPProxy integration verified

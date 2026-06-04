@@ -1,0 +1,6 @@
+==> kind cluster 'chart-test-swarm-default' already exists
+==> Cluster nodes:
+NAME                                     STATUS   ROLES           AGE   VERSION
+chart-test-swarm-default-control-plane   Ready    control-plane   45s   v1.30.0
+==> OK: kind-chart-test-swarm-default ready
+==> Note: kubeconfig context set to 'kind-chart-test-swarm-default' (context restore deferred to caller).

@@ -1,0 +1,3 @@
+Release "sample" does not exist. Installing it now.
+Error: resource Deployment/sample/sample not ready. status: InProgress, message: Available: 0/1
+context deadline exceeded

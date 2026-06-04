@@ -1,0 +1,17 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/traefik-middleware-chain.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Traefik pod Ready (3m max)
+pod/traefik-77657478fd-4xwrm condition met
+PASS: Traefik pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-q87zv condition met
+PASS: product pods Ready
+==> Verifying Middleware CR exists
+middleware.traefik.io/add-test-header
+PASS: Middleware add-test-header exists
+==> Verifying IngressRoute references the Middleware
+PASS: IngressRoute references Middleware 'add-test-header'
+==> Getting Traefik pod IP
+Traefik pod IP: 10.244.0.5
+==> Probing HTTP with Host header (expect 200 with X-Test header)
+HTTP response code: 
+FAIL: expected HTTP 200, got 

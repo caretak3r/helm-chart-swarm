@@ -1,0 +1,70 @@
+scenario_id: envoy-gateway
+scenario_path: examples/sample-product-chart/chart-test/scenarios/envoy-gateway.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-29T20:52:11Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release envoy-gateway in ns/envoy-gateway-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: FAIL
+    notes: |
+          Environment:
+            ENVOY_GATEWAY_NAMESPACE:    envoy-gateway-system (v1:metadata.namespace)
+            KUBERNETES_CLUSTER_DOMAIN:  cluster.local
+          Mounts:
+            /certs from certs (ro)
+            /config from envoy-gateway-config (ro)
+            /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-bzjx4 (ro)
+      Conditions:
+        Type                        Status
+        PodReadyToStartContainers   True 
+        Initialized                 True 
+        Ready                       True 
+        ContainersReady             True 
+        PodScheduled                True 
+      Volumes:
+        envoy-gateway-config:
+          Type:      ConfigMap (a volume populated by a ConfigMap)
+          Name:      envoy-gateway-config
+          Optional:  false
+        certs:
+          Type:        Secret (a volume populated by a Secret)
+          SecretName:  envoy-gateway
+          Optional:    false
+        kube-api-access-bzjx4:
+          Type:                    Projected (a volume that contains injected data from multiple sources)
+          TokenExpirationSeconds:  3607
+          ConfigMapName:           kube-root-ca.crt
+          Optional:                false
+          DownwardAPI:             true
+      QoS Class:                   Burstable
+      Node-Selectors:              <none>
+      Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                                   node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+      Events:
+        Type    Reason     Age    From               Message
+        ----    ------     ----   ----               -------
+        Normal  Scheduled  5m13s  default-scheduler  Successfully assigned envoy-gateway-system/envoy-gateway-56b969757f-swvrb to chart-test-swarm-eglive3-control-plane
+        Normal  Pulled     5m13s  kubelet            spec.containers{envoy-gateway}: Container image "docker.io/envoyproxy/gateway:v1.1.2" already present on machine
+        Normal  Created    5m13s  kubelet            spec.containers{envoy-gateway}: Created container envoy-gateway
+        Normal  Started    5m13s  kubelet            spec.containers{envoy-gateway}: Started container envoy-gateway
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-eglive3 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-755dcb55c8-hrdc5 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-755dcb55c8-hrdc5   1/1     Running   0          5m3s
+status: FAIL
+finished_at: 2026-05-29T20:58:01Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-envoy-gateway-20260529-165211-4/artifacts/logs

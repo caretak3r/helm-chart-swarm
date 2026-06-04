@@ -1,0 +1,60 @@
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      nginx.ingress.kubernetes.io/canary: "true"
+      nginx.ingress.kubernetes.io/canary-weight: "20"
+    creationTimestamp: "2026-05-30T18:14:36Z"
+    generation: 1
+    name: sample-canary
+    namespace: sample
+    resourceVersion: "984"
+    uid: b181db05-242d-480b-8a8b-b58a71d2875e
+  spec:
+    ingressClassName: nginx
+    rules:
+    - host: sample.test.local
+      http:
+        paths:
+        - backend:
+            service:
+              name: sample-canary
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 10.96.31.236
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    creationTimestamp: "2026-05-30T18:14:35Z"
+    generation: 1
+    name: sample-stable
+    namespace: sample
+    resourceVersion: "985"
+    uid: 099e831e-6c0a-46f4-89bf-054eb7e83ebe
+  spec:
+    ingressClassName: nginx
+    rules:
+    - host: sample.test.local
+      http:
+        paths:
+        - backend:
+            service:
+              name: sample
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 10.96.31.236
+kind: List
+metadata:
+  resourceVersion: ""

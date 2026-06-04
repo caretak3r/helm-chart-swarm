@@ -1,0 +1,32 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 4 preinstall item(s)
+
+==> [1/4] kind=helm
+    helm: linkerd-crds (linkerd/linkerd-crds @ 1.8.0) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-crds" does not exist. Installing it now.
+NAME: linkerd-crds
+LAST DEPLOYED: Tue Jun  2 13:35:18 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The linkerd-crds chart was successfully installed 🎉
+
+To complete the linkerd core installation, please now proceed to install the
+linkerd-control-plane chart in the linkerd namespace.
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+
+==> [2/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/service-mesh/linkerd-identity-secret.yaml
+namespace/linkerd serverside-applied
+secret/linkerd-identity-issuer-secrets serverside-applied
+
+==> [3/4] kind=helm
+    helm: linkerd-control-plane (linkerd/linkerd-control-plane @ 1.16.11) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-control-plane" does not exist. Installing it now.
+Error: execution error at (linkerd-control-plane/templates/identity.yaml:20:21): Please provide the identity issuer certificate

@@ -1,0 +1,7 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: linkerd-crds (linkerd/linkerd-crds @ 1.8.0) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+error: context "kind-chart-test-swarm-bench-57" does not exist

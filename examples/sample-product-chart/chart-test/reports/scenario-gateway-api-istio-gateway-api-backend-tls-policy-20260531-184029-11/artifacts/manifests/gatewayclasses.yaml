@@ -1,0 +1,46 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: GatewayClass
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"GatewayClass","metadata":{"annotations":{},"name":"istio"},"spec":{"controllerName":"istio.io/gateway-controller"}}
+    creationTimestamp: "2026-05-31T22:41:04Z"
+    generation: 1
+    name: istio
+    resourceVersion: "722"
+    uid: e96a516e-17d6-4372-995b-1c7ee7a08453
+  spec:
+    controllerName: istio.io/gateway-controller
+    description: The default Istio GatewayClass
+  status:
+    conditions:
+    - lastTransitionTime: "2026-05-31T22:41:04Z"
+      message: Handled by Istio controller
+      observedGeneration: 1
+      reason: Accepted
+      status: "True"
+      type: Accepted
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: GatewayClass
+  metadata:
+    creationTimestamp: "2026-05-31T22:41:04Z"
+    generation: 1
+    name: istio-remote
+    resourceVersion: "703"
+    uid: 53b5170c-6a21-4821-9025-c4f6b39d6c7f
+  spec:
+    controllerName: istio.io/unmanaged-gateway
+    description: Remote to this cluster. Does not deploy or affect configuration.
+  status:
+    conditions:
+    - lastTransitionTime: "2026-05-31T22:41:04Z"
+      message: Handled by Istio controller
+      observedGeneration: 1
+      reason: Accepted
+      status: "True"
+      type: Accepted
+kind: List
+metadata:
+  resourceVersion: ""

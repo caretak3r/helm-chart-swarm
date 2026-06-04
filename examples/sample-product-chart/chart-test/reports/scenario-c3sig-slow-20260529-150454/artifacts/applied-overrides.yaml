@@ -1,0 +1,6 @@
+helm_values:
+  {replicaCount: 1, image: {repository: nginx, tag: "1.27-alpine"}, service: {type: ClusterIP, port: 80},
+    # Override image to a non-existent one so pods never become ready
+    image.repository: nginx-nonexistent, image.tag: never-exists}
+raw_manifest_refs:
+  - chart-test/fixtures/test/raw-manifest-configmap.yaml

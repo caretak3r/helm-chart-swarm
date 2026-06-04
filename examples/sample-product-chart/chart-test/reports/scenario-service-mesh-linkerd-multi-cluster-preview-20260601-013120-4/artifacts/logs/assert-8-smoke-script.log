@@ -1,0 +1,26 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-multi-cluster-preview.sh (RELEASE=sample NAMESPACE=sample)
+==> Verifying linkerd-multicluster extension is installed
+  ✓ linkerd-gateway deployment exists
+==> Verifying multicluster CRDs are established
+  ✓ CRD links.multicluster.linkerd.io established
+  links.multicluster.linkerd.io Established: True
+  services.k8s.io Established: N/A
+==> Authoring a preview Link resource for a logical target cluster
+WARN: could not create preview Link (may be namespace restriction)
+  Verifying Link resource was created
+  Link resources in linkerd-multicluster: 0
+WARN: Link 'target-cluster' not found (may require specific namespace permissions)
+  ✓ Link resource authored successfully
+==> Verifying linkerd-multicluster gateway pod is running
+  ✓ gateway pods running: 1
+==> Annotating namespace and verifying product pods
+namespace/sample annotated
+deployment.apps/sample restarted
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+deployment.apps/sample-scope restarted
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+deployment "sample-scope" successfully rolled out
+PASS: linkerd multi-cluster preview integration verified

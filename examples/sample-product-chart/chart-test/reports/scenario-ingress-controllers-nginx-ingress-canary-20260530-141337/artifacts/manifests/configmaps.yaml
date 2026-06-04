@@ -1,0 +1,58 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    default.conf: |
+      server {
+        listen 80;
+        server_name _;
+        location / {
+          add_header X-Backend canary;
+          return 200 'canary-response';
+          add_header Content-Type text/plain;
+        }
+      }
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: "2026-05-30T18:14:36Z"
+    name: canary-backend-config
+    namespace: sample
+    resourceVersion: "671"
+    uid: 4d3134dc-e673-498d-a6a4-3ac4b41c2f05
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIUIIcPJX2mVkwDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA1MzAxODA4MzlaFw0zNjA1MjcxODEzMzlaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDKRadwQzip7RfW1ZX4TuinbTx+nUFB7bzqqki1ZFZtdlqaT0yRHznbdSnu
+      lTHIUXG/ezrrwg3tyC0lggfARLqVVrZCBhjAqLhHByYIFQfcDrMp1O5FWZiELIBq
+      TjOUe8wwS/+GcffA9JEQrZPGYaNf0SLoZc4sWcEs6KKtluYn7/Nhq8CUmY2hpYKk
+      zEoD40H7UmgNXe43wd2N22i7NTkoi4J1AAf2AKogdJrOXHhQh0U9sFTaXzS1pfMV
+      tjdzyLxhgi8NutHxIpEqkIvfaaZy1jKzICGR5Br+IKzbiTvrQNQ3B1cdTEDXgECi
+      mQTaT+Z7+n1yKdAKYaB4ctrD+/hvAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBSvy7xpDquTL8y1aRtjpYe2IzV+OTAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQByRDu58o4f
+      qs5m8hbSgUUyHvndxcFT3cleSZ5meg83Y66QlpTmy3LgKlMKjxYYnpBKPOHQFI2U
+      ZWSwIkBfOAG53XiR1qhvxaZWdNTWuCS9ubAVn12ni/ap6es3mVtIYbwssBl5JUBg
+      sZn12/CMFSHTPxd11ixalz1wbLvyX53ALvnD/uAMsxaECNJHguVVNCdfHs7zAIS0
+      m6XywiOAPV5dqpLJB5erqi3Hkquc+p0WdXrJcMLMWuAqRU0xQUowQuo3dUpLyS9b
+      DMCkJciHYY8CTv37a/q/5v3ApowpPZldg/O+/OmM9Ac5z3Mhl3X7PR/9YR6aCFa5
+      6Gw4SytdEPdS
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    creationTimestamp: "2026-05-30T18:14:35Z"
+    name: kube-root-ca.crt
+    namespace: sample
+    resourceVersion: "666"
+    uid: d3d07563-368c-49cd-8b23-263cfba7264a
+kind: List
+metadata:
+  resourceVersion: ""

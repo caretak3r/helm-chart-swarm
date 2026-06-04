@@ -1,0 +1,75 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-06-01T05:20:41Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "630"
+    uid: a2b26a7e-a1fb-40f2-b283-a22d976704f1
+  spec:
+    clusterIP: 10.96.246.42
+    clusterIPs:
+    - 10.96.246.42
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-06-01T05:20:41Z"
+    labels:
+      app: sample-scope
+      app.kubernetes.io/component: scope
+      app.kubernetes.io/instance: sample
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: sample-product
+      app.kubernetes.io/version: 1.0.0
+      helm.sh/chart: sample-product-0.1.0
+    name: sample-scope
+    namespace: sample
+    resourceVersion: "628"
+    uid: 1e74baca-b28f-4975-9606-4b17d2da4bd8
+  spec:
+    clusterIP: 10.96.148.141
+    clusterIPs:
+    - 10.96.148.141
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: api
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample-scope
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

@@ -1,0 +1,2 @@
+helm status: deployed
+PASS: release linkerd-crds in ns/linkerd is deployed

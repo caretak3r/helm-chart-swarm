@@ -1,0 +1,6 @@
+scenario_id: ingress-controllers-traefik-middleware-chain
+scenario_path: /var/folders/10/9lylcxg10rd17gqmylhpw3740000gn/T/tmp.lghPzd6VVr/ingress-controllers-traefik-middleware-chain.yaml
+project_dir: /var/folders/10/9lylcxg10rd17gqmylhpw3740000gn
+started_at: 2026-05-30T17:29:34Z
+provider: kind
+asserts:

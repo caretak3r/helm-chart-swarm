@@ -1,0 +1,2 @@
+helm status: deployed
+PASS: release linkerd-control-plane in ns/linkerd is deployed

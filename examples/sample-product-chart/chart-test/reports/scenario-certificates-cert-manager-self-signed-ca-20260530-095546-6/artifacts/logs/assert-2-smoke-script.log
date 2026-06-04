@@ -1,0 +1,20 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-self-signed.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Certificate 'sample-tls' Ready (3m max)
+certificate.cert-manager.io/sample-tls condition met
+PASS: Certificate Ready=True
+==> Verifying TLS Secret 'sample-tls' keys
+Secret keys: ca.crt
+tls.crt
+tls.key
+OK: tls.crt, tls.key, ca.crt all present
+==> Waiting for pod Ready (3m max)
+pod/sample-5db589c76f-dlrv6 condition met
+PASS: chart pods Ready
+==> Verifying HTTPS reachable from in-cluster curl
+HTTPS response: 200
+PASS: HTTPS 200 with --cacert verification
+==> Verifying peer certificate SAN
+SAN: X509v3 Subject Alternative Name: 
+    DNS:sample.sample.svc, DNS:sample.sample.svc.cluster.local
+PASS: cert SAN includes configured host
+PASS: cert-manager self-signed CA integration verified

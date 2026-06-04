@@ -1,0 +1,3 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-multi-cluster-preview.sh (RELEASE=sample NAMESPACE=sample)
+==> Verifying linkerd-multicluster extension is installed
+FAIL: linkerd-service-mirror deployment not found in linkerd-multicluster namespace

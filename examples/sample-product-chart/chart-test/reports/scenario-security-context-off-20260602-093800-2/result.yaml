@@ -1,0 +1,13 @@
+scenario_id: security-context-off
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/security-context-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T13:38:00Z
+provider: kind
+asserts:
+  - type: security-context
+    status: PASS
+    notes: |
+      PASS: no securityContext blocks present on 1 workload(s)
+status: PASS
+finished_at: 2026-06-02T13:38:30Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-security-context-off-20260602-093800-2/artifacts/logs

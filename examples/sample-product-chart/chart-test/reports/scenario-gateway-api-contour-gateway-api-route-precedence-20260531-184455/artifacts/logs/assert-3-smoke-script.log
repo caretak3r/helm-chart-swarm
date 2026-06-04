@@ -1,0 +1,26 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-gateway-api-route-precedence.sh (RELEASE=sample NAMESPACE=sample)
+==> Applying GatewayClass contour + Gateway + two HTTPRoutes
+gatewayclass.gateway.networking.k8s.io/contour created
+gateway.gateway.networking.k8s.io/sample-gw created
+httproute.gateway.networking.k8s.io/sample-route-api created
+httproute.gateway.networking.k8s.io/sample-route-api-v2 created
+==> Waiting for GatewayClass contour Accepted=True (3m max)
+PASS: GatewayClass contour Accepted=True
+==> Waiting for Gateway listener http Programmed=True (5m max)
+PASS: Gateway listener http Programmed=True
+==> Verifying auto-provisioned Envoy Deployment in sample namespace
+PASS: auto-provisioned Envoy Deployment found (1)
+==> Waiting for Envoy pods Ready (3m max)
+pod/contour-sample-gw-7c77855479-kgblt condition met
+pod/contour-sample-gw-7c77855479-ptf8b condition met
+pod/envoy-sample-gw-6vmjb condition met
+PASS: Envoy pods Ready
+==> Verifying HTTPRoute sample-route-api Accepted=True
+PASS: HTTPRoute sample-route-api Accepted=True
+==> Verifying HTTPRoute sample-route-api-v2 Accepted=True
+PASS: HTTPRoute sample-route-api-v2 Accepted=True
+==> Getting Envoy Service ClusterIP in sample
+Envoy Service IP: 10.96.10.105
+==> Test 1: /api/v2/foo → expect X-Route: v2 (more specific prefix wins)
+Test /api/v2/foo → X-Route header: 
+FAIL: expected X-Route: v2 for /api/v2/foo, got 

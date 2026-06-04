@@ -1,0 +1,2 @@
+  Deployment/sample container/app: missing resources block
+FAIL: 1 resources check(s) failed across 1 workload(s)

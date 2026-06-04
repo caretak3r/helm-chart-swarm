@@ -1,0 +1,39 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, kubeval, yamllint.
+# Apply to your own GKE cluster per the gcp-lb primer instructions.
+---
+id: networking-gcp-lb-internal
+name: "GCP LB Internal HTTP(S)"
+description: >-
+  GKE provisions an internal HTTP(S) load balancer from a Kubernetes Ingress
+  with the internal annotation; smoke-script verifies the internal LB IP is a
+  private VPC address and curls from within the VPC.
+labels:
+  customer: any
+  profile: gke
+  chart-test-swarm/target-k8s-version: gke-1.30
+cluster:
+  provider: gke
+  k8s_version: "1.30"
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    ingress.enabled: "true"
+    ingress.className: "gce-internal"
+    ingress.annotations.cloud.google.com/load-balancer-type: "Internal"
+    ingress.annotations.networking.gke.io/internal-ips: "<REPLACE_WITH_INTERNAL_IP>"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/cloud-native/gke/internal-lb.sh
+tags: [cloud-native]
+mechanisms: ['cloud:gke', 'addon:gcp-lb', 'addon:internal-lb']
+category: networking/ingress-lb
+tier: authored-only
+integration: gcp-lb

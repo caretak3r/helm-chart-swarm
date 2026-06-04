@@ -71,19 +71,80 @@ runtime certificate generation.
 
 ## Dashboard
 
-`engine/testgrid/` -- Python (Jinja2 + Typer) static HTML dashboard:
+`engine/testgrid/` -- Python (Jinja2 + Typer) static HTML dashboard
+served via `chart-test-swarm dashboard`. Consistent top nav bar on all
+pages (Home, Matrix, Runs, Recommendations, Versions).
+
+**Home page** — navigation cards for Support Matrix, Run History,
+Recommendations, and Versions, each showing summary metrics (total
+runs, pass/fail counts, open recommendations, version counts).
+
+**Support Matrix page** — capability-keyed coverage grid across cluster
+types. AUTHORIZED badges for cloud-authored entries
+(EKS/AKS/GKE tier=authored-only scenarios appear as AUTHORED, excluded
+from pass/fail totals; never applied to real cloud from this repo).
+
+**Run History page** — lists all test runs with links to detail pages.
+
+**Run Detail pages** — per-run view with scenario results and version
+info.
+
+**Recommendations page** — tabbed view (All / Open / In Progress /
+Fixed / Dismissed) with cards showing status badges, category and
+severity tags, FIX and Dismiss buttons, and category/severity filters.
+
+**Versions page** — merged view of engine defaults + project overrides
+across 5 sections: kubernetes, cli_tools, preinstalls, product, cloud.
+Edits from the dashboard write to the project file only; version history
+is logged.
+
+General dashboard features:
 
 - Variant grouping across scenario runs
 - Status breakdown (pass / fail / skipped / interrupted)
 - Artifact links per scenario
-- **support-matrix.html** page with capability-keyed table
-- **AUTHORIZED** badges for cloud-authored entries (EKS/AKS/GKE tier=authored-only scenarios appear as AUTHORED on the matrix, excluded from pass/fail totals; never applied to real cloud from this repo)
 - XSS-safe rendering (auto-escaping)
 - Deterministic rebuilds (content-hash keyed)
 - Multi-run aggregation
 - Live `--watch` mode with automatic rebuilds
 - `--serve` flag for HTTP serving
 - Curated-live suite support
+
+## Recommendations Engine
+
+`engine/testgrid/src/testgrid/recommendations.py` scans FAIL results
+from test runs and:
+
+- Auto-classifies failures into categories: chart-fix, infrastructure,
+  gap-probe, schema-missing
+- Assigns severity (high / medium / low)
+- Deduplicates across runs
+- Generates fix prompts for LLM-driven chart fixes
+- Persists to `reports/recommendations.json`
+
+## Fix Workflow
+
+`chart-test-swarm fix <rec-id>` drives LLM-powered chart fixes:
+
+1. Reads `.fix-prompt.json` for the recommendation
+2. Invokes `CTS_LLM_CMD` with the fix prompt
+3. Applies LLM-suggested changes to the chart (with path traversal
+   protection)
+4. Re-runs the scenario on a kind cluster
+5. Updates recommendation status (fixed / open)
+6. Appends history to `history.json`
+7. Rebuilds the dashboard
+
+## Version Management
+
+`engine/defaults/versions.yaml` + `engine/testgrid/src/testgrid/versions.py`:
+
+- Engine-level defaults with project-level overrides
+- 5 sections: kubernetes, cli_tools, preinstalls, product, cloud
+- Deep merge (project values win over engine defaults)
+- JSON schema validation
+- Edit from dashboard writes to project file only
+- Version history logging
 
 ## Catalog + Support Matrix
 
@@ -100,13 +161,14 @@ truth for which scenarios exist and which integrations they exercise.
 | Command | Description |
 |---------|-------------|
 | `run` | Dispatch scenarios with `--scenario`, `--integration`, `--backend`, `--parallelism`, `--cluster-name`, `--reports-dir`, `--include-cloud-native` |
-| `dashboard` | Build dashboard with `--reports-dir`, `--project-dir`, `--watch`, `--interval`, `--serve`, `--port`; includes `catalog` and `support-matrix` sub-views |
+| `dashboard` | Build and serve dashboard with `--reports-dir`, `--project-dir`, `--watch`, `--interval`, `--serve`, `--port`; pages: Home, Support Matrix, Run History, Run Detail, Recommendations, Versions |
 | `new <category>/<integration>` | Scaffold fixture + scenario + smoke script from templates |
 | `list integrations` | Discover available integration primers |
 | `list variants` | Discover available scenarios |
 | `generate pick` | Non-interactive scenario selector (`--category`, `--integration`) |
 | `generate author` | LLM-driven scenario authoring (requires `CTS_LLM_CMD`) |
 | `generate explore` | Iterative LLM exploration loop |
+| `fix <rec-id>` | Apply LLM-driven fix to a recommendation (read prompt → invoke LLM → apply change → re-run scenario → update status → rebuild dashboard) |
 
 ## Sample chart
 
@@ -179,6 +241,9 @@ chart-test-swarm dashboard --watch --interval 30
 # Serve dashboard on port 8080
 chart-test-swarm dashboard --serve --port 8080
 
+# Apply LLM-driven fix to a recommendation
+chart-test-swarm fix <rec-id>
+
 # Scaffold a new scenario
 chart-test-swarm new policy/kyverno
 
@@ -214,7 +279,7 @@ shellcheck engine/scripts/*.sh engine/asserts/*.sh
 helm lint examples/sample-product-chart/chart
 ```
 
-Test suite: 305+ bats tests, 610+ pytest tests, mypy --strict, ruff,
+Test suite: ~342 bats tests, ~890+ pytest tests, mypy --strict, ruff,
 shellcheck, yamllint, helm lint.
 
 ## Layout

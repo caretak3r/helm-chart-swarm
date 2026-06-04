@@ -1,0 +1,10 @@
+==> PROJECT_DIR=examples/sample-product-chart
+==> Applying 1 preinstall item(s)
+
+==> [1/1] kind=helm
+    helm: kong (kong/ingress @ 0.24.0) in ns/kong
+    repo 'kong' already exists with URL https://charts.konghq.com (skipping add)
+Release "kong" does not exist. Installing it now.
+Error: resource Deployment/kong/kong-controller not ready. status: InProgress, message: Available: 0/1
+resource Deployment/kong/kong-gateway not ready. status: InProgress, message: Available: 0/1
+context deadline exceeded

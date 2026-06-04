@@ -1,0 +1,82 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca-crl.pem: ""
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: "2026-06-01T05:14:27Z"
+    labels:
+      istio.io/config: "true"
+    name: istio-ca-crl
+    namespace: sample
+    resourceVersion: "818"
+    uid: ed89d80e-2a48-4318-92f2-c5e8ceabec82
+- apiVersion: v1
+  data:
+    root-cert.pem: |
+      -----BEGIN CERTIFICATE-----
+      MIIC/TCCAeWgAwIBAgIRAOEpy+6mxXG6+QrJxo6k4A8wDQYJKoZIhvcNAQELBQAw
+      GDEWMBQGA1UEChMNY2x1c3Rlci5sb2NhbDAeFw0yNjA2MDEwNTE0MjJaFw0zNjA1
+      MjkwNTE0MjJaMBgxFjAUBgNVBAoTDWNsdXN0ZXIubG9jYWwwggEiMA0GCSqGSIb3
+      DQEBAQUAA4IBDwAwggEKAoIBAQCyPYqlTZJJzTM8zdc3nza4E9krDntDf658KNTi
+      LoWFIJ6VIxgsOGzQahdRVwQhYGjpCOUoSi0r28Sdy7PQf6PdIip3ASKY8Iz+9h8s
+      gxDNni5dJkQEgvbETYwt9R23Xv8VdIKo9if7kdZsv15pJeQf1sfZ5wQojsEyGVEB
+      CrvwDTbpnI+kLNTqjHWwj49h4sdRlmrD1pqKYHV7Tas3y3ujN267OHQXxlm2Pbqs
+      W9XSUh+rClE0ssAulnXm7HZvj10m9AviRiuOh4tsLuL/i+D39yV5UoyRHFXjCKv8
+      57rVqs5z1UVRNPeCz0dpl1QLpG4vdvteVucWUBuoOGqBO0NPAgMBAAGjQjBAMA4G
+      A1UdDwEB/wQEAwICBDAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBT2A0p2hW5C
+      ik4EdICGcmzQHLUo/jANBgkqhkiG9w0BAQsFAAOCAQEAjMbNBxaMTcpTTV/zvJZQ
+      2X9fJz9Ls8cEyEzBf/LgNbpjrzaR6SitcODdq5O6KDZHfTyGZAnkuS/w9XEodWVp
+      VMzYChVwdf7qfVV9AfrXCPyclwDul2gmD8soH7xi+thSG0eBer9mY6mNAQwZmgsr
+      Nbaz4YHOXumVas1sVkxf4uLcJQmfL063He+/kJWQsKAoGBUkhL37xGneyZuyUROE
+      UBhsUlm+XdVSEAIH3bmdapHwEra8rIxe4M9hjy1Io9abN7wMwp3YFRjkMIsqVoZZ
+      a5XNfmeqqlAkM76nWz3YDEZlqsUlyCcc7fpf2BJWO0sVweGStgdvZx4gaU+IQZOJ
+      ew==
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: "2026-06-01T05:14:27Z"
+    labels:
+      istio.io/config: "true"
+    name: istio-ca-root-cert
+    namespace: sample
+    resourceVersion: "815"
+    uid: 4d969557-7b4f-4520-890a-d735f03cb2d8
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIaV4tLpht94QwDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA2MDEwNTA4MzRaFw0zNjA1MjkwNTEzMzRaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQCwbIA6oCq5wvBmnWC6Hium7L7shuuol1UXTuz1C0QH1liA+wGjz07tN0Qp
+      iq56HQIn+1C+YoI5yl/FJOBboKGGQqr1liSFvtuoE5rqz4KiJ0USTzlT4pFYQLjh
+      dZqwJZ0+g0ml+MJQeamwIcR0UwQAdtgxjk3kSmSEkwVQHJ8vx2IPeb4F5Lk8vhGE
+      wovSmQuLxc+hdhPGlKSD6HZroe4disDPTapojDxwka3kEw3kog5dpTt0hUBLyAfz
+      HbSZW5zkm5bzItU3EbmYTPtCxWvpC7Q6VCSFUmBZSTy2sAV/H/rTLGyg0Ev1niXW
+      TpckUyPsrEfuozp8k6++PUksyt8jAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRVMY6f0zm4hy/Z00I1e4XOpb478DAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQAViMGFbH7s
+      bWfm8iCapyx1ySjH90psAGkGYpYZQA+DBIhYtQcknyMNl2ixdrF2S7xAQtLVrgdE
+      NO63TAaR6TBF6FQPZ20Px2N4k52vMZeoZ8ys6vVGZkeh2loGpFdtSwzoz14UgwTk
+      cLCpJcU1/MRf7vtfPI31c9W9FHVh+7doX8Mxyn+nhJaabreKOsEK3TLJBFUZNApx
+      YFSkxUO+JbBXf5wpxdDv6dcwuvOPCKqU4F9CNXckQLd65EmC2JKftkxOvuYfeyOW
+      UbePWmLcohYWZvn0QErqCMnKvaOWafdJcHZTfb3+RvDkQ/g1JSKO6yLK1Jd+Qun8
+      tprDpIPVezYN
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    creationTimestamp: "2026-06-01T05:14:27Z"
+    name: kube-root-ca.crt
+    namespace: sample
+    resourceVersion: "817"
+    uid: baa5e896-4885-4d8c-9177-ad40184261cf
+kind: List
+metadata:
+  resourceVersion: ""

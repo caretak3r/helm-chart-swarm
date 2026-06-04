@@ -1,0 +1,220 @@
+{
+  "timestamp": "2026-05-28T00:11:31.569Z",
+  "workerSessionId": "a9449fad-efa6-4f6e-8377-5b0ed4812309",
+  "featureId": "f1-5-repo-test-scaffolding",
+  "milestone": "engine-foundations",
+  "commitId": "8ddd90c",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "successState": "success",
+  "returnToOrchestrator": true,
+  "handoff": {
+    "salientSummary": "Implemented F1.5 repo test scaffolding: pytest/ruff/mypy config, shellcheck/yamllint configs, --help banners and bash version preflight on all engine scripts, pre-boot fixture validation, scenario id collision detection, sweep-scenarios.sh (check-jsonschema), orphan-audit.sh, and comprehensive bats+pytest tests. All 81 bats tests and 71 pytest tests pass; all milestone gate commands (lint/typecheck/test) exit 0.",
+    "whatWasImplemented": "F1.5 repo test scaffolding with the following components:\n\n1. **pyproject.toml** — Added dev deps (pytest, ruff, mypy, types-PyYAML), check-jsonschema runtime dep, mypy strict=true config with jinja2 ignore_missing_imports override\n2. **.yamllint** — Root yamllint config with relaxed rules for helm values (line-length 200, document-start disable, truthy relaxed)\n3. **.shellcheckrc** — Root shellcheck config disabling SC1091, SC2155, SC2001, SC2005\n4. **All 10 engine scripts** — Added usage() function with --help BEFORE BASH_VERSINFO preflight (so --help works under bash 3.2 on macOS)\n5. **run-scenario.sh** — Added validate_fixture_paths() for pre-boot fixture path validation (names scenario id, preinstall index, missing path) and scenario id collision detection with deterministic suffix\n6. **sweep-scenarios.sh** — New script using check-jsonschema CLI for cross-scenario schema validation (only scans */scenarios/ directories)\n7. **orphan-audit.sh** — New script auditing chart-test-swarm-* kind clusters, minikube profiles, docker containers with --fix cleanup mode\n8. **bats tests** — 3 new test files: help-banner.bats (11 tests), bash-version-preflight.bats (6 tests), orphan-invariant.bats (2 tests)\n9. **pytest test_scaffolding.py** — 53 test cases covering ruff, mypy, cluster name defaults, help banners, bash preflight, sweep tool, orphan audit, fixture validation, collision detection, pyproject.toml config\n10. **Fixed existing tests** — cluster-lifecycle.bats updated for bash 3.2 compatibility (tests prefix-check library directly under bash 3.2, falls back to source code inspection)\n11. **Fixed yamllint errors** — 5 scenario YAML files had extra spaces after commas\n12. **Removed unnecessary BASH_VERSINFO preflight** from sweep-scenarios.sh (no bash 4+ features used)",
+    "whatWasLeftUndone": "No remote git push possible (no git remote configured). All work is committed locally on branch feat/f1-2-raw-manifest-preinstall.",
+    "verification": {
+      "commandsRun": [
+        {
+          "command": "bats engine/scripts/tests engine/asserts/tests",
+          "exitCode": 0,
+          "observation": "81 bats tests pass: ok 1-81, no failures"
+        },
+        {
+          "command": "uv run --directory engine/testgrid pytest",
+          "exitCode": 0,
+          "observation": "71 pytest tests pass in 0.88s"
+        },
+        {
+          "command": "uv run --directory engine/testgrid mypy src/testgrid",
+          "exitCode": 0,
+          "observation": "Success: no issues found in 4 source files"
+        },
+        {
+          "command": "uv run --directory engine/testgrid ruff check src/testgrid",
+          "exitCode": 0,
+          "observation": "All checks passed!"
+        },
+        {
+          "command": "shellcheck engine/scripts/*.sh engine/asserts/*.sh",
+          "exitCode": 0,
+          "observation": "No findings"
+        },
+        {
+          "command": "yamllint engine/skills/chart-test-swarm/references/integrations examples/sample-product-chart/chart-test/scenarios",
+          "exitCode": 0,
+          "observation": "No findings"
+        },
+        {
+          "command": "helm lint examples/sample-product-chart/chart",
+          "exitCode": 0,
+          "observation": "1 chart(s) linted, 0 chart(s) failed"
+        },
+        {
+          "command": "/bin/bash engine/scripts/orphan-audit.sh",
+          "exitCode": 0,
+          "observation": "Orphan audit PASSED: no chart-test-swarm-* orphans found"
+        },
+        {
+          "command": "/bin/bash engine/scripts/sweep-scenarios.sh",
+          "exitCode": 0,
+          "observation": "Sweep complete: 6 passed, 0 failed"
+        },
+        {
+          "command": "/bin/bash engine/scripts/verify.sh",
+          "exitCode": 1,
+          "observation": "Correctly exits 1 with bash version error under /bin/bash 3.2 (no mapfile: command not found)"
+        },
+        {
+          "command": "/bin/bash engine/scripts/verify.sh --help",
+          "exitCode": 0,
+          "observation": "--help works under bash 3.2 (Usage banner printed)"
+        }
+      ],
+      "interactiveChecks": [
+        {
+          "action": "Verified all 10 engine scripts --help exit 0 under /bin/bash 3.2",
+          "observed": "All scripts print Usage banner and exit 0"
+        },
+        {
+          "action": "Verified bash version preflight blocks execution under /bin/bash 3.2",
+          "observed": "Scripts exit 1 with clear 'bash >= 4 required' message, never 'mapfile: command not found'"
+        }
+      ]
+    },
+    "tests": {
+      "added": [
+        {
+          "file": "engine/testgrid/tests/test_scaffolding.py",
+          "cases": [
+            {
+              "name": "test_ruff_check_exits_0",
+              "verifies": "VAL-ENGINE-019: ruff check passes"
+            },
+            {
+              "name": "test_ruff_format_check_exits_0",
+              "verifies": "VAL-ENGINE-019: ruff format check"
+            },
+            {
+              "name": "test_mypy_exits_0",
+              "verifies": "VAL-ENGINE-020: mypy exits 0"
+            },
+            {
+              "name": "test_mypy_no_missing_stub_yaml",
+              "verifies": "VAL-ENGINE-020: types-PyYAML resolved"
+            },
+            {
+              "name": "test_mypy_no_missing_stub_jinja2",
+              "verifies": "VAL-ENGINE-020: jinja2 ignore_missing_imports"
+            },
+            {
+              "name": "test_help_exits_0 [10 scripts]",
+              "verifies": "VAL-ENGINE-028: --help exits 0 on all 10 scripts"
+            },
+            {
+              "name": "test_help_contains_usage [10 scripts]",
+              "verifies": "VAL-ENGINE-028: Usage banner present"
+            },
+            {
+              "name": "test_bash_version_preflight_present [6 scripts]",
+              "verifies": "VAL-ENGINE-039: BASH_VERSINFO preflight present"
+            },
+            {
+              "name": "test_no_mapfile_without_preflight",
+              "verifies": "VAL-ENGINE-039: no mapfile: command not found"
+            },
+            {
+              "name": "test_sweep_tool_help",
+              "verifies": "VAL-CROSS-012: sweep tool exists and works"
+            },
+            {
+              "name": "test_orphan_audit_clean_state",
+              "verifies": "VAL-CROSS-016/017: orphan audit passes clean"
+            },
+            {
+              "name": "test_run_scenario_has_pre_boot_validation",
+              "verifies": "VAL-ENGINE-025: pre-boot fixture validation"
+            },
+            {
+              "name": "test_missing_path_error_includes_scenario_id",
+              "verifies": "VAL-ENGINE-025: error names scenario id"
+            },
+            {
+              "name": "test_missing_path_error_includes_preinstall_index",
+              "verifies": "VAL-ENGINE-025: error names preinstall index"
+            },
+            {
+              "name": "test_run_scenario_has_collision_detection",
+              "verifies": "VAL-ENGINE-029: collision detection present"
+            },
+            {
+              "name": "test_collision_uses_suffix_not_overwrite",
+              "verifies": "VAL-ENGINE-029: deterministic suffix on collision"
+            },
+            {
+              "name": "test_cluster_up_default",
+              "verifies": "VAL-ENGINE-030: CLUSTER_NAME default satisfies prefix"
+            },
+            {
+              "name": "test_pyproject_toml_config",
+              "verifies": "F1.5: pyproject.toml has required deps and mypy config"
+            }
+          ]
+        },
+        {
+          "file": "engine/asserts/tests/help-banner.bats",
+          "cases": [
+            {
+              "name": "--help exits 0 for all 10 engine scripts",
+              "verifies": "VAL-ENGINE-028: --help on all scripts"
+            },
+            {
+              "name": "no cluster operations during --help",
+              "verifies": "VAL-ENGINE-028: no side effects from --help"
+            }
+          ]
+        },
+        {
+          "file": "engine/asserts/tests/bash-version-preflight.bats",
+          "cases": [
+            {
+              "name": "preflight scripts --help under /bin/bash 3.2",
+              "verifies": "VAL-ENGINE-039: --help before preflight"
+            },
+            {
+              "name": "scripts fail with bash version error on /bin/bash 3.2",
+              "verifies": "VAL-ENGINE-039: version error not mapfile error"
+            },
+            {
+              "name": "preflight/no-preflight classification correct",
+              "verifies": "VAL-ENGINE-039: BASH_VERSINFO present only where needed"
+            }
+          ]
+        },
+        {
+          "file": "engine/asserts/tests/orphan-invariant.bats",
+          "cases": [
+            {
+              "name": "orphan-audit.sh exits 0 with no orphans",
+              "verifies": "VAL-CROSS-016/017: orphan audit passes clean"
+            },
+            {
+              "name": "orphan-audit.sh --help exits 0",
+              "verifies": "VAL-ENGINE-028: orphan-audit.sh accepts --help"
+            }
+          ]
+        }
+      ],
+      "updated": [
+        "engine/scripts/tests/cluster-lifecycle.bats",
+        "engine/scripts/tests/prefix-invariant.bats"
+      ],
+      "coverage": "All 14 fulfills assertions (VAL-ENGINE-019/020/021/023/024/025/028/029/030/039, VAL-CROSS-012/016/017/022) are covered by bats and pytest tests. Milestone gate commands all exit 0."
+    },
+    "discoveredIssues": [
+      {
+        "severity": "non_blocking",
+        "description": "No git remote configured — cannot push to remote. All changes are committed locally on branch feat/f1-2-raw-manifest-preinstall.",
+        "suggestedFix": "Add a git remote and push."
+      }
+    ]
+  }
+}

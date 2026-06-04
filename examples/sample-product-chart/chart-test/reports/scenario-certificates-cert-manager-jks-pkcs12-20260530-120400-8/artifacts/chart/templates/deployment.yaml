@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "sample-product.labels" . | nindent 4 }}
+    {{- include "sample-product.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: skywatcher
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sample-product.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sample-product.skywatcherPodLabels" . | nindent 8 }}
+      annotations:
+        {{- include "sample-product.meshAnnotations" . | nindent 8 }}
+    spec:
+      {{- if .Values.tls.enabled }}
+      {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
+      {{- $volumeType := .Values.tls.volumeType | default "secret" }}
+      {{- if ne (.Values.tls.waitForCerts | toString) "false" }}
+      initContainers:
+        - name: wait-for-tls
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for TLS certs to appear at {{ $mountPath }}..."
+              until [ -f {{ $mountPath }}/tls.crt ] && [ -f {{ $mountPath }}/tls.key ]; do
+                sleep 3
+              done
+              echo "TLS certs found, proceeding."
+          volumeMounts:
+            - name: tls
+              mountPath: {{ $mountPath }}
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 80
+            {{- if .Values.tls.enabled }}
+            - containerPort: {{ .Values.tls.servicePort }}
+            {{- end }}
+          {{- if .Values.tls.enabled }}
+          {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
+          volumeMounts:
+            - name: tls
+              mountPath: {{ $mountPath }}
+              readOnly: true
+            - name: nginx-tls-config
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+          {{- end }}
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+          livenessProbe:
+            httpGet: { path: /, port: 80 }
+      {{- if .Values.tls.enabled }}
+      {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
+      {{- $volumeType := .Values.tls.volumeType | default "secret" }}
+      volumes:
+        {{- if eq $volumeType "persistentVolumeClaim" }}
+        - name: tls
+          persistentVolumeClaim:
+            claimName: {{ required "tls.pvcClaimName is required when volumeType is persistentVolumeClaim" .Values.tls.pvcClaimName }}
+        {{- else if eq $volumeType "projected" }}
+        - name: tls
+          projected:
+            sources:
+              - secret:
+                  name: {{ .Values.tls.secretName }}
+                  items:
+                    - key: tls.crt
+                      path: tls.crt
+                    - key: tls.key
+                      path: tls.key
+        {{- else if eq $volumeType "csi" }}
+        - name: tls
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ required "tls.secretProviderClass is required when volumeType is csi" .Values.tls.secretProviderClass }}
+        {{- else }}
+        - name: tls
+          secret:
+            secretName: {{ .Values.tls.secretName }}
+            optional: true
+        {{- end }}
+        - name: nginx-tls-config
+          configMap:
+            name: {{ .Release.Name }}-nginx-tls
+      {{- end }}

@@ -1,0 +1,13 @@
+scenario_id: scheduling-off
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/scheduling-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T14:15:21Z
+provider: kind
+asserts:
+  - type: scheduling-present
+    status: PASS
+    notes: |
+      PASS: no scheduling fields present on 1 workload(s)
+status: PASS
+finished_at: 2026-06-02T14:15:51Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-scheduling-off-20260602-101521/artifacts/logs

@@ -1,0 +1,80 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: istio-base (istio/base @ 1.27.9) in ns/istio-system
+    repo 'istio' already exists with URL https://istio-release.storage.googleapis.com/charts (skipping add)
+Release "istio-base" does not exist. Installing it now.
+NAME: istio-base
+LAST DEPLOYED: Sun May 31 20:56:10 2026
+NAMESPACE: istio-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+Istio base successfully installed!
+
+To learn more about the release, try:
+  $ helm status istio-base -n istio-system
+  $ helm get all istio-base -n istio-system
+
+==> [2/3] kind=helm
+    helm: istiod (istio/istiod @ 1.27.9) in ns/istio-system
+    repo 'istio' already exists with URL https://istio-release.storage.googleapis.com/charts (skipping add)
+Release "istiod" does not exist. Installing it now.
+NAME: istiod
+LAST DEPLOYED: Sun May 31 20:56:11 2026
+NAMESPACE: istio-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+"istiod" successfully installed!
+
+To learn more about the release, try:
+  $ helm status istiod -n istio-system
+  $ helm get all istiod -n istio-system
+
+Next steps:
+  * Deploy a Gateway: https://istio.io/latest/docs/setup/additional-setup/gateway/
+  * Try out our tasks to get started on common configurations:
+    * https://istio.io/latest/docs/tasks/traffic-management
+    * https://istio.io/latest/docs/tasks/security/
+    * https://istio.io/latest/docs/tasks/policy-enforcement/
+  * Review the list of actively supported releases, CVE publications and our hardening guide:
+    * https://istio.io/latest/docs/releases/supported-releases/
+    * https://istio.io/latest/news/security/
+    * https://istio.io/latest/docs/ops/best-practices/security/
+
+For further documentation see https://istio.io website
+pod/istiod-54b585df85-dtws8 condition met
+
+==> [3/3] kind=helm
+    helm: istio-ingressgateway (istio/gateway @ 1.27.9) in ns/istio-system
+    repo 'istio' already exists with URL https://istio-release.storage.googleapis.com/charts (skipping add)
+Release "istio-ingressgateway" does not exist. Installing it now.
+NAME: istio-ingressgateway
+LAST DEPLOYED: Sun May 31 20:56:16 2026
+NAMESPACE: istio-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+"istio-ingressgateway" successfully installed!
+
+To learn more about the release, try:
+  $ helm status istio-ingressgateway -n istio-system
+  $ helm get all istio-ingressgateway -n istio-system
+
+Next steps:
+  * Deploy an HTTP Gateway: https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/
+  * Deploy an HTTPS Gateway: https://istio.io/latest/docs/tasks/traffic-management/ingress/secure-ingress/
+pod/istio-ingressgateway-8584b67974-gccjm condition met
+pod/istiod-54b585df85-dtws8 condition met
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

@@ -1,0 +1,38 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, kubeval, yamllint.
+# Apply to your own EKS cluster per the EKS primer instructions.
+---
+id: cloud-native-eks-irsa
+name: "EKS IRSA (IAM Roles for Service Accounts)"
+description: "ServiceAccount with eks.amazonaws.com/role-arn annotation; pod obtains AWS credentials via OIDC federation and calls S3."
+labels:
+  customer: any
+  profile: eks
+  chart-test-swarm/target-k8s-version: eks-1.30
+cluster:
+  provider: eks
+  k8s_version: "1.30"
+  preinstall:
+    - kind: raw_manifest
+      path: ./fixtures/irsa-serviceaccount.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    eks.irsa.enabled: "true"
+    eks.irsa.roleArn: "<REPLACE_WITH_IAM_ROLE_ARN>"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/cloud-native/eks/irsa.sh
+tags: [cloud-native]
+mechanisms: ['cloud:eks', 'addon:irsa']
+category: cloud-native
+tier: authored-only
+integration: eks-irsa

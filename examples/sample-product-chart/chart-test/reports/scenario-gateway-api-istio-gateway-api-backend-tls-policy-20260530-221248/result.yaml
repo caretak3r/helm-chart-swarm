@@ -1,0 +1,11 @@
+scenario_id: gateway-api-istio-gateway-api-backend-tls-policy
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-istio-gateway-api-backend-tls-policy.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T02:12:49Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-istio-gateway-api-backend-tls-policy-20260530-221248/artifacts/logs/preinstall.log
+finished_at: 2026-05-31T02:13:23Z

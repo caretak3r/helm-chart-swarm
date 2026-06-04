@@ -1,0 +1,4 @@
+helm_values:
+  {replicaCount: 1, image: {repository: nginx, tag: "1.27-alpine"}, service: {type: ClusterIP, port: 80}, "podAnnotations.sidecar\\.istio\\.io/inject": "true"}
+raw_manifest_refs:
+  []

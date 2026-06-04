@@ -1,0 +1,78 @@
+scenario_id: gateway-api-envoy-gateway-security-policy-attach
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-envoy-gateway-security-policy-attach.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T00:28:45Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release envoy-gateway in ns/envoy-gateway-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n envoy-gateway-system wait --for=condition=Ready pods --timeout=5m -l app.kubernetes.io/name=gateway-helm
+      pod/envoy-gateway-56b969757f-r4q4z condition met
+      PASS: pods Ready in ns/envoy-gateway-system (selector=app.kubernetes.io/name=gateway-helm)
+      NAME                             READY   STATUS    RESTARTS   AGE
+      envoy-gateway-56b969757f-r4q4z   1/1     Running   0          15s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-498gv condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-498gv   1/1     Running   0          3s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      metadata:
+        annotations:
+          kubectl.kubernetes.io/last-applied-configuration: |
+            {"apiVersion":"gateway.envoyproxy.io/v1alpha1","kind":"SecurityPolicy","metadata":{"annotations":{},"name":"sample-cors-policy","namespace":"sample"},"spec":{"cors":{"allowHeaders":["*"],"allowMethods":["GET","POST","OPTIONS"],"allowOrigins":["*"],"maxAge":"86400s"},"targetRef":{"group":"gateway.networking.k8s.io","kind":"HTTPRoute","name":"sample-route"}}}
+        creationTimestamp: "2026-05-31T00:29:33Z"
+        generation: 1
+        name: sample-cors-policy
+        namespace: sample
+        resourceVersion: "669"
+        uid: 93269c32-f249-41fa-8b0a-e710783873df
+      spec:
+        cors:
+          allowHeaders:
+          - '*'
+          allowMethods:
+          - GET
+          - POST
+          - OPTIONS
+          allowOrigins:
+          - '*'
+          maxAge: 86400s
+        targetRef:
+          group: gateway.networking.k8s.io
+          kind: HTTPRoute
+          name: sample-route
+      status:
+        ancestors:
+        - ancestorRef:
+            group: gateway.networking.k8s.io
+            kind: Gateway
+            name: sample-gw
+            namespace: sample
+            sectionName: http
+          conditions:
+          - lastTransitionTime: "2026-05-31T00:29:34Z"
+            message: Policy has been accepted.
+            reason: Accepted
+            status: "True"
+            type: Accepted
+          controllerName: gateway.envoyproxy.io/gatewayclass-controller
+status: FAIL
+finished_at: 2026-05-31T00:31:36Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-envoy-gateway-security-policy-attach-20260530-202844/artifacts/logs

@@ -1,0 +1,26 @@
+exec: examples/sample-product-chart/chart-test/assertions/mounted-tls-projected-volume.sh (RELEASE=sample NAMESPACE=sample)
+==> Verifying projected volume TLS Secret exists
+OK: TLS Secret exists
+==> Verifying pod has a projected volume named 'tls'
+PASS: projected volume 'tls' found
+==> Verifying tls projected volume has secret source
+PASS: projected volume sources include secret 'mounted-tls-projected'
+==> Verifying mountPath matches tls.mountPath
+PASS: mountPath=/etc/tls
+==> Waiting for pod Ready (3m max)
+pod/sample-55776c48fb-5gqk7 condition met
+PASS: chart pods Ready
+==> Exec stat /etc/tls/tls.crt in pod
+Defaulted container "app" out of: app, wait-for-tls (init)
+  File: '/etc/tls/tls.crt' -> '..data/tls.crt'
+  Size: 14        	Blocks: 0          IO Block: 4096   symbolic link
+Device: e4h/228d	Inode: 6           Links: 1
+Access: (0777/lrwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2026-06-02 19:08:53.598739014 +0000
+Modify: 2026-06-02 19:08:51.050739013 +0000
+Change: 2026-06-02 19:08:51.050739013 +0000
+PASS: tls.crt accessible at /etc/tls
+==> Verifying HTTPS reachable from in-cluster curl
+HTTPS response: 200
+PASS: HTTPS 200
+PASS: mounted-tls-certs projected-volume scenario verified

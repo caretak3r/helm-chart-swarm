@@ -1,0 +1,11 @@
+scenario_id: c3sig-slow
+scenario_path: /tmp/c3sig-slow.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-05-29T19:04:54Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: cluster-up
+fail_msg: |
+  see examples/sample-product-chart/chart-test/reports/scenario-c3sig-slow-20260529-150454/artifacts/logs/cluster-up.log
+finished_at: 2026-05-29T19:05:16Z

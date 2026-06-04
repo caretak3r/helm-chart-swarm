@@ -1,0 +1,45 @@
+scenario_id: tls-cert-manager-self-signed
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates/tls-cert-manager-self-signed.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-06-02T19:14:03Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7d59fd54fc-6ng72 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7d59fd54fc-6ng72   1/1     Running   0          83s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: CA Certificate Ready=True
+      ==> Waiting for leaf Certificate 'sample-tls' Ready (3m max)
+      certificate.cert-manager.io/sample-tls condition met
+      PASS: leaf Certificate Ready=True
+      ==> Verifying TLS Secret 'sample-tls' keys
+      Secret keys: ca.crt
+      tls.crt
+      tls.key
+      OK: tls.crt, tls.key, ca.crt all present
+      ==> Waiting for pod Ready (3m max)
+      pod/sample-7d59fd54fc-6ng72 condition met
+      PASS: chart pods Ready
+      ==> Verifying HTTPS reachable from in-cluster curl
+      HTTPS response: 200
+      PASS: HTTPS 200 with --cacert verification
+      ==> Verifying peer certificate SAN
+      SAN: X509v3 Subject Alternative Name: 
+          DNS:sample.sample.svc, DNS:sample.sample.svc.cluster.local
+      PASS: cert SAN includes configured host
+      PASS: cert-manager self-signed CA chain integration verified
+status: PASS
+finished_at: 2026-06-02T19:16:15Z
+log_dir: examples/sample-product-chart/chart-test/reports/scenario-tls-cert-manager-self-signed-20260602-151403/artifacts/logs

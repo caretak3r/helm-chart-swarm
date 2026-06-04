@@ -1,0 +1,67 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"Gateway","metadata":{"annotations":{},"name":"sample-gw","namespace":"sample"},"spec":{"gatewayClassName":"contour","listeners":[{"allowedRoutes":{"namespaces":{"from":"Same"}},"name":"http","port":80,"protocol":"HTTP"}]}}
+    creationTimestamp: "2026-05-31T23:21:54Z"
+    generation: 1
+    name: sample-gw
+    namespace: sample
+    resourceVersion: "671"
+    uid: 37f34eaf-568a-4618-9888-56bc95f6a8b7
+  spec:
+    gatewayClassName: contour
+    listeners:
+    - allowedRoutes:
+        namespaces:
+          from: Same
+      name: http
+      port: 80
+      protocol: HTTP
+  status:
+    conditions:
+    - lastTransitionTime: "2026-05-31T23:21:56Z"
+      message: Gateway is accepted
+      observedGeneration: 1
+      reason: Accepted
+      status: "True"
+      type: Accepted
+    - lastTransitionTime: "2026-05-31T23:21:56Z"
+      message: Valid Gateway
+      observedGeneration: 1
+      reason: Programmed
+      status: "True"
+      type: Programmed
+    listeners:
+    - attachedRoutes: 1
+      conditions:
+      - lastTransitionTime: "2026-05-31T23:21:56Z"
+        message: Valid listener
+        observedGeneration: 1
+        reason: Programmed
+        status: "True"
+        type: Programmed
+      - lastTransitionTime: "2026-05-31T23:21:56Z"
+        message: Listener accepted
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-05-31T23:21:56Z"
+        message: Listener references resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      name: http
+      supportedKinds:
+      - group: gateway.networking.k8s.io
+        kind: HTTPRoute
+      - group: gateway.networking.k8s.io
+        kind: GRPCRoute
+kind: List
+metadata:
+  resourceVersion: ""

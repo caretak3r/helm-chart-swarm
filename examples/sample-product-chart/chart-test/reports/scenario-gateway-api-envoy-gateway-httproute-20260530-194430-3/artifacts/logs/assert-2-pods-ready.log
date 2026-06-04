@@ -1,0 +1,56 @@
+kubectl --context kind-chart-test-swarm-default -n envoy-gateway-system wait --for=condition=Ready pods --timeout=5m --all
+pod/envoy-gateway-56b969757f-72sfb condition met
+error: timed out waiting for the condition on pods/envoy-gateway-gateway-helm-certgen-dk28c
+FAIL: pods not Ready in ns/envoy-gateway-system within 5m
+NAME                             READY   STATUS    RESTARTS   AGE
+envoy-gateway-56b969757f-72sfb   1/1     Running   0          5m14s
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  1Gi
+    Requests:
+      cpu:      100m
+      memory:   256Mi
+    Liveness:   http-get http://:8081/healthz delay=15s timeout=1s period=20s #success=1 #failure=3
+    Readiness:  http-get http://:8081/readyz delay=5s timeout=1s period=10s #success=1 #failure=3
+    Environment:
+      ENVOY_GATEWAY_NAMESPACE:    envoy-gateway-system (v1:metadata.namespace)
+      KUBERNETES_CLUSTER_DOMAIN:  cluster.local
+    Mounts:
+      /certs from certs (ro)
+      /config from envoy-gateway-config (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-l22qm (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  envoy-gateway-config:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      envoy-gateway-config
+    Optional:  false
+  certs:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  envoy-gateway
+    Optional:    false
+  kube-api-access-l22qm:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  5m15s  default-scheduler  Successfully assigned envoy-gateway-system/envoy-gateway-56b969757f-72sfb to chart-test-swarm-default-control-plane
+  Normal  Pulled     5m14s  kubelet            spec.containers{envoy-gateway}: Container image "docker.io/envoyproxy/gateway:v1.1.2" already present on machine
+  Normal  Created    5m14s  kubelet            spec.containers{envoy-gateway}: Created container envoy-gateway
+  Normal  Started    5m14s  kubelet            spec.containers{envoy-gateway}: Started container envoy-gateway

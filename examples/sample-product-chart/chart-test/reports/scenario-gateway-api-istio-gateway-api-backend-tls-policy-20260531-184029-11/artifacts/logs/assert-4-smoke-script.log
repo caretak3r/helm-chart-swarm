@@ -1,0 +1,9 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-gateway-api-gen-backend-tls-certs.sh (RELEASE=sample NAMESPACE=sample)
+==> Generating self-signed CA and TLS cert for backend
+==> Creating/updating TLS Secret backend-tls-cert
+secret/backend-tls-cert created
+PASS: TLS Secret backend-tls-cert created
+==> Creating/updating CA ConfigMap backend-ca-cert
+configmap/backend-ca-cert created
+PASS: CA ConfigMap backend-ca-cert created
+PASS: Backend TLS certs generated and applied

@@ -1,0 +1,79 @@
+{
+  "featureId": "f1-5-repo-test-scaffolding",
+  "reviewedAt": "2026-05-28T00:26:34Z",
+  "commitId": "8ddd90c",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "blockingIssues": [],
+  "nonBlockingIssues": [
+    {
+      "file": "engine/testgrid/tests/test_scaffolding.py",
+      "line": 351,
+      "severity": "non_blocking",
+      "description": "Several acceptance tests still validate F1.5 by scanning `run-scenario.sh` source text instead of executing the failing runtime paths they claim to cover. The fixture-validation and collision checks at lines 351-396 only assert on strings, which weakens regression protection for future contract breaks."
+    }
+  ],
+  "codeReview": {
+    "summary": "Pass on the current working tree. The earlier milestone-gate blocker is resolved because the local scrutiny fix now adds `pytest-xdist` to `engine/testgrid/pyproject.toml` and `engine/testgrid/uv.lock`, so the shared `pytest -n 2` contract is satisfiable again. I did not find any remaining blocking defects in the feature implementation.",
+    "issues": [
+      {
+        "file": "engine/testgrid/tests/test_scaffolding.py",
+        "line": 351,
+        "severity": "non_blocking",
+        "description": "Runtime acceptance criteria for fixture validation and scenario-id collision handling are covered mostly by source-text assertions rather than executable end-to-end tests."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "This feature is mostly shell/YAML/test-harness plumbing, but it was assigned the Python-centric `testgrid-python` skill. The skill tells workers not to run the full `commands.test` set even though this feature explicitly required milestone-gate invocations, and the handoff shows the worker verified only plain `pytest` while claiming the milestone gates passed.",
+      "evidence": "features.json:1181-1182 assigns `skillName: testgrid-python`; SKILL.md:3 describes the skill as editing the testgrid Python package and SKILL.md:43-53 says to run only worker-scoped UV commands and 'DO NOT run the full `commands.test` set'; handoff file:11-24 claims milestone gates passed but records only `uv run --directory engine/testgrid pytest`."
+    },
+    {
+      "area": "conventions",
+      "observation": "Mission guidance says scenario YAMLs require a document-start marker, but the repo-wide yamllint config now disables that rule. The written convention and the enforced lint policy disagree.",
+      "evidence": "mission AGENTS.md:86-89 says scenario YAMLs require `---`; `.yamllint`:13-14 disables `document-start`."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Mission library guidance for the schema sweep is stale. The feature metadata and implementation moved the repo to `check-jsonschema`, but the shared library still tells validators to use `jsonschema`.",
+      "evidence": "features.json:1187 says `check-jsonschema` is the preferred replacement; library/environment.md:28 and library/user-testing.md:23,50 still direct validators to `jsonschema`."
+    },
+    {
+      "area": "services",
+      "observation": "The feature introduced `sweep-scenarios.sh` and `orphan-audit.sh` as first-class validation tools, but `services.yaml` still exposes only install/build/test/typecheck/lint commands. Validators have to rediscover these scripts ad hoc instead of consuming them from shared state.",
+      "evidence": "handoff file:11-12 lists `sweep-scenarios.sh` and `orphan-audit.sh` among the core F1.5 outputs; services.yaml:1-8 defines no command aliases for either script."
+    }
+  ],
+  "evidence": [
+    {
+      "source": "features.json:1189-1202",
+      "detail": "F1.5 explicitly requires the milestone `commands.test`, `commands.typecheck`, and `commands.lint` contract to pass."
+    },
+    {
+      "source": "services.yaml:4",
+      "detail": "The shared test command still invokes `uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid pytest -n 2` after the bats suites."
+    },
+    {
+      "source": "engine/testgrid/pyproject.toml:16-20",
+      "detail": "The current working tree now adds `pytest-xdist>=3.6` to the dev dependency group."
+    },
+    {
+      "source": "engine/testgrid/uv.lock:178-183,472-480,764-780",
+      "detail": "The current lockfile now includes `execnet` and `pytest-xdist`, and wires `pytest-xdist` into the dev dependency metadata, so a clean `uv sync` can satisfy `pytest -n 2`."
+    },
+    {
+      "source": "handoff file:11-24",
+      "detail": "The original worker handoff claimed milestone gates passed but recorded only plain `uv run --directory engine/testgrid pytest`, which explains how the missing-`xdist` gap slipped through the original review."
+    },
+    {
+      "source": "engine/testgrid/tests/test_scaffolding.py:351-396",
+      "detail": "The remaining regression-coverage gap is visible in the source-text assertions for fixture-validation and scenario-collision behavior."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Pass on the current working tree: the local scrutiny fix adds `pytest-xdist`, resolving the previous `commands.test` blocker from commit `8ddd90c`, so no blocking issues remain for F1.5. The remaining concern is non-blocking: some scaffold tests still validate script text rather than executing runtime behavior."
+}

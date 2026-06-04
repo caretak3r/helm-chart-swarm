@@ -1,0 +1,19 @@
+---
+id: c3sig-slow2
+name: "Slow scenario for SIGINT test v2"
+description: "Uses nonexistent image so pods never ready, giving time to send SIGINT during assert"
+labels: {test: sigint}
+cluster:
+  provider: kind
+  k8s_version: v1.35.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: nginx-nonexistent-abc
+    image.tag: never-exists
+asserts:
+  - {type: pods-ready, namespace: sample, timeout: 10m}
+tags: [test]
+mechanisms: ['addon:none']

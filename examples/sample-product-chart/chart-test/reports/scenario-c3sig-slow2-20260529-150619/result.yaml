@@ -1,0 +1,11 @@
+scenario_id: c3sig-slow2
+scenario_path: /tmp/c3sig-slow2.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-05-29T19:06:19Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see examples/sample-product-chart/chart-test/reports/scenario-c3sig-slow2-20260529-150619/artifacts/logs/product-install.log
+finished_at: 2026-05-29T19:07:04Z

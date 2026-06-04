@@ -1,0 +1,28 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-configmap-on-ns
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: generate-default-configmap
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  kyverno.io/generate: "true"
+      generate:
+        synchronize: true
+        apiVersion: v1
+        kind: ConfigMap
+        name: kyverno-generated-config
+        namespace: "{{request.object.metadata.name}}"
+        data:
+          data:
+            generated-by: "kyverno"
+            generated-at: "{{ time_now_utc }}"

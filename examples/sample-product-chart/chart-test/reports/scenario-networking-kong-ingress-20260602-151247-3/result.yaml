@@ -1,0 +1,55 @@
+scenario_id: networking-kong-ingress
+scenario_path: examples/sample-product-chart/chart-test/scenarios/networking/networking-kong-ingress.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-06-02T19:12:47Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-5gw26 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-5gw26   1/1     Running   0          4s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n kong wait --for=condition=Ready pods --timeout=5m --all
+      pod/kong-controller-84db4dc787-62x6n condition met
+      pod/kong-gateway-86698f6995-mzcpr condition met
+      PASS: pods Ready in ns/kong
+      NAME                               READY   STATUS    RESTARTS   AGE
+      kong-controller-84db4dc787-62x6n   1/1     Running   0          24s
+      kong-gateway-86698f6995-mzcpr      1/1     Running   0          24s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      pod/sample-69469cb4c6-5gw26 condition met
+      PASS: product pods Ready
+      ==> Verifying Ingress has spec.ingressClassName=kong
+      PASS: Ingress ingressClassName=kong
+      ==> Verifying Ingress backend points at the product Service
+      PASS: Ingress backend service=sample
+      ==> Getting Kong proxy (gateway) pod IP
+      Kong proxy pod IP: 10.244.0.6
+      ==> Probing HTTP with matching Host header (expect 200) on Kong proxy port 8000
+      HTTP response (with Host): 200
+      PASS: HTTP 200 with matching Host header through Kong proxy
+      ==> Probing HTTP with non-matching Host header (expect 404) on Kong proxy port 8000
+      HTTP response (non-matching Host): 404
+      PASS: HTTP 404 with non-matching Host header
+      ==> KongPlugin gap-probe: checking if chart Ingress has konghq.com/plugins annotation
+      GAP: chart Ingress does NOT have konghq.com/plugins annotation (honest gap, red cell)
+      ==> KongPlugin gap-probe: checking if any KongPlugin CRD instances exist
+      GAP: No KongPlugin CRD instances found in namespace sample (chart exposes no KongPlugin knob, honest gap, red cell)
+      PASS: Kong Ingress (className=kong) integration verified end-to-end
+      NOTE: KongPlugin gap-probe documented honestly — chart does not expose konghq.com/plugins or KongPlugin CRD
+status: PASS
+finished_at: 2026-06-02T19:13:45Z
+log_dir: examples/sample-product-chart/chart-test/reports/scenario-networking-kong-ingress-20260602-151247-3/artifacts/logs

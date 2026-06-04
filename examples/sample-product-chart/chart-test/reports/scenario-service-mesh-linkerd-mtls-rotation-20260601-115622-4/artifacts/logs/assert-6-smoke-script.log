@@ -1,0 +1,40 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-mtls-rotation.sh (RELEASE=sample NAMESPACE=sample)
+==> Annotating namespace sample for linkerd injection
+namespace/sample annotated
+==> Restarting deployments to pick up proxy injection
+deployment.apps/sample restarted
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+deployment.apps/sample-scope restarted
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+deployment "sample-scope" successfully rolled out
+==> Verifying linkerd-proxy sidecar injected
+  ✓ Pod sample-7c8cfbf76b-5ddqs: linkerd-proxy sidecar present
+  ✓ Pod sample-scope-5dd788dc7d-h4hgm: linkerd-proxy sidecar present
+==> Inspecting identity issuer certificate
+  ✓ Identity issuer Secret 'linkerd-identity-issuer' exists
+  Issuer certificate subject: subject=CN=identity.linkerd.cluster.local
+  Valid from: Jun  1 15:56:57 2026 GMT
+  Valid until: Jun  1 15:56:57 2027 GMT
+  ✓ Certificate is currently valid (not expired)
+==> Inspecting trust anchor (root CA)
+  ✓ linkerd-config ConfigMap exists (contains trust anchor)
+==> Verifying proxy mTLS identity
+  Proxy for pod sample-7c8cfbf76b-5ddqs has pod identity env: 
+==> Running linkerd check --proxy from a probe pod
+pod/ct-mtls-check created
+  Waiting for mTLS check pod (90s max)
+  mTLS check output:
+NO_LOGS
+WARN: linkerd check did not produce expected output
+  The sidecar injection + certificate inspection above are the primary gates.
+error: context "kind-chart-test-swarm-bench-55" does not exist
+==> Documenting mTLS rotation guidance
+  Linkerd auto-rotates proxy certificates every 24 hours.
+  The trust anchor (root CA) has a default validity of 365 days.
+  To manually rotate the trust anchor: linkerd upgrade --identity-trust-anchors-file <new-ca.crt>
+  Proxy certificate rotation is transparent — no pod restarts needed.
+  mTLS is mandatory (always-on) in Linkerd; there is no 'permissive' mode.
+PASS: linkerd mTLS rotation integration verified

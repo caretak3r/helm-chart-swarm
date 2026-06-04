@@ -1,0 +1,62 @@
+scenario_id: ingress-controllers-nginx-ingress-default-backend
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-nginx-ingress-default-backend.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T17:48:20Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-j5nd4 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-j5nd4   1/1     Running   0          3s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/custom-default-backend-6f9895b6b7-vd2fg condition met
+      pod/ingress-nginx-controller-d74c658c5-pfrlq condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      custom-default-backend-6f9895b6b7-vd2fg    1/1     Running   0          4s
+      ingress-nginx-controller-d74c658c5-pfrlq   1/1     Running   0          29s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-default-backend.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for nginx controller pod Ready (3m max)
+      pod/ingress-nginx-controller-d74c658c5-pfrlq condition met
+      PASS: nginx controller pod Ready
+      ==> Waiting for product pod Ready (3m max)
+      pod/sample-69469cb4c6-j5nd4 condition met
+      PASS: product pods Ready
+      ==> Waiting for custom default backend pod Ready (2m max)
+      pod/custom-default-backend-6f9895b6b7-vd2fg condition met
+      PASS: custom default backend pod Ready
+      ==> Getting nginx controller pod IP
+      NGINX pod IP: 10.244.0.6
+      ==> Probing HTTP without Host header (should hit custom default backend)
+      Response body: '<html>
+      <head><title>404 Not Found</title></head>
+      <body>
+      <center><h1>404 Not Found</h1></center>
+      <hr><center>nginx</center>
+      </body>
+      </html>'
+      FAIL: expected body containing 'chart-test-swarm-default-backend', got '<html>
+      <head><title>404 Not Found</title></head>
+      <body>
+      <center><h1>404 Not Found</h1></center>
+      <hr><center>nginx</center>
+      </body>
+      </html>'
+status: FAIL
+finished_at: 2026-05-30T17:49:31Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-nginx-ingress-default-backend-20260530-134820/artifacts/logs

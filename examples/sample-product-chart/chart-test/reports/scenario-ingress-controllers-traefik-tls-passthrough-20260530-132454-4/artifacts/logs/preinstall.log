@@ -1,0 +1,32 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: traefik (traefik/traefik @ v28.3.0) in ns/traefik
+    repo 'traefik' already exists with URL https://traefik.github.io/charts (skipping add)
+Release "traefik" does not exist. Installing it now.
+level=WARN msg="unable to find exact version requested; falling back to closest available version" chart=traefik requested=v28.3.0 selected=28.3.0
+NAME: traefik
+LAST DEPLOYED: Sat May 30 13:25:21 2026
+NAMESPACE: traefik
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+Traefik Proxy v3.0.2 has been deployed successfully on traefik namespace !
+pod/traefik-77657478fd-7r8wg condition met
+
+==> [2/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/ingress-controllers/traefik-tls-passthrough-ingressroutetcp.yaml in ns/sample
+namespace/sample created
+ingressroutetcp.traefik.io/sample-tls-passthrough serverside-applied
+
+==> [3/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/manual-tls/manual-tls-basic-secret.yaml in ns/sample
+namespace/sample unchanged
+secret/manual-tls-basic serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

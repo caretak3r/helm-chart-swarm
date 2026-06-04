@@ -1,0 +1,11 @@
+scenario_id: ingress-controllers-contour-basic-httpproxy
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-contour-basic-httpproxy.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T18:44:22Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-contour-basic-httpproxy-20260530-144421/artifacts/logs/preinstall.log
+finished_at: 2026-05-30T18:44:48Z

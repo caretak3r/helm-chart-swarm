@@ -1,0 +1,25 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: gatekeeper (gatekeeper/gatekeeper @ 3.17.1) in ns/gatekeeper-system
+    repo 'gatekeeper' already exists with URL https://open-policy-agent.github.io/gatekeeper/charts (skipping add)
+Release "gatekeeper" does not exist. Installing it now.
+NAME: gatekeeper
+LAST DEPLOYED: Mon Jun  1 02:59:58 2026
+NAMESPACE: gatekeeper-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+pod/gatekeeper-audit-65579cd9f9-6n7wx condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-7n4fh condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-ntrvv condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-rcsrw condition met
+Error from server (NotFound): pods "gatekeeper-probe-webhook-post-install-gt9j7" not found
+WARN: not all pods Ready in ns/gatekeeper-system after 4m
+NAME                                             READY   STATUS    RESTARTS   AGE
+gatekeeper-audit-65579cd9f9-6n7wx                1/1     Running   0          38s
+gatekeeper-controller-manager-64bbbfbdbb-7n4fh   1/1     Running   0          38s
+gatekeeper-controller-manager-64bbbfbdbb-ntrvv   1/1     Running   0          38s
+gatekeeper-controller-manager-64bbbfbdbb-rcsrw   1/1     Running   0          38s

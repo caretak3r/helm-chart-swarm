@@ -30,7 +30,7 @@
           <span class="status-icon status-fail" title="Not installed">✗</span>
         {% endif %}
       </span>
-      <span class="prereq-name">{{ prereq.name }}</span>
+      <span class="prereq-name">{{ prereq.display_name or prereq.name }}</span>
       {% if not prereq.installed and prereq.install_hint %}
         <code class="prereq-hint">{{ prereq.install_hint }}</code>
       {% endif %}

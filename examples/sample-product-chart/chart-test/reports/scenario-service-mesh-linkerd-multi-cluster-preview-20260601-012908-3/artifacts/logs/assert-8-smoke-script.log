@@ -1,0 +1,9 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-multi-cluster-preview.sh (RELEASE=sample NAMESPACE=sample)
+==> Verifying linkerd-multicluster extension is installed
+  ✓ linkerd-gateway deployment exists
+==> Verifying multicluster CRDs are established
+  ✓ CRD links.multicluster.linkerd.io established
+  links.multicluster.linkerd.io Established: True
+  services.k8s.io Established: N/A
+==> Authoring a preview Link resource for a logical target cluster
+/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-multi-cluster-preview.sh: line 88: syntax error: unexpected end of file from `{' command on line 41

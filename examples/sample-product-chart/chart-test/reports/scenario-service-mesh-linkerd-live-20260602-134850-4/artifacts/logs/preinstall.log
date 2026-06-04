@@ -1,0 +1,69 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 4 preinstall item(s)
+
+==> [1/4] kind=helm
+    helm: linkerd-crds (linkerd/linkerd-crds @ 1.8.0) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-crds" does not exist. Installing it now.
+NAME: linkerd-crds
+LAST DEPLOYED: Tue Jun  2 13:49:19 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The linkerd-crds chart was successfully installed 🎉
+
+To complete the linkerd core installation, please now proceed to install the
+linkerd-control-plane chart in the linkerd namespace.
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+
+==> [2/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/service-mesh/linkerd-identity-secret.yaml
+namespace/linkerd serverside-applied
+configmap/linkerd-identity-trust-roots serverside-applied
+
+==> [3/4] kind=helm
+    helm: linkerd-control-plane (linkerd/linkerd-control-plane @ 1.16.11) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-control-plane" does not exist. Installing it now.
+NAME: linkerd-control-plane
+LAST DEPLOYED: Tue Jun  2 13:49:20 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The Linkerd control plane was successfully installed 🎉
+
+To help you manage your Linkerd service mesh you can install the Linkerd CLI by running:
+
+  curl -sL https://run.linkerd.io/install | sh
+
+Alternatively, you can download the CLI directly via the Linkerd releases page:
+
+  https://github.com/linkerd/linkerd2/releases/
+
+To make sure everything works as expected, run the following:
+
+  linkerd check
+
+The viz extension can be installed by running:
+
+  helm install linkerd-viz linkerd/linkerd-viz
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+pod/linkerd-destination-645995979d-s7mph condition met
+pod/linkerd-identity-799bf7bd9d-kwmxd condition met
+pod/linkerd-proxy-injector-766b976c86-6rrcl condition met
+
+==> [4/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/service-mesh/linkerd-inject-namespace.yaml
+namespace/sample serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

@@ -1,0 +1,59 @@
+scenario_id: policy-opa-gatekeeper-image-allowlist
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/policy-opa-gatekeeper-image-allowlist.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T15:34:52Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-41 -n gatekeeper-system wait --for=condition=Ready pods --timeout=4m --all
+      pod/gatekeeper-audit-65579cd9f9-w9llw condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-h4mkg condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-hbqtg condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-hwhlb condition met
+      PASS: pods Ready in ns/gatekeeper-system
+      NAME                                             READY   STATUS    RESTARTS   AGE
+      gatekeeper-audit-65579cd9f9-w9llw                1/1     Running   0          13s
+      gatekeeper-controller-manager-64bbbfbdbb-h4mkg   1/1     Running   0          13s
+      gatekeeper-controller-manager-64bbbfbdbb-hbqtg   1/1     Running   0          13s
+      gatekeeper-controller-manager-64bbbfbdbb-hwhlb   1/1     Running   0          13s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-41 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-5vwkv condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-5vwkv   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      pod/gatekeeper-controller-manager-64bbbfbdbb-hwhlb condition met
+      PASS: gatekeeper controller Ready
+      pod/sample-69469cb4c6-5vwkv condition met
+      PASS: product pod Ready
+      ==> Phase 1: Verify ConstraintTemplate applied
+      Waiting for ConstraintTemplate k8sallowedrepos to reconcile (60s max)...
+      PASS: observedGeneration (1) >= generation (1) at attempt 1
+      ==> Wait for CRD Established (90s max)
+      customresourcedefinition.apiextensions.k8s.io/k8sallowedrepos.constraints.gatekeeper.sh condition met
+      PASS: CRD k8sallowedrepos.constraints.gatekeeper.sh Established=True
+      ==> Apply Constraint
+      k8sallowedrepos.constraints.gatekeeper.sh/require-approved-registry created
+      PASS: K8sAllowedRepos constraint applied
+      ==> Phase 2a: Non-allowlisted image Deployment (docker.io/library/redis)
+      Error from server (Forbidden): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-noncompliant-image.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [require-approved-registry] Container 'app' uses disallowed registry: 'docker.io/library/redis:7-alpine'
+      PASS: non-allowlisted image Deployment rejected (disallowed registry)
+      ==> Phase 2b: Allowlisted image Deployment (nginx)
+      deployment.apps/test-allowlisted-image created (server dry run)
+      PASS: allowlisted image Deployment accepted
+      PASS: OPA Gatekeeper image-allowlist integration verified
+status: PASS
+finished_at: 2026-06-01T15:35:48Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-policy-opa-gatekeeper-image-allowlist-20260601-113451-6/artifacts/logs

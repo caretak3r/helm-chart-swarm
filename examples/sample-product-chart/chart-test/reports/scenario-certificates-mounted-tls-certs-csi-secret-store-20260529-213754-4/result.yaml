@@ -1,0 +1,11 @@
+scenario_id: certificates-mounted-tls-certs-csi-secret-store
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-mounted-tls-certs-csi-secret-store.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T01:37:54Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-mounted-tls-certs-csi-secret-store-20260529-213754-4/artifacts/logs/preinstall.log
+finished_at: 2026-05-30T01:38:42Z

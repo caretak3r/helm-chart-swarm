@@ -1,0 +1,21 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-gateway-api-backend-tls-policy.sh (RELEASE=sample NAMESPACE=sample)
+==> Applying GatewayClass + Gateway + HTTPRoute (port 443)
+Warning: resource gatewayclasses/istio is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+gatewayclass.gateway.networking.k8s.io/istio configured
+gateway.gateway.networking.k8s.io/sample-gw created
+httproute.gateway.networking.k8s.io/sample-route created
+==> Waiting for GatewayClass istio Accepted=True (3m max)
+PASS: GatewayClass istio Accepted=True
+==> Waiting for Gateway listener http Programmed=True (5m max)
+PASS: Gateway listener http Programmed=True
+==> Verifying HTTPRoute sample-route Accepted=True
+PASS: HTTPRoute sample-route Accepted=True
+==> Applying BackendTLSPolicy
+backendtlspolicy.gateway.networking.k8s.io/sample-backend-tls created
+==> Waiting for BackendTLSPolicy Accepted=True (2m max)
+PASS: BackendTLSPolicy sample-backend-tls Accepted=True
+==> Getting Istio data-plane Service ClusterIP
+Gateway Service IP: 10.96.94.203
+==> Probing backend via gateway (retry up to 2m)
+HTTP response: 503
+FAIL: expected HTTP 200, got 503

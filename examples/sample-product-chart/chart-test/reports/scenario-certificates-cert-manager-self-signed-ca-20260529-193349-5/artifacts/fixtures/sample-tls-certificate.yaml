@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sample-tls
+  namespace: sample
+spec:
+  secretName: sample-tls
+  duration: 24h
+  renewBefore: 12h
+  issuerRef:
+    name: chart-test-swarm-selfsigned
+    kind: ClusterIssuer
+  commonName: "sample.sample.svc"
+  dnsNames:
+    - "sample.sample.svc"
+    - "sample.sample.svc.cluster.local"

@@ -1,0 +1,64 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, kubeval, yamllint.
+# Apply to your own AKS cluster per the azure-lb primer instructions.
+---
+id: networking-azure-lb-agic
+name: "Azure LB AGIC Ingress"
+description: >-
+  Application Gateway Ingress Controller provisions an Azure Application
+  Gateway from a Kubernetes Ingress with path-based routing and TLS;
+  smoke-script curls the Application Gateway frontend IP over HTTPS.
+labels:
+  customer: any
+  profile: aks
+  chart-test-swarm/target-k8s-version: aks-1.30
+cluster:
+  provider: aks
+  k8s_version: "1.30"
+  preinstall:
+    - kind: helm
+      repo:
+        name: application-gateway-kubernetes-ingress
+        url: oci://mcr.microsoft.com/azure-application-gateway/charts/ingress-azure
+      chart: ingress-azure
+      version: "1.8.1"
+      release: ingress-azure
+      namespace: kube-system
+      values:
+        appgw:
+          name: "<REPLACE_WITH_APPGW_NAME>"
+          resourceGroup: "<REPLACE_WITH_APPGW_RG>"
+          subscriptionId: "<REPLACE_WITH_SUBSCRIPTION_ID>"
+          usePrivateIP: "false"
+        armAuth:
+          type: workloadIdentity
+          identityClientID: "<REPLACE_WITH_AGIC_CLIENT_ID>"
+        kubernetes:
+          watchNamespace: "<REPLACE_WITH_NAMESPACE>"
+      wait: pods-ready
+      wait_timeout: 5m
+    - kind: raw_manifest
+      path: chart-test/fixtures/cloud-native/aks/agic-ingress.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    ingress.enabled: "true"
+    ingress.className: "azure/application-gateway"
+    ingress.annotations.appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.annotations.appgw.ingress.kubernetes.io/appgw-ssl-certificate: "<REPLACE_WITH_CERT_NAME>"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/cloud-native/aks/agic-lb.sh
+tags: [cloud-native]
+mechanisms: ['cloud:aks', 'addon:azure-lb', 'addon:agic']
+category: networking/ingress-lb
+tier: authored-only
+integration: azure-lb

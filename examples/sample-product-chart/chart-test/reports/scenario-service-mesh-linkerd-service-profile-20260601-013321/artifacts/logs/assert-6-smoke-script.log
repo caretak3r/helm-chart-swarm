@@ -1,0 +1,20 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-service-profile.sh (RELEASE=sample NAMESPACE=sample)
+==> Annotating namespace sample for linkerd injection
+namespace/sample annotated
+==> Restarting deployments to pick up proxy injection
+deployment.apps/sample restarted
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+deployment.apps/sample-scope restarted
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+deployment "sample-scope" successfully rolled out
+==> Waiting 5s for old pods to terminate
+==> Verifying linkerd-proxy sidecar injected
+  ✓ Pod sample-c48866964-km629: linkerd-proxy sidecar present
+  ✓ Pod sample-scope-788bc85f67-lb8bc: linkerd-proxy sidecar present
+==> Verifying ServiceProfile CRD is established
+  ✓ CRD serviceprofiles.linkerd.io established
+==> Authoring ServiceProfile for the product Service
+Error from server (BadRequest): error when creating "STDIN": ServiceProfile in version "v1alpha2" cannot be handled as a ServiceProfile: strict decoding error: unknown field "spec.routes[2].retryBudget"

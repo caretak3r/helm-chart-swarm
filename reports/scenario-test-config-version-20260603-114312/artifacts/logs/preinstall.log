@@ -1,0 +1,39 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 1 preinstall item(s)
+
+==> [1/1] kind=helm
+    (version resolved from versions-config: v1.17)
+    helm: cert-manager (jetstack/cert-manager @ v1.17) in ns/cert-manager
+    repo 'jetstack' already exists with URL https://charts.jetstack.io (skipping add)
+Release "cert-manager" does not exist. Installing it now.
+level=WARN msg="unable to find exact version requested; falling back to closest available version" chart=cert-manager requested=v1.17 selected=v1.17.4
+NAME: cert-manager
+LAST DEPLOYED: Wed Jun  3 11:43:39 2026
+NAMESPACE: cert-manager
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+cert-manager v1.17.4 has been deployed successfully!
+
+In order to begin issuing certificates, you will need to set up a ClusterIssuer
+or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
+
+More information on the different types of issuers and how to configure them
+can be found in our documentation:
+
+https://cert-manager.io/docs/configuration/
+
+For information on how to configure cert-manager to automatically provision
+Certificates for Ingress resources, take a look at the `ingress-shim`
+documentation:
+
+https://cert-manager.io/docs/usage/ingress/
+pod/cert-manager-6f7cfcb676-7bdwr condition met
+pod/cert-manager-cainjector-6567fc55b9-rhrkc condition met
+pod/cert-manager-webhook-7fbc487c64-rb5ch condition met
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

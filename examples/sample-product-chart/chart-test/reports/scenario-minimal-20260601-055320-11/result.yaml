@@ -1,0 +1,22 @@
+scenario_id: minimal
+scenario_path: examples/sample-product-chart/chart-test/scenarios/minimal.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-06-01T09:53:21Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=3m --all
+      pod/sample-7dcd986bd4-5km2z condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-5km2z   1/1     Running   0          3s
+status: PASS
+finished_at: 2026-06-01T09:53:50Z
+log_dir: examples/sample-product-chart/chart-test/reports/scenario-minimal-20260601-055320-11/artifacts/logs

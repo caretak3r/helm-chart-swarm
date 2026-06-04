@@ -1,0 +1,6 @@
+==> kind cluster 'chart-test-swarm-c3sig' already exists
+==> Cluster nodes:
+NAME                                   STATUS   ROLES           AGE   VERSION
+chart-test-swarm-c3sig-control-plane   Ready    control-plane   30s   v1.35.0
+==> OK: kind-chart-test-swarm-c3sig ready
+==> Note: kubeconfig context set to 'kind-chart-test-swarm-c3sig' (context restore deferred to caller).

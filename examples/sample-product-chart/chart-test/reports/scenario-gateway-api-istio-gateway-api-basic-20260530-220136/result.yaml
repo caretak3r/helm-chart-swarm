@@ -1,0 +1,63 @@
+scenario_id: gateway-api-istio-gateway-api-basic
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-istio-gateway-api-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T02:01:37Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-75kxz condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-75kxz   1/1     Running   0          9s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-dqz54 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-dqz54   1/1     Running   0          3s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      ==> Applying GatewayClass + Gateway + HTTPRoute
+      Warning: resource gatewayclasses/istio is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+      gatewayclass.gateway.networking.k8s.io/istio configured
+      gateway.gateway.networking.k8s.io/sample-gw created
+      httproute.gateway.networking.k8s.io/sample-route created
+      ==> Waiting for GatewayClass istio Accepted=True (3m max)
+      PASS: GatewayClass istio Accepted=True
+      ==> Waiting for Gateway listener http Programmed=True (5m max)
+      PASS: Gateway listener http Programmed=True
+      ==> Verifying auto-provisioned Deployment in sample namespace
+      PASS: auto-provisioned Deployment found (1)
+      ==> Verifying HTTPRoute sample-route Accepted=True
+      PASS: HTTPRoute sample-route Accepted=True
+      ==> Getting Istio data-plane Service ClusterIP
+      Gateway Service: sample-gw-istio IP: 10.96.150.188
+      ==> Probing backend via gateway (retry up to 2m for data-plane ready)
+      HTTP response: 200 (attempt 2)
+      HTTP response: 200
+      PASS: HTTP 200 through Istio Gateway API
+      PASS: istio-gateway-api basic integration verified
+status: PASS
+finished_at: 2026-05-31T02:02:30Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-istio-gateway-api-basic-20260530-220136/artifacts/logs

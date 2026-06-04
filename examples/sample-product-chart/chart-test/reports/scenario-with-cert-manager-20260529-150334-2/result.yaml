@@ -1,0 +1,22 @@
+scenario_id: with-cert-manager
+scenario_path: examples/sample-product-chart/chart-test/scenarios/with-cert-manager.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-05-29T19:03:34Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-c3sig -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-755dcb55c8-j9gpj condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-755dcb55c8-j9gpj   1/1     Running   0          3s
+status: PASS
+finished_at: 2026-05-29T19:04:21Z
+log_dir: examples/sample-product-chart/chart-test/reports/scenario-with-cert-manager-20260529-150334-2/artifacts/logs

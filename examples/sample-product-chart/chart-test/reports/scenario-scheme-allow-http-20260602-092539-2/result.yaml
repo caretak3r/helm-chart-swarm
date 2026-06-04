@@ -1,0 +1,13 @@
+scenario_id: scheme-allow-http
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/scheme-allow-http.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T13:25:40Z
+provider: kind
+asserts:
+  - type: scheme-enforced
+    status: PASS
+    notes: |
+      PASS: HTTP port 80 found (4 instance(s)), scheme=allow-http satisfied
+status: PASS
+finished_at: 2026-06-02T13:26:10Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-scheme-allow-http-20260602-092539-2/artifacts/logs

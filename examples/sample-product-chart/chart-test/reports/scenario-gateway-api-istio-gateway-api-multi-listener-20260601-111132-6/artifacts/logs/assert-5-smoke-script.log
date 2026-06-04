@@ -1,0 +1,32 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-gateway-api-multi-listener.sh (RELEASE=sample NAMESPACE=sample)
+==> Generating self-signed TLS cert for Gateway
+==> Creating TLS Secret with generated cert (before Gateway)
+secret/gateway-tls-cert created
+PASS: TLS Secret gateway-tls-cert created
+==> Applying GatewayClass + Gateway + HTTPRoutes
+gatewayclass.gateway.networking.k8s.io/istio configured
+gateway.gateway.networking.k8s.io/sample-gw created
+httproute.gateway.networking.k8s.io/sample-route created
+httproute.gateway.networking.k8s.io/sample-route-https created
+PASS: Gateway resources applied
+==> Waiting for GatewayClass istio Accepted=True (3m max)
+PASS: GatewayClass istio Accepted=True
+==> Verifying Gateway has >= 2 listeners
+PASS: Gateway has 2 listeners: http https
+==> Waiting for Gateway listener http Programmed=True (5m max)
+PASS: Gateway listener http Programmed=True
+==> Waiting for Gateway listener https Programmed=True (5m max)
+PASS: Gateway listener https Programmed=True
+==> Verifying HTTPRoute sample-route Accepted=True
+PASS: HTTPRoute sample-route Accepted=True
+==> Getting Istio data-plane Service ClusterIP
+Gateway Service IP: 10.96.57.222
+==> Probing HTTP backend via gateway (retry up to 2m)
+HTTP response: 200 (attempt 2)
+HTTP response: 200
+PASS: HTTP 200 on port 80
+==> Probing HTTPS backend via gateway (retry up to 2m)
+HTTPS response: 200 (attempt 1)
+HTTPS response: 200
+PASS: HTTPS 200 on port 443
+PASS: istio-gateway-api multi-listener integration verified

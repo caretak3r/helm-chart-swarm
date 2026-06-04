@@ -1,0 +1,80 @@
+scenario_id: certificates-mounted-tls-certs-pvc-mount
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-mounted-tls-certs-pvc-mount.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T00:26:00Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: FAIL
+    notes: |
+          Image ID:       docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+          Ports:          80/TCP, 443/TCP
+          Host Ports:     0/TCP, 0/TCP
+          State:          Running
+            Started:      Fri, 29 May 2026 20:26:36 -0400
+          Ready:          True
+          Restart Count:  0
+          Liveness:       http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
+          Readiness:      http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
+          Environment:    <none>
+          Mounts:
+            /etc/nginx/conf.d from nginx-tls-config (ro)
+            /etc/tls from tls (ro)
+            /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-6dt4s (ro)
+      Conditions:
+        Type                        Status
+        PodReadyToStartContainers   True 
+        Initialized                 True 
+        Ready                       True 
+        ContainersReady             True 
+        PodScheduled                True 
+      Volumes:
+        tls:
+          Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+          ClaimName:  mounted-tls-pvc
+          ReadOnly:   false
+        nginx-tls-config:
+          Type:      ConfigMap (a volume populated by a ConfigMap)
+          Name:      sample-nginx-tls
+          Optional:  false
+        kube-api-access-6dt4s:
+          Type:                    Projected (a volume that contains injected data from multiple sources)
+          TokenExpirationSeconds:  3607
+          ConfigMapName:           kube-root-ca.crt
+          Optional:                false
+          DownwardAPI:             true
+      QoS Class:                   BestEffort
+      Node-Selectors:              <none>
+      Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                                   node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: mountPath=/etc/tls
+      ==> Verifying volume source is persistentVolumeClaim
+      PASS: volume source is persistentVolumeClaim (claim=mounted-tls-pvc)
+      ==> Waiting for pod Ready (3m max)
+      pod/sample-6c94f9dbc-fpfvw condition met
+      PASS: chart pods Ready
+      ==> Exec stat /etc/tls/tls.crt in pod
+      Defaulted container "app" out of: app, wait-for-tls (init)
+        File: /etc/tls/tls.crt
+        Size: 1176      Blocks: 8          IO Block: 4096   regular file
+      Device: fe01h/65025dInode: 56557       Links: 1
+      Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+      Access: 2026-05-30 00:26:33.031173000 +0000
+      Modify: 2026-05-30 00:26:33.031173000 +0000
+      Change: 2026-05-30 00:26:33.031173000 +0000
+      PASS: tls.crt accessible at /etc/tls
+      ==> Verifying HTTPS reachable from in-cluster curl
+      HTTPS response: 200
+      PASS: HTTPS 200
+      PASS: mounted-tls-certs pvc-mount scenario verified
+status: FAIL
+finished_at: 2026-05-30T00:31:41Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-mounted-tls-certs-pvc-mount-20260529-202600/artifacts/logs

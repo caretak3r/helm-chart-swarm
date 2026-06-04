@@ -1,0 +1,65 @@
+scenario_id: ingress-controllers-nginx-ingress-tls-cert-manager
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-nginx-ingress-tls-cert-manager.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T01:40:46Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-swdpn condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-swdpn   1/1     Running   0          3s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n cert-manager wait --for=condition=Ready pods --timeout=3m --all
+      pod/cert-manager-c69c859c4-6f2qv condition met
+      pod/cert-manager-cainjector-d6d64f75f-wnxt7 condition met
+      pod/cert-manager-webhook-566849c7fc-2xck7 condition met
+      PASS: pods Ready in ns/cert-manager
+      NAME                                      READY   STATUS    RESTARTS   AGE
+      cert-manager-c69c859c4-6f2qv              1/1     Running   0          57s
+      cert-manager-cainjector-d6d64f75f-wnxt7   1/1     Running   0          57s
+      cert-manager-webhook-566849c7fc-2xck7     1/1     Running   0          57s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/ingress-nginx-controller-d74c658c5-9bvlx condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      ingress-nginx-controller-d74c658c5-9bvlx   1/1     Running   0          29s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      tls.key
+      OK: tls.crt, tls.key, ca.crt all present
+      ==> Waiting for nginx controller pod Ready (3m max)
+      pod/ingress-nginx-controller-d74c658c5-9bvlx condition met
+      PASS: nginx controller pod Ready
+      ==> Waiting for product pod Ready (3m max)
+      pod/sample-69469cb4c6-swdpn condition met
+      PASS: product pods Ready
+      ==> Verifying Ingress exists with TLS
+      TLS host: sample.test.local, TLS secret: sample-tls
+      PASS: Ingress TLS references cert-manager Secret 'sample-tls'
+      ==> Getting nginx controller pod IP
+      NGINX pod IP: 10.244.0.10
+      ==> Probing HTTPS with --cacert (expect 200 with cert chain rooted at ClusterIssuer CA)
+      HTTPS response: 200
+      PASS: HTTPS 200 with --cacert verification
+      ==> Verifying peer certificate issuer matches ClusterIssuer CA
+      Cert issuer: issuer=CN=sample.test.local
+      NOTE: cert issuer 'issuer=CN=sample.test.local' — ClusterIssuer CA may use different DN (informational)
+      PASS: Cross-feature cert-manager + nginx-ingress TLS integration verified
+status: PASS
+finished_at: 2026-05-31T01:42:15Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-nginx-ingress-tls-cert-manager-20260530-214046-3/artifacts/logs

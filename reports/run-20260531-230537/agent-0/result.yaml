@@ -1,0 +1,9 @@
+agent: 0
+results:
+  - scenario_id: ingress-controllers-traefik-basic
+    status: PASS
+    duration_s: 120.5
+    asserts:
+      - type: pods-ready
+        status: PASS
+        notes: "All pods ready"

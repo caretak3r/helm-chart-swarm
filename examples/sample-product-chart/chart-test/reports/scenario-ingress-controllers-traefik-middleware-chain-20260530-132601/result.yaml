@@ -1,0 +1,53 @@
+scenario_id: ingress-controllers-traefik-middleware-chain
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-traefik-middleware-chain.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T17:26:02Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-gqcl4 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-gqcl4   1/1     Running   0          3s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n traefik wait --for=condition=Ready pods --timeout=3m --all
+      pod/traefik-77657478fd-vrclk condition met
+      PASS: pods Ready in ns/traefik
+      NAME                       READY   STATUS    RESTARTS   AGE
+      traefik-77657478fd-vrclk   1/1     Running   0          14s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      ==> Waiting for Traefik pod Ready (3m max)
+      pod/traefik-77657478fd-vrclk condition met
+      PASS: Traefik pod Ready
+      ==> Waiting for product pod Ready (3m max)
+      pod/sample-69469cb4c6-gqcl4 condition met
+      PASS: product pods Ready
+      ==> Verifying Middleware CR exists
+      middleware.traefik.io/add-test-header
+      PASS: Middleware add-test-header exists
+      ==> Verifying IngressRoute references the Middleware
+      PASS: IngressRoute references Middleware 'add-test-header'
+      ==> Getting Traefik pod IP
+      Traefik pod IP: 10.244.0.5
+      ==> Probing HTTP with Host header (expect 200 with X-Test header)
+      HTTP response code: 200
+      PASS: HTTP 200 with Host header
+      ==> Verifying middleware-injected header 'X-Test: chart-test-swarm'
+      Response header X-Test: 'chart-test-swarm'
+      PASS: middleware injected header 'X-Test: chart-test-swarm'
+      PASS: Traefik middleware chain integration verified
+status: PASS
+finished_at: 2026-05-30T17:26:47Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-traefik-middleware-chain-20260530-132601/artifacts/logs

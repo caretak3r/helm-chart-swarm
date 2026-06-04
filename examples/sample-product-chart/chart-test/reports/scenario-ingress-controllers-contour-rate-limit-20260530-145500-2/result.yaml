@@ -1,0 +1,55 @@
+scenario_id: ingress-controllers-contour-rate-limit
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-contour-rate-limit.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T18:55:00Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-mhxtt condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-mhxtt   1/1     Running   0          3s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n projectcontour wait --for=condition=Ready pods --timeout=3m --all
+      pod/contour-contour-5847f7c7f9-qnk2k condition met
+      pod/contour-envoy-xl2fh condition met
+      PASS: pods Ready in ns/projectcontour
+      NAME                               READY   STATUS    RESTARTS   AGE
+      contour-contour-5847f7c7f9-qnk2k   1/1     Running   0          25s
+      contour-envoy-xl2fh                2/2     Running   0          25s
+  - type: smoke-script
+    status: PASS
+    notes: |
+        req 2: HTTP 200
+        req 3: HTTP 200
+        req 4: HTTP 200
+        req 5: HTTP 200
+      PASS: all 5 requests at/below limit returned 200
+      ==> Sending 15 requests above limit rate (expect at least one 429)
+        req 1: HTTP 429 (rate limited)
+        req 3: HTTP 429 (rate limited)
+        req 4: HTTP 429 (rate limited)
+        req 5: HTTP 429 (rate limited)
+        req 6: HTTP 429 (rate limited)
+        req 7: HTTP 429 (rate limited)
+        req 9: HTTP 429 (rate limited)
+        req 10: HTTP 429 (rate limited)
+        req 11: HTTP 429 (rate limited)
+        req 12: HTTP 429 (rate limited)
+        req 13: HTTP 429 (rate limited)
+        req 15: HTTP 429 (rate limited)
+      PASS: at least one 429 Too Many Requests returned
+      PASS: Contour rate limit integration verified
+status: PASS
+finished_at: 2026-05-30T18:56:43Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-contour-rate-limit-20260530-145500-2/artifacts/logs

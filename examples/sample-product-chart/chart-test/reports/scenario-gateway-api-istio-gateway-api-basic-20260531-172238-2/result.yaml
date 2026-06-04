@@ -1,0 +1,11 @@
+scenario_id: gateway-api-istio-gateway-api-basic
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-istio-gateway-api-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T21:22:39Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-istio-gateway-api-basic-20260531-172238-2/artifacts/logs/preinstall.log
+finished_at: 2026-05-31T21:23:16Z

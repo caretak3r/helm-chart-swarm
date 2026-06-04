@@ -1,0 +1,27 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/kyverno-generate.sh (RELEASE=sample NAMESPACE=sample)
+=== Kyverno: Generate (ConfigMap on namespace) ===
+==> Phase 0: Wait for kyverno controllers Ready
+pod/kyverno-admission-controller-6c47f7875-5r775 condition met
+pod/kyverno-background-controller-546f9479c7-bsggn condition met
+pod/kyverno-cleanup-controller-5787967fcd-m9hmh condition met
+pod/kyverno-reports-controller-669cbff555-qppj7 condition met
+PASS: kyverno controller pods Ready
+pod/sample-69469cb4c6-mhhsz condition met
+PASS: product pods Ready
+==> Phase 1: Verify ClusterPolicy applied
+Waiting for ClusterPolicy generate-configmap-on-ns to be ready (30s max)...
+clusterpolicy.kyverno.io/generate-configmap-on-ns condition met
+PASS: ClusterPolicy generate-configmap-on-ns Ready=True
+==> Clean up any prior test namespace
+==> Phase 2: Create namespace labeled kyverno.io/generate=true
+namespace/kyverno-gen-test created
+namespace/kyverno-gen-test not labeled
+PASS: namespace kyverno-gen-test created with trigger label
+==> Phase 3: Wait for ConfigMap to be generated (10s max)
+configmap/kyverno-generated-config
+PASS: ConfigMap kyverno-generated-config generated in namespace kyverno-gen-test at attempt 1
+==> Phase 4: Verify ConfigMap data
+PASS: ConfigMap data.generated-by=kyverno confirmed
+==> Clean up test namespace
+namespace "kyverno-gen-test" deleted
+PASS: Kyverno generate variant verified

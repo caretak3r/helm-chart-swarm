@@ -1,0 +1,11 @@
+scenario_id: networking-metallb-loadbalancer
+scenario_path: examples/sample-product-chart/chart-test/scenarios/networking/networking-metallb-loadbalancer.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T16:39:29Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-networking-metallb-loadbalancer-20260602-123929/artifacts/logs/preinstall.log
+finished_at: 2026-06-02T16:39:56Z

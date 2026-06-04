@@ -1,0 +1,32 @@
+---
+id: priority-class-on
+name: "Capability: priorityClassName settable on ALL workloads (ON)"
+description: >-
+  Renders the product chart with priorityClassName=high-priority configured
+  and asserts that every workload pod spec carries the priorityClassName
+  with the configured value. The sample chart does NOT expose a
+  priorityClassName knob in its values.yaml and has no priorityClassName
+  field in any Deployment template — setting priorityClassName has no
+  effect. This scenario is EXPECTED to FAIL (honest red gap) documenting
+  that the chart lacks the priorityClassName scheduling knob.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    priorityClassName: high-priority
+asserts:
+  - type: priority-class-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    priority_class_name: high-priority
+tags: [capability, compliance]
+category: capability
+capability: priority-class-name
+tier: capability
+mechanisms: ["capability:priority"]

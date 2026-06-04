@@ -1,0 +1,8 @@
+Release "sample" does not exist. Installing it now.
+NAME: sample
+LAST DEPLOYED: Mon Jun  1 10:59:18 2026
+NAMESPACE: sample
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None

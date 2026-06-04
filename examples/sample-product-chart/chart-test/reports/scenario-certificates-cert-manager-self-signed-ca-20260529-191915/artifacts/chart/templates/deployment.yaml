@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 80
+            {{- if .Values.tls.enabled }}
+            - containerPort: {{ .Values.tls.servicePort }}
+            {{- end }}
+          {{- if .Values.tls.enabled }}
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/tls
+              readOnly: true
+            - name: nginx-tls-config
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+          {{- end }}
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+      {{- if .Values.tls.enabled }}
+      volumes:
+        - name: tls
+          secret:
+            secretName: {{ .Values.tls.secretName }}
+            optional: true
+        - name: nginx-tls-config
+          configMap:
+            name: {{ .Release.Name }}-nginx-tls
+      {{- end }}

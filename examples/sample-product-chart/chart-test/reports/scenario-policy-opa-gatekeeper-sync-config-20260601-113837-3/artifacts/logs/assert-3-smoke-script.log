@@ -1,0 +1,41 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/opa-gatekeeper-sync-config.sh (RELEASE=sample NAMESPACE=sample)
+=== OPA Gatekeeper: Sync Config ===
+==> Phase 0: Wait for gatekeeper controller pods Ready
+pod/gatekeeper-controller-manager-64bbbfbdbb-2c8j6 condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-9bpk9 condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-d6d9k condition met
+PASS: gatekeeper controller Ready
+pod/sample-69469cb4c6-mmnd6 condition met
+PASS: product pod Ready
+==> Phase 1: Verify Gatekeeper Config exists
+apiVersion: config.gatekeeper.sh/v1alpha1
+kind: Config
+metadata:
+  creationTimestamp: "2026-06-01T15:39:19Z"
+  generation: 1
+  name: config
+  namespace: gatekeeper-system
+  resourceVersion: "692"
+  uid: 6c4023a9-d126-43ea-8454-fae3ea86c1db
+spec:
+  sync:
+    syncOnly:
+    - group: ""
+      kind: Namespace
+      version: v1
+    - group: ""
+      kind: Pod
+      version: v1
+    - group: networking.k8s.io
+      kind: Ingress
+      version: v1
+PASS: Gatekeeper Config resource 'config' exists
+==> Phase 2: Verify spec.sync.syncOnly is non-empty
+syncOnly entry count: 3
+PASS: spec.sync.syncOnly has 3 entries (non-empty)
+Ingress
+Namespace
+Pod
+==> Phase 3: Verify syncOnly includes expected kinds
+PASS: syncOnly includes Namespace, Pod, and Ingress kinds
+PASS: OPA Gatekeeper sync-config integration verified

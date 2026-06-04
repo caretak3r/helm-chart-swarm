@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-bench-15 -n projectcontour wait --for=condition=Ready pods --timeout=5m -l control-plane=contour-gateway-provisioner
+pod/contour-gateway-provisioner-555bf78b46-29m7f condition met
+PASS: pods Ready in ns/projectcontour (selector=control-plane=contour-gateway-provisioner)
+NAME                                           READY   STATUS    RESTARTS   AGE
+contour-gateway-provisioner-555bf78b46-29m7f   1/1     Running   0          4s

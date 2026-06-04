@@ -1,0 +1,26 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: linkerd-crds (linkerd/linkerd-crds @ 1.8.0) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-crds" does not exist. Installing it now.
+NAME: linkerd-crds
+LAST DEPLOYED: Mon Jun  1 12:00:22 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The linkerd-crds chart was successfully installed 🎉
+
+To complete the linkerd core installation, please now proceed to install the
+linkerd-control-plane chart in the linkerd namespace.
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+
+==> [2/3] kind=helm
+    helm: linkerd-control-plane (linkerd/linkerd-control-plane @ 1.16.11) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+error: context "kind-chart-test-swarm-bench-56" does not exist

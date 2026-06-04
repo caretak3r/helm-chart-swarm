@@ -1,0 +1,7 @@
+{
+  "recommendation_id": "rec-0ae9539f4461",
+  "fix_prompt": "# Fix Recommendation: labels-on\n\n**Scenario:** `labels-on`\n**Category:** chart-fix\n**Failure type:** labels-present\n**Affected objects:** Deployment, Service\n\n## Failure Detail\n\nDeployment/sample missing label cost-center=42\nService/sample missing label cost-center=42\n\n## Suggested Fix\n\nAdd the `cost-center=42` label to all template resources.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
+  "scenario_path": "labels-on",
+  "chart_path": "examples/sample-product-chart/chart",
+  "created_at": "2026-06-03T22:58:21.764224+00:00"
+}

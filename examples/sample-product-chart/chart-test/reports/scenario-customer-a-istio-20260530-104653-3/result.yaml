@@ -1,0 +1,22 @@
+scenario_id: customer-a-istio
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/customer-A-istio.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T14:46:53Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-11 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-5967fcc884-h8rqk condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-5967fcc884-h8rqk   1/1     Running   0          3s
+status: PASS
+finished_at: 2026-05-30T14:47:44Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-customer-a-istio-20260530-104653-3/artifacts/logs

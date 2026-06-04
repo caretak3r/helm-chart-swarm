@@ -1,0 +1,23 @@
+id: customer-b-gatekeeper
+name: "Customer B — OPA Gatekeeper admission policies"
+description: "Customer B runs Gatekeeper with strict admission policies. Chart must satisfy required-labels + no-privileged constraints."
+labels: {customer: B, policy: gatekeeper}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - chart: gatekeeper/gatekeeper
+      version: 3.16.0
+      release: gatekeeper
+      namespace: gatekeeper-system
+      repo: {name: gatekeeper, url: "https://open-policy-agent.github.io/gatekeeper/charts"}
+      wait: pods-ready
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+asserts:
+  - {type: helm-status-deployed, release: sample, namespace: sample}
+  - {type: pods-ready, namespace: sample, timeout: 5m}
+tags: [nightly, customer-replica]
+mechanisms: ['addon:gatekeeper', 'customer:B']

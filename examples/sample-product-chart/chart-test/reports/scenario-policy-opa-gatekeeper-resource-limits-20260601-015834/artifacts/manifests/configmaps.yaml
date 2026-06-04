@@ -1,0 +1,39 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIZc97f0HOZH8wDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA2MDEwNTUzMzZaFw0zNjA1MjkwNTU4MzZaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQC/QEtCSapnEIHRi5zR0sjbQ9OptVkU8EEykn8bl/jayHs+WVk2iYNvmCPb
+      ddxBWYLpw066StuBQXCZq/G+OvfPCi0Gcn+uwd4YDSHIWXGJ1yVmvmpRYDEctSRS
+      dX6wA7eJzBQoQJ/Rg8RH3qMo9m/SVdEbV/7Qctwy0dOfPiXCjYvBzj1ZsTnBDz9A
+      3XoQAwp8oj/NUyUR/Y9zcCC3I6k6jTNguVKxl9nu7MtlM/3kmwsCcpvjcj4h/ah5
+      5pcyQcn5Xa/wmou8uPuO+Mt2ZSXIABmQRjQuOf4LBGk/xm86JWa9xIkLaBo7uzGt
+      YG3GYfFLXKoWfixxobmmq3fdUJ9PAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQ8UvYzG9RgDYWDDBk/U6jtUEaqCzAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQCjRiWqz7Rp
+      Xk2nyEKIWHOSyLpLGPfR2xmtGtMelmUqb9M2moOj5QEFdU9Oyd3CXDmYNoIgt1Jy
+      1zX6A7DRlkrvMn1HDdeu1dirX33nyc93pA/kfyD/vujxzWP+hZOulRDyOC+Ku3GY
+      hI6LdjVFZGWahJMmAzF2SP0iMIAuHf2ZGj8WthumjMfaccPt8ENUcHZV8vy8bEDP
+      GpNF45chlwKxK3omEfxx61fTPjf1uqAeLDsedu2eI+5dGYFmTg98fQmGw6xWO+tX
+      kgtQbgasII27IUiVHqw2COKKuwib2Xr6D24CT70AnRaQvLvgZ1r2BH0K9Lg703S1
+      RT3C13ZancIg
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    creationTimestamp: "2026-06-01T05:59:17Z"
+    name: kube-root-ca.crt
+    namespace: sample
+    resourceVersion: "742"
+    uid: b7e91062-3a58-4f03-ae72-3973b838da09
+kind: List
+metadata:
+  resourceVersion: ""

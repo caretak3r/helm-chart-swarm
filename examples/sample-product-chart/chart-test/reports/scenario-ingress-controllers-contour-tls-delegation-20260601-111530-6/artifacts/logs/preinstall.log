@@ -1,0 +1,60 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 4 preinstall item(s)
+
+==> [1/4] kind=helm
+    helm: contour (projectcontour/contour @ 0.6.0) in ns/projectcontour
+    repo 'projectcontour' already exists with URL https://projectcontour.github.io/helm-charts (skipping add)
+Release "contour" does not exist. Installing it now.
+NAME: contour
+LAST DEPLOYED: Mon Jun  1 11:15:56 2026
+NAMESPACE: projectcontour
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+CHART NAME: contour
+CHART VERSION: 0.6.0
+APP VERSION: 1.33.5
+
+** Please be patient while the chart is being deployed **
+1. Get Contours's load balancer IP/hostname:
+
+     NOTE: It may take a few minutes for this to become available.
+
+     You can watch the status by running:
+
+         $ kubectl get svc contour-envoy --namespace projectcontour -w
+
+     Once 'EXTERNAL-IP' is no longer '<pending>':
+
+         $ kubectl describe svc contour-envoy --namespace projectcontour | grep Ingress | awk '{print $3}'
+
+2. Configure DNS records corresponding to Kubernetes ingress resources to point to the load balancer IP/hostname found in step 1
+
+WARNING: There are "resources" sections in the chart not set. Using "resourcesPreset" is not recommended for production. For production installations, please set the following values according to your workload needs:
+  - contour.resources
+  - envoy.resources
+  - envoy.shutdownManager.resources
++info https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+pod/contour-contour-5847f7c7f9-mdmqn condition met
+pod/contour-envoy-m9db6 condition met
+
+==> [2/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/ingress-controllers/contour-tls-delegation-ns.yaml
+namespace/tls-secrets serverside-applied
+
+==> [3/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/ingress-controllers/contour-tls-delegation-certdelegation.yaml in ns/tls-secrets
+Warning: resource namespaces/tls-secrets is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+namespace/tls-secrets configured
+tlscertificatedelegation.projectcontour.io/sample-tls-delegation serverside-applied
+
+==> [4/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/ingress-controllers/contour-tls-delegation-httpproxy.yaml in ns/sample
+namespace/sample created
+httpproxy.projectcontour.io/sample-tls serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

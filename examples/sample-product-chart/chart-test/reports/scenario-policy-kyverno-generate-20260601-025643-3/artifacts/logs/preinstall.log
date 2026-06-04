@@ -1,0 +1,45 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: kyverno (kyverno/kyverno @ 3.8.1) in ns/kyverno
+    repo 'kyverno' already exists with URL https://kyverno.github.io/kyverno/ (skipping add)
+Release "kyverno" does not exist. Installing it now.
+NAME: kyverno
+LAST DEPLOYED: Mon Jun  1 02:57:09 2026
+NAMESPACE: kyverno
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+NOTES:
+Chart version: 3.8.1
+Kyverno version: v1.18.1
+
+Thank you for installing kyverno! Your release is named kyverno.
+
+The following components have been installed in your cluster:
+- CRDs
+- Admission controller
+- Reports controller
+- Cleanup controller
+- Background controller
+
+
+⚠️  WARNING: Setting the admission controller replica count below 2 means Kyverno is not running in high availability mode.
+
+
+⚠️  WARNING: PolicyExceptions are disabled by default. To enable them, set '--enablePolicyException' to true.
+
+💡 Note: There is a trade-off when deciding which approach to take regarding Namespace exclusions. Please see the documentation at https://kyverno.io/docs/installation/#security-vs-operability to understand the risks.
+pod/kyverno-admission-controller-6c47f7875-5r775 condition met
+pod/kyverno-background-controller-546f9479c7-bsggn condition met
+pod/kyverno-cleanup-controller-5787967fcd-m9hmh condition met
+pod/kyverno-reports-controller-669cbff555-qppj7 condition met
+
+==> [2/2] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/policy/kyverno-generate-configmap.yaml
+clusterpolicy.kyverno.io/generate-configmap-on-ns serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

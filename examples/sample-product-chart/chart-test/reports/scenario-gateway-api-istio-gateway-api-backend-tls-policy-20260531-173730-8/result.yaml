@@ -1,0 +1,11 @@
+scenario_id: gateway-api-istio-gateway-api-backend-tls-policy
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-istio-gateway-api-backend-tls-policy.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T21:37:31Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-istio-gateway-api-backend-tls-policy-20260531-173730-8/artifacts/logs/product-install.log
+finished_at: 2026-05-31T21:43:05Z

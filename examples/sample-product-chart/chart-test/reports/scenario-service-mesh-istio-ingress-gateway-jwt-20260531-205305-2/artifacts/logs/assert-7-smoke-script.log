@@ -1,0 +1,19 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-jwt.sh (RELEASE=sample NAMESPACE=sample)
+==> JWT key path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/service-mesh/jwt/jwt-key.pem
+==> Creating Istio Gateway + VirtualService
+gateway.networking.istio.io/sample-igw created
+virtualservice.networking.istio.io/sample-vs created
+==> Creating RequestAuthentication (JWT validation)
+configmap/jwt-jwks created
+requestauthentication.security.istio.io/sample-jwt-auth created
+==> Creating AuthorizationPolicy (require JWT)
+Warning: configured AuthorizationPolicy will deny all traffic to TCP ports under its scope due to the use of only HTTP attributes in a DENY rule; it is recommended to explicitly specify the port
+authorizationpolicy.security.istio.io/sample-require-jwt created
+==> Waiting for istiod to reconcile policies (15s)
+==> Getting istio-ingressgateway pod IP
+  Gateway pod IP: 10.244.0.6
+==> Signing JWT with test issuer key
+  JWT generated (expires in 1h)
+==> Test 1: Request WITHOUT Bearer token → expect 401 or 403
+  HTTP code (no auth): 200
+FAIL: expected 401 or 403 without token, got 200

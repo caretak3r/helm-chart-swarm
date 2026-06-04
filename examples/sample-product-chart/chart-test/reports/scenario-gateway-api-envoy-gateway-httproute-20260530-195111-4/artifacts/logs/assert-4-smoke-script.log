@@ -1,0 +1,71 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/envoy-gateway-httproute.sh (RELEASE=sample NAMESPACE=sample)
+==> Applying GatewayClass + Gateway + HTTPRoute
+gatewayclass.gateway.networking.k8s.io/envoy created
+gateway.gateway.networking.k8s.io/sample-gw created
+httproute.gateway.networking.k8s.io/sample-route created
+==> Waiting for GatewayClass envoy Accepted=True (3m max)
+PASS: GatewayClass envoy Accepted=True
+==> Waiting for Gateway sample-gw Programmed=True (5m max)
+FAIL: Gateway sample-gw not Programmed after 5m
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"gateway.networking.k8s.io/v1","kind":"Gateway","metadata":{"annotations":{},"name":"sample-gw","namespace":"sample"},"spec":{"gatewayClassName":"envoy","listeners":[{"allowedRoutes":{"namespaces":{"from":"Same"}},"name":"http","port":80,"protocol":"HTTP"}]}}
+  creationTimestamp: "2026-05-30T23:52:01Z"
+  generation: 1
+  name: sample-gw
+  namespace: sample
+  resourceVersion: "666"
+  uid: 77016f7b-b041-4761-9e02-9c7b65d2ae49
+spec:
+  gatewayClassName: envoy
+  listeners:
+  - allowedRoutes:
+      namespaces:
+        from: Same
+    name: http
+    port: 80
+    protocol: HTTP
+status:
+  conditions:
+  - lastTransitionTime: "2026-05-30T23:52:01Z"
+    message: The Gateway has been scheduled by Envoy Gateway
+    observedGeneration: 1
+    reason: Accepted
+    status: "True"
+    type: Accepted
+  - lastTransitionTime: "2026-05-30T23:52:01Z"
+    message: No addresses have been assigned to the Gateway
+    observedGeneration: 1
+    reason: AddressNotAssigned
+    status: "False"
+    type: Programmed
+  listeners:
+  - attachedRoutes: 2
+    conditions:
+    - lastTransitionTime: "2026-05-30T23:52:01Z"
+      message: Sending translated listener configuration to the data plane
+      observedGeneration: 1
+      reason: Programmed
+      status: "True"
+      type: Programmed
+    - lastTransitionTime: "2026-05-30T23:52:01Z"
+      message: Listener has been successfully translated
+      observedGeneration: 1
+      reason: Accepted
+      status: "True"
+      type: Accepted
+    - lastTransitionTime: "2026-05-30T23:52:01Z"
+      message: Listener references have been resolved
+      observedGeneration: 1
+      reason: ResolvedRefs
+      status: "True"
+      type: ResolvedRefs
+    name: http
+    supportedKinds:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+    - group: gateway.networking.k8s.io
+      kind: GRPCRoute

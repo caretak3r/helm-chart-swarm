@@ -1,0 +1,11 @@
+scenario_id: certificates-mounted-tls-certs-csi-secret-store
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-mounted-tls-certs-csi-secret-store.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T01:24:03Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-mounted-tls-certs-csi-secret-store-20260529-212403-3/artifacts/logs/product-install.log
+finished_at: 2026-05-30T01:29:53Z

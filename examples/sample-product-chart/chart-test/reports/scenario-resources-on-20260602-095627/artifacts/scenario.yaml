@@ -1,0 +1,36 @@
+---
+id: resources-on
+name: "Capability: resource requests/limits set on ALL workloads (ON)"
+description: >-
+  Renders the product chart with resources.requests and resources.limits configured (cpu=100m memory=128Mi / cpu=500m memory=256Mi) and scope+darkroom enabled, then asserts that every workload container carries the configured resources block. The scope and darkroom templates wire {{- with .Values.resources }} but the skywatcher Deployment does NOT include a resources block — setting resources has no effect on skywatcher. This scenario is EXPECTED to FAIL (honest red gap) documenting that skywatcher lacks a resources template, while scope and darkroom honor it.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    scope.enabled: true
+    darkroom.enabled: true
+    resources.requests.cpu: 100m
+    resources.requests.memory: 128Mi
+    resources.limits.cpu: 500m
+    resources.limits.memory: 256Mi
+asserts:
+  - type: resources-present
+    namespace: sample
+    source: rendered
+    expect_present: true
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+tags: [capability, compliance]
+category: capability
+capability: resource-limits
+tier: capability
+mechanisms: ["capability:resources"]

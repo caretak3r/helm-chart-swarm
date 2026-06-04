@@ -1,0 +1,21 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/mounted-tls/mounted-tls-pvc.yaml in ns/sample
+namespace/sample created
+persistentvolumeclaim/mounted-tls-pvc serverside-applied
+
+==> [2/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/mounted-tls/mounted-tls-pvc-certs-configmap.yaml in ns/sample
+namespace/sample unchanged
+configmap/mounted-tls-pvc-certs serverside-applied
+
+==> [3/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/mounted-tls/mounted-tls-populate-job.yaml in ns/sample
+namespace/sample unchanged
+job.batch/populate-mounted-tls-pvc serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

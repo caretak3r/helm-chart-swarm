@@ -1,0 +1,3312 @@
+scenarios:
+- id: minimal
+  name: "Vanilla cluster — no preinstalled addons"
+  description: "Baseline: chart installs and pods come up on a stock kind cluster."
+  labels:
+    customer: none
+    profile: baseline
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+  asserts:
+    - {type: helm-status-deployed, release: sample, namespace: sample}
+    - {type: pods-ready, namespace: sample, timeout: 3m}
+  tags: [pr-subset, nightly]
+  mechanisms: ['addon:none']
+- id: certificates-cert-manager-jks-pkcs12
+  name: "cert-manager JKS/PKCS12 keystore bundle"
+  description: "Installs cert-manager with a self-signed ClusterIssuer, issues a Certificate, wraps tls.crt+tls.key into a PKCS12 bundle, and stores as a new Secret alongside the TLS material."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo:
+          name: jetstack
+          url: "https://charts.jetstack.io"
+        values:
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/jks-tls-certificate.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/cert-manager-jks-pkcs12.sh
+  tags: [nightly]
+  mechanisms: ['addon:cert-manager']
+- id: certificates-cert-manager-lets-encrypt-staging
+  name: "cert-manager Let's Encrypt staging issuer"
+  description: "Installs cert-manager with Let's Encrypt staging ACME issuer. Verifies ClusterIssuer Ready=True and uses self-signed fallback Certificate to confirm chart pods serve TLS."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo:
+          name: jetstack
+          url: "https://charts.jetstack.io"
+        values:
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/letsencrypt-staging-clusterissuer.yaml
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/sample-tls-certificate.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: sample-tls
+      tls.servicePort: "443"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/cert-manager-letsencrypt-staging.sh
+  tags: [nightly]
+  mechanisms: ['addon:cert-manager']
+- id: certificates-cert-manager-self-signed-ca
+  name: "cert-manager self-signed CA issuer"
+  description: "Installs cert-manager, creates a self-signed ClusterIssuer, issues a Certificate for the product Service FQDN, and verifies HTTPS serving with --cacert."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo:
+          name: jetstack
+          url: "https://charts.jetstack.io"
+        values:
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/sample-tls-certificate.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: sample-tls
+      tls.servicePort: "443"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/cert-manager-self-signed.sh
+  tags: [nightly]
+  mechanisms: ['addon:cert-manager']
+- id: certificates-cert-manager-wildcard
+  name: "cert-manager wildcard certificate"
+  description: "Installs cert-manager with a self-signed ClusterIssuer, issues a wildcard Certificate with SAN DNS:*.test.local + test.local, and verifies both SANs are present."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo:
+          name: jetstack
+          url: "https://charts.jetstack.io"
+        values:
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/wildcard-tls-certificate.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/cert-manager-wildcard.sh
+  tags: [nightly]
+  mechanisms: ['addon:cert-manager']
+- id: certificates-manual-tls-secret-basic
+  name: "manual-tls-secret basic"
+  description: "Delivers a pre-provisioned TLS Secret (RSA 2048) via raw_manifest preinstall and verifies the chart serves HTTPS with it. No cert-manager dependency."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/manual-tls/manual-tls-basic-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: manual-tls-basic
+      tls.servicePort: "443"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/manual-tls-basic.sh
+  tags: [nightly]
+  mechanisms: ['addon:manual-tls-secret']
+- id: certificates-manual-tls-secret-ecdsa
+  name: "manual-tls-secret ECDSA key"
+  description: "Delivers a pre-provisioned TLS Secret with ECDSA P-256 key via raw_manifest. Verifies cert has id-ecPublicKey algorithm and pods serve HTTPS with the ECDSA key."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/manual-tls/manual-tls-ecdsa-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: manual-tls-ecdsa
+      tls.servicePort: "443"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/manual-tls-ecdsa.sh
+  tags: [nightly]
+  mechanisms: ['addon:manual-tls-secret']
+- id: certificates-manual-tls-secret-multiple-sans
+  name: "manual-tls-secret multiple SANs"
+  description: "Delivers a pre-provisioned TLS Secret with 3 DNS SANs (sample.sample.svc, api.sample.sample.svc, admin.sample.sample.svc) via raw_manifest and verifies the cert has >=2 SAN entries."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/manual-tls/manual-tls-multisite-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: manual-tls-multisite
+      tls.servicePort: "443"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/manual-tls-multiple-sans.sh
+  tags: [nightly]
+  mechanisms: ['addon:manual-tls-secret']
+- id: certificates-mounted-tls-certs-csi-secret-store
+  name: "mounted-tls-certs csi-secret-store"
+  description: >-
+    Installs the secrets-store-csi-driver helm chart and a stub SecretProviderClass, then installs the chart with a TLS secret volume. Verifies CSI driver presence, SecretProviderClass resource, and that the product pod serves HTTPS. Full CSI volume mount verification requires a real CSI provider plugin (e.g. AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, or HashiCorp Vault) which is not available on kind; the scenario validates CSI infrastructure deployment and documents the mount verification as a SKIP on kind.
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: secrets-store-csi-driver/secrets-store-csi-driver
+        version: 1.4.8
+        release: csi-secrets-store
+        namespace: kube-system
+        repo:
+          name: secrets-store-csi-driver
+          url: "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
+        values:
+          syncSecret:
+            enabled: true
+          enableSecretRotation: false
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-csi-secretproviderclass.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-csi-tls-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: "mounted-tls-csi-tls"
+      tls.servicePort: "443"
+      tls.volumeType: "secret"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/mounted-tls-csi-secret-store.sh
+  tags: [nightly]
+  mechanisms: ['addon:mounted-tls-certs']
+- id: certificates-mounted-tls-certs-projected-volume
+  name: "mounted-tls-certs projected-volume"
+  description: "Creates a TLS Secret, then installs the chart using a projected volume that projects the Secret into the pod. Verifies projected volume source and HTTPS serving."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-projected-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: "mounted-tls-projected"
+      tls.servicePort: "443"
+      tls.volumeType: "projected"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/mounted-tls-projected-volume.sh
+  tags: [nightly]
+  mechanisms: ['addon:mounted-tls-certs']
+- id: certificates-mounted-tls-certs-pvc-mount
+  name: "mounted-tls-certs pvc-mount"
+  description: "Creates a PVC, populates it with TLS certs via a Job, then installs the chart with a persistentVolumeClaim-backed TLS volume. Verifies the pod mount and HTTPS serving."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-pvc.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-pvc-certs-configmap.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-populate-job.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: "unused-for-pvc"
+      tls.servicePort: "443"
+      tls.volumeType: "persistentVolumeClaim"
+      tls.pvcClaimName: "mounted-tls-pvc"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      selector: app=sample
+      timeout: 10m
+    - type: smoke-script
+      path: chart-test/assertions/mounted-tls-pvc-mount.sh
+  tags: [nightly]
+  mechanisms: ['addon:mounted-tls-certs']
+- id: with-cert-manager
+  name: "Customer ships cert-manager preinstalled"
+  description: "Validates chart coexists with cert-manager and its CRDs."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo: {name: jetstack, url: "https://charts.jetstack.io"}
+        values: {installCRDs: true}
+        wait: pods-ready
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+  asserts:
+    - {type: helm-status-deployed, release: sample, namespace: sample}
+    - {type: pods-ready, namespace: sample}
+  tags: [pr-subset, nightly]
+  mechanisms: ['addon:cert-manager']
+- id: envoy-gateway
+  name: "Envoy Gateway (Gateway API)"
+  description: >-
+    Installs Envoy Gateway controller via OCI helm chart (CRDs are bundled in the chart's crds/ directory and installed automatically by Helm before templates). Verifies chart coexists with a running gateway controller.
+  labels:
+    customer: none
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - chart: oci://docker.io/envoyproxy/gateway-helm
+        version: v1.1.2
+        release: envoy-gateway
+        namespace: envoy-gateway-system
+        values:
+          config:
+            envoyGateway:
+              provider:
+                type: Kubernetes
+        wait: helm-deployed
+        wait_timeout: 5m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+  asserts:
+    - {type: helm-status-deployed, release: envoy-gateway, namespace: envoy-gateway-system}
+    - {type: helm-status-deployed, release: sample, namespace: sample}
+    - {type: pods-ready, namespace: envoy-gateway-system, selector: app.kubernetes.io/name=gateway-helm, timeout: 5m}
+    - {type: pods-ready, namespace: sample}
+  tags: [nightly]
+  mechanisms: ['addon:envoy-gateway', 'gateway-api:envoy']
+- id: gateway-api-contour-gateway-api-basic
+  name: "Contour Gateway API Basic"
+  description: "Installs Gateway API CRDs and Contour Gateway Provisioner, creates GatewayClass contour + Gateway + HTTPRoute, and verifies HTTP routing through the auto-provisioned Envoy proxy."
+  labels:
+    customer: any
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+      - kind: raw_manifest
+        path: https://projectcontour.io/quickstart/contour-gateway-provisioner.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: projectcontour
+      selector: control-plane=contour-gateway-provisioner
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/contour-gateway-api-basic.sh
+  tags: [nightly]
+  mechanisms: ['addon:contour', 'gateway-api:contour']
+- id: gateway-api-contour-gateway-api-response-header-modifier
+  name: "Contour Gateway API Response Header Modifier"
+  description: "Installs Gateway API CRDs + Contour Gateway Provisioner, creates GatewayClass contour + Gateway + HTTPRoute with ResponseHeaderModifier filter, verifies X-Powered-By header."
+  labels:
+    customer: any
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+      - kind: raw_manifest
+        path: https://projectcontour.io/quickstart/contour-gateway-provisioner.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: projectcontour
+      selector: control-plane=contour-gateway-provisioner
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/contour-gateway-api-response-header-modifier.sh
+  tags: [nightly]
+  mechanisms: ['addon:contour', 'gateway-api:contour']
+- id: gateway-api-contour-gateway-api-route-precedence
+  name: "Contour Gateway API Route Precedence"
+  description: "Installs Gateway API CRDs + Contour Gateway Provisioner, creates GatewayClass contour + Gateway + two HTTPRoutes with overlapping prefixes, verifies more specific route wins."
+  labels:
+    customer: any
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+      - kind: raw_manifest
+        path: https://projectcontour.io/quickstart/contour-gateway-provisioner.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: projectcontour
+      selector: control-plane=contour-gateway-provisioner
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/contour-gateway-api-route-precedence.sh
+  tags: [nightly]
+  mechanisms: ['addon:contour', 'gateway-api:contour']
+- id: gateway-api-envoy-gateway-cert-manager-tls
+  name: "Envoy Gateway + cert-manager TLS"
+  description: "Installs cert-manager and envoy-gateway, issues a TLS certificate, creates Gateway with HTTPS listener using cert-manager Secret, and verifies HTTPS serving with expected cert."
+  labels:
+    customer: any
+    profile: gateway-api-tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: oci://docker.io/envoyproxy/gateway-helm
+        version: v1.1.2
+        release: envoy-gateway
+        namespace: envoy-gateway-system
+        values:
+          config:
+            envoyGateway:
+              provider:
+                type: Kubernetes
+        wait: helm-deployed
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+      - kind: helm
+        chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo:
+          name: jetstack
+          url: "https://charts.jetstack.io"
+        values:
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "true"
+      gatewayRoute.parentRef.name: "sample-gw"
+      gatewayRoute.parentRef.sectionName: "https"
+  asserts:
+    - type: helm-status-deployed
+      release: cert-manager
+      namespace: cert-manager
+    - type: helm-status-deployed
+      release: envoy-gateway
+      namespace: envoy-gateway-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: cert-manager
+      timeout: 5m
+    - type: pods-ready
+      namespace: envoy-gateway-system
+      selector: app.kubernetes.io/name=gateway-helm
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/envoy-gateway-cert-manager-tls.sh
+  tags: [nightly]
+  mechanisms: ['addon:envoy-gateway', 'addon:cert-manager', 'gateway-api:envoy']
+- id: gateway-api-envoy-gateway-grpcroute
+  name: "Envoy Gateway GRPCRoute"
+  description: "Installs Gateway API CRDs and envoy-gateway controller, deploys a gRPC backend, creates GRPCRoute, and verifies gRPC reflection through the Envoy proxy."
+  labels:
+    customer: any
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: oci://docker.io/envoyproxy/gateway-helm
+        version: v1.1.2
+        release: envoy-gateway
+        namespace: envoy-gateway-system
+        values:
+          config:
+            envoyGateway:
+              provider:
+                type: Kubernetes
+        wait: helm-deployed
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+      - kind: raw_manifest
+        path: chart-test/fixtures/gateway-api/envoy-gateway-grpcroute-backend.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+  asserts:
+    - type: helm-status-deployed
+      release: envoy-gateway
+      namespace: envoy-gateway-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: envoy-gateway-system
+      selector: app.kubernetes.io/name=gateway-helm
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/envoy-gateway-grpcroute.sh
+  tags: [nightly]
+  mechanisms: ['addon:envoy-gateway', 'gateway-api:envoy']
+- id: gateway-api-envoy-gateway-httproute
+  name: "Envoy Gateway HTTPRoute"
+  description: "Installs Gateway API CRDs and envoy-gateway controller, creates GatewayClass+Gateway+HTTPRoute, and verifies HTTP routing through the Envoy proxy."
+  labels:
+    customer: any
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: oci://docker.io/envoyproxy/gateway-helm
+        version: v1.1.2
+        release: envoy-gateway
+        namespace: envoy-gateway-system
+        values:
+          config:
+            envoyGateway:
+              provider:
+                type: Kubernetes
+        wait: helm-deployed
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "true"
+      gatewayRoute.parentRef.name: "sample-gw"
+      gatewayRoute.parentRef.sectionName: "http"
+  asserts:
+    - type: helm-status-deployed
+      release: envoy-gateway
+      namespace: envoy-gateway-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: envoy-gateway-system
+      selector: app.kubernetes.io/name=gateway-helm
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/envoy-gateway-httproute.sh
+  tags: [nightly]
+  mechanisms: ['addon:envoy-gateway', 'gateway-api:envoy']
+- id: gateway-api-envoy-gateway-security-policy-attach
+  name: "Envoy Gateway SecurityPolicy (CORS)"
+  description: "Installs Gateway API CRDs and envoy-gateway controller, creates HTTPRoute with SecurityPolicy (CORS) attaching to the route, and verifies CORS header on preflight."
+  labels:
+    customer: any
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: oci://docker.io/envoyproxy/gateway-helm
+        version: v1.1.2
+        release: envoy-gateway
+        namespace: envoy-gateway-system
+        values:
+          config:
+            envoyGateway:
+              provider:
+                type: Kubernetes
+        wait: helm-deployed
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "true"
+      gatewayRoute.parentRef.name: "sample-gw"
+      gatewayRoute.parentRef.sectionName: "http"
+  asserts:
+    - type: helm-status-deployed
+      release: envoy-gateway
+      namespace: envoy-gateway-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: envoy-gateway-system
+      selector: app.kubernetes.io/name=gateway-helm
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/envoy-gateway-security-policy-attach.sh
+  tags: [nightly]
+  mechanisms: ['addon:envoy-gateway', 'gateway-api:envoy']
+- id: gateway-api-istio-gateway-api-backend-tls-policy
+  name: "Istio Gateway API BackendTLSPolicy"
+  description: >-
+    Installs istio/base + istio/istiod and Gateway API CRDs, generates self-signed TLS certs at runtime, creates BackendTLSPolicy targeting the Service, and verifies Policy acceptance and gateway routing.
+  labels:
+    customer: any
+    profile: gateway-api-backendtls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            env:
+              PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/experimental-install.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "false"
+      gatewayRoute.parentRef.name: "sample-gw"
+      gatewayRoute.parentRef.sectionName: "http"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-gateway-api-gen-backend-tls-certs.sh
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-gateway-api-backend-tls-policy.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'gateway-api:istio']
+- id: gateway-api-istio-gateway-api-basic
+  name: "Istio Gateway API Basic"
+  description: "Installs istio/base + istio/istiod and Gateway API CRDs, creates GatewayClass istio + Gateway + HTTPRoute, and verifies HTTP routing through auto-provisioned Istio data-plane."
+  labels:
+    customer: any
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "true"
+      gatewayRoute.parentRef.name: "sample-gw"
+      gatewayRoute.parentRef.sectionName: "http"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-gateway-api-basic.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'gateway-api:istio']
+- id: gateway-api-istio-gateway-api-multi-listener
+  name: "Istio Gateway API Multi-Listener"
+  description: "Installs istio/base + istio/istiod and Gateway API CRDs, creates Gateway with HTTP:80 + HTTPS:443 listeners, and verifies both protocols with TLS certificate."
+  labels:
+    customer: any
+    profile: gateway-api-multilistener
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "true"
+      gatewayRoute.parentRef.name: "sample-gw"
+      gatewayRoute.parentRef.sectionName: "http"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-gateway-api-multi-listener.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'gateway-api:istio']
+- id: ingress-controllers-contour-basic-httpproxy
+  name: "Contour basic HTTPProxy"
+  description: "Installs Contour, creates an HTTPProxy for the product Service, and verifies HTTP routing through the envoy pod IP with Host header matching and HTTPProxy status valid."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: projectcontour/contour
+        version: "0.6.0"
+        release: contour
+        namespace: projectcontour
+        repo:
+          name: projectcontour
+          url: "https://projectcontour.github.io/helm-charts"
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/contour-basic-httpproxy.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: projectcontour
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/contour-basic.sh
+  tags: [nightly]
+  mechanisms: ['addon:contour']
+- id: ingress-controllers-contour-rate-limit
+  name: "Contour rate limit"
+  description: "Installs Contour, creates an HTTPProxy with local rateLimitPolicy (5 req/min), and verifies that exceeding the limit produces 429 responses while requests within the limit succeed."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: projectcontour/contour
+        version: "0.6.0"
+        release: contour
+        namespace: projectcontour
+        repo:
+          name: projectcontour
+          url: "https://projectcontour.github.io/helm-charts"
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/contour-rate-limit-httpproxy.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: projectcontour
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/contour-rate-limit.sh
+  tags: [nightly]
+  mechanisms: ['addon:contour']
+- id: ingress-controllers-contour-tls-delegation
+  name: "Contour TLS delegation"
+  description: "Installs Contour, deploys TLS Secret in tls-secrets NS, grants cross-namespace access via TLSCertificateDelegation, creates HTTPProxy with delegated Secret, verifies HTTPS 200."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: projectcontour/contour
+        version: "0.6.0"
+        release: contour
+        namespace: projectcontour
+        repo:
+          name: projectcontour
+          url: "https://projectcontour.github.io/helm-charts"
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/contour-tls-delegation-ns.yaml
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/contour-tls-delegation-certdelegation.yaml
+        namespace: tls-secrets
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/contour-tls-delegation-httpproxy.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: projectcontour
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/contour-tls-delegation.sh
+  tags: [nightly]
+  mechanisms: ['addon:contour']
+- id: ingress-controllers-nginx-ingress-basic
+  name: "NGINX Ingress basic routing"
+  description: "Installs NGINX Ingress controller, creates an Ingress with ingressClassName: nginx, and verifies Host-header routing returns HTTP 200."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: ingress-nginx/ingress-nginx
+        version: "4.10.0"
+        release: ingress-nginx
+        namespace: ingress-nginx
+        repo:
+          name: ingress-nginx
+          url: "https://kubernetes.github.io/ingress-nginx"
+        values:
+          controller:
+            service:
+              type: NodePort
+            allowSnippetAnnotations: true
+            ingressClassResource:
+              name: nginx
+              enabled: true
+              default: false
+              controllerValue: "k8s.io/ingress-nginx"
+            watchIngressWithoutClass: true
+          admissionWebhooks:
+            enabled: false
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/nginx-basic-ingress.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: ingress-nginx
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/nginx-basic.sh
+  tags: [nightly]
+  mechanisms: ['addon:nginx-ingress']
+- id: ingress-controllers-nginx-ingress-canary
+  name: "NGINX Ingress canary traffic splitting"
+  description: "Installs NGINX Ingress controller with stable+canary Ingresses (canary-weight=20), deploys a canary backend with distinctive response, verifies ~20% of 100 probes hit canary."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: ingress-nginx/ingress-nginx
+        version: "4.10.0"
+        release: ingress-nginx
+        namespace: ingress-nginx
+        repo:
+          name: ingress-nginx
+          url: "https://kubernetes.github.io/ingress-nginx"
+        values:
+          controller:
+            service:
+              type: NodePort
+            allowSnippetAnnotations: true
+            ingressClassResource:
+              name: nginx
+              enabled: true
+              default: false
+              controllerValue: "k8s.io/ingress-nginx"
+            watchIngressWithoutClass: true
+          admissionWebhooks:
+            enabled: false
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/nginx-canary-stable-ingress.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/nginx-canary-deployment.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: ingress-nginx
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/nginx-canary.sh
+  tags: [nightly]
+  mechanisms: ['addon:nginx-ingress']
+- id: ingress-controllers-nginx-ingress-default-backend
+  name: "NGINX Ingress custom default backend"
+  description: "Installs NGINX Ingress with custom default backend Deployment+Service, verifies requests without matching Host return the custom backend's distinctive body instead of stock 404."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/nginx-default-backend.yaml
+        namespace: ingress-nginx
+      - kind: helm
+        chart: ingress-nginx/ingress-nginx
+        version: "4.10.0"
+        release: ingress-nginx
+        namespace: ingress-nginx
+        repo:
+          name: ingress-nginx
+          url: "https://kubernetes.github.io/ingress-nginx"
+        values:
+          controller:
+            service:
+              type: NodePort
+            allowSnippetAnnotations: true
+            ingressClassResource:
+              name: nginx
+              enabled: true
+              default: false
+              controllerValue: "k8s.io/ingress-nginx"
+            watchIngressWithoutClass: true
+            extraArgs:
+              default-backend-service: "ingress-nginx/custom-default-backend"
+          admissionWebhooks:
+            enabled: false
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/nginx-basic-ingress.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: ingress-nginx
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/nginx-default-backend.sh
+  tags: [nightly]
+  mechanisms: ['addon:nginx-ingress']
+- id: ingress-controllers-nginx-ingress-snippet-annotations
+  name: "NGINX Ingress snippet annotations"
+  description: "Installs NGINX Ingress with allowSnippetAnnotations=true, creates an Ingress with configuration-snippet annotation injecting add_header X-Test, verifies the header appears."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: ingress-nginx/ingress-nginx
+        version: "4.10.0"
+        release: ingress-nginx
+        namespace: ingress-nginx
+        repo:
+          name: ingress-nginx
+          url: "https://kubernetes.github.io/ingress-nginx"
+        values:
+          controller:
+            service:
+              type: NodePort
+            allowSnippetAnnotations: true
+            ingressClassResource:
+              name: nginx
+              enabled: true
+              default: false
+              controllerValue: "k8s.io/ingress-nginx"
+            watchIngressWithoutClass: true
+          admissionWebhooks:
+            enabled: false
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/nginx-snippet-ingress.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: ingress-nginx
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/nginx-snippet-annotations.sh
+  tags: [nightly]
+  mechanisms: ['addon:nginx-ingress']
+- id: ingress-controllers-nginx-ingress-tls-cert-manager
+  name: "NGINX Ingress TLS with cert-manager"
+  description: "Installs cert-manager + NGINX Ingress, creates self-signed ClusterIssuer+Certificate, verifies HTTPS routing through nginx with TLS terminated by cert-manager-issued cert chain."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo:
+          name: jetstack
+          url: "https://charts.jetstack.io"
+        values:
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/ingress-tls-certificate.yaml
+        namespace: sample
+      - kind: helm
+        chart: ingress-nginx/ingress-nginx
+        version: "4.10.0"
+        release: ingress-nginx
+        namespace: ingress-nginx
+        repo:
+          name: ingress-nginx
+          url: "https://kubernetes.github.io/ingress-nginx"
+        values:
+          controller:
+            service:
+              type: NodePort
+            allowSnippetAnnotations: true
+            ingressClassResource:
+              name: nginx
+              enabled: true
+              default: false
+              controllerValue: "k8s.io/ingress-nginx"
+            watchIngressWithoutClass: true
+          admissionWebhooks:
+            enabled: false
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/nginx-tls-ingress.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: cert-manager
+      timeout: 3m
+    - type: pods-ready
+      namespace: ingress-nginx
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/nginx-tls-cert-manager.sh
+  tags: [nightly]
+  mechanisms: ['addon:cert-manager', 'addon:nginx-ingress']
+- id: ingress-controllers-traefik-basic
+  name: "Traefik basic IngressRoute"
+  description: "Installs Traefik, creates an IngressRoute for the product Service, and verifies HTTP routing through the Traefik pod IP with Host header matching."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: traefik/traefik
+        version: v28.3.0
+        release: traefik
+        namespace: traefik
+        repo:
+          name: traefik
+          url: "https://traefik.github.io/charts"
+        values:
+          image:
+            registry: ghcr.io
+            repository: traefik/traefik
+          ingressClass:
+            enabled: true
+            isDefaultClass: false
+          ingressRoute:
+            dashboard:
+              enabled: false
+          ports:
+            web:
+              exposedPort: 80
+            websecure:
+              exposedPort: 443
+          service:
+            type: NodePort
+          providers:
+            kubernetesIngress:
+              enabled: true
+            kubernetesCRD:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/traefik-basic-ingressroute.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: traefik
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/traefik-basic.sh
+  tags: [nightly]
+  mechanisms: ['addon:traefik']
+- id: ingress-controllers-traefik-ingressroute-crd
+  name: "Traefik IngressRoute CRD"
+  description: "Installs Traefik, uses IngressRoute CRD exclusively for routing (no classic Ingress), and verifies HTTP traffic reaches the backend."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: traefik/traefik
+        version: v28.3.0
+        release: traefik
+        namespace: traefik
+        repo:
+          name: traefik
+          url: "https://traefik.github.io/charts"
+        values:
+          image:
+            registry: ghcr.io
+            repository: traefik/traefik
+          ingressClass:
+            enabled: true
+            isDefaultClass: false
+          ingressRoute:
+            dashboard:
+              enabled: false
+          ports:
+            web:
+              exposedPort: 80
+            websecure:
+              exposedPort: 443
+          service:
+            type: NodePort
+          providers:
+            kubernetesIngress:
+              enabled: true
+            kubernetesCRD:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/traefik-ingressroute-crd.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: traefik
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/traefik-ingressroute-crd.sh
+  tags: [nightly]
+  mechanisms: ['addon:traefik']
+- id: ingress-controllers-traefik-middleware-chain
+  name: "Traefik middleware chain"
+  description: "Installs Traefik, creates a Middleware CR that injects custom headers, references it from an IngressRoute, and verifies the middleware effect is observable."
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: traefik/traefik
+        version: v28.3.0
+        release: traefik
+        namespace: traefik
+        repo:
+          name: traefik
+          url: "https://traefik.github.io/charts"
+        values:
+          image:
+            registry: ghcr.io
+            repository: traefik/traefik
+          ingressClass:
+            enabled: true
+            isDefaultClass: false
+          ingressRoute:
+            dashboard:
+              enabled: false
+          ports:
+            web:
+              exposedPort: 80
+            websecure:
+              exposedPort: 443
+          service:
+            type: NodePort
+          providers:
+            kubernetesIngress:
+              enabled: true
+            kubernetesCRD:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/traefik-middleware-headers.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/traefik-middleware-ingressroute.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: traefik
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/traefik-middleware-chain.sh
+  tags: [nightly]
+  mechanisms: ['addon:traefik']
+- id: ingress-controllers-traefik-tls-passthrough
+  name: "Traefik TLS passthrough"
+  description: "Installs Traefik, configures IngressRouteTCP with tls.passthrough=true, and verifies the backend's TLS certificate is served untouched through the proxy."
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: traefik/traefik
+        version: v28.3.0
+        release: traefik
+        namespace: traefik
+        repo:
+          name: traefik
+          url: "https://traefik.github.io/charts"
+        values:
+          image:
+            registry: ghcr.io
+            repository: traefik/traefik
+          ingressClass:
+            enabled: true
+            isDefaultClass: false
+          ingressRoute:
+            dashboard:
+              enabled: false
+          ports:
+            web:
+              exposedPort: 80
+            websecure:
+              exposedPort: 443
+          service:
+            type: NodePort
+          providers:
+            kubernetesIngress:
+              enabled: true
+            kubernetesCRD:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/traefik-tls-passthrough-ingressroutetcp.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/manual-tls/manual-tls-basic-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+      tls.enabled: "true"
+      tls.secretName: "manual-tls-basic"
+      tls.servicePort: "443"
+      tls.initContainerImage: "public.ecr.aws/docker/library/busybox:1.36"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: traefik
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/traefik-tls-passthrough.sh
+  tags: [nightly]
+  mechanisms: ['addon:traefik']
+- id: customer-b-gatekeeper
+  name: "Customer B — OPA Gatekeeper admission policies"
+  description: "Customer B runs Gatekeeper with strict admission policies. Chart must satisfy required-labels + no-privileged constraints."
+  labels:
+    customer: B
+    policy: gatekeeper
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - chart: gatekeeper/gatekeeper
+        version: 3.16.0
+        release: gatekeeper
+        namespace: gatekeeper-system
+        repo: {name: gatekeeper, url: "https://open-policy-agent.github.io/gatekeeper/charts"}
+        wait: pods-ready
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+  asserts:
+    - {type: helm-status-deployed, release: sample, namespace: sample}
+    - {type: pods-ready, namespace: sample, timeout: 5m}
+  tags: [nightly, customer-replica]
+  mechanisms: ['addon:gatekeeper', 'customer:B']
+- id: policy-kyverno-generate
+  name: "Kyverno generate: ConfigMap in labeled namespaces"
+  description: >-
+    Installs Kyverno, creates a ClusterPolicy that generates a ConfigMap in any namespace labeled kyverno.io/generate=true. Verifies that creating a fresh namespace with the trigger label causes Kyverno to generate the ConfigMap within 10s. Webhook failure mode: Fail.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: kyverno/kyverno
+        version: "3.8.1"
+        release: kyverno
+        namespace: kyverno
+        repo:
+          name: kyverno
+          url: "https://kyverno.github.io/kyverno/"
+        values:
+          admissionController:
+            replicas: 1
+          backgroundController:
+            enabled: true
+          cleanupController:
+            enabled: true
+          reportsController:
+            enabled: true
+          features:
+            admissionReports:
+              enabled: true
+            policyReports:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/kyverno-generate-configmap.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: kyverno
+      timeout: 4m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/kyverno-generate.sh
+  tags: [nightly]
+  mechanisms: ['addon:kyverno']
+- id: policy-kyverno-image-verify
+  name: "Kyverno image-verify: only approved registries"
+  description: >-
+    Installs Kyverno, creates a ClusterPolicy that only allows images from public.ecr.aws/* or nginx* registries. Verifies a Pod referencing docker.io/library/redis:7-alpine is denied (stderr names rule), while a Pod with an approved image is accepted. Webhook failure mode: Fail.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: kyverno/kyverno
+        version: "3.8.1"
+        release: kyverno
+        namespace: kyverno
+        repo:
+          name: kyverno
+          url: "https://kyverno.github.io/kyverno/"
+        values:
+          admissionController:
+            replicas: 1
+          backgroundController:
+            enabled: true
+          cleanupController:
+            enabled: true
+          reportsController:
+            enabled: true
+          features:
+            admissionReports:
+              enabled: true
+            policyReports:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/kyverno-image-verify-allowlist.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: kyverno
+      timeout: 4m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/kyverno-image-verify.sh
+  tags: [nightly]
+  mechanisms: ['addon:kyverno']
+- id: policy-kyverno-mutate
+  name: "Kyverno mutate: auto-add annotation to Pods"
+  description: >-
+    Installs Kyverno, creates a ClusterPolicy that adds the annotation kyverno.io/managed-by: chart-test-swarm to Pods. Verifies a Pod manifest lacking the annotation gets it auto-added after the mutating webhook fires. Webhook failure mode: Fail.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: kyverno/kyverno
+        version: "3.8.1"
+        release: kyverno
+        namespace: kyverno
+        repo:
+          name: kyverno
+          url: "https://kyverno.github.io/kyverno/"
+        values:
+          admissionController:
+            replicas: 1
+          backgroundController:
+            enabled: true
+          cleanupController:
+            enabled: true
+          reportsController:
+            enabled: true
+          features:
+            admissionReports:
+              enabled: true
+            policyReports:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/kyverno-mutate-add-annotation.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: kyverno
+      timeout: 4m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/kyverno-mutate.sh
+  tags: [nightly]
+  mechanisms: ['addon:kyverno']
+- id: policy-kyverno-validate
+  name: "Kyverno validate: require labels on Deployments"
+  description: >-
+    Installs Kyverno, creates a ClusterPolicy that requires app.kubernetes.io/name label on Deployments. Verifies non-compliant Deployment denied (stderr names validate.kyverno.svc-fail and policy name), compliant Deployment accepted. Webhook failure mode: Fail.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: kyverno/kyverno
+        version: "3.8.1"
+        release: kyverno
+        namespace: kyverno
+        repo:
+          name: kyverno
+          url: "https://kyverno.github.io/kyverno/"
+        values:
+          admissionController:
+            replicas: 1
+          backgroundController:
+            enabled: true
+          cleanupController:
+            enabled: true
+          reportsController:
+            enabled: true
+          features:
+            admissionReports:
+              enabled: true
+            policyReports:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/kyverno-validate-require-label.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: kyverno
+      timeout: 4m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/kyverno-validate.sh
+  tags: [nightly]
+  mechanisms: ['addon:kyverno']
+- id: policy-opa-gatekeeper-image-allowlist
+  name: "OPA Gatekeeper image allowlist enforcement"
+  description: >-
+    Installs OPA Gatekeeper, creates k8sallowedrepos ConstraintTemplate + Constraint allowing only nginx + public.ecr.aws images. Verifies non-allowlisted image denied, allowlisted image accepted.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: gatekeeper/gatekeeper
+        version: "3.17.1"
+        release: gatekeeper
+        namespace: gatekeeper-system
+        repo:
+          name: gatekeeper
+          url: "https://open-policy-agent.github.io/gatekeeper/charts"
+        values:
+          auditInterval: 10
+          constraintViolationsLimit: 20
+          enableExternalData: false
+          postInstall:
+            labelNamespace:
+              enabled: false
+          validatingWebhookFailurePolicy: Fail
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/k8sallowedrepos-template.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: gatekeeper-system
+      timeout: 4m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/opa-gatekeeper-image-allowlist.sh
+  tags: [nightly]
+  mechanisms: ['addon:opa-gatekeeper']
+- id: policy-opa-gatekeeper-required-labels
+  name: "OPA Gatekeeper required labels enforcement"
+  description: >-
+    Installs OPA Gatekeeper + NGINX Ingress, creates k8srequiredlabels ConstraintTemplate + Constraint targeting Deployments and Ingress. Verifies non-compliant resources denied, compliant accepted. Cross-feature compose with M4 nginx-ingress.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: gatekeeper/gatekeeper
+        version: "3.17.1"
+        release: gatekeeper
+        namespace: gatekeeper-system
+        repo:
+          name: gatekeeper
+          url: "https://open-policy-agent.github.io/gatekeeper/charts"
+        values:
+          auditInterval: 10
+          constraintViolationsLimit: 20
+          enableExternalData: false
+          postInstall:
+            labelNamespace:
+              enabled: false
+          validatingWebhookFailurePolicy: Fail
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: helm
+        chart: ingress-nginx/ingress-nginx
+        version: "4.10.0"
+        release: ingress-nginx
+        namespace: ingress-nginx
+        repo:
+          name: ingress-nginx
+          url: "https://kubernetes.github.io/ingress-nginx"
+        values:
+          controller:
+            service:
+              type: NodePort
+            allowSnippetAnnotations: true
+            ingressClassResource:
+              name: nginx
+              enabled: true
+              default: false
+              controllerValue: "k8s.io/ingress-nginx"
+            watchIngressWithoutClass: true
+          admissionWebhooks:
+            enabled: false
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/k8srequiredlabels-template.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: gatekeeper-system
+      timeout: 4m
+    - type: pods-ready
+      namespace: ingress-nginx
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/opa-gatekeeper-required-labels.sh
+  tags: [nightly]
+  mechanisms: ['addon:opa-gatekeeper', 'addon:nginx-ingress']
+- id: policy-opa-gatekeeper-resource-limits
+  name: "OPA Gatekeeper resource limits enforcement"
+  description: >-
+    Installs OPA Gatekeeper, creates k8scontainerlimits ConstraintTemplate + Constraint requiring CPU and memory limits on all containers. Verifies Deployment without limits denied, compliant Deployment accepted.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: gatekeeper/gatekeeper
+        version: "3.17.1"
+        release: gatekeeper
+        namespace: gatekeeper-system
+        repo:
+          name: gatekeeper
+          url: "https://open-policy-agent.github.io/gatekeeper/charts"
+        values:
+          auditInterval: 10
+          constraintViolationsLimit: 20
+          enableExternalData: false
+          postInstall:
+            labelNamespace:
+              enabled: false
+          validatingWebhookFailurePolicy: Fail
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/k8scontainerlimits-template.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: gatekeeper-system
+      timeout: 4m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/opa-gatekeeper-resource-limits.sh
+  tags: [nightly]
+  mechanisms: ['addon:opa-gatekeeper']
+- id: policy-opa-gatekeeper-sync-config
+  name: "OPA Gatekeeper sync configuration"
+  description: >-
+    Installs OPA Gatekeeper, applies Gatekeeper Config with sync.syncOnly listing Namespace, Pod, and Ingress kinds for OPA cache sync. Verifies Config exists with non-empty syncOnly, controller Ready.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: gatekeeper/gatekeeper
+        version: "3.17.1"
+        release: gatekeeper
+        namespace: gatekeeper-system
+        repo:
+          name: gatekeeper
+          url: "https://open-policy-agent.github.io/gatekeeper/charts"
+        values:
+          auditInterval: 10
+          constraintViolationsLimit: 20
+          enableExternalData: false
+          postInstall:
+            labelNamespace:
+              enabled: false
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/gatekeeper-sync-config.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: gatekeeper-system
+      timeout: 4m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/opa-gatekeeper-sync-config.sh
+  tags: [nightly]
+  mechanisms: ['addon:opa-gatekeeper']
+- id: customer-a-istio
+  name: "Customer A — Istio mesh + cert-manager"
+  description: "Customer A's profile: istio sidecar injection, istio-ingress, cert-manager."
+  labels:
+    customer: A
+    mesh: istio
+    ingress: istio-gw
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo: {name: jetstack, url: "https://charts.jetstack.io"}
+        values: {installCRDs: true}
+        wait: pods-ready
+      - chart: istio/base
+        version: 1.21.0
+        release: istio-base
+        namespace: istio-system
+        repo: {name: istio, url: "https://istio-release.storage.googleapis.com/charts"}
+        wait: helm-deployed
+      - chart: istio/istiod
+        version: 1.21.0
+        release: istiod
+        namespace: istio-system
+        wait: pods-ready
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      "podAnnotations.sidecar\\.istio\\.io/inject": "true"
+  asserts:
+    - {type: helm-status-deployed, release: sample, namespace: sample}
+    - {type: pods-ready, namespace: sample, timeout: 5m}
+  tags: [nightly, customer-replica]
+  mechanisms: ['addon:istio', 'addon:cert-manager', 'mesh:istio', 'customer:A']
+- id: service-mesh-istio-ingress-gateway-basic
+  name: "Istio Ingress Gateway — Basic"
+  description: >-
+    Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with ingress disabled, creates an Istio Gateway + VirtualService to route external traffic through the ingressgateway pod, and verifies HTTP 200 via the gateway with a Host header.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: helm
+        chart: istio/gateway
+        version: 1.27.9
+        release: istio-ingressgateway
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          service:
+            type: NodePort
+            ports:
+              - name: http2
+                port: 80
+                nodePort: 30080
+        wait: pods-ready
+        wait_timeout: 3m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      ingress.enabled: false
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istio-ingressgateway
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istio-ingressgateway
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/istio-ingress-gateway-basic.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'mesh:istio-ingress-gateway']
+- id: service-mesh-istio-ingress-gateway-jwt
+  name: "Istio Ingress Gateway — JWT Authentication"
+  description: >-
+    Installs istio/base + istio/istiod + istio/gateway, deploys the product chart, creates an Istio Gateway + VirtualService, applies a RequestAuthentication + AuthorizationPolicy requiring a valid JWT, and verifies: (a) requests without a Bearer token are rejected with 401/403, (b) requests with a valid JWT signed by the test issuer key from fixtures/service-mesh/jwt/ return HTTP 200.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: helm
+        chart: istio/gateway
+        version: 1.27.9
+        release: istio-ingressgateway
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          service:
+            type: NodePort
+            ports:
+              - name: http2
+                port: 80
+                nodePort: 30080
+        wait: pods-ready
+        wait_timeout: 3m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      ingress.enabled: false
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istio-ingressgateway
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istio-ingressgateway
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/istio-ingress-gateway-jwt.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'mesh:istio-ingress-gateway']
+- id: service-mesh-istio-ingress-gateway-multi-host
+  name: "Istio Ingress Gateway — Multi-Host"
+  description: >-
+    Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with scope.enabled=true, creates an Istio Gateway with two server blocks for different hosts, and a VirtualService that routes each host to a different backend (skywatcher vs scope). Verifies both hosts return HTTP 200 through the ingressgateway.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: helm
+        chart: istio/gateway
+        version: 1.27.9
+        release: istio-ingressgateway
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          service:
+            type: NodePort
+            ports:
+              - name: http2
+                port: 80
+                nodePort: 30080
+        wait: pods-ready
+        wait_timeout: 3m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      ingress.enabled: false
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istio-ingressgateway
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istio-ingressgateway
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/istio-ingress-gateway-multi-host.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'mesh:istio-ingress-gateway']
+- id: service-mesh-istio-ingress-gateway-request-authentication
+  name: "Istio Ingress Gateway — RequestAuthentication (No Deny)"
+  description: >-
+    Installs istio/base + istio/istiod + istio/gateway, deploys the product chart, creates an Istio Gateway + VirtualService, applies a RequestAuthentication that validates JWTs from the test issuer but does NOT require them (no AuthorizationPolicy). Verifies: (a) requests without a token still pass through (HTTP 200), (b) requests with a valid JWT also return 200, and (c) requests with an invalid JWT (wrong issuer) are rejected with 401 by RequestAuthentication validation alone.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: helm
+        chart: istio/gateway
+        version: 1.27.9
+        release: istio-ingressgateway
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          service:
+            type: NodePort
+            ports:
+              - name: http2
+                port: 80
+                nodePort: 30080
+        wait: pods-ready
+        wait_timeout: 3m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      ingress.enabled: false
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istio-ingressgateway
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istio-ingressgateway
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/istio-ingress-gateway-request-authentication.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'mesh:istio-ingress-gateway']
+- id: service-mesh-istio-service-mesh-cert-manager-tls
+  name: "Istio Service Mesh + cert-manager TLS Gateway"
+  description: >-
+    Cross-feature compose: installs cert-manager + istio (base + istiod + gateway), creates a cert-manager self-signed ClusterIssuer and Certificate that issues a TLS Secret, then creates an Istio Gateway with a TLS listener referencing that Secret via credentialName. Verifies: istioctl analyze clean, HTTPS through gateway returns 200 with the cert-manager-issued certificate.
+  labels:
+    customer: any
+    profile: mesh-tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo:
+          name: jetstack
+          url: "https://charts.jetstack.io"
+        values:
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: helm
+        chart: istio/gateway
+        version: 1.27.9
+        release: istio-ingressgateway
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          service:
+            type: ClusterIP
+            ports:
+              - name: status-port
+                port: 15021
+                targetPort: 15021
+              - name: http2
+                port: 80
+                targetPort: 80
+              - name: https
+                port: 443
+                targetPort: 443
+        wait: pods-ready
+        wait_timeout: 3m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      mesh.inject: "true"
+  asserts:
+    - type: helm-status-deployed
+      release: cert-manager
+      namespace: cert-manager
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istio-ingressgateway
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: cert-manager
+      timeout: 5m
+    - type: pods-ready
+      namespace: istio-system
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-cert-manager-tls.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'addon:cert-manager', 'mesh:istio-service-mesh']
+- id: service-mesh-istio-service-mesh-peer-authentication
+  name: "Istio Service Mesh — PeerAuthentication lifecycle"
+  description: >-
+    Installs istio/base + istio/istiod, deploys the product chart with mesh.inject=true, and exercises the PeerAuthentication lifecycle: PERMISSIVE mode allows both mesh and non-mesh traffic; switching to STRICT mode blocks non-mesh traffic while mesh traffic continues via auto-upgraded mTLS.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      mesh.inject: "true"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-peer-authentication.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
+- id: service-mesh-istio-service-mesh-sidecar-injection
+  name: "Istio Service Mesh — Sidecar Injection"
+  description: >-
+    Installs istio/base + istio/istiod, enables mesh injection on the product namespace, deploys the product chart with mesh.inject=true and scope.enabled=true, and verifies every product pod has exactly 2 containers including istio-proxy and in-mesh HTTP reaches the product Service with 200.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      mesh.inject: "true"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-sidecar-injection.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
+- id: service-mesh-istio-service-mesh-strict-mtls
+  name: "Istio Service Mesh — strict mTLS"
+  description: >-
+    Installs istio/base + istio/istiod, enables mesh injection, deploys the product chart with scope.enabled=true, creates a PeerAuthentication with mode=STRICT in the product namespace, and verifies: (a) plain HTTP from a non-mesh pod is rejected, (b) in-mesh probe pod still reaches the product Service with 200 via auto-upgraded mTLS.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      mesh.inject: "true"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-strict-mtls.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
+- id: service-mesh-istio-service-mesh-telemetry-v2
+  name: "Istio Service Mesh — Telemetry v2"
+  description: >-
+    Installs istio/base + istio/istiod, deploys the product chart with mesh.inject=true, applies a Telemetry resource in the product namespace to configure Envoy access logging and metrics, and verifies proxy stats are accessible and telemetry configuration is active.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      mesh.inject: "true"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-telemetry-v2.sh
+  tags: [nightly]
+  mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
+- id: service-mesh-linkerd-basic-mesh
+  name: "Linkerd — Basic Mesh (Sidecar Injection)"
+  description: >-
+    Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace with linkerd.io/inject=enabled, deploys the product chart with scope.enabled=true, and verifies every product pod has a linkerd-proxy sidecar alongside the app container (2-container pods), with linkerd check --proxy returning healthy.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: linkerd/linkerd-crds
+        version: 1.8.0
+        release: linkerd-crds
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: linkerd/linkerd-control-plane
+        version: 1.16.11
+        release: linkerd-control-plane
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: chart-test/fixtures/service-mesh/linkerd-control-plane-values.yaml
+        wait: none
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      scope.enabled: "true"
+      scope.service.port: 80
+  asserts:
+    - type: helm-status-deployed
+      release: linkerd-crds
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: linkerd-control-plane
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-gen-certs.sh
+    - type: pods-ready
+      namespace: linkerd
+      timeout: 10m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-basic-mesh.sh
+  tags: [nightly]
+  mechanisms: ['addon:linkerd', 'mesh:linkerd']
+- id: service-mesh-linkerd-mtls-rotation
+  name: "Linkerd — mTLS Identity Rotation"
+  description: >-
+    Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace for injection, deploys the product chart, and verifies that mTLS identities are issued and valid by running linkerd check --proxy and inspecting the identity issuer certificate. Documents the mTLS rotation window and trust-anchor expiry.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: linkerd/linkerd-crds
+        version: 1.8.0
+        release: linkerd-crds
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: linkerd/linkerd-control-plane
+        version: 1.16.11
+        release: linkerd-control-plane
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: chart-test/fixtures/service-mesh/linkerd-control-plane-values.yaml
+        wait: none
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      scope.enabled: "true"
+      scope.service.port: 80
+  asserts:
+    - type: helm-status-deployed
+      release: linkerd-crds
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: linkerd-control-plane
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-gen-certs.sh
+    - type: pods-ready
+      namespace: linkerd
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-mtls-rotation.sh
+  tags: [nightly]
+  mechanisms: ['addon:linkerd', 'mesh:linkerd']
+- id: service-mesh-linkerd-multi-cluster-preview
+  name: "Linkerd — Multi-Cluster Preview"
+  description: >-
+    Installs linkerd-crds + linkerd-control-plane + linkerd-multicluster extension via Helm, verifies the multicluster Link and ServiceMirror CRDs are established, and authors a preview Link resource targeting a logical target cluster. No real cross-cluster traffic — this variant validates that the multicluster extension installs cleanly and that the CRD scaffolding is functional.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: linkerd/linkerd-crds
+        version: 1.8.0
+        release: linkerd-crds
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: linkerd/linkerd-control-plane
+        version: 1.16.11
+        release: linkerd-control-plane
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: chart-test/fixtures/service-mesh/linkerd-control-plane-values.yaml
+        wait: none
+      - kind: helm
+        chart: linkerd/linkerd-multicluster
+        version: 1.14.2
+        release: linkerd-multicluster
+        namespace: linkerd-multicluster
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: {}
+        wait: pods-ready
+        wait_timeout: 3m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      scope.enabled: "true"
+      scope.service.port: 80
+  asserts:
+    - type: helm-status-deployed
+      release: linkerd-crds
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: linkerd-control-plane
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: linkerd-multicluster
+      namespace: linkerd-multicluster
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-gen-certs.sh
+    - type: pods-ready
+      namespace: linkerd
+      timeout: 3m
+    - type: pods-ready
+      namespace: linkerd-multicluster
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-multi-cluster-preview.sh
+  tags: [nightly]
+  mechanisms: ['addon:linkerd', 'mesh:linkerd-multicluster']
+- id: service-mesh-linkerd-service-profile
+  name: "Linkerd — ServiceProfile (Per-Route Observability)"
+  description: >-
+    Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace for injection, deploys the product chart, creates a ServiceProfile CRD for the sample Service defining routes with timeout and retry policies, and verifies the ServiceProfile is recognized.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: linkerd/linkerd-crds
+        version: 1.8.0
+        release: linkerd-crds
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: linkerd/linkerd-control-plane
+        version: 1.16.11
+        release: linkerd-control-plane
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: chart-test/fixtures/service-mesh/linkerd-control-plane-values.yaml
+        wait: none
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      scope.enabled: "true"
+      scope.service.port: 80
+  asserts:
+    - type: helm-status-deployed
+      release: linkerd-crds
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: linkerd-control-plane
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-gen-certs.sh
+    - type: pods-ready
+      namespace: linkerd
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-service-profile.sh
+  tags: [nightly]
+  mechanisms: ['addon:linkerd', 'mesh:linkerd']
+- id: subchart-postgres-internal
+  name: "Internal postgres subchart enabled"
+  description: "Product chart bundles postgres via subchart; verify both come up together."
+  labels:
+    profile: full-stack
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      postgres.enabled: "true"
+    subcharts:
+      postgres: internal
+  asserts:
+    - {type: helm-status-deployed, release: sample, namespace: sample}
+    - {type: pods-ready, namespace: sample, timeout: 4m}
+  tags: [pr-subset, nightly]
+  mechanisms: ['subchart:postgres-internal']

@@ -1,0 +1,11 @@
+scenario_id: scheme-https-only
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/scheme-https-only.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T13:04:23Z
+provider: kind
+asserts:
+status: INTERRUPTED
+fail_stage: signal
+fail_msg: |
+  Interrupted by signal (SIGINT or SIGTERM)
+finished_at: 2026-06-02T13:09:23Z

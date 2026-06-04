@@ -1,0 +1,39 @@
+apiVersion: v1
+items:
+- apiVersion: networking.istio.io/v1
+  kind: VirtualService
+  metadata:
+    creationTimestamp: "2026-06-02T17:00:40Z"
+    generation: 1
+    name: httpbin-via-egress
+    namespace: sample
+    resourceVersion: "660"
+    uid: da467f37-7754-4b0a-9e42-0d2b2b67dcf5
+  spec:
+    gateways:
+    - istio-system/egressgateway
+    - mesh
+    hosts:
+    - httpbin.org
+    http:
+    - match:
+      - gateways:
+        - mesh
+        port: 80
+      route:
+      - destination:
+          host: istio-egressgateway.istio-system.svc.cluster.local
+        weight: 100
+    - match:
+      - gateways:
+        - istio-system/egressgateway
+        port: 80
+      route:
+      - destination:
+          host: httpbin.org
+          port:
+            number: 80
+        weight: 100
+kind: List
+metadata:
+  resourceVersion: ""

@@ -1,0 +1,50 @@
+---
+# Linkerd control-plane values for live scenario.
+# The trust anchor ConfigMap is pre-created via raw_manifest (linkerd-identity-secret.yaml),
+# so externalCA=true tells the chart to skip creating it.
+# The issuer cert/key are provided here (required by the chart) to create the Secret.
+# Test-only ephemeral ECDSA P-256 certs — NOT real production credentials.
+proxy:
+  resources:
+    cpu:
+      limit: "250m"
+      request: "100m"
+    memory:
+      limit: "256Mi"
+      request: "64Mi"
+identity:
+  externalCA: true
+  issuer:
+    scheme: linkerd.io/tls
+    tls:
+      crtPEM: |
+        -----BEGIN CERTIFICATE-----
+        MIIBtjCCAVygAwIBAgIUPafI3O14RtZD+X8uo767XO8RIoAwCgYIKoZIzj0EAwIw
+        JTEjMCEGA1UEAwwacm9vdC5saW5rZXJkLmNsdXN0ZXIubG9jYWwwHhcNMjYwNjAy
+        MTczMTQ0WhcNMjcwNjAyMTczMTQ0WjApMScwJQYDVQQDDB5pZGVudGl0eS5saW5r
+        ZXJkLmNsdXN0ZXIubG9jYWwwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARkO0eX
+        gkp1FJydI0XZMPwhKcuLeR1FSewEWjUFtESRsALhziSIALrEVREMLS/EvxEHfSj7
+        JK366bZ1t6dlar4so2YwZDASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQE
+        AwIBBjAdBgNVHQ4EFgQU9nq5raddkKyipjINKEyTUp34bBwwHwYDVR0jBBgwFoAU
+        bIznYsfqbpqKhuE/VyEuQtoV3NgwCgYIKoZIzj0EAwIDSAAwRQIgHzpzNBUKX5SH
+        VMYVHpZCb/Z2Ccvedyu0bs+4qn6h2CgCIQCDNhyCQKAOzSEAgs2JGuWtOQ4YCQ3/
+        Zy5Dxr2xmbzpCQ==
+        -----END CERTIFICATE-----
+      keyPEM: |
+        -----BEGIN PRIVATE KEY-----
+        MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgK11N5pLCnAAJui+i
+        ahkxbuk8hZ7VXufi79zr9oekdOqhRANCAARkO0eXgkp1FJydI0XZMPwhKcuLeR1F
+        SewEWjUFtESRsALhziSIALrEVREMLS/EvxEHfSj7JK366bZ1t6dlar4s
+        -----END PRIVATE KEY-----
+identityTrustAnchorsPEM: |
+  -----BEGIN CERTIFICATE-----
+  MIIBnzCCAUWgAwIBAgIUNNNqJWTppf8sHA2oJc5PJnysHFcwCgYIKoZIzj0EAwIw
+  JTEjMCEGA1UEAwwacm9vdC5saW5rZXJkLmNsdXN0ZXIubG9jYWwwHhcNMjYwNjAy
+  MTczMTQ0WhcNMzYwNTMwMTczMTQ0WjAlMSMwIQYDVQQDDBpyb290LmxpbmtlcmQu
+  Y2x1c3Rlci5sb2NhbDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABKf4qbFb7uwH
+  Fja5sArUyhhKt6emv/DSTkFwItqW0mAkQDPNWh2vqi9uafIjIXxInHDSyKAAtsQt
+  Gwf8pPU2NCijUzBRMB0GA1UdDgQWBBRsjOdix+pumoqG4T9XIS5C2hXc2DAfBgNV
+  HSMEGDAWgBRsjOdix+pumoqG4T9XIS5C2hXc2DAPBgNVHRMBAf8EBTADAQH/MAoG
+  CCqGSM49BAMCA0gAMEUCIQDUdgB7YjaiucDhti3PdKn/EqM2UrdXZN+aOqfUta4q
+  zAIgC2yUtwvrm831HbJQEpFVTNlIUHP5uUuVdfVgE6R4qHY=
+  -----END CERTIFICATE-----

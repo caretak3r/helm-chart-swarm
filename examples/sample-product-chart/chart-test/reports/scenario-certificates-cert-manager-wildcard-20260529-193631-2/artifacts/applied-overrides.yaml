@@ -1,0 +1,5 @@
+helm_values:
+  {replicaCount: 1, image: {repository: nginx, tag: "1.27-alpine"}, service: {type: ClusterIP, port: 80}, tls: {enabled: false, secretName: "", servicePort: 443}, tls.enabled: "false"}
+raw_manifest_refs:
+  - chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+  - chart-test/fixtures/certificates/wildcard-tls-certificate.yaml

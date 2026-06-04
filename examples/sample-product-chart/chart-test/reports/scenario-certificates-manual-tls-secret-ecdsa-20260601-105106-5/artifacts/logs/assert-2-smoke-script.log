@@ -1,0 +1,16 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/manual-tls-ecdsa.sh (RELEASE=sample NAMESPACE=sample)
+==> Verifying TLS Secret 'manual-tls-ecdsa' exists
+PASS: Secret exists
+==> Verifying certificate public-key algorithm is ECDSA
+Public Key Algorithm: Public Key Algorithm: id-ecPublicKey
+PASS: certificate uses ECDSA public key
+==> Verifying ECDSA curve (P-256 or P-384)
+Curve info: ASN1 OID: prime256v1
+PASS: ECDSA curve is in {P-256, P-384}
+==> Waiting for pod Ready (3m max)
+pod/sample-d44d844db-ws4g6 condition met
+PASS: chart pods Ready
+==> Verifying HTTPS reachable from in-cluster curl
+HTTPS response: 200
+PASS: HTTPS 200
+PASS: manual-tls-secret ECDSA scenario verified

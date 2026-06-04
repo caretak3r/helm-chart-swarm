@@ -1,0 +1,7 @@
+kubectl --context kind-chart-test-swarm-default -n projectcontour wait --for=condition=Ready pods --timeout=3m --all
+pod/contour-contour-5847f7c7f9-p928p condition met
+pod/contour-envoy-jftz5 condition met
+PASS: pods Ready in ns/projectcontour
+NAME                               READY   STATUS    RESTARTS   AGE
+contour-contour-5847f7c7f9-p928p   1/1     Running   0          28s
+contour-envoy-jftz5                2/2     Running   0          28s

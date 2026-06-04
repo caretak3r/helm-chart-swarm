@@ -1,0 +1,103 @@
+---
+id: service-mesh-istio-ambient-live
+name: "Istio Ambient Mesh — Live mTLS Verification (ztunnel/HBONE)"
+description: >-
+  Installs istio/base + istio/istiod (profile=ambient) + istio/cni (profile=ambient) + istio/ztunnel, annotates the product namespace istio.io/dataplane-mode=ambient via raw_manifest, deploys the chart with mesh.inject=false (NO sidecar), and proves: (1) ztunnel DaemonSet pods are Ready in istio-system, (2) the product namespace carries the ambient annotation and every product pod has exactly 1 container (no istio-proxy), (3) in-mesh traffic to the product Service returns HTTP 200 and the connection is mTLS over HBONE — confirmed via ztunnel metrics/logs. Emits a PASS artifact bundle with 1-container pod manifest, ambient-annotated namespace manifest, applied-overrides recording inject: false, and versions.json.
+labels: {customer: any, profile: mesh}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: istio/base
+      version: 1.27.9
+      release: istio-base
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    - kind: helm
+      chart: istio/istiod
+      version: 1.27.9
+      release: istiod
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        profile: ambient
+        pilot:
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "384Mi"
+      wait: pods-ready
+      wait_timeout: 5m
+    - kind: helm
+      chart: istio/cni
+      version: 1.27.9
+      release: istio-cni
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        profile: ambient
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: helm
+      chart: istio/ztunnel
+      version: 1.27.9
+      release: ztunnel
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values: {}
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: raw_manifest
+      path: ./fixtures/istio-ambient-namespace.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    mesh.inject: "false"
+asserts:
+  - type: helm-status-deployed
+    release: istio-base
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istiod
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istio-cni
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: ztunnel
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: istio-system
+    selector: app=ztunnel
+    timeout: 5m
+  - type: pods-ready
+    namespace: istio-system
+    selector: app=istiod
+    timeout: 5m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/istio-ambient-live.sh
+tags: [nightly]
+mechanisms: ['addon:istio-ambient', 'mesh:istio-ambient']
+category: service-mesh
+integration: istio-ambient
+tier: live

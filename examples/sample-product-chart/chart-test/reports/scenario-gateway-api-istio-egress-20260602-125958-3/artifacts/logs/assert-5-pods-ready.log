@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=3m -l istio=egressgateway
+pod/istio-egressgateway-75dcd68558-p2vf2 condition met
+PASS: pods Ready in ns/istio-system (selector=istio=egressgateway)
+NAME                                   READY   STATUS    RESTARTS   AGE
+istio-egressgateway-75dcd68558-p2vf2   1/1     Running   0          18s

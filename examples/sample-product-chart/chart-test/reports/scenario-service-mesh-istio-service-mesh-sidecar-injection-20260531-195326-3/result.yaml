@@ -1,0 +1,62 @@
+scenario_id: service-mesh-istio-service-mesh-sidecar-injection
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-istio-service-mesh-sidecar-injection.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T23:53:26Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-8gw77 condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-8gw77   1/1     Running   0          8s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-6f8587999b-9tmfl condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-6f8587999b-9tmfl   1/1     Running   0          4s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-sidecar-injection.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Labeling namespace sample for istio injection
+      namespace/sample labeled
+      ==> Restarting deployments to pick up sidecar injection
+        Restarting deployment/sample
+      deployment.apps/sample restarted
+        Waiting for rollout of deployment/sample to complete (3m max)
+      Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+      deployment "sample" successfully rolled out
+      PASS: all deployments rolled out
+      ==> Waiting 5s for old pods to terminate
+      ==> Verifying istio-proxy sidecar injected into every product pod
+        Pod sample-cff994cb6-tjl8j (deploy/sample) containers (2): app istio-proxy
+          ✓ istio-proxy sidecar present
+      PASS: every Running product pod has exactly 2 containers including istio-proxy
+      ==> Probing product Service over the mesh from an in-mesh pod
+      HTTP response from in-mesh probe: 000
+      FAIL: expected HTTP 200 from in-mesh probe, got 000
+status: FAIL
+finished_at: 2026-05-31T23:55:13Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-service-mesh-sidecar-injection-20260531-195326-3/artifacts/logs

@@ -1,0 +1,26 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-strict-mtls.sh (RELEASE=sample NAMESPACE=sample)
+==> Labeling namespace sample for istio injection
+namespace/sample labeled
+==> Restarting deployments to pick up sidecar injection
+  Restarting deployment/sample
+deployment.apps/sample restarted
+  Waiting for rollout of deployment/sample to complete (3m max)
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+PASS: all deployments rolled out with sidecars
+==> Applying PeerAuthentication STRICT
+peerauthentication.security.istio.io/sample-mtls created
+PASS: PeerAuthentication sample-mtls created with mode=STRICT
+==> Verifying PeerAuthentication resource
+PeerAuthentication mode: STRICT
+PASS: PeerAuthentication mode is STRICT
+==> Waiting 10s for mTLS policy propagation
+==> Creating non-mesh namespace sample-plain (no injection label)
+namespace/sample-plain created
+==> Non-mesh probe: plain HTTP from pod without sidecar (expect failure)
+HTTP response from non-mesh probe: 000
+PASS: plain HTTP from non-mesh pod rejected (code=000)
+==> In-mesh probe: HTTP from pod with sidecar (expect 200)
+HTTP response from in-mesh probe: 000
+FAIL: expected HTTP 200 from in-mesh probe, got 000

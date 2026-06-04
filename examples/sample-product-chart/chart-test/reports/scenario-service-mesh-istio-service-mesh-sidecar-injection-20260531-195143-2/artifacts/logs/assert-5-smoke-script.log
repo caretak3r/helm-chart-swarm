@@ -1,0 +1,14 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-sidecar-injection.sh (RELEASE=sample NAMESPACE=sample)
+==> Labeling namespace sample for istio injection
+namespace/sample labeled
+==> Restarting deployments to pick up sidecar injection
+  Restarting deployment/sample
+deployment.apps/sample restarted
+==> Waiting for all deployments to be available (3m max)
+deployment.apps/sample condition met
+PASS: all deployments available
+==> Verifying istio-proxy sidecar injected into every product pod
+  Pod sample-6cfb94d58f-md6q8 (deploy/sample) containers (2): app istio-proxy
+    ✓ istio-proxy sidecar present
+  Pod sample-6f8587999b-zjdjj (deploy/sample) containers (1): app
+FAIL: Pod sample-6f8587999b-zjdjj missing istio-proxy sidecar

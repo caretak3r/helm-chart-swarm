@@ -1,0 +1,108 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-05-31T22:35:40Z"
+    generation: 1
+    labels:
+      app: sample
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "667"
+    uid: 4455a5dd-91c8-46f3-8c11-b3cd29e428e1
+  spec:
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-05-31T22:35:49Z"
+        message: References resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      - lastTransitionTime: "2026-05-31T22:35:49Z"
+        message: Accepted HTTPRoute
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      controllerName: projectcontour.io/gateway-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"sample-route","namespace":"sample"},"spec":{"parentRefs":[{"name":"sample-gw","sectionName":"http"}],"rules":[{"backendRefs":[{"name":"sample","port":80}],"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]}}
+    creationTimestamp: "2026-05-31T22:35:47Z"
+    generation: 1
+    name: sample-route
+    namespace: sample
+    resourceVersion: "666"
+    uid: 306c88f6-0ed5-41e6-8478-2701651ee051
+  spec:
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-05-31T22:35:49Z"
+        message: HTTPRoute's Match has conflict with other HTTPRoute's Match
+        observedGeneration: 1
+        reason: RuleMatchConflict
+        status: "False"
+        type: Accepted
+      - lastTransitionTime: "2026-05-31T22:35:49Z"
+        message: References resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: projectcontour.io/gateway-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+kind: List
+metadata:
+  resourceVersion: ""

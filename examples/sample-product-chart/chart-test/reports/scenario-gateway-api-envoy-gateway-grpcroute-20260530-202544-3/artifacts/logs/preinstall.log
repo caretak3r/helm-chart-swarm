@@ -1,0 +1,41 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: envoy-gateway (oci://docker.io/envoyproxy/gateway-helm @ v1.1.2) in ns/envoy-gateway-system
+Release "envoy-gateway" does not exist. Installing it now.
+Pulled: docker.io/envoyproxy/gateway-helm:v1.1.2
+Digest: sha256:71a4a558baef1e1dfc69338276664bcfc34e5f4f33dab2a48f9fd22b8f9f920f
+NAME: envoy-gateway
+LAST DEPLOYED: Sat May 30 20:26:11 2026
+NAMESPACE: envoy-gateway-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+**************************************************************************
+*** PLEASE BE PATIENT: Envoy Gateway may take a few minutes to install ***
+**************************************************************************
+
+Envoy Gateway is an open source project for managing Envoy Proxy as a standalone or Kubernetes-based application gateway.
+
+Thank you for installing Envoy Gateway! 🎉
+
+Your release is named: envoy-gateway. 🎉
+
+Your release is in namespace: envoy-gateway-system. 🎉
+
+To learn more about the release, try:
+
+  $ helm status envoy-gateway -n envoy-gateway-system
+  $ helm get all envoy-gateway -n envoy-gateway-system
+
+To have a quickstart of Envoy Gateway, please refer to https://gateway.envoyproxy.io/latest/tasks/quickstart.
+
+To get more details, please visit https://gateway.envoyproxy.io and https://github.com/envoyproxy/gateway.
+
+==> [2/3] kind=raw_manifest
+    raw_manifest: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+error: unable to read URL "https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml", server reported 502 Bad Gateway, status code=502
+ERROR: kubectl apply failed for raw_manifest path=https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml

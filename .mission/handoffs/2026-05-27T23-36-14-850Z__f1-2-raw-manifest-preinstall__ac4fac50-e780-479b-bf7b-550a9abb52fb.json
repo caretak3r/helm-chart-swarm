@@ -1,0 +1,137 @@
+{
+  "timestamp": "2026-05-27T23:36:14.850Z",
+  "workerSessionId": "ac4fac50-e780-479b-bf7b-550a9abb52fb",
+  "featureId": "f1-2-raw-manifest-preinstall",
+  "milestone": "engine-foundations",
+  "commitId": "bc0074c",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "successState": "success",
+  "returnToOrchestrator": true,
+  "handoff": {
+    "salientSummary": "Implemented raw_manifest preinstall kind in scenario schema and apply-scenario.sh, updated envoy-gateway primer to OCI chart, and created envoy-gateway scenario YAML. All 15 new bats tests pass, all 5 pre-F1.2 scenarios validate with no regression, and cluster hygiene is clean.",
+    "whatWasImplemented": "Extended engine/templates/scenario.schema.json with a oneOf discriminator on preinstall_item: 'helm' sub-schema (default when kind omitted, backward compatible) and 'raw_manifest' sub-schema (requires kind+path, optional namespace, additionalProperties:false). Refactored apply-scenario.sh to dispatch on kind field: helm items use existing helm upgrade --install path, raw_manifest items resolve path (local file or URL) and run kubectl apply -f with optional --namespace. Replaced defunct https://gateway.envoyproxy.io/helm-chart repo URL with oci://docker.io/envoyproxy/gateway-helm in the envoy-gateway primer. Created envoy-gateway scenario YAML using raw_manifest for Gateway API CRDs and OCI helm chart for the controller. Added 15 bats test cases covering schema validation (raw_manifest with/without path, unknown kinds, extra properties, helm backward compat, mixed lists), apply-scenario.sh dispatch logic (function existence, unknown-kind rejection, tempfile cleanup, URL handling, missing-path detection), and envoy-gateway scenario schema validation. Added test fixture ConfigMap for raw_manifest bats tests. Updated scenario template with raw_manifest documentation.",
+    "whatWasLeftUndone": "VAL-ENGINE-008 (real kubectl apply of raw_manifest on a kind cluster) and VAL-ENGINE-010 (end-to-end envoy-gateway scenario run on kind) require spinning up a real cluster and were not executed in this session — the schema, script, and test logic are fully implemented but these integration-level assertions need a cluster to verify. The cluster-lifecycle bats test suite (which attempts real minikube spin-up) timed out during the full-suite run; the targeted bats files (raw-manifest-preinstall.bats, schema.bats, prefix-invariant.bats) all pass cleanly.",
+    "verification": {
+      "commandsRun": [
+        {
+          "command": "bats engine/scripts/tests/raw-manifest-preinstall.bats engine/scripts/tests/schema.bats engine/scripts/tests/prefix-invariant.bats",
+          "exitCode": 0,
+          "observation": "23 bats tests, all passing. 15 raw-manifest tests + 3 schema tests + 5 prefix-invariant tests."
+        },
+        {
+          "command": "shellcheck --severity=warning engine/scripts/apply-scenario.sh",
+          "exitCode": 0,
+          "observation": "No warnings of severity 'warning' or above. One pre-existing SC2005 style issue in resolve_project_dir (not introduced by this change)."
+        },
+        {
+          "command": "for f in scenarios/*.yaml; do yq -o=json $f | jsonschema -i /dev/stdin scenario.schema.json; done",
+          "exitCode": 0,
+          "observation": "All 6 scenario YAMLs (5 pre-F1.2 + envoy-gateway) validate OK against the updated schema."
+        },
+        {
+          "command": "grep -c 'oci://docker.io/envoyproxy/gateway-helm' gateway-api.md envoy-gateway.yaml",
+          "exitCode": 0,
+          "observation": "OCI chart reference found in both primer (1 match) and scenario (1 match)."
+        },
+        {
+          "command": "grep -c 'gateway.envoyproxy.io/install' gateway-api.md envoy-gateway.yaml",
+          "exitCode": 1,
+          "observation": "0 matches for defunct URL in both files (exit 1 = grep found nothing, which is correct)."
+        },
+        {
+          "command": "kind get clusters; minikube profile list -o json | jq; docker ps --filter name=chart-test-swarm-",
+          "exitCode": 0,
+          "observation": "No chart-test-swarm-* entries in kind, minikube, or docker. Clean cluster hygiene."
+        }
+      ],
+      "interactiveChecks": []
+    },
+    "tests": {
+      "added": [
+        {
+          "file": "engine/scripts/tests/raw-manifest-preinstall.bats",
+          "cases": [
+            {
+              "name": "schema accepts raw_manifest preinstall item with path",
+              "verifies": "VAL-ENGINE-006: Schema validates raw_manifest with path field"
+            },
+            {
+              "name": "schema accepts raw_manifest preinstall with path and namespace",
+              "verifies": "VAL-ENGINE-006: Optional namespace accepted"
+            },
+            {
+              "name": "schema rejects raw_manifest without path",
+              "verifies": "VAL-ENGINE-006: Missing path is rejected"
+            },
+            {
+              "name": "schema rejects unknown preinstall kind (kustomize)",
+              "verifies": "VAL-ENGINE-007: Unknown kinds rejected with stderr naming kind discriminator"
+            },
+            {
+              "name": "schema rejects raw_manifest with extra properties (e.g. chart)",
+              "verifies": "VAL-ENGINE-006: additionalProperties:false on raw_manifest sub-schema"
+            },
+            {
+              "name": "helm-only preinstall item validates without kind field",
+              "verifies": "VAL-CROSS-030: Backward compatibility for pre-F1.2 scenarios"
+            },
+            {
+              "name": "helm preinstall item validates with explicit kind: helm",
+              "verifies": "Explicit kind:helm works"
+            },
+            {
+              "name": "mixed preinstall list (raw_manifest + helm) validates",
+              "verifies": "VAL-ENGINE-006 + VAL-ENGINE-008: Mixed preinstall lists supported"
+            },
+            {
+              "name": "all pre-F1.2 scenarios still validate against the updated schema",
+              "verifies": "VAL-CROSS-030: Full backward compat regression check"
+            },
+            {
+              "name": "apply-scenario.sh dispatches raw_manifest items",
+              "verifies": "VAL-ENGINE-008: Script has apply_raw_manifest function"
+            },
+            {
+              "name": "apply-scenario.sh rejects unknown preinstall kind at runtime",
+              "verifies": "VAL-ENGINE-007: Runtime rejection of unknown kinds"
+            },
+            {
+              "name": "apply-scenario.sh cleans up all tempfiles",
+              "verifies": "VAL-ENGINE-033: _CTS_TEMPFILES array cleanup"
+            },
+            {
+              "name": "apply-scenario.sh resolves URLs as-is without PROJECT_DIR prefix",
+              "verifies": "URLs in raw_manifest path handled correctly"
+            },
+            {
+              "name": "apply-scenario.sh reports missing path for raw_manifest",
+              "verifies": "VAL-ENGINE-025: Pre-boot error on missing path"
+            },
+            {
+              "name": "envoy-gateway scenario YAML validates against the schema",
+              "verifies": "VAL-ENGINE-009 + VAL-ENGINE-010: Envoy-gateway scenario is schema-valid"
+            }
+          ]
+        }
+      ],
+      "coverage": "Schema validation (7 cases), script dispatch logic (5 cases), backward compat (3 cases), envoy-gateway scenario (1 case) = 16 behavioral assertions across 15 test cases"
+    },
+    "discoveredIssues": [
+      {
+        "severity": "non_blocking",
+        "description": "Pre-existing: cluster-lifecycle.bats test 'cluster-up accepts PROVIDER=minikube with valid prefixed name' creates a real minikube profile but the teardown is incomplete when bats times out, leaving chart-test-swarm-bats-mk behind. Manually cleaned up during this session.",
+        "suggestedFix": "Add a teardown() block to cluster-lifecycle.bats that runs minikube delete -p chart-test-swarm-bats-mk 2>/dev/null or skip the real-cluster tests by default."
+      },
+      {
+        "severity": "non_blocking",
+        "description": "Pre-existing: yamllint reports style errors (braces spacing, line-length) on all existing scenario YAMLs including the new envoy-gateway.yaml — matching the existing style, not a regression.",
+        "suggestedFix": "Address across all scenarios in a future yamllint cleanup pass (documented in mission readiness as 57 pre-existing yamllint errors)."
+      }
+    ],
+    "skillFeedback": {
+      "followedProcedure": true,
+      "deviations": [],
+      "suggestedChanges": []
+    }
+  }
+}

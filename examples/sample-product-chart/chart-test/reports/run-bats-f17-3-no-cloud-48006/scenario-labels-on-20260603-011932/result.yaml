@@ -1,0 +1,11 @@
+scenario_id: labels-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/labels-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-03T05:19:33Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: cluster-up
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-bats-f17-3-no-cloud-48006/scenario-labels-on-20260603-011932/artifacts/logs/cluster-up.log
+finished_at: 2026-06-03T05:20:44Z

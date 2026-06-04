@@ -1,0 +1,19 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-default-backend.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for nginx controller pod Ready (3m max)
+pod/ingress-nginx-controller-765bc57f9-c9bbr condition met
+PASS: nginx controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-z4gjt condition met
+PASS: product pods Ready
+==> Waiting for custom default backend pod Ready (2m max)
+pod/custom-default-backend-6f9895b6b7-wsnnh condition met
+PASS: custom default backend pod Ready
+==> Getting nginx controller pod IP
+NGINX pod IP: 10.244.0.7
+==> Probing HTTP without Host header (should hit custom default backend)
+Response body: 'chart-test-swarm-default-backendchart-test-swarm-default-backend'
+PASS: custom default backend served distinctive body 'chart-test-swarm-default-backend'
+==> Verifying Host-matched request still reaches product Service
+HTTP response (with Host): 200
+PASS: HTTP 200 with matching Host header
+PASS: NGINX Ingress default backend integration verified

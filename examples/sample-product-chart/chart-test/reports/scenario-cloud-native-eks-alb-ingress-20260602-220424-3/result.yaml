@@ -1,0 +1,11 @@
+scenario_id: cloud-native-eks-alb-ingress
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/cloud-native/cloud-native-eks-alb-ingress.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-03T02:04:25Z
+provider: eks
+asserts:
+status: FAIL
+fail_stage: cluster-up
+fail_msg: |
+  unable to switch to kube context ''
+finished_at: 2026-06-03T02:04:25Z

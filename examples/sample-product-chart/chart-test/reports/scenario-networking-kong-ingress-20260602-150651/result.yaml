@@ -1,0 +1,11 @@
+scenario_id: networking-kong-ingress
+scenario_path: examples/sample-product-chart/chart-test/scenarios/networking/networking-kong-ingress.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-06-02T19:06:51Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: cluster-up
+fail_msg: |
+  see examples/sample-product-chart/chart-test/reports/scenario-networking-kong-ingress-20260602-150651/artifacts/logs/cluster-up.log
+finished_at: 2026-06-02T19:06:51Z

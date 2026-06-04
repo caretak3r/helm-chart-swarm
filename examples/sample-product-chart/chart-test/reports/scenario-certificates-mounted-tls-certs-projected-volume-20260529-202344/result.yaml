@@ -1,0 +1,32 @@
+scenario_id: certificates-mounted-tls-certs-projected-volume
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-mounted-tls-certs-projected-volume.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T00:23:44Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-pv1 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-67c556c9cb-jzz5c condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-67c556c9cb-jzz5c   1/1     Running   0          4s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/mounted-tls-projected-volume.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Verifying projected volume TLS Secret exists
+      OK: TLS Secret exists
+      ==> Verifying pod has a projected volume with secret source
+      PASS: projected volume 'tls kube-api-access-wrxmw' found
+      ==> Verifying projected volume has secret source
+      FAIL: projected volume has no secret source
+status: FAIL
+finished_at: 2026-05-30T00:24:16Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-mounted-tls-certs-projected-volume-20260529-202344/artifacts/logs

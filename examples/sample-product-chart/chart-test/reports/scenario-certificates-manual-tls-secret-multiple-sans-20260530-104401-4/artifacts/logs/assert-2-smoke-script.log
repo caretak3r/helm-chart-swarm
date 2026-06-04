@@ -1,0 +1,15 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/manual-tls-multiple-sans.sh (RELEASE=sample NAMESPACE=sample)
+==> Verifying TLS Secret 'manual-tls-multisite' exists
+PASS: Secret exists
+==> Verifying certificate SANs (>=2 DNS entries)
+SANs: X509v3 Subject Alternative Name: 
+    DNS:sample.sample.svc, DNS:api.sample.sample.svc, DNS:admin.sample.sample.svc
+SAN count: 3
+PASS: certificate has 3 SANs (>=2 required)
+==> Waiting for pod Ready (3m max)
+pod/sample-6b84d7ddb4-v6xb4 condition met
+PASS: chart pods Ready
+==> Verifying HTTPS reachable from in-cluster curl
+HTTPS response: 200
+PASS: HTTPS 200
+PASS: manual-tls-secret multiple-sans scenario verified

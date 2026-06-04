@@ -1,0 +1,89 @@
+scenario_id: service-mesh-linkerd-basic-mesh
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-linkerd-basic-mesh.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T02:47:30Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-crds in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-control-plane in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n linkerd wait --for=condition=Ready pods --timeout=10m --all
+      pod/linkerd-destination-748f75f54f-tfxvc condition met
+      pod/linkerd-identity-68fb644f96-b7h8b condition met
+      pod/linkerd-proxy-injector-6d6b4f48b4-dgwxd condition met
+      PASS: pods Ready in ns/linkerd
+      NAME                                      READY   STATUS    RESTARTS   AGE
+      linkerd-destination-748f75f54f-tfxvc      4/4     Running   0          40s
+      linkerd-identity-68fb644f96-b7h8b         2/2     Running   0          40s
+      linkerd-proxy-injector-6d6b4f48b4-dgwxd   2/2     Running   0          40s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-nsfgd condition met
+      pod/sample-scope-c689dc867-ltndh condition met
+      PASS: pods Ready in ns/sample
+      NAME                           READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-nsfgd        1/1     Running   0          40s
+      sample-scope-c689dc867-ltndh   1/1     Running   0          40s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      deployment.apps/sample-scope restarted
+        Waiting for rollout of deployment/sample-scope to complete (3m max)
+      Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+      deployment "sample-scope" successfully rolled out
+      PASS: all deployments rolled out
+      ==> Waiting 5s for old pods to terminate
+      ==> Verifying linkerd-proxy sidecar injected into every product pod
+        Pod sample-59b45c5dc-2srnm (deploy/sample) containers (2): linkerd-proxy app
+          ✓ linkerd-proxy sidecar present
+        Pod sample-scope-595bff4b95-tg5nv (deploy/sample-scope) containers (2): linkerd-proxy scope
+          ✓ linkerd-proxy sidecar present
+      PASS: every Running product pod has exactly 2 containers including linkerd-proxy
+      ==> Running linkerd check --proxy from a probe pod
+      pod/ct-linkerd-check created
+        Waiting for linkerd check pod to start (30s max)
+      pod/ct-linkerd-check condition met
+        Waiting for linkerd check pod to complete (90s max)
+      pod/ct-linkerd-check condition met
+        Check pod phase: Failed
+        linkerd check output:
+      ==> Downloading linkerd CLI...
+      ==> Running linkerd check --proxy...
+      /tmp/linkerd: line 1: Not: not found
+      sh: syntax error: unterminated quoted string
+      WARN: linkerd check did not produce expected 'Status check results' message
+        This may be due to the check pod not having cluster-wide access.
+        The sidecar injection verification above is the primary gate.
+      pod "ct-linkerd-check" deleted from sample namespace
+      ==> Probing product Service from an in-mesh test pod
+      pod/ct-mesh-probe created
+        Waiting for probe pod to be ready (2m max)
+      pod/ct-mesh-probe condition met
+        Probe pod containers: linkerd-proxy ct-mesh-probe
+      HTTP response from in-mesh probe: 000
+      FAIL: expected HTTP 200 from in-mesh probe, got 000
+      Defaulted container "linkerd-proxy" out of: linkerd-proxy, ct-mesh-probe, linkerd-init (init)
+      error: Internal error occurred: Internal error occurred: error executing command in container: failed to exec in container: failed to start exec "4df89b8fb4c82ff5903061dffa03729a75dd65eacffcfaf03905a9d4a19ce8f8": OCI runtime exec failed: exec failed: unable to start container process: exec: "curl": executable file not found in $PATH: unknown
+      pod "ct-mesh-probe" deleted from sample namespace
+      error: timed out waiting for the condition on pods/ct-mesh-probe
+status: FAIL
+finished_at: 2026-06-01T02:49:38Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-basic-mesh-20260531-224730-9/artifacts/logs

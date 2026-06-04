@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    linkerd.io/inject: enabled
+  creationTimestamp: "2026-06-02T18:12:18Z"
+  labels:
+    kubernetes.io/metadata.name: sample
+    name: sample
+  name: sample
+  resourceVersion: "580"
+  uid: fca4414e-e093-464d-a333-a46ab5e7cc50
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active

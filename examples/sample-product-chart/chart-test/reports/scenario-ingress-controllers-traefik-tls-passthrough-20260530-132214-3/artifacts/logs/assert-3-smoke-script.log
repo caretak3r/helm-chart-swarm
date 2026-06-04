@@ -1,0 +1,18 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/traefik-tls-passthrough.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Traefik pod Ready (3m max)
+pod/traefik-77657478fd-8jl2s condition met
+PASS: Traefik pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-697b9f98fb-dfcj2 condition met
+PASS: product pods Ready
+==> Getting Traefik pod IP
+Traefik pod IP: 10.244.0.5
+==> Verifying IngressRouteTCP exists with tls.passthrough=true
+PASS: IngressRouteTCP tls.passthrough=true
+==> Extracting backend certificate subject
+Backend cert subject: subject=C=US, ST=CA, O=Chart Test Swarm, CN=sample.sample.svc
+==> Probing HTTPS through Traefik (expect 200, backend cert)
+HTTPS response: 200
+PASS: HTTPS 200 through Traefik
+==> Verifying served cert matches backend cert (not Traefik default)
+Served cert subject: unknown

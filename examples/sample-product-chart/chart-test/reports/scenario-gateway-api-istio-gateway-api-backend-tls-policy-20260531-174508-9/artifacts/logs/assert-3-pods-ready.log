@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+pod/istiod-68c4759fc-7k65z condition met
+PASS: pods Ready in ns/istio-system (selector=app=istiod)
+NAME                     READY   STATUS    RESTARTS   AGE
+istiod-68c4759fc-7k65z   1/1     Running   0          9s

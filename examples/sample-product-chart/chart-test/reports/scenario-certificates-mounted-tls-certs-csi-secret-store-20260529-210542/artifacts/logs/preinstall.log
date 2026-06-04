@@ -1,0 +1,40 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: csi-secrets-store (secrets-store-csi-driver/secrets-store-csi-driver @ 1.4.8) in ns/kube-system
+Release "csi-secrets-store" does not exist. Installing it now.
+NAME: csi-secrets-store
+LAST DEPLOYED: Fri May 29 21:06:10 2026
+NAMESPACE: kube-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The Secrets Store CSI Driver is getting deployed to your cluster.
+
+To verify that Secrets Store CSI Driver has started, run:
+
+  kubectl --namespace=kube-system get pods -l "app=secrets-store-csi-driver"
+
+Now you can follow these steps https://secrets-store-csi-driver.sigs.k8s.io/getting-started/usage.html
+to create a SecretProviderClass resource, and a deployment using the SecretProviderClass.
+pod/coredns-7db6d8ff4d-78qqh condition met
+pod/coredns-7db6d8ff4d-ncrfd condition met
+pod/csi-secrets-store-secrets-store-csi-driver-45khd condition met
+pod/etcd-chart-test-swarm-csi1-control-plane condition met
+pod/kindnet-7w9xn condition met
+pod/kube-apiserver-chart-test-swarm-csi1-control-plane condition met
+pod/kube-controller-manager-chart-test-swarm-csi1-control-plane condition met
+pod/kube-proxy-g4n45 condition met
+pod/kube-scheduler-chart-test-swarm-csi1-control-plane condition met
+
+==> [2/2] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/mounted-tls/mounted-tls-csi-secretproviderclass.yaml in ns/sample
+namespace/sample created
+secretproviderclass.secrets-store.csi.x-k8s.io/mounted-tls-csi serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

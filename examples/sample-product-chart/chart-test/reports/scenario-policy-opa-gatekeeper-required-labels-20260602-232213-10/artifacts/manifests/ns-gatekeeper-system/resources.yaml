@@ -1,0 +1,1805 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-03T03:22:47Z"
+    generateName: gatekeeper-audit-65579cd9f9-
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/instance: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gatekeeper
+      app.kubernetes.io/version: 3.17.1
+      chart: gatekeeper
+      control-plane: audit-controller
+      gatekeeper.sh/operation: audit
+      gatekeeper.sh/system: "yes"
+      helm.sh/chart: gatekeeper-3.17.1
+      heritage: Helm
+      pod-template-hash: 65579cd9f9
+      release: gatekeeper
+    name: gatekeeper-audit-65579cd9f9-vftpc
+    namespace: gatekeeper-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: gatekeeper-audit-65579cd9f9
+      uid: 2aca5a48-719c-4dc9-acfd-16e8a34b90dc
+    resourceVersion: "677"
+    uid: 6410e010-43a5-44f5-9d89-2057f56e2de1
+  spec:
+    affinity: {}
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - --audit-interval=10
+      - --log-level=INFO
+      - --constraint-violations-limit=20
+      - --validating-webhook-configuration-name=gatekeeper-validating-webhook-configuration
+      - --mutating-webhook-configuration-name=gatekeeper-mutating-webhook-configuration
+      - --audit-from-cache=false
+      - --audit-chunk-size=500
+      - --audit-match-kind-only=false
+      - --emit-audit-events=false
+      - --audit-events-involved-namespace=false
+      - --operation=audit
+      - --operation=status
+      - --operation=mutation-status
+      - --logtostderr
+      - --health-addr=:9090
+      - --prometheus-port=8888
+      - --enable-external-data=false
+      - --enable-generator-resource-expansion=true
+      - --metrics-backend=prometheus
+      - --disable-cert-rotation=false
+      - --external-data-provider-response-cache-ttl=3m
+      - --enable-k8s-native-validation=true
+      command:
+      - /manager
+      env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: CONTAINER_NAME
+        value: manager
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+      image: openpolicyagent/gatekeeper:v3.17.1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 9090
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: manager
+      ports:
+      - containerPort: 8888
+        name: metrics
+        protocol: TCP
+      - containerPort: 9090
+        name: healthz
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: 9090
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+        runAsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /certs
+        name: cert
+        readOnly: true
+      - mountPath: /tmp/audit
+        name: tmp-volume
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-d66wz
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-default-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 2000000000
+    priorityClassName: system-cluster-critical
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 999
+      supplementalGroups:
+      - 999
+    serviceAccount: gatekeeper-admin
+    serviceAccountName: gatekeeper-admin
+    terminationGracePeriodSeconds: 60
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: cert
+      secret:
+        defaultMode: 420
+        secretName: gatekeeper-webhook-server-cert
+    - emptyDir: {}
+      name: tmp-volume
+    - name: kube-api-access-d66wz
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:22:50Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:22:47Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:22:50Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:22:50Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:22:47Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://ddec1e14396c11316ec62c1fb10626374dba00b157b66ecb62abf97ac72f33c1
+      image: docker.io/openpolicyagent/gatekeeper:v3.17.1
+      imageID: docker.io/openpolicyagent/gatekeeper@sha256:b7b4d7cfdd52c877267dac0824977eaf289fd4640b9bd530e7fc742c6d6e5cc0
+      lastState: {}
+      name: manager
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:22:49Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.6
+    podIPs:
+    - ip: 10.244.0.6
+    qosClass: Burstable
+    startTime: "2026-06-03T03:22:47Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-03T03:23:57Z"
+    generateName: gatekeeper-controller-manager-64bbbfbdbb-
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/instance: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gatekeeper
+      app.kubernetes.io/version: 3.17.1
+      chart: gatekeeper
+      control-plane: controller-manager
+      gatekeeper.sh/operation: webhook
+      gatekeeper.sh/system: "yes"
+      helm.sh/chart: gatekeeper-3.17.1
+      heritage: Helm
+      pod-template-hash: 64bbbfbdbb
+      release: gatekeeper
+    name: gatekeeper-controller-manager-64bbbfbdbb-pzzps
+    namespace: gatekeeper-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: gatekeeper-controller-manager-64bbbfbdbb
+      uid: 57e9c3dc-c716-4e58-b626-fc7cc2ffabf8
+    resourceVersion: "1140"
+    uid: e2e5ffda-704c-499a-92f3-11ef2be81f3a
+  spec:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: gatekeeper.sh/operation
+                operator: In
+                values:
+                - webhook
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - --port=8443
+      - --health-addr=:9090
+      - --prometheus-port=8888
+      - --logtostderr
+      - --log-denies=false
+      - --emit-admission-events=false
+      - --admission-events-involved-namespace=false
+      - --log-level=INFO
+      - --exempt-namespace=gatekeeper-system
+      - --operation=webhook
+      - --enable-external-data=false
+      - --enable-generator-resource-expansion=true
+      - --log-mutations=false
+      - --mutation-annotations=false
+      - --disable-cert-rotation=false
+      - --max-serving-threads=-1
+      - --tls-min-version=1.3
+      - --validating-webhook-configuration-name=gatekeeper-validating-webhook-configuration
+      - --mutating-webhook-configuration-name=gatekeeper-mutating-webhook-configuration
+      - --external-data-provider-response-cache-ttl=3m
+      - --enable-k8s-native-validation=true
+      - --metrics-backend=prometheus
+      - --operation=mutation-webhook
+      - --disable-opa-builtin={http.send}
+      command:
+      - /manager
+      env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: CONTAINER_NAME
+        value: manager
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+      image: openpolicyagent/gatekeeper:v3.17.1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 9090
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: manager
+      ports:
+      - containerPort: 8443
+        name: webhook-server
+        protocol: TCP
+      - containerPort: 8888
+        name: metrics
+        protocol: TCP
+      - containerPort: 9090
+        name: healthz
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: 9090
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+        runAsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /certs
+        name: cert
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-nh85t
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-default-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 2000000000
+    priorityClassName: system-cluster-critical
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 999
+      supplementalGroups:
+      - 999
+    serviceAccount: gatekeeper-admin
+    serviceAccountName: gatekeeper-admin
+    terminationGracePeriodSeconds: 60
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: cert
+      secret:
+        defaultMode: 420
+        secretName: gatekeeper-webhook-server-cert
+    - name: kube-api-access-nh85t
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:58Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:57Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:59Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:59Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:57Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://66af2408ff03a77c1515f91d196115766ad6983868e239e10687f36e57454407
+      image: docker.io/openpolicyagent/gatekeeper:v3.17.1
+      imageID: docker.io/openpolicyagent/gatekeeper@sha256:b7b4d7cfdd52c877267dac0824977eaf289fd4640b9bd530e7fc742c6d6e5cc0
+      lastState: {}
+      name: manager
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:23:58Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.17
+    podIPs:
+    - ip: 10.244.0.17
+    qosClass: Burstable
+    startTime: "2026-06-03T03:23:57Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-03T03:23:57Z"
+    generateName: gatekeeper-controller-manager-64bbbfbdbb-
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/instance: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gatekeeper
+      app.kubernetes.io/version: 3.17.1
+      chart: gatekeeper
+      control-plane: controller-manager
+      gatekeeper.sh/operation: webhook
+      gatekeeper.sh/system: "yes"
+      helm.sh/chart: gatekeeper-3.17.1
+      heritage: Helm
+      pod-template-hash: 64bbbfbdbb
+      release: gatekeeper
+    name: gatekeeper-controller-manager-64bbbfbdbb-rxtqn
+    namespace: gatekeeper-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: gatekeeper-controller-manager-64bbbfbdbb
+      uid: 57e9c3dc-c716-4e58-b626-fc7cc2ffabf8
+    resourceVersion: "1171"
+    uid: 08d8e8da-b507-4231-aef2-15a37089a7a2
+  spec:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: gatekeeper.sh/operation
+                operator: In
+                values:
+                - webhook
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - --port=8443
+      - --health-addr=:9090
+      - --prometheus-port=8888
+      - --logtostderr
+      - --log-denies=false
+      - --emit-admission-events=false
+      - --admission-events-involved-namespace=false
+      - --log-level=INFO
+      - --exempt-namespace=gatekeeper-system
+      - --operation=webhook
+      - --enable-external-data=false
+      - --enable-generator-resource-expansion=true
+      - --log-mutations=false
+      - --mutation-annotations=false
+      - --disable-cert-rotation=false
+      - --max-serving-threads=-1
+      - --tls-min-version=1.3
+      - --validating-webhook-configuration-name=gatekeeper-validating-webhook-configuration
+      - --mutating-webhook-configuration-name=gatekeeper-mutating-webhook-configuration
+      - --external-data-provider-response-cache-ttl=3m
+      - --enable-k8s-native-validation=true
+      - --metrics-backend=prometheus
+      - --operation=mutation-webhook
+      - --disable-opa-builtin={http.send}
+      command:
+      - /manager
+      env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: CONTAINER_NAME
+        value: manager
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+      image: openpolicyagent/gatekeeper:v3.17.1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 9090
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: manager
+      ports:
+      - containerPort: 8443
+        name: webhook-server
+        protocol: TCP
+      - containerPort: 8888
+        name: metrics
+        protocol: TCP
+      - containerPort: 9090
+        name: healthz
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: 9090
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+        runAsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /certs
+        name: cert
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-jzfvx
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-default-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 2000000000
+    priorityClassName: system-cluster-critical
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 999
+      supplementalGroups:
+      - 999
+    serviceAccount: gatekeeper-admin
+    serviceAccountName: gatekeeper-admin
+    terminationGracePeriodSeconds: 60
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: cert
+      secret:
+        defaultMode: 420
+        secretName: gatekeeper-webhook-server-cert
+    - name: kube-api-access-jzfvx
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:58Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:57Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:24:08Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:24:08Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:57Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://66b7105ef34d8aa44916b234154ffe7961c6355929cfaf89425abe41fac69f14
+      image: docker.io/openpolicyagent/gatekeeper:v3.17.1
+      imageID: docker.io/openpolicyagent/gatekeeper@sha256:b7b4d7cfdd52c877267dac0824977eaf289fd4640b9bd530e7fc742c6d6e5cc0
+      lastState: {}
+      name: manager
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:23:58Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.16
+    podIPs:
+    - ip: 10.244.0.16
+    qosClass: Burstable
+    startTime: "2026-06-03T03:23:57Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-03T03:23:57Z"
+    generateName: gatekeeper-controller-manager-64bbbfbdbb-
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/instance: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gatekeeper
+      app.kubernetes.io/version: 3.17.1
+      chart: gatekeeper
+      control-plane: controller-manager
+      gatekeeper.sh/operation: webhook
+      gatekeeper.sh/system: "yes"
+      helm.sh/chart: gatekeeper-3.17.1
+      heritage: Helm
+      pod-template-hash: 64bbbfbdbb
+      release: gatekeeper
+    name: gatekeeper-controller-manager-64bbbfbdbb-zhcjc
+    namespace: gatekeeper-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: gatekeeper-controller-manager-64bbbfbdbb
+      uid: 57e9c3dc-c716-4e58-b626-fc7cc2ffabf8
+    resourceVersion: "1176"
+    uid: c5f48b59-a033-47d7-956a-0e8f330dfa58
+  spec:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: gatekeeper.sh/operation
+                operator: In
+                values:
+                - webhook
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+    automountServiceAccountToken: true
+    containers:
+    - args:
+      - --port=8443
+      - --health-addr=:9090
+      - --prometheus-port=8888
+      - --logtostderr
+      - --log-denies=false
+      - --emit-admission-events=false
+      - --admission-events-involved-namespace=false
+      - --log-level=INFO
+      - --exempt-namespace=gatekeeper-system
+      - --operation=webhook
+      - --enable-external-data=false
+      - --enable-generator-resource-expansion=true
+      - --log-mutations=false
+      - --mutation-annotations=false
+      - --disable-cert-rotation=false
+      - --max-serving-threads=-1
+      - --tls-min-version=1.3
+      - --validating-webhook-configuration-name=gatekeeper-validating-webhook-configuration
+      - --mutating-webhook-configuration-name=gatekeeper-mutating-webhook-configuration
+      - --external-data-provider-response-cache-ttl=3m
+      - --enable-k8s-native-validation=true
+      - --metrics-backend=prometheus
+      - --operation=mutation-webhook
+      - --disable-opa-builtin={http.send}
+      command:
+      - /manager
+      env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: CONTAINER_NAME
+        value: manager
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+      image: openpolicyagent/gatekeeper:v3.17.1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 9090
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: manager
+      ports:
+      - containerPort: 8443
+        name: webhook-server
+        protocol: TCP
+      - containerPort: 8888
+        name: metrics
+        protocol: TCP
+      - containerPort: 9090
+        name: healthz
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: 9090
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+        runAsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /certs
+        name: cert
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-fq7cl
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-default-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 2000000000
+    priorityClassName: system-cluster-critical
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 999
+      supplementalGroups:
+      - 999
+    serviceAccount: gatekeeper-admin
+    serviceAccountName: gatekeeper-admin
+    terminationGracePeriodSeconds: 60
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: cert
+      secret:
+        defaultMode: 420
+        secretName: gatekeeper-webhook-server-cert
+    - name: kube-api-access-fq7cl
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:58Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:57Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:24:08Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:24:08Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:23:57Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://eda10f3cdcbafc073480670873e9643f7a290e72554d0644e695e01ae0b008bb
+      image: docker.io/openpolicyagent/gatekeeper:v3.17.1
+      imageID: docker.io/openpolicyagent/gatekeeper@sha256:b7b4d7cfdd52c877267dac0824977eaf289fd4640b9bd530e7fc742c6d6e5cc0
+      lastState: {}
+      name: manager
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:23:58Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.15
+    podIPs:
+    - ip: 10.244.0.15
+    qosClass: Burstable
+    startTime: "2026-06-03T03:23:57Z"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: gatekeeper
+      meta.helm.sh/release-namespace: gatekeeper-system
+    creationTimestamp: "2026-06-03T03:22:47Z"
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      chart: gatekeeper
+      gatekeeper.sh/system: "yes"
+      heritage: Helm
+      release: gatekeeper
+    name: gatekeeper-webhook-service
+    namespace: gatekeeper-system
+    resourceVersion: "613"
+    uid: 0d53113b-30d6-4a07-bb82-e0613ef9dab3
+  spec:
+    clusterIP: 10.96.144.64
+    clusterIPs:
+    - 10.96.144.64
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: https-webhook-server
+      port: 443
+      protocol: TCP
+      targetPort: webhook-server
+    selector:
+      app: gatekeeper
+      chart: gatekeeper
+      control-plane: controller-manager
+      gatekeeper.sh/operation: webhook
+      gatekeeper.sh/system: "yes"
+      heritage: Helm
+      release: gatekeeper
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: gatekeeper
+      meta.helm.sh/release-namespace: gatekeeper-system
+    creationTimestamp: "2026-06-03T03:22:47Z"
+    generation: 1
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      chart: gatekeeper
+      control-plane: audit-controller
+      gatekeeper.sh/operation: audit
+      gatekeeper.sh/system: "yes"
+      heritage: Helm
+      release: gatekeeper
+    name: gatekeeper-audit
+    namespace: gatekeeper-system
+    resourceVersion: "679"
+    uid: 4b0cfc82-0414-4e47-a4c2-26ec3eb30dc4
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: gatekeeper
+        chart: gatekeeper
+        control-plane: audit-controller
+        gatekeeper.sh/operation: audit
+        gatekeeper.sh/system: "yes"
+        heritage: Helm
+        release: gatekeeper
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: gatekeeper
+          app.kubernetes.io/instance: gatekeeper
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: gatekeeper
+          app.kubernetes.io/version: 3.17.1
+          chart: gatekeeper
+          control-plane: audit-controller
+          gatekeeper.sh/operation: audit
+          gatekeeper.sh/system: "yes"
+          helm.sh/chart: gatekeeper-3.17.1
+          heritage: Helm
+          release: gatekeeper
+      spec:
+        affinity: {}
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --audit-interval=10
+          - --log-level=INFO
+          - --constraint-violations-limit=20
+          - --validating-webhook-configuration-name=gatekeeper-validating-webhook-configuration
+          - --mutating-webhook-configuration-name=gatekeeper-mutating-webhook-configuration
+          - --audit-from-cache=false
+          - --audit-chunk-size=500
+          - --audit-match-kind-only=false
+          - --emit-audit-events=false
+          - --audit-events-involved-namespace=false
+          - --operation=audit
+          - --operation=status
+          - --operation=mutation-status
+          - --logtostderr
+          - --health-addr=:9090
+          - --prometheus-port=8888
+          - --enable-external-data=false
+          - --enable-generator-resource-expansion=true
+          - --metrics-backend=prometheus
+          - --disable-cert-rotation=false
+          - --external-data-provider-response-cache-ttl=3m
+          - --enable-k8s-native-validation=true
+          command:
+          - /manager
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: CONTAINER_NAME
+            value: manager
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+          image: openpolicyagent/gatekeeper:v3.17.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: manager
+          ports:
+          - containerPort: 8888
+            name: metrics
+            protocol: TCP
+          - containerPort: 9090
+            name: healthz
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /certs
+            name: cert
+            readOnly: true
+          - mountPath: /tmp/audit
+            name: tmp-volume
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        priorityClassName: system-cluster-critical
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 999
+          supplementalGroups:
+          - 999
+        serviceAccount: gatekeeper-admin
+        serviceAccountName: gatekeeper-admin
+        terminationGracePeriodSeconds: 60
+        volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: gatekeeper-webhook-server-cert
+        - emptyDir: {}
+          name: tmp-volume
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-03T03:22:50Z"
+      lastUpdateTime: "2026-06-03T03:22:50Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-03T03:22:47Z"
+      lastUpdateTime: "2026-06-03T03:22:50Z"
+      message: ReplicaSet "gatekeeper-audit-65579cd9f9" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: gatekeeper
+      meta.helm.sh/release-namespace: gatekeeper-system
+    creationTimestamp: "2026-06-03T03:22:47Z"
+    generation: 3
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      chart: gatekeeper
+      control-plane: controller-manager
+      gatekeeper.sh/operation: webhook
+      gatekeeper.sh/system: "yes"
+      heritage: Helm
+      release: gatekeeper
+    name: gatekeeper-controller-manager
+    namespace: gatekeeper-system
+    resourceVersion: "1182"
+    uid: 46727ad3-cfc4-4a3d-99c7-f19cfa943899
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 3
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: gatekeeper
+        chart: gatekeeper
+        control-plane: controller-manager
+        gatekeeper.sh/operation: webhook
+        gatekeeper.sh/system: "yes"
+        heritage: Helm
+        release: gatekeeper
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: gatekeeper
+          app.kubernetes.io/instance: gatekeeper
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: gatekeeper
+          app.kubernetes.io/version: 3.17.1
+          chart: gatekeeper
+          control-plane: controller-manager
+          gatekeeper.sh/operation: webhook
+          gatekeeper.sh/system: "yes"
+          helm.sh/chart: gatekeeper-3.17.1
+          heritage: Helm
+          release: gatekeeper
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: gatekeeper.sh/operation
+                    operator: In
+                    values:
+                    - webhook
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --port=8443
+          - --health-addr=:9090
+          - --prometheus-port=8888
+          - --logtostderr
+          - --log-denies=false
+          - --emit-admission-events=false
+          - --admission-events-involved-namespace=false
+          - --log-level=INFO
+          - --exempt-namespace=gatekeeper-system
+          - --operation=webhook
+          - --enable-external-data=false
+          - --enable-generator-resource-expansion=true
+          - --log-mutations=false
+          - --mutation-annotations=false
+          - --disable-cert-rotation=false
+          - --max-serving-threads=-1
+          - --tls-min-version=1.3
+          - --validating-webhook-configuration-name=gatekeeper-validating-webhook-configuration
+          - --mutating-webhook-configuration-name=gatekeeper-mutating-webhook-configuration
+          - --external-data-provider-response-cache-ttl=3m
+          - --enable-k8s-native-validation=true
+          - --metrics-backend=prometheus
+          - --operation=mutation-webhook
+          - --disable-opa-builtin={http.send}
+          command:
+          - /manager
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: CONTAINER_NAME
+            value: manager
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+          image: openpolicyagent/gatekeeper:v3.17.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: manager
+          ports:
+          - containerPort: 8443
+            name: webhook-server
+            protocol: TCP
+          - containerPort: 8888
+            name: metrics
+            protocol: TCP
+          - containerPort: 9090
+            name: healthz
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /certs
+            name: cert
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        priorityClassName: system-cluster-critical
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 999
+          supplementalGroups:
+          - 999
+        serviceAccount: gatekeeper-admin
+        serviceAccountName: gatekeeper-admin
+        terminationGracePeriodSeconds: 60
+        volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: gatekeeper-webhook-server-cert
+  status:
+    availableReplicas: 3
+    conditions:
+    - lastTransitionTime: "2026-06-03T03:22:47Z"
+      lastUpdateTime: "2026-06-03T03:22:52Z"
+      message: ReplicaSet "gatekeeper-controller-manager-64bbbfbdbb" has successfully
+        progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    - lastTransitionTime: "2026-06-03T03:24:08Z"
+      lastUpdateTime: "2026-06-03T03:24:08Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    observedGeneration: 3
+    readyReplicas: 3
+    replicas: 3
+    updatedReplicas: 3
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: gatekeeper
+      meta.helm.sh/release-namespace: gatekeeper-system
+    creationTimestamp: "2026-06-03T03:22:47Z"
+    generation: 1
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/instance: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gatekeeper
+      app.kubernetes.io/version: 3.17.1
+      chart: gatekeeper
+      control-plane: audit-controller
+      gatekeeper.sh/operation: audit
+      gatekeeper.sh/system: "yes"
+      helm.sh/chart: gatekeeper-3.17.1
+      heritage: Helm
+      pod-template-hash: 65579cd9f9
+      release: gatekeeper
+    name: gatekeeper-audit-65579cd9f9
+    namespace: gatekeeper-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: gatekeeper-audit
+      uid: 4b0cfc82-0414-4e47-a4c2-26ec3eb30dc4
+    resourceVersion: "678"
+    uid: 2aca5a48-719c-4dc9-acfd-16e8a34b90dc
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: gatekeeper
+        chart: gatekeeper
+        control-plane: audit-controller
+        gatekeeper.sh/operation: audit
+        gatekeeper.sh/system: "yes"
+        heritage: Helm
+        pod-template-hash: 65579cd9f9
+        release: gatekeeper
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: gatekeeper
+          app.kubernetes.io/instance: gatekeeper
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: gatekeeper
+          app.kubernetes.io/version: 3.17.1
+          chart: gatekeeper
+          control-plane: audit-controller
+          gatekeeper.sh/operation: audit
+          gatekeeper.sh/system: "yes"
+          helm.sh/chart: gatekeeper-3.17.1
+          heritage: Helm
+          pod-template-hash: 65579cd9f9
+          release: gatekeeper
+      spec:
+        affinity: {}
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --audit-interval=10
+          - --log-level=INFO
+          - --constraint-violations-limit=20
+          - --validating-webhook-configuration-name=gatekeeper-validating-webhook-configuration
+          - --mutating-webhook-configuration-name=gatekeeper-mutating-webhook-configuration
+          - --audit-from-cache=false
+          - --audit-chunk-size=500
+          - --audit-match-kind-only=false
+          - --emit-audit-events=false
+          - --audit-events-involved-namespace=false
+          - --operation=audit
+          - --operation=status
+          - --operation=mutation-status
+          - --logtostderr
+          - --health-addr=:9090
+          - --prometheus-port=8888
+          - --enable-external-data=false
+          - --enable-generator-resource-expansion=true
+          - --metrics-backend=prometheus
+          - --disable-cert-rotation=false
+          - --external-data-provider-response-cache-ttl=3m
+          - --enable-k8s-native-validation=true
+          command:
+          - /manager
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: CONTAINER_NAME
+            value: manager
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+          image: openpolicyagent/gatekeeper:v3.17.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: manager
+          ports:
+          - containerPort: 8888
+            name: metrics
+            protocol: TCP
+          - containerPort: 9090
+            name: healthz
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /certs
+            name: cert
+            readOnly: true
+          - mountPath: /tmp/audit
+            name: tmp-volume
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        priorityClassName: system-cluster-critical
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 999
+          supplementalGroups:
+          - 999
+        serviceAccount: gatekeeper-admin
+        serviceAccountName: gatekeeper-admin
+        terminationGracePeriodSeconds: 60
+        volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: gatekeeper-webhook-server-cert
+        - emptyDir: {}
+          name: tmp-volume
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "3"
+      deployment.kubernetes.io/max-replicas: "4"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: gatekeeper
+      meta.helm.sh/release-namespace: gatekeeper-system
+    creationTimestamp: "2026-06-03T03:22:47Z"
+    generation: 3
+    labels:
+      app: gatekeeper
+      app.kubernetes.io/instance: gatekeeper
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gatekeeper
+      app.kubernetes.io/version: 3.17.1
+      chart: gatekeeper
+      control-plane: controller-manager
+      gatekeeper.sh/operation: webhook
+      gatekeeper.sh/system: "yes"
+      helm.sh/chart: gatekeeper-3.17.1
+      heritage: Helm
+      pod-template-hash: 64bbbfbdbb
+      release: gatekeeper
+    name: gatekeeper-controller-manager-64bbbfbdbb
+    namespace: gatekeeper-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: gatekeeper-controller-manager
+      uid: 46727ad3-cfc4-4a3d-99c7-f19cfa943899
+    resourceVersion: "1181"
+    uid: 57e9c3dc-c716-4e58-b626-fc7cc2ffabf8
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: gatekeeper
+        chart: gatekeeper
+        control-plane: controller-manager
+        gatekeeper.sh/operation: webhook
+        gatekeeper.sh/system: "yes"
+        heritage: Helm
+        pod-template-hash: 64bbbfbdbb
+        release: gatekeeper
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: gatekeeper
+          app.kubernetes.io/instance: gatekeeper
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: gatekeeper
+          app.kubernetes.io/version: 3.17.1
+          chart: gatekeeper
+          control-plane: controller-manager
+          gatekeeper.sh/operation: webhook
+          gatekeeper.sh/system: "yes"
+          helm.sh/chart: gatekeeper-3.17.1
+          heritage: Helm
+          pod-template-hash: 64bbbfbdbb
+          release: gatekeeper
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: gatekeeper.sh/operation
+                    operator: In
+                    values:
+                    - webhook
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+        automountServiceAccountToken: true
+        containers:
+        - args:
+          - --port=8443
+          - --health-addr=:9090
+          - --prometheus-port=8888
+          - --logtostderr
+          - --log-denies=false
+          - --emit-admission-events=false
+          - --admission-events-involved-namespace=false
+          - --log-level=INFO
+          - --exempt-namespace=gatekeeper-system
+          - --operation=webhook
+          - --enable-external-data=false
+          - --enable-generator-resource-expansion=true
+          - --log-mutations=false
+          - --mutation-annotations=false
+          - --disable-cert-rotation=false
+          - --max-serving-threads=-1
+          - --tls-min-version=1.3
+          - --validating-webhook-configuration-name=gatekeeper-validating-webhook-configuration
+          - --mutating-webhook-configuration-name=gatekeeper-mutating-webhook-configuration
+          - --external-data-provider-response-cache-ttl=3m
+          - --enable-k8s-native-validation=true
+          - --metrics-backend=prometheus
+          - --operation=mutation-webhook
+          - --disable-opa-builtin={http.send}
+          command:
+          - /manager
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: CONTAINER_NAME
+            value: manager
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+          image: openpolicyagent/gatekeeper:v3.17.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: manager
+          ports:
+          - containerPort: 8443
+            name: webhook-server
+            protocol: TCP
+          - containerPort: 8888
+            name: metrics
+            protocol: TCP
+          - containerPort: 9090
+            name: healthz
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /certs
+            name: cert
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        priorityClassName: system-cluster-critical
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 999
+          supplementalGroups:
+          - 999
+        serviceAccount: gatekeeper-admin
+        serviceAccountName: gatekeeper-admin
+        terminationGracePeriodSeconds: 60
+        volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: gatekeeper-webhook-server-cert
+  status:
+    availableReplicas: 3
+    fullyLabeledReplicas: 3
+    observedGeneration: 3
+    readyReplicas: 3
+    replicas: 3
+kind: List
+metadata:
+  resourceVersion: ""

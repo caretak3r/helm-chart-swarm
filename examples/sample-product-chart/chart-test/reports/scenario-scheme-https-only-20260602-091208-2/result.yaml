@@ -1,0 +1,11 @@
+scenario_id: scheme-https-only
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/scheme-https-only.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T13:12:08Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-scheme-https-only-20260602-091208-2/artifacts/logs/product-install.log
+finished_at: 2026-06-02T13:12:09Z

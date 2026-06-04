@@ -1,0 +1,13 @@
+scenario_id: rbac-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/rbac-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-03T03:47:31Z
+provider: kind
+asserts:
+  - type: rbac-objects
+    status: FAIL
+    notes: |
+      FAIL: expected RBAC objects but found 0
+status: FAIL
+finished_at: 2026-06-03T03:48:00Z
+log_dir: examples/sample-product-chart/chart-test/reports/run-curated-live-20260602-234624-95262/scenario-rbac-on-20260602-234730/artifacts/logs

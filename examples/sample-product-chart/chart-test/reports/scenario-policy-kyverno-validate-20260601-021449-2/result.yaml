@@ -1,0 +1,52 @@
+scenario_id: policy-kyverno-validate
+scenario_path: examples/sample-product-chart/chart-test/scenarios/policy-kyverno-validate.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T06:14:49Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n kyverno wait --for=condition=Ready pods --timeout=4m --all
+      pod/kyverno-admission-controller-6c47f7875-5w5rp condition met
+      pod/kyverno-background-controller-546f9479c7-hqp9m condition met
+      pod/kyverno-cleanup-controller-5787967fcd-kgzzg condition met
+      pod/kyverno-reports-controller-669cbff555-q4hqv condition met
+      PASS: pods Ready in ns/kyverno
+      NAME                                             READY   STATUS    RESTARTS   AGE
+      kyverno-admission-controller-6c47f7875-5w5rp     1/1     Running   0          28s
+      kyverno-background-controller-546f9479c7-hqp9m   1/1     Running   0          28s
+      kyverno-cleanup-controller-5787967fcd-kgzzg      1/1     Running   0          28s
+      kyverno-reports-controller-669cbff555-q4hqv      1/1     Running   0          28s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-t6hz5 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-t6hz5   1/1     Running   0          3s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/kyverno-validate.sh (RELEASE=sample NAMESPACE=sample)
+      === Kyverno: Validate (require-app-label) ===
+      ==> Phase 0: Wait for kyverno admission controller pods Ready
+      pod/kyverno-admission-controller-6c47f7875-5w5rp condition met
+      pod/kyverno-background-controller-546f9479c7-hqp9m condition met
+      pod/kyverno-cleanup-controller-5787967fcd-kgzzg condition met
+      pod/kyverno-reports-controller-669cbff555-q4hqv condition met
+      PASS: kyverno controller pods Ready
+      pod/sample-69469cb4c6-t6hz5 condition met
+      PASS: product pods Ready
+      ==> Phase 1: Verify ClusterPolicy applied
+      Waiting for ClusterPolicy require-app-label to be ready (30s max)...
+      FAIL: ClusterPolicy require-app-label not ready after 30s (status=)
+status: FAIL
+finished_at: 2026-06-01T06:16:14Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-policy-kyverno-validate-20260601-021449-2/artifacts/logs

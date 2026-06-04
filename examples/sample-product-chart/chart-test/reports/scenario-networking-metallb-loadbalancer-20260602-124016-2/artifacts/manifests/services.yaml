@@ -1,0 +1,44 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+      metallb.io/ip-allocated-from-pool: chart-test-pool
+    creationTimestamp: "2026-06-02T16:41:20Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "802"
+    uid: ba0c93a3-f26d-426e-bc90-2b096ca98f47
+  spec:
+    allocateLoadBalancerNodePorts: true
+    clusterIP: 10.96.244.252
+    clusterIPs:
+    - 10.96.244.252
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      nodePort: 31077
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 172.20.255.200
+        ipMode: VIP
+kind: List
+metadata:
+  resourceVersion: ""

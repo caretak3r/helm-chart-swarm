@@ -1,0 +1,67 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"Gateway","metadata":{"annotations":{},"name":"sample-gw","namespace":"sample"},"spec":{"gatewayClassName":"envoy","listeners":[{"allowedRoutes":{"namespaces":{"from":"Same"}},"name":"http","port":80,"protocol":"HTTP"}]}}
+    creationTimestamp: "2026-05-31T22:40:05Z"
+    generation: 1
+    name: sample-gw
+    namespace: sample
+    resourceVersion: "713"
+    uid: 36c10ef2-3935-4714-9cdc-2eb2956fdce2
+  spec:
+    gatewayClassName: envoy
+    listeners:
+    - allowedRoutes:
+        namespaces:
+          from: Same
+      name: http
+      port: 80
+      protocol: HTTP
+  status:
+    conditions:
+    - lastTransitionTime: "2026-05-31T22:40:12Z"
+      message: The Gateway has been scheduled by Envoy Gateway
+      observedGeneration: 1
+      reason: Accepted
+      status: "True"
+      type: Accepted
+    - lastTransitionTime: "2026-05-31T22:40:12Z"
+      message: No addresses have been assigned to the Gateway
+      observedGeneration: 1
+      reason: AddressNotAssigned
+      status: "False"
+      type: Programmed
+    listeners:
+    - attachedRoutes: 2
+      conditions:
+      - lastTransitionTime: "2026-05-31T22:40:12Z"
+        message: Sending translated listener configuration to the data plane
+        observedGeneration: 1
+        reason: Programmed
+        status: "True"
+        type: Programmed
+      - lastTransitionTime: "2026-05-31T22:40:12Z"
+        message: Listener has been successfully translated
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-05-31T22:40:12Z"
+        message: Listener references have been resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      name: http
+      supportedKinds:
+      - group: gateway.networking.k8s.io
+        kind: HTTPRoute
+      - group: gateway.networking.k8s.io
+        kind: GRPCRoute
+kind: List
+metadata:
+  resourceVersion: ""

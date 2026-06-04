@@ -1,0 +1,9 @@
+chart:
+  name: sample-product-chart
+  version: 0.1.0
+cluster_provider: kind
+k8s_version: 1.30.0
+num_agents: 1
+run_id: run-20260531-230537
+suite: all
+timestamp_utc: '2026-05-31T23:05:38Z'

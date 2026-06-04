@@ -1,0 +1,3 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/mounted-tls-csi-secret-store.sh (RELEASE=sample NAMESPACE=sample)
+==> [1/5] Checking CSI driver daemonset
+FAIL: CSI secrets-store driver daemonset not found in kube-system

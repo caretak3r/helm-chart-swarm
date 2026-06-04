@@ -1,0 +1,40 @@
+scenario_id: certificates-cert-manager-self-signed-ca
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-cert-manager-self-signed-ca.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-29T23:30:08Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-cm1 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-5d8b7f74c5-hz7f9 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-5d8b7f74c5-hz7f9   1/1     Running   0          5s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-self-signed.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for Certificate 'sample-tls' Ready (3m max)
+      certificate.cert-manager.io/sample-tls condition met
+      PASS: Certificate Ready=True
+      ==> Verifying TLS Secret 'sample-tls' keys
+      Secret keys: ca.crt
+      tls.crt
+      tls.key
+      OK: tls.crt, tls.key, ca.crt all present
+      ==> Waiting for pod Ready (3m max)
+      pod/sample-5d8b7f74c5-hz7f9 condition met
+      PASS: chart pods Ready
+      ==> Verifying HTTPS reachable from in-cluster curl
+      HTTPS response: 000000
+      FAIL: expected HTTP 200, got 000000
+status: FAIL
+finished_at: 2026-05-29T23:31:01Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-cert-manager-self-signed-ca-20260529-193007-3/artifacts/logs

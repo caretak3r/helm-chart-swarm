@@ -1,0 +1,158 @@
+{
+  "timestamp": "2026-05-27T23:43:59.651Z",
+  "workerSessionId": "99b6883d-927e-4681-ab11-0d0f79b4d95e",
+  "featureId": "f1-3-integration-category-reorg",
+  "milestone": "engine-foundations",
+  "commitId": "ec94adc",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "successState": "success",
+  "returnToOrchestrator": true,
+  "handoff": {
+    "salientSummary": "Moved 6 integration primers into category subdirs (certificates/, ingress-controllers/, service-mesh/, gateway-api/, policy/) with byte-identical content. Added discover_integrations() to collect.py. Updated SKILL.md and workflow.md references. All 18 pytest cases pass; mypy --strict, ruff check, and ruff format all clean.",
+    "whatWasImplemented": "F1.3 integration category reorg: (1) Created 5 category subdirectories under references/integrations/ and moved 6 primers into them (cert-manager.md→certificates/, traefik.md→ingress-controllers/, istio-service-mesh.md→service-mesh/, istio-ingress-gateway.md→service-mesh/, gateway-api.md→gateway-api/, opa-gatekeeper.md→policy/). (2) All primer content is byte-identical — SHA-256 hashes verified pre/post move; gateway-api.md shows as a 100%-similarity git rename. (3) Added discover_integrations(integrations_dir) to collect.py that walks category subdirs and returns {category: [primer_stem, ...]}. (4) Updated all 4 text references in SKILL.md and 3 in workflow.md to use references/integrations/<category>/<integration>.md paths. (5) Fixed pre-existing mypy strict errors in cli.py (missing type args, Any return). (6) Added 18 pytest cases covering VAL-ENGINE-011 (no top-level primers, each under correct category), VAL-ENGINE-012 (SHA-256 byte-identical), and discover_integrations() (5 tests including empty dir, flat .md, single category).",
+    "whatWasLeftUndone": "",
+    "verification": {
+      "commandsRun": [
+        {
+          "command": ".venv/bin/python -m pytest tests/test_integration_reorg.py -v",
+          "exitCode": 0,
+          "observation": "18 tests passed in 0.02s — 7 for category subdirs, 6 for SHA-256 byte-identical, 5 for discover_integrations()."
+        },
+        {
+          "command": ".venv/bin/python -m mypy src/testgrid --strict",
+          "exitCode": 0,
+          "observation": "Success: no issues found in 4 source files (strict mode)."
+        },
+        {
+          "command": ".venv/bin/ruff check src/testgrid tests/",
+          "exitCode": 0,
+          "observation": "All checks passed."
+        },
+        {
+          "command": ".venv/bin/ruff format --check src/testgrid tests/",
+          "exitCode": 0,
+          "observation": "6 files already formatted."
+        },
+        {
+          "command": "sha256sum verification of all 6 moved primers",
+          "exitCode": 0,
+          "observation": "All 6 SHA-256 hashes match pre-reorg values exactly."
+        },
+        {
+          "command": "find integrations -maxdepth 1 -name '*.md' | wc -l",
+          "exitCode": 0,
+          "observation": "0 top-level .md files (VAL-ENGINE-011 satisfied)."
+        },
+        {
+          "command": "rg -n 'references/integrations/[a-z-]+\\.md' SKILL.md workflow.md",
+          "exitCode": 1,
+          "observation": "No flat primer references remain (VAL-ENGINE-035 satisfied)."
+        },
+        {
+          "command": "kind get clusters; minikube profile list",
+          "exitCode": 0,
+          "observation": "No chart-test-swarm-* clusters or profiles remain."
+        }
+      ]
+    },
+    "tests": {
+      "added": [
+        {
+          "file": "engine/testgrid/tests/test_integration_reorg.py",
+          "cases": [
+            {
+              "name": "test_no_md_files_at_top_level",
+              "verifies": "VAL-ENGINE-011: no .md primer at top level of references/integrations/"
+            },
+            {
+              "name": "test_primer_exists_under_category[certificates-cert-manager.md]",
+              "verifies": "VAL-ENGINE-011: cert-manager under certificates/"
+            },
+            {
+              "name": "test_primer_exists_under_category[ingress-controllers-traefik.md]",
+              "verifies": "VAL-ENGINE-011: traefik under ingress-controllers/"
+            },
+            {
+              "name": "test_primer_exists_under_category[service-mesh-istio-service-mesh.md]",
+              "verifies": "VAL-ENGINE-011: istio-service-mesh under service-mesh/"
+            },
+            {
+              "name": "test_primer_exists_under_category[service-mesh-istio-ingress-gateway.md]",
+              "verifies": "VAL-ENGINE-011: istio-ingress-gateway under service-mesh/"
+            },
+            {
+              "name": "test_primer_exists_under_category[gateway-api-gateway-api.md]",
+              "verifies": "VAL-ENGINE-011: gateway-api under gateway-api/"
+            },
+            {
+              "name": "test_primer_exists_under_category[policy-opa-gatekeeper.md]",
+              "verifies": "VAL-ENGINE-011: opa-gatekeeper under policy/"
+            },
+            {
+              "name": "test_sha256_matches_pre_reorg[certificates/cert-manager.md]",
+              "verifies": "VAL-ENGINE-012: cert-manager.md byte-identical"
+            },
+            {
+              "name": "test_sha256_matches_pre_reorg[ingress-controllers/traefik.md]",
+              "verifies": "VAL-ENGINE-012: traefik.md byte-identical"
+            },
+            {
+              "name": "test_sha256_matches_pre_reorg[service-mesh/istio-service-mesh.md]",
+              "verifies": "VAL-ENGINE-012: istio-service-mesh.md byte-identical"
+            },
+            {
+              "name": "test_sha256_matches_pre_reorg[service-mesh/istio-ingress-gateway.md]",
+              "verifies": "VAL-ENGINE-012: istio-ingress-gateway.md byte-identical"
+            },
+            {
+              "name": "test_sha256_matches_pre_reorg[gateway-api/gateway-api.md]",
+              "verifies": "VAL-ENGINE-012: gateway-api.md byte-identical"
+            },
+            {
+              "name": "test_sha256_matches_pre_reorg[policy/opa-gatekeeper.md]",
+              "verifies": "VAL-ENGINE-012: opa-gatekeeper.md byte-identical"
+            },
+            {
+              "name": "test_discover_integrations_returns_all_categories",
+              "verifies": "discover_integrations() finds all 5 categories"
+            },
+            {
+              "name": "test_discover_integrations_returns_primer_names",
+              "verifies": "discover_integrations() returns primer stems per category"
+            },
+            {
+              "name": "test_discover_integrations_with_empty_dir",
+              "verifies": "discover_integrations() returns empty dict for empty dir"
+            },
+            {
+              "name": "test_discover_integrations_with_flat_md",
+              "verifies": "discover_integrations() ignores top-level .md files"
+            },
+            {
+              "name": "test_discover_integrations_single_category",
+              "verifies": "discover_integrations() walks single category correctly"
+            }
+          ]
+        }
+      ],
+      "coverage": "18 test cases covering VAL-ENGINE-011, VAL-ENGINE-012, and discover_integrations() unit tests with tmp_path fixtures"
+    },
+    "discoveredIssues": [
+      {
+        "severity": "non_blocking",
+        "description": "Pre-existing: no git remote configured — git push fails. Repo is local-only; commit ec94adc is safely stored locally.",
+        "suggestedFix": "Configure a git remote if push-to-remote is needed."
+      },
+      {
+        "severity": "non_blocking",
+        "description": "Pre-existing: jinja2-stubs not available in PyPI (uv pip install fails). mypy --strict passes without it but may lack jinja2 template type hints.",
+        "suggestedFix": "F1.5 should add jinja2-stubs or an alternative stub package as a dev dependency."
+      }
+    ],
+    "skillFeedback": {
+      "followedProcedure": true,
+      "deviations": [],
+      "suggestedChanges": []
+    }
+  }
+}

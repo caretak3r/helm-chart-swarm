@@ -1,0 +1,9 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-gen-certs.sh (RELEASE=sample NAMESPACE=sample)
+==> Generating ephemeral ECDSA P-256 trust anchor and issuer certs
+==> Creating temp values.yaml with generated certs
+==> Upgrading linkerd-control-plane (v1.16.11) with generated certs
+level=WARN msg="upgrade failed" name=linkerd-control-plane error="resource Deployment/linkerd/linkerd-destination not ready. status: InProgress, message: Pending termination: 1\nresource Deployment/linkerd/linkerd-identity not ready. status: InProgress, message: Pending termination: 1\nresource Deployment/linkerd/linkerd-proxy-injector not ready. status: InProgress, message: Pending termination: 1\ncontext deadline exceeded"
+Error: UPGRADE FAILED: resource Deployment/linkerd/linkerd-destination not ready. status: InProgress, message: Pending termination: 1
+resource Deployment/linkerd/linkerd-identity not ready. status: InProgress, message: Pending termination: 1
+resource Deployment/linkerd/linkerd-proxy-injector not ready. status: InProgress, message: Pending termination: 1
+context deadline exceeded

@@ -1,0 +1,76 @@
+scenario_id: service-mesh-istio-ingress-gateway-request-authentication
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-istio-ingress-gateway-request-authentication.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T04:41:50Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-ingressgateway in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-zrkmw condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-zrkmw   1/1     Running   0          13s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=3m -l app=istio-ingressgateway
+      pod/istio-ingressgateway-8584b67974-kf489 condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istio-ingressgateway)
+      NAME                                    READY   STATUS    RESTARTS   AGE
+      istio-ingressgateway-8584b67974-kf489   1/1     Running   0          7s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=3m --all
+      pod/sample-7dcd986bd4-bjsjc condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-bjsjc   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      ==> Generating ephemeral RSA 2048-bit JWT signing key
+      ==> JWT key generated at: /var/folders/10/9lylcxg10rd17gqmylhpw3740000gn/T/tmp.0HBkYjad3s/jwt-key.pem
+      ==> Creating Istio Gateway + VirtualService
+      gateway.networking.istio.io/sample-igw created
+      virtualservice.networking.istio.io/sample-vs created
+      ==> Creating RequestAuthentication (JWT validation ONLY, no deny)
+      requestauthentication.security.istio.io/sample-jwt-validate created
+      ==> Waiting for istiod to reconcile policies (15s)
+      ==> Getting istio-ingressgateway pod IP
+        Gateway pod IP: 10.244.0.6
+      ==> Test 1: Request WITHOUT Bearer token → should pass (no deny rule)
+        HTTP code (no auth): 200
+        ✓ Request without token passes through (no enforcement)
+      ==> Test 2: Request WITH valid JWT → should succeed
+        HTTP code (valid JWT): 200
+        ✓ Request with valid JWT succeeds
+      ==> Test 3: Request WITH invalid JWT (wrong issuer) → should be rejected
+        HTTP code (invalid JWT): 401
+        ✓ Invalid JWT correctly rejected (RequestAuthentication validates)
+      PASS: istio ingress gateway RequestAuthentication (validate-only, no deny) verified
+status: PASS
+finished_at: 2026-06-01T04:42:56Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-ingress-gateway-request-authentication-20260601-004150-3/artifacts/logs

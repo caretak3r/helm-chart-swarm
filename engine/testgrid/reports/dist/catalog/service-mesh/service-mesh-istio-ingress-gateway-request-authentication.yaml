@@ -1,0 +1,93 @@
+---
+id: service-mesh-istio-ingress-gateway-request-authentication
+name: "Istio Ingress Gateway — RequestAuthentication (No Deny)"
+description: >-
+  Installs istio/base + istio/istiod + istio/gateway, deploys the product chart, creates an Istio Gateway + VirtualService, applies a RequestAuthentication that validates JWTs from
+  the test issuer but does NOT require them (no AuthorizationPolicy). Verifies: (a) requests without a token still pass through (HTTP 200), (b) requests with a valid JWT also
+  return 200, and (c) requests with an invalid JWT (wrong issuer) are rejected with 401 by RequestAuthentication validation alone.
+labels: {customer: any, profile: mesh}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: istio/base
+      version: 1.27.9
+      release: istio-base
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    - kind: helm
+      chart: istio/istiod
+      version: 1.27.9
+      release: istiod
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        pilot:
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "384Mi"
+      wait: pods-ready
+      wait_timeout: 5m
+    - kind: helm
+      chart: istio/gateway
+      version: 1.27.9
+      release: istio-ingressgateway
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        service:
+          type: NodePort
+          ports:
+            - name: http2
+              port: 80
+              nodePort: 30080
+      wait: pods-ready
+      wait_timeout: 3m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    ingress.enabled: false
+asserts:
+  - type: helm-status-deployed
+    release: istio-base
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istiod
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istio-ingressgateway
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: istio-system
+    selector: app=istiod
+    timeout: 5m
+  - type: pods-ready
+    namespace: istio-system
+    selector: app=istio-ingressgateway
+    timeout: 3m
+  - type: pods-ready
+    namespace: sample
+    timeout: 3m
+  - type: smoke-script
+    path: chart-test/assertions/istio-ingress-gateway-request-authentication.sh
+tags: [nightly]
+mechanisms: ['addon:istio', 'mesh:istio-ingress-gateway']
+category: service-mesh
+integration: istio
+tier: live

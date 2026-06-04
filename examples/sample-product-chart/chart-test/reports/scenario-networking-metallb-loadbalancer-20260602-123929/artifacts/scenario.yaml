@@ -1,0 +1,60 @@
+---
+id: networking-metallb-loadbalancer
+name: "MetalLB LoadBalancer (service.type=LoadBalancer)"
+description: >-
+  Installs MetalLB, configures an IPAddressPool + L2Advertisement whose CIDR is inside the kind Docker bridge subnet, deploys the product chart with service.type=LoadBalancer, and verifies that MetalLB assigns an external IP from the pool and the LB endpoint serves HTTP 200.
+labels: {customer: any, profile: loadbalancer}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: metallb/metallb
+      version: 0.16.1
+      release: metallb
+      namespace: metallb
+      repo:
+        name: metallb
+        url: "https://metallb.github.io/charts"
+      values:
+        controller:
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+        speaker:
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+        installCRDs: true
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: raw_manifest
+      path: ./fixtures/metallb-ip-pool.yaml
+      namespace: metallb
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    service.type: "LoadBalancer"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: pods-ready
+    namespace: metallb
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/metallb-loadbalancer.sh
+tags: [nightly]
+mechanisms: ['addon:metallb']
+category: networking
+integration: metallb
+tier: live

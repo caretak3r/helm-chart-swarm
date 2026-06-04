@@ -1,0 +1,2 @@
+helm status: deployed
+PASS: release istiod in ns/istio-system is deployed

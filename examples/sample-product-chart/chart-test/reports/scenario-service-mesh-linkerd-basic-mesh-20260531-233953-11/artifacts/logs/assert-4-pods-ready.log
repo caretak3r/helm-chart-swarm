@@ -1,0 +1,1 @@
+kubectl --context kind-chart-test-swarm-default -n linkerd wait --for=condition=Ready pods --timeout=10m --all

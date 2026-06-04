@@ -1,0 +1,9 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: traefik (traefik/traefik @ v28.3.0) in ns/traefik
+Release "traefik" does not exist. Installing it now.
+level=WARN msg="unable to find exact version requested; falling back to closest available version" chart=traefik requested=v28.3.0 selected=28.3.0
+Error: resource Deployment/traefik/traefik not ready. status: InProgress, message: Available: 0/1
+context deadline exceeded

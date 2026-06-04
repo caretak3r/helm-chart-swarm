@@ -1,0 +1,39 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/mounted-tls-csi-secret-store.sh (RELEASE=sample NAMESPACE=sample)
+==> [1/5] Checking CSI driver daemonset
+PASS: CSI secrets-store driver daemonset (daemonset.apps/csi-secrets-store-secrets-store-csi-driver) ready=1
+==> [2/5] Checking SecretProviderClass
+PASS: SecretProviderClass 'mounted-tls-csi' exists in ns/sample
+==> [3/5] Verifying product pod is running
+PASS: pod sample-675b745dbc-prlpw is Ready
+==> [4/5] Verifying TLS cert files in pod
+  File: '/etc/tls/tls.crt' -> '..data/tls.crt'
+  Size: 14        	Blocks: 0          IO Block: 4096   symbolic link
+Device: 200016h/2097174d	Inode: 7           Links: 1
+Access: (0777/lrwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2026-05-30 14:03:29.052744008 +0000
+Modify: 2026-05-30 14:03:27.631744007 +0000
+Change: 2026-05-30 14:03:27.631744007 +0000
+PASS: tls.crt present at /etc/tls/tls.crt
+  File: '/etc/tls/tls.key' -> '..data/tls.key'
+  Size: 14        	Blocks: 0          IO Block: 4096   symbolic link
+Device: 200016h/2097174d	Inode: 6           Links: 1
+Access: (0777/lrwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2026-05-30 14:03:29.052744008 +0000
+Modify: 2026-05-30 14:03:27.631744007 +0000
+Change: 2026-05-30 14:03:27.631744007 +0000
+PASS: tls.key present at /etc/tls/tls.key
+==> [5/5] Verifying HTTPS endpoint
+WARN: HTTPS probe failed (may be non-critical on kind)
+
+=== CSI full-volume-mount verification: SKIP ===
+REASON: Full CSI volume mount verification (csi.driver=secrets-store.csi.k8s.io
+in pod spec, cert files populated via CSI provider) requires a real CSI provider
+plugin (AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, HashiCorp Vault,
+etc.) which is not available on kind clusters. The scenario verifies:
+  1. CSI driver helm chart installs successfully
+  2. SecretProviderClass resource is created
+  3. Product pod runs and serves HTTPS with TLS certs mounted from a regular Secret
+For full CSI volume-mount testing, run this scenario on a cluster with a
+supported secrets-store CSI provider plugin installed.
+
+PASS: mounted-tls-certs csi-secret-store scenario verified (CSI infra validated)

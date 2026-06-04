@@ -1,0 +1,8 @@
+id: test-b
+cluster:
+  provider: kind
+product:
+  chart: ./chart
+  release: test
+  namespace: test
+asserts: []

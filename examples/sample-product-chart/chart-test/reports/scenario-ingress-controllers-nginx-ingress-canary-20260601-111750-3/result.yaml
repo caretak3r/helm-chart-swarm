@@ -1,0 +1,55 @@
+scenario_id: ingress-controllers-nginx-ingress-canary
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/ingress-controllers-nginx-ingress-canary.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T15:17:50Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-28 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-zfsl9 condition met
+      pod/sample-canary-575699b698-wqn6z condition met
+      PASS: pods Ready in ns/sample
+      NAME                             READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-zfsl9          1/1     Running   0          2s
+      sample-canary-575699b698-wqn6z   1/1     Running   0          3s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-28 -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/ingress-nginx-controller-d74c658c5-pp5gg condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      ingress-nginx-controller-d74c658c5-pp5gg   1/1     Running   0          29s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: canary pod Ready
+      ==> Verifying stable Ingress exists
+      ingress.networking.k8s.io/sample-stable
+      PASS: stable Ingress exists
+      ==> Verifying canary Ingress exists with canary annotations
+      Canary flag: 'true', canary-weight: '20'
+      PASS: canary Ingress has correct annotations
+      ==> Getting nginx controller pod IP
+      NGINX pod IP: 10.244.0.6
+      ==> Running 100 canary probes (expect 10-30 canary hits)
+        ... probe 20/100: canary=4 stable=16
+        ... probe 40/100: canary=10 stable=30
+        ... probe 60/100: canary=14 stable=46
+        ... probe 80/100: canary=16 stable=64
+        ... probe 100/100: canary=17 stable=83
+      
+      Canary hits: 17/100 (20% target)
+      Stable hits: 83/100
+      PASS: canary traffic in range [10, 30] — 17 hits
+      PASS: NGINX Ingress canary integration verified
+status: PASS
+finished_at: 2026-06-01T15:22:20Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-nginx-ingress-canary-20260601-111750-3/artifacts/logs

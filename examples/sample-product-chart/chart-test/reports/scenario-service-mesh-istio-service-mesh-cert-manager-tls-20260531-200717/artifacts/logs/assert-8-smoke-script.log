@@ -1,0 +1,41 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-cert-manager-tls.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for cert-manager pods Ready (3m max)
+pod/cert-manager-c69c859c4-tg8s6 condition met
+PASS: cert-manager pods Ready
+==> Waiting for istiod pods Ready (3m max)
+pod/istiod-54b585df85-pj9dc condition met
+PASS: istiod pods Ready
+==> Waiting for istio-ingressgateway pods Ready (3m max)
+pod/istio-ingressgateway-8584b67974-w8zgf condition met
+PASS: istio-ingressgateway pods Ready
+==> Labeling namespace sample for istio injection
+namespace/sample labeled
+==> Creating cert-manager Certificate for Gateway TLS Secret
+certificate.cert-manager.io/sample-gw-tls created
+PASS: Certificate sample-gw-tls created in sample
+==> Waiting for Certificate Ready (3m max)
+certificate.cert-manager.io/sample-gw-tls condition met
+PASS: Certificate Ready=True
+==> Verifying TLS Secret exists and contains expected keys
+Secret keys: ca.crt
+tls.crt
+tls.key
+PASS: TLS Secret contains tls.crt, tls.key, ca.crt
+==> Creating Istio Gateway with TLS (credentialName references cert-manager Secret)
+gateway.networking.istio.io/sample-gw created
+PASS: Istio Gateway sample-gw created with TLS credentialName=sample-gw-tls
+==> Verifying Gateway resource exists
+PASS: Gateway sample-gw confirmed
+==> Verifying Gateway TLS credentialName references cert-manager Secret
+Gateway credentialName: sample-gw-tls
+PASS: Gateway credentialName matches cert-manager Secret
+==> Creating VirtualService to route traffic through Gateway
+virtualservice.networking.istio.io/sample-vs created
+PASS: VirtualService sample-vs created
+==> Running istioctl analyze (downloading if needed)
+  Downloading istioctl 1.27.9...
+SKIP: istioctl not available; skipping analyze step
+==> Testing HTTPS through Istio Gateway with TLS
+Gateway pod IP: 10.244.0.10
+HTTPS response through Gateway: 000
+FAIL: expected HTTPS 200 through Gateway, got 000

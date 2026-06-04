@@ -1,0 +1,13 @@
+scenario_id: imagepullsecrets-off
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/imagepullsecrets-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T14:02:55Z
+provider: kind
+asserts:
+  - type: imagepullsecrets-present
+    status: PASS
+    notes: |
+      PASS: no imagePullSecrets on 1 workload(s) and 0 ServiceAccount(s)
+status: PASS
+finished_at: 2026-06-02T14:03:26Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-imagepullsecrets-off-20260602-100255/artifacts/logs

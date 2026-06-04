@@ -1,0 +1,13 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/kyverno-validate.sh (RELEASE=sample NAMESPACE=sample)
+=== Kyverno: Validate (require-app-label) ===
+==> Phase 0: Wait for kyverno admission controller pods Ready
+pod/kyverno-admission-controller-6c47f7875-5w5rp condition met
+pod/kyverno-background-controller-546f9479c7-hqp9m condition met
+pod/kyverno-cleanup-controller-5787967fcd-kgzzg condition met
+pod/kyverno-reports-controller-669cbff555-q4hqv condition met
+PASS: kyverno controller pods Ready
+pod/sample-69469cb4c6-t6hz5 condition met
+PASS: product pods Ready
+==> Phase 1: Verify ClusterPolicy applied
+Waiting for ClusterPolicy require-app-label to be ready (30s max)...
+FAIL: ClusterPolicy require-app-label not ready after 30s (status=)

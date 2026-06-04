@@ -1,0 +1,11 @@
+scenario_id: ingress-controllers-nginx-ingress-default-backend
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-nginx-ingress-default-backend.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T18:04:53Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-nginx-ingress-default-backend-20260530-140453-5/artifacts/logs/preinstall.log
+finished_at: 2026-05-30T18:08:28Z

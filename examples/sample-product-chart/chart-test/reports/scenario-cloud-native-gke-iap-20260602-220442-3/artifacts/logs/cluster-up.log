@@ -1,0 +1,3 @@
+==> Cloud-native provider 'gke' — authored only; skipping cluster operations.
+    This repo does not run cloud-native scenarios. Apply the scenario to your own
+    gke cluster following the primer instructions.

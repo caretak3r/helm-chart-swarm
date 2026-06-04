@@ -1,0 +1,11 @@
+scenario_id: minimal
+scenario_path: /var/folders/10/9lylcxg10rd17gqmylhpw3740000gn/T/tmp.q5e9wFxb4p/minimal.yaml
+project_dir: /var/folders/10/9lylcxg10rd17gqmylhpw3740000gn
+started_at: 2026-05-30T14:25:17Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  chart not found at /var/folders/10/9lylcxg10rd17gqmylhpw3740000gn/./chart (and not an OCI/URL ref)
+finished_at: 2026-05-30T14:25:43Z

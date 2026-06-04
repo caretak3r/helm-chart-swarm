@@ -1,0 +1,63 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-basic-mesh.sh (RELEASE=sample NAMESPACE=sample)
+==> Annotating namespace sample for linkerd injection
+namespace/sample annotated
+==> Restarting deployments to pick up proxy injection
+  Restarting deployment/sample
+deployment.apps/sample restarted
+  Waiting for rollout of deployment/sample to complete (3m max)
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+  Restarting deployment/sample-scope
+deployment.apps/sample-scope restarted
+  Waiting for rollout of deployment/sample-scope to complete (3m max)
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+deployment "sample-scope" successfully rolled out
+PASS: all deployments rolled out
+==> Waiting 5s for old pods to terminate
+==> Verifying linkerd-proxy sidecar injected into every product pod
+  Pod sample-6dd9494bd7-w8rbj (deploy/sample) containers (2): linkerd-proxy app
+    ✓ linkerd-proxy sidecar present
+  Pod sample-scope-77f9f69588-j4k6k (deploy/sample-scope) containers (2): linkerd-proxy scope
+    ✓ linkerd-proxy sidecar present
+PASS: every Running product pod has exactly 2 containers including linkerd-proxy
+==> Running linkerd check --proxy from a probe pod
+==> Testing proxy injection with linkerd check --proxy (from outside the mesh)
+pod/ct-linkerd-check created
+  Waiting for linkerd check pod (2m max)
+  Check pod phase: Failed
+  linkerd check output:
+==> Downloading linkerd CLI...
+==> Running linkerd check --proxy...
+kubernetes-api
+--------------
+√ can initialize the client
+√ can query the Kubernetes API
+
+kubernetes-version
+------------------
+√ is running the minimum Kubernetes API version
+
+linkerd-existence
+-----------------
+× 'linkerd-config' config map exists
+    configmaps "linkerd-config" is forbidden: User "system:serviceaccount:sample:default" cannot get resource "configmaps" in API group "" in the namespace "linkerd"
+    see https://linkerd.io/2.14/checks/#l5d-existence-linkerd-config for hints
+
+Failed to run extensions checks: namespaces is forbidden: User "system:serviceaccount:sample:default" cannot list resource "namespaces" in API group "" at the cluster scope
+==> Check exit code: 1
+WARN: linkerd check did not produce expected 'Status check results' message
+  This may be due to the probe pod not having cluster-wide RBAC.
+  The sidecar injection verification above is the primary gate.
+pod "ct-linkerd-check" deleted from sample namespace
+==> Probing product Service from an in-mesh test pod
+pod/ct-mesh-probe created
+  Waiting for probe pod to be ready (2m max)
+pod/ct-mesh-probe condition met
+  Probe pod containers: linkerd-proxy ct-mesh-probe
+HTTP response from in-mesh probe: 200
+PASS: in-mesh pod reached product Service with HTTP 200
+pod "ct-mesh-probe" deleted from sample namespace
+error: timed out waiting for the condition on pods/ct-mesh-probe
+PASS: linkerd basic mesh integration verified

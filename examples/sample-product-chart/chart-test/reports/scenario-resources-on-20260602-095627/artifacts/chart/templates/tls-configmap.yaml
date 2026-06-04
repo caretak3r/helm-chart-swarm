@@ -1,0 +1,30 @@
+{{- if .Values.tls.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-nginx-tls
+  labels:
+    app: {{ .Release.Name }}
+data:
+  default.conf: |
+    server {
+      listen 80;
+      server_name _;
+      location / {
+        root /usr/share/nginx/html;
+        index index.html;
+      }
+    }
+    {{- if ne (.Values.tls.waitForCerts | toString) "false" }}
+    server {
+      listen {{ .Values.tls.servicePort }} ssl;
+      server_name _;
+      ssl_certificate     {{ .Values.tls.mountPath | default "/etc/tls" }}/tls.crt;
+      ssl_certificate_key {{ .Values.tls.mountPath | default "/etc/tls" }}/tls.key;
+      location / {
+        root /usr/share/nginx/html;
+        index index.html;
+      }
+    }
+    {{- end }}
+{{- end }}

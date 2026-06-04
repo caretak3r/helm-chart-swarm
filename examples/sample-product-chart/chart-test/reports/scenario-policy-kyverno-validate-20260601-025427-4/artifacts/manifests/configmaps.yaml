@@ -1,0 +1,39 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIKRSbjMzqvDMwDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA2MDEwNjQ5MjlaFw0zNjA1MjkwNjU0MjlaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDeSvYwcS/IftGenamgb0jXGrtNFKTPyGmLIcvcx7u2sGKBLhCtGkzDAXDx
+      hOXSiJos2GY7Wg/fM/iMncWvqqYGkNanYbmI89MRXTczJmBN1qxhJV83XthkUvdK
+      ukzAk5pDM3UG8wOXir4cvn1v3wv8u6/rt55bnpdQ+NXoMswEDa44oLQip868Kr/f
+      hBN3WOMAb4F/SdZopC3i+5uDHQ0LfAKRKSwQVnk2MwxOQmbdpp1BagmhgWNp7zYL
+      DdWX+yuMk03iE5c7rH9fOGGbH+4uKz9f8N2SzcyJRPPd4G9hrWpXGqYTi5bIW/O4
+      TwWENQNnkZq0faYDNXflXleaZA+vAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRFp4TC5T6Olw4XYIyONfEL/FikaDAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQAIjnIa86/d
+      cKW+55JXf9VN93VYe59ip00utDU4FdqiYYrLDNekx3WqpAZzYnwYFSE7C8KzXTam
+      lxUT0m0CiLv2Sl2oDg1HiMcrA413x56vhb8OwqDNMDrGoL09SueeJWoVmNMmh7t4
+      rYsJ7diC+BAsdcVlJ9ckpN36YZatM3zwPHjH656DyZdgT+yycOxHBzEx21R/1rwn
+      z5WDlIPr5W33zKbuupnYzbXpA2G8ySgy+q8YwkK+L/t9V75rifptkN7kSzzzSo3/
+      aVc2PEDF0n6/Hb5oF5BDw+hXVUe0XRpTBc0Rcb4J5PVLCbZtH2hQI+v9BW4PR4Di
+      14dQ7inp4X68
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    creationTimestamp: "2026-06-01T06:55:15Z"
+    name: kube-root-ca.crt
+    namespace: sample
+    resourceVersion: "786"
+    uid: 10cb0ec8-f756-45f8-8453-412a129fac26
+kind: List
+metadata:
+  resourceVersion: ""

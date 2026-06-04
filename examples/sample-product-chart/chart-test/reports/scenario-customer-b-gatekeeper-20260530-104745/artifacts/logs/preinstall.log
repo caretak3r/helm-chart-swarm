@@ -1,0 +1,21 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 1 preinstall item(s)
+
+==> [1/1] kind=helm
+    helm: gatekeeper (gatekeeper/gatekeeper @ 3.16.0) in ns/gatekeeper-system
+Release "gatekeeper" does not exist. Installing it now.
+NAME: gatekeeper
+LAST DEPLOYED: Sat May 30 10:48:12 2026
+NAMESPACE: gatekeeper-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+pod/gatekeeper-audit-5956f4cf54-dwps6 condition met
+pod/gatekeeper-controller-manager-fb54cdc89-slq2p condition met
+pod/gatekeeper-controller-manager-fb54cdc89-srfbw condition met
+pod/gatekeeper-controller-manager-fb54cdc89-tpmrg condition met
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

@@ -1,0 +1,22 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/traefik-ingress.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Traefik pod Ready (3m max)
+pod/traefik-77657478fd-k72h5 condition met
+PASS: Traefik pod Ready
+==> Verifying IngressClass traefik is registered
+PASS: IngressClass traefik registered
+==> Waiting for product pod Ready (5m max)
+pod/sample-69469cb4c6-bmfgw condition met
+PASS: product pods Ready
+==> Verifying Ingress has spec.ingressClassName=traefik
+PASS: Ingress ingressClassName=traefik
+==> Verifying Ingress backend points at the product Service
+PASS: Ingress backend service=sample
+==> Getting Traefik pod IP (probe via pod IP)
+Traefik pod IP: 10.244.0.5
+==> Probing HTTP with matching Host header (expect 200) on container port 8000
+HTTP response (with Host): 200
+PASS: HTTP 200 with matching Host header
+==> Probing HTTP with non-matching Host header (expect 404) on container port 8000
+HTTP response (non-matching Host): 404
+PASS: HTTP 404 with non-matching Host header
+PASS: Traefik Ingress (className=traefik) integration verified end-to-end

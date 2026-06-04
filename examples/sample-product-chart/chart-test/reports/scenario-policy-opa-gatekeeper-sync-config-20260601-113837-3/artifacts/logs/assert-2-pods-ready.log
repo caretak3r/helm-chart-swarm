@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-bench-44 -n sample wait --for=condition=Ready pods --timeout=5m --all
+pod/sample-69469cb4c6-mmnd6 condition met
+PASS: pods Ready in ns/sample
+NAME                      READY   STATUS    RESTARTS   AGE
+sample-69469cb4c6-mmnd6   1/1     Running   0          3s

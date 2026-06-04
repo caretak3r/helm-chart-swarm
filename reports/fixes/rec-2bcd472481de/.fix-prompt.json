@@ -1,0 +1,7 @@
+{
+  "recommendation_id": "rec-2bcd472481de",
+  "fix_prompt": "# Fix Recommendation: rbac-on\n\n**Scenario:** `rbac-on`\n**Category:** chart-fix\n**Failure type:** rbac-objects\n**Affected objects:** ServiceAccount, RoleBinding\n\n## Failure Detail\n\nMissing ServiceAccount resource in chart templates\nMissing RoleBinding resource in chart templates\n\n## Suggested Fix\n\nAdd ServiceAccount and RoleBinding templates to the chart.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
+  "scenario_path": "rbac-on",
+  "chart_path": "examples/sample-product-chart/chart",
+  "created_at": "2026-06-03T22:58:21.764224+00:00"
+}

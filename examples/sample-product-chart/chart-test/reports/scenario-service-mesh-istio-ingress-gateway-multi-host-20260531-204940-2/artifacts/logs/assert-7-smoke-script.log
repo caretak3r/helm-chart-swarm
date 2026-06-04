@@ -1,0 +1,16 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-multi-host.sh (RELEASE=sample NAMESPACE=sample)
+==> Creating multi-host Istio Gateway + VirtualService
+gateway.networking.istio.io/sample-igw-multi created
+Warning: virtualService rule #1 match #0 is not used (duplicate/overlapping match in rule #0)
+Warning: virtualService rule #1 not used (all matches used by prior rules)
+virtualservice.networking.istio.io/sample-vs-multi created
+==> Waiting for istiod to reconcile Gateway + VirtualService (15s)
+==> Verifying Gateway resource is admitted
+  ✓ Gateway sample-igw-multi exists
+==> Getting istio-ingressgateway pod IP
+  Gateway pod IP: 10.244.0.6
+==> Probing skywatcher host through gateway
+  Skywatcher HTTP code: 200
+==> Probing api host through gateway
+  API HTTP code: 200
+PASS: multi-host routing through istio ingress gateway verified

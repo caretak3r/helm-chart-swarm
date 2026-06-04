@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-05-28T00:34:27.743Z",
+  "workerSessionId": "f7c26249-9bf8-47d5-a339-8595e96cfe29",
+  "featureId": "scrutiny-validator-engine-foundations",
+  "milestone": "engine-foundations",
+  "commitId": "0c5dac2cbd1b65677532936c192b85c309f4dd4c",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "successState": "failure",
+  "returnToOrchestrator": true,
+  "handoff": {
+    "salientSummary": "Synthesis: /Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/validation/engine-foundations/scrutiny/synthesis.json. Programmatic validators pass after restoring `pytest-xdist`, but scrutiny reviews still found blocking issues in `f1-1`, `f1-2`, `f1-3`, and `f1-4`, so the milestone remains failed and is returning to the orchestrator.",
+    "whatWasImplemented": "I ran the milestone validators from `services.yaml`, fixed the broken `commands.test` contract by adding `pytest-xdist` to `engine/testgrid/pyproject.toml` and `engine/testgrid/uv.lock`, re-ran the full validator set successfully, spawned five `scrutiny-feature-reviewer` subagents (one per completed engine-foundations feature), added `sweep_scenarios` and `orphan_audit` command aliases to mission `services.yaml`, and wrote the synthesized scrutiny report to `/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/validation/engine-foundations/scrutiny/synthesis.json`.",
+    "whatWasLeftUndone": "No implementation fixes were made for the remaining blocking review findings in `f1-1-minikube-backend`, `f1-2-raw-manifest-preinstall`, `f1-3-integration-category-reorg`, and `f1-4-reports-artifact-contract`; those need follow-up fix features before user-testing validation should proceed.",
+    "verification": {
+      "commandsRun": [
+        {
+          "command": "bash \"/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/init.sh\"",
+          "exitCode": 0,
+          "observation": "Init confirmed all 16 required tools were present, Docker Desktop reported 31 GiB available memory, `uv sync` completed for `engine/testgrid`, and no chart-test-swarm residue blocked the session."
+        },
+        {
+          "command": "bats /Users/rohit/Documents/chart-test-swarm/engine/scripts/tests /Users/rohit/Documents/chart-test-swarm/engine/asserts/tests && uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid pytest -n 2",
+          "exitCode": 4,
+          "observation": "All 81 bats tests passed, but the pytest portion failed immediately because `pytest` rejected `-n 2`; the environment lacked `pytest-xdist`, so the shared `commands.test` contract was broken before the scrutiny fix."
+        },
+        {
+          "command": "uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid mypy src/testgrid",
+          "exitCode": 0,
+          "observation": "Mypy reported `Success: no issues found in 4 source files`."
+        },
+        {
+          "command": "uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid ruff check src/testgrid && shellcheck /Users/rohit/Documents/chart-test-swarm/engine/scripts/*.sh /Users/rohit/Documents/chart-test-swarm/engine/asserts/*.sh && yamllint /Users/rohit/Documents/chart-test-swarm/engine/skills/chart-test-swarm/references/integrations /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios && helm lint /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart",
+          "exitCode": 0,
+          "observation": "Ruff, shellcheck, and yamllint all passed; `helm lint` completed with no failed charts and only the informational `Chart.yaml: icon is recommended` note."
+        },
+        {
+          "command": "uv sync --directory \"/Users/rohit/Documents/chart-test-swarm/engine/testgrid\"",
+          "exitCode": 0,
+          "observation": "After updating `pyproject.toml`, uv resolved and installed `pytest-xdist==3.8.0` and its `execnet==2.1.2` dependency, updating the lockfile accordingly."
+        },
+        {
+          "command": "bats /Users/rohit/Documents/chart-test-swarm/engine/scripts/tests /Users/rohit/Documents/chart-test-swarm/engine/asserts/tests && uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid pytest -n 2",
+          "exitCode": 0,
+          "observation": "The rerun passed end-to-end: 81 bats tests passed, pytest loaded the xdist plugin, created 2 workers, and reported `71 passed in 0.68s`."
+        },
+        {
+          "command": "uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid mypy src/testgrid",
+          "exitCode": 0,
+          "observation": "Final typecheck rerun again reported `Success: no issues found in 4 source files` after the dependency fix."
+        },
+        {
+          "command": "uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid ruff check src/testgrid && shellcheck /Users/rohit/Documents/chart-test-swarm/engine/scripts/*.sh /Users/rohit/Documents/chart-test-swarm/engine/asserts/*.sh && yamllint /Users/rohit/Documents/chart-test-swarm/engine/skills/chart-test-swarm/references/integrations /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios && helm lint /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart",
+          "exitCode": 0,
+          "observation": "Final lint rerun remained clean with the same non-failing helm icon recommendation."
+        },
+        {
+          "command": "bash \"/Users/rohit/Documents/chart-test-swarm/engine/scripts/orphan-audit.sh\"",
+          "exitCode": 0,
+          "observation": "The orphan audit reported zero `chart-test-swarm-*` kind clusters, zero minikube profiles, and zero Docker containers."
+        },
+        {
+          "command": "jq '.status, .reviewsSummary.failedFeatures' \"/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/validation/engine-foundations/scrutiny/synthesis.json\"",
+          "exitCode": 0,
+          "observation": "Validated that `synthesis.json` is parseable JSON and recorded status `fail` with failed features `f1-1-minikube-backend`, `f1-2-raw-manifest-preinstall`, `f1-3-integration-category-reorg`, and `f1-4-reports-artifact-contract`."
+        }
+      ]
+    },
+    "tests": {
+      "added": [],
+      "updated": [],
+      "coverage": "No new tests were added by the scrutiny validator; coverage came from the milestone validator suite (81 bats tests, 71 pytest tests, mypy, ruff, shellcheck, yamllint, helm lint) plus five feature review reports under `validation/engine-foundations/scrutiny/reviews/`."
+    },
+    "discoveredIssues": [
+      {
+        "severity": "blocking",
+        "description": "`f1-1-minikube-backend`: `engine/scripts/cluster-up.sh` restores the saved kube context on EXIT, so `run-scenario.sh` can execute later kubectl/helm steps against the caller's previous cluster instead of the freshly created chart-test-swarm cluster.",
+        "suggestedFix": "Keep the scenario workflow pinned to the newly created context (or pass explicit `--context` everywhere) and only restore the caller context after the full scenario lifecycle is complete."
+      },
+      {
+        "severity": "blocking",
+        "description": "`f1-1-minikube-backend`: `engine/scripts/run-scenario.sh` only tears down failed/interrupted runs when `KEEP_CLUSTER=0`, which violates the feature's required failure/interrupt cleanup behavior.",
+        "suggestedFix": "Always tear down on failure and signal paths, and reserve `KEEP_CLUSTER=1` only for successful runs or an explicitly documented debug mode."
+      },
+      {
+        "severity": "blocking",
+        "description": "`f1-2-raw-manifest-preinstall`: `engine/scripts/apply-scenario.sh` adds `--namespace` for `raw_manifest` items but never creates that namespace first, so namespaced raw-manifest scenarios fail on a fresh cluster.",
+        "suggestedFix": "Mirror the helm preinstall path by creating the target namespace when a raw-manifest item declares one and it does not already exist."
+      },
+      {
+        "severity": "blocking",
+        "description": "`f1-3-integration-category-reorg`: `engine/testgrid/tests/test_integration_reorg.py` hard-codes pre-reorg SHA-256 hashes for moved primers, which will make valid later primer rewrites fail.",
+        "suggestedFix": "Replace the permanent hash freeze with a one-time migration assertion or a structural reorg check that does not block later intentional content changes."
+      },
+      {
+        "severity": "blocking",
+        "description": "`f1-4-reports-artifact-contract`: the artifact bundle is not replayable from `artifacts/` alone because `scenario.yaml` keeps source-tree-relative references and the bundle does not vendor enough inputs to reproduce the release from `PROJECT_DIR=<artifacts>`.",
+        "suggestedFix": "Vendor the chart and referenced fixtures into the artifact bundle (or rewrite the scenario to point at vendored copies) and verify replay with an actual `apply-scenario.sh` run from the copied artifacts directory."
+      },
+      {
+        "severity": "blocking",
+        "description": "`f1-4-reports-artifact-contract`: `artifacts/applied-overrides.yaml` does not materialize one final merged `helm_values` map; it appends separate values-file and `product.set` fragments, leaving the artifact ambiguous when both sources are present.",
+        "suggestedFix": "Compute the final merged override mapping before writing the artifact, for example via `yq` merge logic or a Helm-rendered values synthesis step."
+      }
+    ],
+    "skillFeedback": {
+      "followedProcedure": true,
+      "deviations": [],
+      "suggestedChanges": [
+        "Clarify whether scrutiny reviewers should always assess the current working tree or the original feature commit when the validator lands a small local fix during the scrutiny pass.",
+        "Consider documenting an explicit fallback when an auxiliary reviewer droid (for example `python-reviewer`) is misconfigured, so validators know whether to retry, substitute another reviewer, or just record the environment issue."
+      ]
+    }
+  }
+}

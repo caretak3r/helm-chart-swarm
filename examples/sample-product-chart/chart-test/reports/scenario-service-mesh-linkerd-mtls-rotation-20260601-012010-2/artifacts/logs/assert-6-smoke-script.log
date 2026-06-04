@@ -1,0 +1,17 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-mtls-rotation.sh (RELEASE=sample NAMESPACE=sample)
+==> Annotating namespace sample for linkerd injection
+namespace/sample annotated
+==> Restarting deployments to pick up proxy injection
+deployment.apps/sample restarted
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+deployment.apps/sample-scope restarted
+Waiting for deployment "sample-scope" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+deployment "sample-scope" successfully rolled out
+==> Verifying linkerd-proxy sidecar injected
+  ✓ Pod sample-6b5947d69c-668g5: linkerd-proxy sidecar present
+  ✓ Pod sample-scope-59cb8b89df-4dmsw: linkerd-proxy sidecar present
+FAIL: Pod sample-scope-c689dc867-ksvg2 missing linkerd-proxy sidecar

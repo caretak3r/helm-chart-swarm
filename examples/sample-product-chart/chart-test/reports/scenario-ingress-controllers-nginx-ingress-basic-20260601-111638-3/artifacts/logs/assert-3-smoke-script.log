@@ -1,0 +1,15 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-basic.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for nginx controller pod Ready (3m max)
+pod/ingress-nginx-controller-d74c658c5-2fjcf condition met
+PASS: nginx controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-mj4xx condition met
+PASS: product pods Ready
+==> Verifying Ingress exists with ingressClassName: nginx
+Ingress class: nginx
+PASS: Ingress carries ingressClassName: nginx
+==> Getting nginx controller pod IP
+NGINX pod IP: 10.244.0.6
+==> Probing HTTP with Host header (expect 200)
+HTTP response (with Host): 503
+FAIL: expected HTTP 200 with Host header, got 503

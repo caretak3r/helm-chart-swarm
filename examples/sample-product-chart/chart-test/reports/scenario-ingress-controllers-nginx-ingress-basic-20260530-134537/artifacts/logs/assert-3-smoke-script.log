@@ -1,0 +1,18 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-basic.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for nginx controller pod Ready (3m max)
+pod/ingress-nginx-controller-d74c658c5-dmqr8 condition met
+PASS: nginx controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-bwd27 condition met
+PASS: product pods Ready
+==> Verifying Ingress exists with ingressClassName: nginx
+Ingress class: nginx
+PASS: Ingress carries ingressClassName: nginx
+==> Getting nginx controller pod IP
+NGINX pod IP: 10.244.0.6
+==> Probing HTTP with Host header (expect 200)
+HTTP response (with Host): 200
+PASS: HTTP 200 with Host header
+==> Verifying nginx controller logs show request matched product Service
+PASS: controller logs reference product Service 'sample'
+PASS: NGINX Ingress basic integration verified

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — run history</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— Run History</span></h1>
+    <p class="hint">Scenario-based regression dashboard for product Helm charts.</p>
+  </div>
+<nav class="top-nav" aria-label="Main navigation">
+  <a href="home.html"
+     class="nav-item"
+>Home</a>
+  <a href="getting-started.html"
+     class="nav-item"
+>Getting Started</a>
+  <a href="support-matrix.html"
+     class="nav-item"
+>Matrix</a>
+  <a href="runs.html"
+     class="nav-item nav-active"
+aria-current="page">Runs</a>
+  <a href="recommendations.html"
+     class="nav-item"
+>Recommendations</a>
+  <a href="versions.html"
+     class="nav-item"
+>Versions</a>
+</nav></header>
+
+<section class="runs">
+  <h2>Runs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Run</th>
+        <th>Time (UTC)</th>
+        <th>Project</th>
+        <th>Chart</th>
+        <th>Suite</th>
+        <th>Scenarios</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="run-20260531-230537/index.html"><code>run-20260531-230537</code></a></td>
+        <td>2026-05-31T23:05:37Z</td>
+        <td>—</td>
+        <td><code>—</code></td>
+        <td>ingress-traefik</td>
+        <td>1</td>
+        <td class="status-cell">
+            <span class="badge status-pass">PASS · 1</span>
+        </td>
+      </tr>
+      <tr>
+        <td><a href="run-20260520-101500/index.html"><code>run-20260520-101500</code></a></td>
+        <td>2026-05-20T10:15:00Z</td>
+        <td>sample-product-chart</td>
+        <td><code>sample-product:0.1.0</code></td>
+        <td>nightly-full</td>
+        <td>5</td>
+        <td class="status-cell">
+            <span class="badge status-pass">PASS · 4</span>
+            <span class="badge status-fail">FAIL · 1</span>
+        </td>
+      </tr>
+      <tr>
+        <td><a href="run-20260519-090000/index.html"><code>run-20260519-090000</code></a></td>
+        <td>2026-05-19T09:00:00Z</td>
+        <td>sample-product-chart</td>
+        <td><code>sample-product:0.1.0</code></td>
+        <td>pr-subset</td>
+        <td>3</td>
+        <td class="status-cell">
+            <span class="badge status-pass">PASS · 2</span>
+            <span class="badge status-partial">PARTIAL · 1</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+{
+  "milestone": "engine-foundations",
+  "round": 1,
+  "status": "fail",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "bats /Users/rohit/Documents/chart-test-swarm/engine/scripts/tests /Users/rohit/Documents/chart-test-swarm/engine/asserts/tests && uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid pytest -n 2",
+      "exitCode": 0
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid mypy src/testgrid",
+      "exitCode": 0
+    },
+    "lint": {
+      "passed": true,
+      "command": "uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid ruff check src/testgrid && shellcheck /Users/rohit/Documents/chart-test-swarm/engine/scripts/*.sh /Users/rohit/Documents/chart-test-swarm/engine/asserts/*.sh && yamllint /Users/rohit/Documents/chart-test-swarm/engine/skills/chart-test-swarm/references/integrations /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios && helm lint /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart",
+      "exitCode": 0
+    }
+  },
+  "reviewsSummary": {
+    "total": 5,
+    "passed": 1,
+    "failed": 4,
+    "failedFeatures": [
+      "f1-1-minikube-backend",
+      "f1-2-raw-manifest-preinstall",
+      "f1-3-integration-category-reorg",
+      "f1-4-reports-artifact-contract"
+    ]
+  },
+  "blockingIssues": [
+    {
+      "featureId": "f1-1-minikube-backend",
+      "severity": "blocking",
+      "description": "engine/scripts/cluster-up.sh restores the saved kube context on EXIT, so run-scenario.sh can execute later kubectl/helm steps against the caller's previous cluster instead of the freshly created chart-test-swarm-* cluster."
+    },
+    {
+      "featureId": "f1-1-minikube-backend",
+      "severity": "blocking",
+      "description": "engine/scripts/run-scenario.sh only tears down failed or interrupted runs when KEEP_CLUSTER=0, leaving chart-test-swarm-* clusters behind on failure/interrupt paths despite the feature contract's cleanup requirement."
+    },
+    {
+      "featureId": "f1-2-raw-manifest-preinstall",
+      "severity": "blocking",
+      "description": "engine/scripts/apply-scenario.sh appends --namespace for raw_manifest preinstalls but never creates that namespace first, so namespaced raw-manifest scenarios (VAL-ENGINE-008) fail on a fresh cluster."
+    },
+    {
+      "featureId": "f1-3-integration-category-reorg",
+      "severity": "blocking",
+      "description": "engine/testgrid/tests/test_integration_reorg.py freezes primer content with pre-reorg SHA-256 hashes, which turns valid future primer rewrites in later milestones into false failures."
+    },
+    {
+      "featureId": "f1-4-reports-artifact-contract",
+      "severity": "blocking",
+      "description": "The artifact bundle is not replayable from artifacts/ alone: scenario.yaml keeps source-tree-relative product.chart/fixture references and apply-scenario.sh does not have enough vendored inputs to reproduce the original release from PROJECT_DIR=<artifacts>."
+    },
+    {
+      "featureId": "f1-4-reports-artifact-contract",
+      "severity": "blocking",
+      "description": "artifacts/applied-overrides.yaml does not contain one final merged helm_values map; it appends separate values-file and product.set fragments, so scenarios that use both sources yield an ambiguous/non-flattened artifact shape."
+    }
+  ],
+  "appliedUpdates": [
+    {
+      "target": "services.yaml",
+      "description": "Added commands.sweep_scenarios and commands.orphan_audit so future validators can invoke the new F1.5 schema-sweep and orphan-audit scripts via shared state.",
+      "sourceFeature": "f1-5-repo-test-scaffolding"
+    }
+  ],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "skills/engine-bash/SKILL.md",
+      "suggestion": "Replace `jsonschema -i <scenario.yaml>` guidance with the repo's actual YAML-validation flow (`check-jsonschema` or a documented YAML-to-JSON bridge), require end-to-end `run-scenario.sh` / artifact replay checks for cluster or artifact features, and require `skillFeedback.followedProcedure=false` when live validation is skipped.",
+      "evidence": "F1.1, F1.2, and F1.4 all missed runtime defects after workers relied on structural checks or skipped required live validation; reviewers also found the shared `jsonschema` guidance stale.",
+      "isSystemic": true
+    },
+    {
+      "target": "library/environment.md + library/user-testing.md",
+      "suggestion": "Update shared validator guidance to reflect the repo's actual schema-sweep toolchain (`check-jsonschema`, not raw `jsonschema` against YAML) and the now-required `pytest-xdist` dependency for `pytest -n 2`.",
+      "evidence": "F1.1/F1.5 reviewers found the library still directs validators to `jsonschema`, and scrutiny had to add `pytest-xdist` locally before the declared `commands.test` contract would pass.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Clarify that cluster names come only from the `CLUSTER_NAME` environment variable, not from the scenario schema, and align any references that say the schema rejects unprefixed cluster names.",
+      "evidence": "F1.1 review found the feature contract and validation docs still mix schema-level cluster-name validation with the documented env-var-only design.",
+      "isSystemic": false
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Resolve the contradiction between `KEEP_CLUSTER=1` as the default debug behavior and the mission-wide expectation that failed/interrupted runs leave no chart-test-swarm-* clusters behind.",
+      "evidence": "F1.1 review found runtime cleanup expectations split across feature text, validation contract, AGENTS.md, and library/environment.md.",
+      "isSystemic": true
+    },
+    {
+      "target": "skills/testgrid-python/SKILL.md",
+      "suggestion": "Either stop routing cross-cutting shell/YAML harness work through `testgrid-python`, or add instructions to run the shared milestone gate commands when a feature explicitly owns repo-wide test scaffolding.",
+      "evidence": "F1.5 was assigned the Python-centric skill even though its contract spanned shell, YAML, and repo-wide gates; the original worker only ran plain pytest while claiming the milestone commands passed.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Align the written scenario-YAML convention with the enforced lint policy by either requiring document-start markers in `.yamllint` or removing the `---` requirement from worker guidance.",
+      "evidence": "F1.5 review found mission AGENTS.md requires `---` on scenario YAMLs while the committed `.yamllint` disables `document-start`.",
+      "isSystemic": true
+    },
+    {
+      "target": "validation-contract.md / features.json",
+      "suggestion": "Align Envoy Gateway primer path/name references with the post-reorg location used in the repo so workers and validators are checking the same file.",
+      "evidence": "F1.2 review found feature/validation text referencing `gateway-api/envoy-gateway.md` while the repo and later mission state use `gateway-api/gateway-api.md`.",
+      "isSystemic": false
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "Add a shared-state note that F1.3's primer hashes are only a one-time reorg check.",
+      "reason": "The blocker is a code defect in `test_integration_reorg.py`, not a reusable shared-state rule; it should be fixed in code rather than documented around."
+    },
+    {
+      "observation": "Add new guidance telling workers to stage only feature-owned paths when the repo starts dirty.",
+      "reason": "Ambiguous and largely already covered by existing git/untracked safety rules; the concrete problem is specific commit hygiene captured in the feature review."
+    },
+    {
+      "observation": "Document each individual worker's incorrect `followedProcedure: true` entry as a separate guidance update.",
+      "reason": "Duplicate of the broader engine-bash guidance recommendation about mandatory live-validation deviations and honest skill-feedback reporting."
+    }
+  ],
+  "previousRound": null
+}

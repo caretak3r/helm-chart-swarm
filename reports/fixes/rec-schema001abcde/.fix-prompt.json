@@ -1,0 +1,7 @@
+{
+  "recommendation_id": "rec-schema001abcde",
+  "fix_prompt": "# Fix Recommendation: unknown-assert-type\n\n**Scenario:** `unknown-assert-type`\n**Category:** schema-missing\n\nAdd the missing value to values.yaml.",
+  "scenario_path": "unknown-assert-type",
+  "chart_path": "examples/sample-product-chart/chart",
+  "created_at": "2026-06-03T22:58:21.764224+00:00"
+}

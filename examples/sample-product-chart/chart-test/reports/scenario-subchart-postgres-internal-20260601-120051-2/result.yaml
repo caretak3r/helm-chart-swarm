@@ -1,0 +1,11 @@
+scenario_id: subchart-postgres-internal
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/subchart-postgres-internal.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T16:00:52Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-subchart-postgres-internal-20260601-120051-2/artifacts/logs/product-install.log
+finished_at: 2026-06-01T16:06:17Z

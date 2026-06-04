@@ -1,0 +1,79 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/ingress-controllers/nginx-default-backend.yaml in ns/ingress-nginx
+namespace/ingress-nginx created
+namespace/ingress-nginx serverside-applied
+deployment.apps/custom-default-backend serverside-applied
+configmap/custom-default-backend-config serverside-applied
+service/custom-default-backend serverside-applied
+
+==> [2/3] kind=helm
+    helm: ingress-nginx (ingress-nginx/ingress-nginx @ 4.10.0) in ns/ingress-nginx
+    repo 'ingress-nginx' already exists with URL https://kubernetes.github.io/ingress-nginx (skipping add)
+Release "ingress-nginx" does not exist. Installing it now.
+NAME: ingress-nginx
+LAST DEPLOYED: Sat May 30 14:12:40 2026
+NAMESPACE: ingress-nginx
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The ingress-nginx controller has been installed.
+Get the application URL by running these commands:
+  export HTTP_NODE_PORT=$(kubectl get service --namespace ingress-nginx ingress-nginx-controller --output jsonpath="{.spec.ports[0].nodePort}")
+  export HTTPS_NODE_PORT=$(kubectl get service --namespace ingress-nginx ingress-nginx-controller --output jsonpath="{.spec.ports[1].nodePort}")
+  export NODE_IP="$(kubectl get nodes --output jsonpath="{.items[0].status.addresses[1].address}")"
+
+  echo "Visit http://${NODE_IP}:${HTTP_NODE_PORT} to access your application via HTTP."
+  echo "Visit https://${NODE_IP}:${HTTPS_NODE_PORT} to access your application via HTTPS."
+
+An example Ingress that makes use of the controller:
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: example
+    namespace: foo
+  spec:
+    ingressClassName: nginx
+    rules:
+      - host: www.example.com
+        http:
+          paths:
+            - pathType: Prefix
+              backend:
+                service:
+                  name: exampleService
+                  port:
+                    number: 80
+              path: /
+    # This section is only required if TLS is to be enabled for the Ingress
+    tls:
+      - hosts:
+        - www.example.com
+        secretName: example-tls
+
+If TLS is enabled for the Ingress, a Secret containing the certificate and key must also be provided:
+
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: example-tls
+    namespace: foo
+  data:
+    tls.crt: <base64 encoded cert>
+    tls.key: <base64 encoded key>
+  type: kubernetes.io/tls
+pod/custom-default-backend-6f9895b6b7-wsnnh condition met
+pod/ingress-nginx-controller-765bc57f9-c9bbr condition met
+
+==> [3/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/ingress-controllers/nginx-basic-ingress.yaml in ns/sample
+namespace/sample created
+ingress.networking.k8s.io/sample-basic serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

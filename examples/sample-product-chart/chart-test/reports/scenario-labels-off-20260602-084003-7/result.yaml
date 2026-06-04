@@ -1,0 +1,14 @@
+scenario_id: labels-off
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/labels-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T12:40:04Z
+provider: kind
+asserts:
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/labels-absent.sh (RELEASE=sample NAMESPACE=sample)
+      PASS: all 3 rendered objects are free of the configured extra-label keys
+status: PASS
+finished_at: 2026-06-02T12:40:35Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-labels-off-20260602-084003-7/artifacts/logs

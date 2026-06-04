@@ -1,0 +1,57 @@
+kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+timed out waiting for the condition on pods/grpc-backend-6d76f6dc9c-rb2lz
+timed out waiting for the condition on pods/sample-7dcd986bd4-ghn7d
+FAIL: pods not Ready in ns/sample within 5m
+NAME                            READY   STATUS             RESTARTS   AGE
+grpc-backend-6d76f6dc9c-rb2lz   0/1     ImagePullBackOff   0          5m3s
+sample-7dcd986bd4-ghn7d         1/1     Running            0          5m3s
+Node:             chart-test-swarm-default-control-plane/172.20.0.3
+Start Time:       Sat, 30 May 2026 20:15:56 -0400
+Labels:           app=sample
+                  app.kubernetes.io/component=skywatcher
+                  app.kubernetes.io/instance=sample
+                  app.kubernetes.io/managed-by=Helm
+                  app.kubernetes.io/name=sample-product
+                  app.kubernetes.io/version=1.0.0
+                  helm.sh/chart=sample-product-0.1.0
+                  pod-template-hash=7dcd986bd4
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.8
+IPs:
+  IP:           10.244.0.8
+Controlled By:  ReplicaSet/sample-7dcd986bd4
+Containers:
+  app:
+    Container ID:   containerd://e2466653c977047f313de3dcd3a139ae2effd7665e83111e108c74d91951540e
+    Image:          nginx:1.27-alpine
+    Image ID:       docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Sat, 30 May 2026 20:15:58 -0400
+    Ready:          True
+    Restart Count:  0
+    Liveness:       http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:      http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-m7dg9 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-m7dg9:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s

@@ -1,0 +1,11 @@
+scenario_id: certificates-cert-manager-jks-pkcs12
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/certificates-cert-manager-jks-pkcs12.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T14:36:31Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-cert-manager-jks-pkcs12-20260601-103631-11/artifacts/logs/preinstall.log
+finished_at: 2026-06-01T14:39:58Z

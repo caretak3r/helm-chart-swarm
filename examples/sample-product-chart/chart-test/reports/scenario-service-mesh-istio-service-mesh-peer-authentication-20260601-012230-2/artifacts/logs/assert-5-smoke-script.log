@@ -1,0 +1,51 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-peer-authentication.sh (RELEASE=sample NAMESPACE=sample)
+==> Labeling namespace sample for istio injection
+namespace/sample labeled
+==> Restarting deployments to pick up sidecar injection
+  Restarting deployment/sample
+deployment.apps/sample restarted
+  Waiting for rollout of deployment/sample to complete (3m max)
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+PASS: all deployments rolled out with sidecars
+==> Creating non-mesh namespace sample-plain (no injection label)
+namespace/sample-plain created
+==> Creating non-mesh probe pod in sample-plain
+pod/ct-nonmesh created
+pod/ct-nonmesh condition met
+==> Creating in-mesh probe pod in sample with sidecar
+pod/ct-mesh-probe created
+  Waiting for in-mesh probe pod to be ready (2m max)
+pod/ct-mesh-probe condition met
+==> Phase 1: Applying PeerAuthentication PERMISSIVE
+peerauthentication.security.istio.io/sample-perm created
+==> Verifying PeerAuthentication PERMISSIVE
+PeerAuthentication mode: PERMISSIVE
+PASS: PeerAuthentication mode is PERMISSIVE
+==> Waiting 10s for policy propagation
+==> Phase 1a: Non-mesh probe under PERMISSIVE (expect 200)
+Non-mesh HTTP under PERMISSIVE: 200
+PASS: non-mesh traffic allowed under PERMISSIVE
+==> Phase 1b: In-mesh probe under PERMISSIVE (expect 200)
+In-mesh HTTP under PERMISSIVE: 200
+PASS: in-mesh traffic allowed under PERMISSIVE
+==> Phase 2: Updating PeerAuthentication to STRICT
+peerauthentication.security.istio.io/sample-perm configured
+==> Verifying PeerAuthentication STRICT
+PeerAuthentication mode: STRICT
+PASS: PeerAuthentication updated to STRICT
+==> Waiting 10s for mTLS policy propagation
+==> Phase 2a: Non-mesh probe under STRICT (expect rejection)
+Non-mesh HTTP under STRICT: 000
+PASS: non-mesh traffic rejected under STRICT (code=000)
+==> Phase 2b: In-mesh probe under STRICT (expect 200)
+In-mesh HTTP under STRICT: 200
+PASS: in-mesh traffic still works under STRICT via auto-upgraded mTLS
+==> Cleaning up pods and control namespace
+pod "ct-nonmesh" deleted from sample-plain namespace
+error: timed out waiting for the condition on pods/ct-nonmesh
+pod "ct-mesh-probe" deleted from sample namespace
+error: timed out waiting for the condition on pods/ct-mesh-probe
+namespace "sample-plain" deleted
+PASS: istio PeerAuthentication lifecycle verified

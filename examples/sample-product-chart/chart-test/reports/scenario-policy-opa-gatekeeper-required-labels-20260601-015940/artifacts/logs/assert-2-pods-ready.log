@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-gk-rl -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+pod/ingress-nginx-controller-d74c658c5-6rsv7 condition met
+PASS: pods Ready in ns/ingress-nginx
+NAME                                       READY   STATUS    RESTARTS   AGE
+ingress-nginx-controller-d74c658c5-6rsv7   1/1     Running   0          30s

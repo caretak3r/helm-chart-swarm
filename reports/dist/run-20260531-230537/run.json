@@ -1,0 +1,57 @@
+{
+  "run_id": "run-20260531-230537",
+  "timestamp_utc": "2026-05-31T23:05:37Z",
+  "num_agents": 1,
+  "project_name": "",
+  "chart_name": "",
+  "chart_version": "",
+  "suite": "ingress-traefik",
+  "cluster_provider": "kind",
+  "k8s_version": "v1.30.0",
+  "scenarios": [
+    {
+      "id": "ingress-controllers-traefik-basic",
+      "name": "Traefik basic IngressRoute",
+      "description": "Installs Traefik, creates an IngressRoute for the product Service, and verifies HTTP routing.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "traefik"
+      ],
+      "mechanisms": [
+        "addon:traefik",
+        "ingress:ingressroute"
+      ],
+      "tags": [
+        "ingress"
+      ],
+      "labels": {
+        "profile": "ingress"
+      },
+      "status": "PASS",
+      "asserts": [
+        {
+          "type": "pods-ready",
+          "status": "PASS",
+          "notes": "All pods ready"
+        }
+      ],
+      "duration_s": 120.5,
+      "agent": 0,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {
+        "scenario": "ingress-controllers-traefik-basic/artifacts/scenario.yaml",
+        "overrides": "ingress-controllers-traefik-basic/artifacts/applied-overrides.yaml",
+        "fixtures": [
+          "ingress-controllers-traefik-basic/artifacts/fixtures/test-ingress.yaml"
+        ],
+        "manifests": [
+          "ingress-controllers-traefik-basic/artifacts/manifests/deployment.yaml",
+          "ingress-controllers-traefik-basic/artifacts/manifests/service.yaml"
+        ]
+      },
+      "artifact_dir": "/Users/rohit/Documents/chart-test-swarm/reports/run-20260531-230537/agent-0/artifacts"
+    }
+  ]
+}

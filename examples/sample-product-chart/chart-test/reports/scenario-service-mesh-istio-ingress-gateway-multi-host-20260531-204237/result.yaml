@@ -1,0 +1,11 @@
+scenario_id: service-mesh-istio-ingress-gateway-multi-host
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-istio-ingress-gateway-multi-host.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T00:42:37Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-ingress-gateway-multi-host-20260531-204237/artifacts/logs/product-install.log
+finished_at: 2026-06-01T00:48:15Z

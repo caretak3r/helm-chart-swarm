@@ -1,0 +1,82 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-05-31T22:41:03Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "683"
+    uid: 54034be1-a2ae-4292-8536-cf142eddb33c
+  spec:
+    clusterIP: 10.96.118.248
+    clusterIPs:
+    - 10.96.118.248
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2026-05-31T22:41:07Z"
+    labels:
+      gateway.istio.io/managed: istio.io-gateway-controller
+      gateway.networking.k8s.io/gateway-name: sample-gw
+    name: sample-gw-istio
+    namespace: sample
+    ownerReferences:
+    - apiVersion: gateway.networking.k8s.io/v1beta1
+      kind: Gateway
+      name: sample-gw
+      uid: a6a49d26-e6e8-4cf2-8a6c-12fa858aeab1
+    resourceVersion: "788"
+    uid: 22290121-e5dc-45db-9562-598f06f71c7e
+  spec:
+    allocateLoadBalancerNodePorts: true
+    clusterIP: 10.96.27.33
+    clusterIPs:
+    - 10.96.27.33
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: PreferDualStack
+    ports:
+    - appProtocol: tcp
+      name: status-port
+      nodePort: 31003
+      port: 15021
+      protocol: TCP
+      targetPort: 15021
+    - appProtocol: http
+      name: http
+      nodePort: 32227
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      gateway.networking.k8s.io/gateway-name: sample-gw
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

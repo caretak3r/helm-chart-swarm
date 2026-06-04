@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-utmesh6 -n linkerd-multicluster wait --for=condition=Ready pods --timeout=3m --all
+pod/linkerd-gateway-6b546df458-62jdq condition met
+PASS: pods Ready in ns/linkerd-multicluster
+NAME                               READY   STATUS    RESTARTS   AGE
+linkerd-gateway-6b546df458-62jdq   1/1     Running   0          74s

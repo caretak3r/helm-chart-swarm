@@ -1,0 +1,66 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-live.sh (RELEASE=sample NAMESPACE=sample)
+==> VAL-MSH-009: Verifying linkerd control-plane pods are Ready
+  ✓ linkerd control-plane pods are Ready
+==> VAL-MSH-009: Verifying linkerd-proxy-injector MutatingWebhookConfiguration
+  ✓ linkerd-proxy-injector webhook present: mutatingwebhookconfiguration.admissionregistration.k8s.io/linkerd-proxy-injector-webhook-config
+==> VAL-MSH-010: Verifying namespace sample is annotated linkerd.io/inject=enabled
+  ✓ Namespace sample annotated linkerd.io/inject=enabled
+==> VAL-MSH-010: Verifying product pods have linkerd-proxy sidecar
+  Pod sample-7dcd986bd4-82f7w (deploy/sample) containers (2): linkerd-proxy app
+    ✓ linkerd-proxy sidecar present
+PASS: every Running product pod has linkerd-proxy sidecar
+  Capturing pod manifest with linkerd-proxy sidecar to artifacts
+==> VAL-MSH-011: Setting up RBAC for linkerd check probe
+serviceaccount/ct-linkerd-check created
+clusterrole.rbac.authorization.k8s.io/ct-linkerd-check created
+clusterrolebinding.rbac.authorization.k8s.io/ct-linkerd-check created
+  ✓ RBAC service account ct-linkerd-check created
+==> VAL-MSH-011: Running linkerd check --proxy -n sample
+pod/ct-linkerd-live-check created
+  Waiting for linkerd check pod (3m max)
+  Check pod phase: Failed
+  linkerd check output (last 30 lines):
+	* sample-7dcd986bd4-82f7w (stable-2.14.10)
+    see https://linkerd.io/2.14/checks/#l5d-data-plane-version for hints
+√ data plane and cli versions match
+√ data plane pod labels are configured correctly
+‼ data plane service labels are configured correctly
+    services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" in the namespace "sample"
+    see https://linkerd.io/2.14/checks/#l5d-data-plane-services-labels for hints
+‼ data plane service annotations are configured correctly
+    services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" in the namespace "sample"
+    see https://linkerd.io/2.14/checks/#l5d-data-plane-services-annotations for hints
+W0602 17:55:16.533105      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+E0602 17:55:16.534367      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Service: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+W0602 17:55:16.933599      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+E0602 17:55:16.933676      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Endpoints: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+W0602 17:55:17.746433      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+E0602 17:55:17.746510      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Endpoints: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+W0602 17:55:18.062689      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+E0602 17:55:18.062745      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Service: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+W0602 17:55:20.216487      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+E0602 17:55:20.216696      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Service: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+W0602 17:55:20.590393      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+E0602 17:55:20.590495      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Endpoints: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+W0602 17:55:24.183225      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+E0602 17:55:24.183310      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Endpoints: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+W0602 17:55:24.310915      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+E0602 17:55:24.310980      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Service: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+W0602 17:55:34.584097      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+E0602 17:55:34.584172      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Endpoints: failed to list *v1.Endpoints: endpoints is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "endpoints" in API group "" at the cluster scope
+W0602 17:55:35.582386      15 reflector.go:539] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+E0602 17:55:35.582521      15 reflector.go:147] pkg/mod/k8s.io/client-go@v0.29.0/tools/cache/reflector.go:229: Failed to watch *v1.Service: failed to list *v1.Service: services is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "services" in API group "" at the cluster scope
+WARN: linkerd check --proxy did not exit 0 or produce expected output
+  Checking alternative indicators...
+  ✓ All linkerd-proxy containers are ready
+  ✓ linkerd-identity deployment is Available
+pod "ct-linkerd-live-check" deleted from sample namespace
+clusterrolebinding.rbac.authorization.k8s.io "ct-linkerd-check" deleted
+clusterrole.rbac.authorization.k8s.io "ct-linkerd-check" deleted
+serviceaccount "ct-linkerd-check" deleted from sample namespace
+
+PASS: Linkerd LIVE service mesh integration verified
+  - Control-plane pods Ready, proxy-injector webhook present
+  - Namespace annotated linkerd.io/inject=enabled
+  - Product pods have linkerd-proxy sidecar
+  - linkerd check --proxy -n sample healthy

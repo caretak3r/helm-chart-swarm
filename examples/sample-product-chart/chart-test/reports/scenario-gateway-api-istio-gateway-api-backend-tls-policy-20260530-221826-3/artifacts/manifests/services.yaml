@@ -1,0 +1,86 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-05-31T02:19:00Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "644"
+    uid: bc53edb3-d152-4a48-abcd-47eb390dbbd4
+  spec:
+    clusterIP: 10.96.116.8
+    clusterIPs:
+    - 10.96.116.8
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 443
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2026-05-31T02:19:04Z"
+    labels:
+      gateway.istio.io/managed: istio.io-gateway-controller
+      gateway.networking.k8s.io/gateway-name: sample-gw
+    name: sample-gw-istio
+    namespace: sample
+    ownerReferences:
+    - apiVersion: gateway.networking.k8s.io/v1beta1
+      kind: Gateway
+      name: sample-gw
+      uid: ed02a0f6-2678-4064-a544-f79c27de69f0
+    resourceVersion: "743"
+    uid: afe8498d-83ec-4b98-b5fa-c2f7099334eb
+  spec:
+    allocateLoadBalancerNodePorts: true
+    clusterIP: 10.96.127.76
+    clusterIPs:
+    - 10.96.127.76
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: PreferDualStack
+    ports:
+    - appProtocol: tcp
+      name: status-port
+      nodePort: 31496
+      port: 15021
+      protocol: TCP
+      targetPort: 15021
+    - appProtocol: http
+      name: http
+      nodePort: 31109
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      gateway.networking.k8s.io/gateway-name: sample-gw
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

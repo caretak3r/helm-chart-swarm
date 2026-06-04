@@ -1,0 +1,13 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-jks-pkcs12.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Certificate 'sample-jks-tls' Ready (3m max)
+certificate.cert-manager.io/sample-jks-tls condition met
+PASS: Certificate Ready=True
+==> Extracting cert and key, creating PKCS12 bundle
+==> Storing PKCS12 bundle as Secret 'sample-jks-bundle'
+secret/sample-jks-bundle created
+==> Verifying JKS/PKCS12 Secret keys
+Bundle keys: keystore.p12
+tls.crt
+tls.key
+OK: keystore.p12, tls.crt, tls.key all present
+FAIL: PKCS12 bundle not readable

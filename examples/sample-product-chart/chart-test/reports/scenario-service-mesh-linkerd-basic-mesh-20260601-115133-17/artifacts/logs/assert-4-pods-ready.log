@@ -1,0 +1,9 @@
+kubectl --context kind-chart-test-swarm-bench-54 -n linkerd wait --for=condition=Ready pods --timeout=10m --all
+pod/linkerd-destination-958bc577c-vt24h condition met
+pod/linkerd-identity-58c8f4b44d-lf7q2 condition met
+pod/linkerd-proxy-injector-6bdcffcbcb-ppnrf condition met
+PASS: pods Ready in ns/linkerd
+NAME                                      READY   STATUS    RESTARTS   AGE
+linkerd-destination-958bc577c-vt24h       4/4     Running   0          64s
+linkerd-identity-58c8f4b44d-lf7q2         2/2     Running   0          64s
+linkerd-proxy-injector-6bdcffcbcb-ppnrf   2/2     Running   0          64s

@@ -1,0 +1,11 @@
+scenario_id: certificates-cert-manager-jks-pkcs12
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/certificates-cert-manager-jks-pkcs12.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T18:21:06Z
+provider: kind
+asserts:
+status: INTERRUPTED
+fail_stage: signal
+fail_msg: |
+  Interrupted by signal (SIGINT or SIGTERM)
+finished_at: 2026-05-30T18:26:05Z

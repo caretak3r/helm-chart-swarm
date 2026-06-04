@@ -1,0 +1,40 @@
+{{- if .Values.darkroom.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-darkroom
+  labels:
+    {{- include "sample-product.labels" . | nindent 4 }}
+    {{- include "sample-product.darkroomSelectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: darkroom
+spec:
+  replicas: {{ .Values.darkroom.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sample-product.darkroomSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sample-product.darkroomPodLabels" . | nindent 8 }}
+      annotations:
+        {{- include "sample-product.meshAnnotations" . | nindent 8 }}
+    spec:
+      containers:
+        - name: darkroom
+          image: "{{ .Values.darkroom.image.repository }}:{{ .Values.darkroom.image.tag }}"
+          {{- if .Values.darkroom.pvc.enabled }}
+          volumeMounts:
+            - name: darkroom-data
+              mountPath: {{ .Values.darkroom.pvc.mountPath }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.darkroom.pvc.enabled }}
+      volumes:
+        - name: darkroom-data
+          persistentVolumeClaim:
+            claimName: {{ required "darkroom.pvc.claimName is required when darkroom.pvc.enabled is true" .Values.darkroom.pvc.claimName }}
+      {{- end }}
+{{- end }}

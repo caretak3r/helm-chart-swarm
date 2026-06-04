@@ -1,0 +1,76 @@
+scenario_id: gateway-api-istio-egress
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api/gateway-api-istio-egress.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T16:59:58Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-egressgateway in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-gfh57 condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-gfh57   1/1     Running   0          28s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=3m -l istio=egressgateway
+      pod/istio-egressgateway-75dcd68558-p2vf2 condition met
+      PASS: pods Ready in ns/istio-system (selector=istio=egressgateway)
+      NAME                                   READY   STATUS    RESTARTS   AGE
+      istio-egressgateway-75dcd68558-p2vf2   1/1     Running   0          18s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-6f8587999b-82qnd condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-6f8587999b-82qnd   1/1     Running   0          13s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      
+        RESULT: EGRESS E2E GAP DOCUMENTED
+        The chart cannot configure egress routing — there is no values knob that
+        emits a Sidecar or VirtualService directing outbound traffic through the
+        egress Gateway. End-to-end egress proof is unverifiable for the chart-owned
+        path. The infrastructure routing (scenario-provided VirtualService +
+        ServiceEntry) is not under the chart's control.
+      
+      ==> Checking egress gateway logs for routed traffic
+        INFO: egress gateway logs do not explicitly mention httpbin.org
+        (Request may be logged under the service IP rather than hostname)
+      
+      ==> Artifact bundle note (VAL-GWE-008)
+        The run-scenario.sh artifact capture should include:
+        - ServiceEntry httpbin-external (from raw_manifest)
+        - istio Gateway egressgateway (from raw_manifest)
+        - VirtualService httpbin-via-egress (from raw_manifest)
+        - applied-overrides.yaml with mesh.inject=true
+      
+      PASS: istio egress gateway integration verified, gap documented
+status: PASS
+finished_at: 2026-06-02T17:01:05Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-istio-egress-20260602-125958-3/artifacts/logs

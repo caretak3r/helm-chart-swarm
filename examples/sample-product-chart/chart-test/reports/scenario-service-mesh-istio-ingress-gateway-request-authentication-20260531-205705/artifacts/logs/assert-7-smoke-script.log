@@ -1,0 +1,20 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-request-authentication.sh (RELEASE=sample NAMESPACE=sample)
+==> JWT key: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/service-mesh/jwt/jwt-key.pem
+==> JWKS:    /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/service-mesh/jwt/jwks.json
+==> Creating Istio Gateway + VirtualService
+gateway.networking.istio.io/sample-igw created
+virtualservice.networking.istio.io/sample-vs created
+==> Creating RequestAuthentication (JWT validation ONLY, no deny)
+requestauthentication.security.istio.io/sample-jwt-validate created
+==> Waiting for istiod to reconcile policies (15s)
+==> Getting istio-ingressgateway pod IP
+  Gateway pod IP: 10.244.0.6
+==> Test 1: Request WITHOUT Bearer token → should pass (no deny rule)
+  HTTP code (no auth): 200
+  ✓ Request without token passes through (no enforcement)
+==> Test 2: Request WITH valid JWT → should succeed
+  HTTP code (valid JWT): 200
+  ✓ Request with valid JWT succeeds
+==> Test 3: Request WITH invalid JWT (wrong issuer) → should still pass
+  HTTP code (invalid JWT): 401
+FAIL: expected 200 with invalid JWT (no deny rule), got 401

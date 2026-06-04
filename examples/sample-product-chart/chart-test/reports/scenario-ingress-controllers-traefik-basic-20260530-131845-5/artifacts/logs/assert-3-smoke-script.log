@@ -1,0 +1,19 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/traefik-basic.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Traefik pod Ready (3m max)
+pod/traefik-77657478fd-xkpwh condition met
+PASS: Traefik pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-m428w condition met
+PASS: product pods Ready
+==> Getting Traefik pod IP (probe via pod IP)
+Traefik pod IP: 10.244.0.5
+==> Verifying IngressRoute exists
+ingressroute.traefik.io/sample-basic
+PASS: IngressRoute sample-basic exists
+==> Probing HTTP with Host header (expect 200) on container port 8000
+HTTP response (with Host): 200
+PASS: HTTP 200 with Host header
+==> Probing HTTP without Host header (expect 404) on container port 8000
+HTTP response (without Host): 404
+PASS: HTTP 404 without Host header (Traefik default)
+PASS: Traefik basic IngressRoute integration verified

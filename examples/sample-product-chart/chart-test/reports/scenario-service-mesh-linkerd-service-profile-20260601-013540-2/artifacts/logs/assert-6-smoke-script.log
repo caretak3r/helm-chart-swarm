@@ -1,0 +1,30 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-service-profile.sh (RELEASE=sample NAMESPACE=sample)
+==> Annotating namespace sample for linkerd injection
+namespace/sample annotated
+==> Restarting deployments to pick up proxy injection
+deployment.apps/sample restarted
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+deployment.apps/sample-scope restarted
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+deployment "sample-scope" successfully rolled out
+==> Waiting 5s for old pods to terminate
+==> Verifying linkerd-proxy sidecar injected
+  ✓ Pod sample-5cc45f794b-mwsdh: linkerd-proxy sidecar present
+  ✓ Pod sample-scope-568fbc458b-nfj9g: linkerd-proxy sidecar present
+==> Verifying ServiceProfile CRD is established
+  ✓ CRD serviceprofiles.linkerd.io established
+==> Authoring ServiceProfile for the product Service
+serviceprofile.linkerd.io/sample.sample.svc.cluster.local created
+==> Verifying ServiceProfile was created
+  ✓ ServiceProfile sample.sample.svc.cluster.local exists
+==> Inspecting ServiceProfile routes
+  Routes defined: 3
+  Route names:
+GET / GET /healthz POST /api
+==> Probing product Service (ServiceProfile routes active)
+HTTP response: 200
+PASS: product Service reachable with ServiceProfile routes configured
+PASS: linkerd ServiceProfile integration verified

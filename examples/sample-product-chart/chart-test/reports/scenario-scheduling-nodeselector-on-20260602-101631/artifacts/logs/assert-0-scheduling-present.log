@@ -1,0 +1,5 @@
+  Deployment/sample: missing nodeSelector on pod spec
+  Deployment/sample: missing tolerations on pod spec
+  Deployment/sample: missing affinity on pod spec
+  Deployment/sample: missing topologySpreadConstraints on pod spec
+FAIL: 4 scheduling check(s) failed across 1 workload(s)

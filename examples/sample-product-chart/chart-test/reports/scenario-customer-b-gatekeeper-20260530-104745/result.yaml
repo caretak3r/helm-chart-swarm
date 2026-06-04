@@ -1,0 +1,22 @@
+scenario_id: customer-b-gatekeeper
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/customer-B-gatekeeper.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T14:47:46Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-12 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-5967fcc884-v622j condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-5967fcc884-v622j   1/1     Running   0          2s
+status: PASS
+finished_at: 2026-05-30T14:48:32Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-customer-b-gatekeeper-20260530-104745/artifacts/logs

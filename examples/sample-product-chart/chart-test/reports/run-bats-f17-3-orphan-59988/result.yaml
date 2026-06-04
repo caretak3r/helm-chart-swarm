@@ -1,0 +1,10 @@
+run_id: run-bats-f17-3-orphan-59988
+suite: curated-live
+timestamp_utc: 2026-06-03T22:11:29Z
+total: 1
+pass: 0
+fail: 1
+skip: 0
+scenarios:
+  - id: labels-on
+    status: FAIL

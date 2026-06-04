@@ -1,0 +1,88 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-06-01T15:12:05Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "608"
+    uid: e73eb514-ebcd-4507-a648-898f953d3b8a
+  spec:
+    clusterIP: 10.96.129.248
+    clusterIPs:
+    - 10.96.129.248
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2026-06-01T15:12:08Z"
+    labels:
+      gateway.istio.io/managed: istio.io-gateway-controller
+      gateway.networking.k8s.io/gateway-name: sample-gw
+    name: sample-gw-istio
+    namespace: sample
+    ownerReferences:
+    - apiVersion: gateway.networking.k8s.io/v1beta1
+      kind: Gateway
+      name: sample-gw
+      uid: c6db7ad5-11bf-448c-b077-899bc91eeebd
+    resourceVersion: "720"
+    uid: 62be6418-ae78-46c2-93d5-a9f9f4d7075e
+  spec:
+    allocateLoadBalancerNodePorts: true
+    clusterIP: 10.96.57.222
+    clusterIPs:
+    - 10.96.57.222
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: PreferDualStack
+    ports:
+    - appProtocol: tcp
+      name: status-port
+      nodePort: 32271
+      port: 15021
+      protocol: TCP
+      targetPort: 15021
+    - appProtocol: http
+      name: http
+      nodePort: 31059
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    - appProtocol: https
+      name: https
+      nodePort: 30900
+      port: 443
+      protocol: TCP
+      targetPort: 443
+    selector:
+      gateway.networking.k8s.io/gateway-name: sample-gw
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

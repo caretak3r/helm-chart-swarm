@@ -1,0 +1,2 @@
+helm status: deployed
+PASS: release linkerd-multicluster in ns/linkerd-multicluster is deployed

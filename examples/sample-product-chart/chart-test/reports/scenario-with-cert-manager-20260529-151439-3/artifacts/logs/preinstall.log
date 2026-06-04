@@ -1,0 +1,9 @@
+==> PROJECT_DIR=examples/sample-product-chart
+==> Applying 1 preinstall item(s)
+
+==> [1/1] kind=helm
+    helm: cert-manager (jetstack/cert-manager @ v1.14.0) in ns/cert-manager
+    repo 'jetstack' already exists with URL https://charts.jetstack.io (skipping add)
+Release "cert-manager" does not exist. Installing it now.
+Release cert-manager has been cancelled.
+Error: context canceled

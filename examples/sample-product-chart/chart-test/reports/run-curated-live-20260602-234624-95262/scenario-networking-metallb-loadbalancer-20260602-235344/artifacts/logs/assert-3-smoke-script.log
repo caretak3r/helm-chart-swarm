@@ -1,0 +1,32 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/metallb-loadbalancer.sh (RELEASE=sample NAMESPACE=sample)
+==> Detecting kind Docker bridge subnet for IP pool
+Kind bridge subnet: 172.20.0.0/16
+Subnet prefix: 172.20
+==> Patching IPAddressPool to match actual kind subnet
+Warning: resource ipaddresspools/chart-test-pool is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+ipaddresspool.metallb.io/chart-test-pool configured
+Patched IPAddressPool with range: 172.20.255.200-172.20.255.250
+==> Waiting for MetalLB controller pod Ready (5m max)
+pod/metallb-controller-7b8b56ccdd-pp5ht condition met
+PASS: MetalLB controller pod Ready
+==> Waiting for MetalLB speaker pods Ready (5m max)
+pod/metallb-speaker-dblpw condition met
+PASS: MetalLB speaker pods Ready
+==> Verifying IPAddressPool exists
+PASS: IPAddressPool chart-test-pool found
+==> Verifying L2Advertisement exists
+PASS: L2Advertisement chart-test-l2 found
+==> Waiting for product pod Ready (5m max)
+pod/sample-69469cb4c6-pg8x4 condition met
+PASS: product pods Ready
+==> Verifying Service has spec.type=LoadBalancer
+PASS: Service type=LoadBalancer
+==> Waiting for MetalLB to assign external IP (60s max)
+MetalLB assigned external IP: 172.20.255.200
+PASS: MetalLB assigned external IP 172.20.255.200
+==> Verifying assigned IP is within the configured pool
+PASS: Assigned IP 172.20.255.200 is within pool range 172.20.255.200-172.20.255.250
+==> Probing LB endpoint via in-cluster curl (expect 200)
+HTTP response from LB IP: 200
+PASS: HTTP 200 from LB endpoint 172.20.255.200
+PASS: MetalLB LoadBalancer integration verified end-to-end

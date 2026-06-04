@@ -1,0 +1,4 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/kyverno-validate.sh (RELEASE=sample NAMESPACE=sample)
+=== Kyverno: Validate (require-app-label) ===
+==> Phase 0: Wait for kyverno admission controller pods Ready
+error: no matching resources found

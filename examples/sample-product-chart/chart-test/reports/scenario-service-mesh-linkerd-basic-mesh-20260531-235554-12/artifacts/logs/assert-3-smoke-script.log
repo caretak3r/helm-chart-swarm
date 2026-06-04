@@ -1,0 +1,33 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-gen-certs.sh (RELEASE=sample NAMESPACE=sample)
+==> Generating ephemeral ECDSA P-256 trust anchor and issuer certs
+==> Creating temp values.yaml with generated certs
+==> Upgrading linkerd-control-plane (v1.16.11) with generated certs
+Release "linkerd-control-plane" has been upgraded. Happy Helming!
+NAME: linkerd-control-plane
+LAST DEPLOYED: Sun May 31 23:56:29 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 2
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+NOTES:
+The Linkerd control plane was successfully installed 🎉
+
+To help you manage your Linkerd service mesh you can install the Linkerd CLI by running:
+
+  curl -sL https://run.linkerd.io/install | sh
+
+Alternatively, you can download the CLI directly via the Linkerd releases page:
+
+  https://github.com/linkerd/linkerd2/releases/
+
+To make sure everything works as expected, run the following:
+
+  linkerd check
+
+The viz extension can be installed by running:
+
+  helm install linkerd-viz linkerd/linkerd-viz
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+PASS: linkerd-control-plane upgraded with ephemeral certs

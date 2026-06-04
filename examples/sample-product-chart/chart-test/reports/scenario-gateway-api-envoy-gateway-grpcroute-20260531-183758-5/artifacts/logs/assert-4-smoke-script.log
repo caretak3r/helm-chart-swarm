@@ -1,0 +1,32 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/envoy-gateway-grpcroute.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for gRPC backend pod Ready (3m max)
+pod/grpc-backend-775f8dc876-b8mq7 condition met
+PASS: gRPC backend pod Ready
+==> Waiting for envoy gateway pod Ready (3m max)
+pod/envoy-gateway-56b969757f-v4xl4 condition met
+PASS: envoy gateway pod Ready
+==> Applying GatewayClass + Gateway + GRPCRoute
+gatewayclass.gateway.networking.k8s.io/envoy created
+gateway.gateway.networking.k8s.io/sample-gw created
+grpcroute.gateway.networking.k8s.io/sample-grpc-route created
+==> Waiting for GatewayClass envoy Accepted=True (3m max)
+PASS: GatewayClass envoy Accepted=True
+==> Waiting for Gateway listener http Programmed=True (5m max)
+PASS: Gateway listener http Programmed=True
+==> Verifying GRPCRoute sample-grpc-route Accepted=True
+PASS: GRPCRoute sample-grpc-route Accepted=True
+==> Getting envoy data-plane Service ClusterIP
+Gateway Service IP: 10.96.8.129
+==> Probing gRPC backend via gateway (grpcurl reflection)
+grpcurl output: addsvc.Add
+grpc.gateway.examples.examplepb.ABitOfEverythingService
+grpc.reflection.v1alpha.ServerReflection
+grpcbin.GRPCBin
+hello.HelloService (attempt 2)
+grpcurl output: addsvc.Add
+grpc.gateway.examples.examplepb.ABitOfEverythingService
+grpc.reflection.v1alpha.ServerReflection
+grpcbin.GRPCBin
+hello.HelloService
+PASS: grpcurl reflection listed 5 service(s)
+PASS: envoy-gateway GRPCRoute integration verified

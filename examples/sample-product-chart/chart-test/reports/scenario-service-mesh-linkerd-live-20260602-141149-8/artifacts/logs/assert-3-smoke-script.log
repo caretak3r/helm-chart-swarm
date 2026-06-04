@@ -1,0 +1,119 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-live.sh (RELEASE=sample NAMESPACE=sample)
+==> Generating ephemeral ECDSA P-256 trust anchor and issuer certs
+==> Updating trust-roots ConfigMap with generated trust anchor
+configmap/linkerd-identity-trust-roots patched
+==> Creating temp values.yaml with generated certs
+==> Upgrading linkerd-control-plane (v1.16.11) with generated certs
+Release "linkerd-control-plane" has been upgraded. Happy Helming!
+NAME: linkerd-control-plane
+LAST DEPLOYED: Tue Jun  2 14:12:26 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 2
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+NOTES:
+The Linkerd control plane was successfully installed 🎉
+
+To help you manage your Linkerd service mesh you can install the Linkerd CLI by running:
+
+  curl -sL https://run.linkerd.io/install | sh
+
+Alternatively, you can download the CLI directly via the Linkerd releases page:
+
+  https://github.com/linkerd/linkerd2/releases/
+
+To make sure everything works as expected, run the following:
+
+  linkerd check
+
+The viz extension can be installed by running:
+
+  helm install linkerd-viz linkerd/linkerd-viz
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+==> Waiting for linkerd control-plane rollout
+  Waiting for deployment/linkerd-destination rollout (5m max)...
+Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+deployment "linkerd-destination" successfully rolled out
+  Waiting for deployment/linkerd-identity rollout (5m max)...
+deployment "linkerd-identity" successfully rolled out
+  Waiting for deployment/linkerd-proxy-injector rollout (5m max)...
+deployment "linkerd-proxy-injector" successfully rolled out
+==> Cleaning up any stuck old pods
+  Force-deleting stuck pod: linkerd-destination-57c6f6d4c9-72r8t
+pod "linkerd-destination-57c6f6d4c9-72r8t" force deleted from linkerd namespace
+PASS: linkerd-control-plane upgraded with ephemeral certs
+==> Restarting product deployments to pick up proxy injection
+namespace/sample annotated
+  Restarting deployment/sample
+deployment.apps/sample restarted
+  Waiting for rollout of deployment/sample to complete (3m max)
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+PASS: product deployments restarted with proxy injection
+==> VAL-MSH-009: Verifying linkerd control-plane pods are Ready
+  ✓ linkerd control-plane pods are Ready
+==> VAL-MSH-009: Verifying linkerd-proxy-injector MutatingWebhookConfiguration
+  ✓ linkerd-proxy-injector webhook present: mutatingwebhookconfiguration.admissionregistration.k8s.io/linkerd-proxy-injector-webhook-config
+==> VAL-MSH-010: Verifying namespace sample is annotated linkerd.io/inject=enabled
+  ✓ Namespace sample annotated linkerd.io/inject=enabled
+==> VAL-MSH-010: Verifying product pods have linkerd-proxy sidecar
+  Pod sample-d765cdbd8-cg4ft (deploy/sample) containers (2): linkerd-proxy app
+    ✓ linkerd-proxy sidecar present
+PASS: every Running product pod has linkerd-proxy sidecar
+  Capturing pod manifest with linkerd-proxy sidecar to artifacts
+==> VAL-MSH-011: Setting up RBAC for linkerd check probe
+serviceaccount/ct-linkerd-check created
+clusterrolebinding.rbac.authorization.k8s.io/ct-linkerd-check created
+  ✓ RBAC service account ct-linkerd-check created with cluster-admin
+==> VAL-MSH-011: Running linkerd check --proxy -n sample
+pod/ct-linkerd-live-check created
+  Waiting for linkerd check pod (3m max)
+pod/ct-linkerd-live-check condition met
+  Check pod phase: Succeeded
+  linkerd check output (last 30 lines):
+    unsupported version channel: stable-2.14.10
+    see https://linkerd.io/2.14/checks/#l5d-version-cli for hints
+
+linkerd-control-plane-proxy
+---------------------------
+√ control plane proxies are healthy
+‼ control plane proxies are up-to-date
+    some proxies are not running the current version:
+	* linkerd-destination-684df6948d-zcp6r (stable-2.14.10)
+	* linkerd-identity-58b8b7b4f9-vdzrj (stable-2.14.10)
+	* linkerd-proxy-injector-5c75fdd5dd-gj85f (stable-2.14.10)
+    see https://linkerd.io/2.14/checks/#l5d-cp-proxy-version for hints
+√ control plane proxies and cli versions match
+
+linkerd-data-plane
+------------------
+√ data plane namespace exists
+√ data plane proxies are ready
+‼ data plane is up-to-date
+    some proxies are not running the current version:
+	* sample-d765cdbd8-cg4ft (stable-2.14.10)
+    see https://linkerd.io/2.14/checks/#l5d-data-plane-version for hints
+√ data plane and cli versions match
+√ data plane pod labels are configured correctly
+√ data plane service labels are configured correctly
+√ data plane service annotations are configured correctly
+√ opaque ports are properly annotated
+
+Status check results are √
+==> Check exit code: 0
+  ✓ linkerd check --proxy -n sample exited 0
+  ✓ linkerd check output contains 'Status check results are'
+pod "ct-linkerd-live-check" deleted from sample namespace
+clusterrolebinding.rbac.authorization.k8s.io "ct-linkerd-check" deleted
+serviceaccount "ct-linkerd-check" deleted from sample namespace
+
+PASS: Linkerd LIVE service mesh integration verified
+  - Control-plane pods Ready, proxy-injector webhook present
+  - Namespace annotated linkerd.io/inject=enabled
+  - Product pods have linkerd-proxy sidecar
+  - linkerd check --proxy -n sample healthy

@@ -1,0 +1,8 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: metallb (metallb/metallb @ 0.16.1) in ns/metallb
+ERROR: helm repo 'metallb' already exists with different URL
+       existing: https://metallb.github.io/metallb
+       requested: https://metallb.github.io/charts

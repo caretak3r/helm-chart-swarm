@@ -1,0 +1,2 @@
+==> kind cluster 'chart-test-swarm-default' already exists
+error: no context exists with the name: "kind-chart-test-swarm-default"

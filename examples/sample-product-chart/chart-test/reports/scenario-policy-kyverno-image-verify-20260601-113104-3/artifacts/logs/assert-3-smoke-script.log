@@ -1,0 +1,29 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/kyverno-image-verify.sh (RELEASE=sample NAMESPACE=sample)
+=== Kyverno: Image-Verify (only-approved-registries) ===
+==> Phase 0: Wait for kyverno admission controller pods Ready
+pod/kyverno-admission-controller-6c47f7875-ttln6 condition met
+pod/kyverno-background-controller-546f9479c7-rm24w condition met
+pod/kyverno-cleanup-controller-5787967fcd-n778s condition met
+pod/kyverno-reports-controller-669cbff555-trqkm condition met
+PASS: kyverno controller pods Ready
+pod/sample-69469cb4c6-lcxs2 condition met
+PASS: product pods Ready
+==> Phase 1: Verify ClusterPolicy applied
+Waiting for ClusterPolicy image-registry-allowlist to be ready (30s max)...
+clusterpolicy.kyverno.io/image-registry-allowlist condition met
+PASS: ClusterPolicy image-registry-allowlist Ready=True
+==> Wait for webhook sync (8s)
+==> Phase 2a: Pod with non-allowlisted image (docker.io/library/redis:7-alpine)
+Error from server: error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-pod-untrusted-image-kyverno.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/default/test-untrusted-image-kyverno was blocked due to the following policies 
+
+image-registry-allowlist:
+  only-allowed-registries: 'validation error: Images must come from approved registries
+    (public.ecr.aws/* or nginx*). rule only-allowed-registries[0] failed at path /spec/containers/0/image/
+    rule only-allowed-registries[1] failed at path /spec/containers/0/image/'
+PASS: Pod with non-allowlisted image rejected (admission webhook denied)
+==> Phase 2b: Pod with allowlisted image (public.ecr.aws/nginx/nginx:1.27-alpine)
+pod/test-trusted-image-kyverno created (server dry run)
+PASS: Pod with allowlisted image accepted
+PASS: Kyverno image-verify variant verified

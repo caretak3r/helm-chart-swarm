@@ -1,0 +1,21 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-basic-mesh.sh (RELEASE=sample NAMESPACE=sample)
+==> Annotating namespace sample for linkerd injection
+namespace/sample annotated
+==> Restarting deployments to pick up proxy injection
+  Restarting deployment/sample
+deployment.apps/sample restarted
+  Waiting for rollout of deployment/sample to complete (3m max)
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+  Restarting deployment/sample-scope
+deployment.apps/sample-scope restarted
+  Waiting for rollout of deployment/sample-scope to complete (3m max)
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+deployment "sample-scope" successfully rolled out
+PASS: all deployments rolled out
+==> Waiting 5s for old pods to terminate
+==> Verifying linkerd-proxy sidecar injected into every product pod
+  Pod sample-7bcb6c5bd-99r79 (deploy/sample) containers (1): app
+FAIL: Pod sample-7bcb6c5bd-99r79 missing linkerd-proxy sidecar (containers: app)

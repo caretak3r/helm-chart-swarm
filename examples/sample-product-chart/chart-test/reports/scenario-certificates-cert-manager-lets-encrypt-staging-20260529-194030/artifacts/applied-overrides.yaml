@@ -1,0 +1,6 @@
+helm_values:
+  {replicaCount: 1, image: {repository: nginx, tag: "1.27-alpine"}, service: {type: ClusterIP, port: 80}, tls: {enabled: false, secretName: "", servicePort: 443}, tls.enabled: "true", tls.secretName: sample-tls, tls.servicePort: "443"}
+raw_manifest_refs:
+  - chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+  - chart-test/fixtures/certificates/letsencrypt-staging-clusterissuer.yaml
+  - chart-test/fixtures/certificates/sample-tls-certificate.yaml

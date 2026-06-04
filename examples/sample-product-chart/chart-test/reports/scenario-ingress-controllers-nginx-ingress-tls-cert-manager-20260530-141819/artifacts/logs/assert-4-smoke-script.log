@@ -1,0 +1,28 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-tls-cert-manager.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for cert-manager pods Ready (3m max)
+pod/cert-manager-c69c859c4-cqq5n condition met
+pod/cert-manager-cainjector-d6d64f75f-9mb8r condition met
+pod/cert-manager-webhook-566849c7fc-28dtr condition met
+PASS: cert-manager pods Ready
+==> Waiting for Certificate 'sample-tls' Ready (3m max)
+certificate.cert-manager.io/sample-tls condition met
+PASS: Certificate Ready=True
+==> Verifying TLS Secret 'sample-tls' has required keys
+Secret keys: ca.crt
+tls.crt
+tls.key
+OK: tls.crt, tls.key, ca.crt all present
+==> Waiting for nginx controller pod Ready (3m max)
+pod/ingress-nginx-controller-d74c658c5-wnsnc condition met
+PASS: nginx controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-q5lq4 condition met
+PASS: product pods Ready
+==> Verifying Ingress exists with TLS
+TLS host: sample.test.local, TLS secret: sample-tls
+PASS: Ingress TLS references cert-manager Secret 'sample-tls'
+==> Getting nginx controller pod IP
+NGINX pod IP: 10.244.0.10
+==> Probing HTTPS with --cacert (expect 200 with cert chain rooted at ClusterIssuer CA)
+HTTPS response: 000000
+FAIL: expected HTTP 200 over HTTPS, got 000000

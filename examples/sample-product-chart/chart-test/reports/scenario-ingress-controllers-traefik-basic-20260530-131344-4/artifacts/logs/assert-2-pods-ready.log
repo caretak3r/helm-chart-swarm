@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-default -n traefik wait --for=condition=Ready pods --timeout=3m --all
+pod/traefik-77657478fd-pqdrh condition met
+PASS: pods Ready in ns/traefik
+NAME                       READY   STATUS    RESTARTS   AGE
+traefik-77657478fd-pqdrh   1/1     Running   0          9s

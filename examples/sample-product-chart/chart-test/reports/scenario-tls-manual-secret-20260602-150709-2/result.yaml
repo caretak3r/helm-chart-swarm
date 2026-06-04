@@ -1,0 +1,11 @@
+scenario_id: tls-manual-secret
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates/tls-manual-secret.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-06-02T19:07:09Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: cluster-up
+fail_msg: |
+  see examples/sample-product-chart/chart-test/reports/scenario-tls-manual-secret-20260602-150709-2/artifacts/logs/cluster-up.log
+finished_at: 2026-06-02T19:07:09Z

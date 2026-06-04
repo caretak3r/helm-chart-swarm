@@ -1,0 +1,68 @@
+{
+  "featureId": "f1-3-integration-category-reorg",
+  "reviewedAt": "2026-05-28T00:19:01Z",
+  "commitId": "ec94adc",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "blockingIssues": [
+    {
+      "file": "engine/testgrid/tests/test_integration_reorg.py",
+      "line": 70,
+      "severity": "blocking",
+      "description": "The new regression test hard-codes pre-reorg SHA-256 hashes for the six primers and asserts them forever. That overfits the one-time reorg and will fail later milestones that intentionally rewrite these same primers (for example f3-1 cert-manager, f4-1 traefik, f6-1/f6-2 istio, and f7-1 opa-gatekeeper)."
+    }
+  ],
+  "nonBlockingIssues": [],
+  "codeReview": {
+    "summary": "The directory reorg itself is in place (category directories, no top-level primer files, updated path references, and a helper for subdir discovery), but the added test suite encodes the moved primer contents as immutable and therefore turns valid future primer work into false failures.",
+    "issues": [
+      {
+        "file": "engine/testgrid/tests/test_integration_reorg.py",
+        "line": 70,
+        "severity": "blocking",
+        "description": "Lines 70-101 freeze the six moved primer files to their pre-reorg SHA-256 values. The feature requirement only needs the move commit to be byte-identical; upcoming milestone features explicitly rewrite or refresh these primers, so this test will start failing as soon as those valid edits land."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The documented Python workflow and the recorded skill feedback do not match what actually happened. Mission docs say all Python commands should go through `uv run --directory engine/testgrid`, but this worker had to fall back to `uv pip install ... --python .venv/bin/python` plus `.venv/bin/python -m pytest/mypy/ruff`. The handoff still marks `followedProcedure: true` with no deviations.",
+      "evidence": "library/environment.md:21 says all Python invocations go through `uv run --directory engine/testgrid`. The F1.3 transcript shows `uv run --directory engine/testgrid pytest ...` failing, then `uv pip install pytest --python .venv/bin/python`, `.venv/bin/python -m pytest tests/test_integration_reorg.py -v`, and `uv pip install mypy ruff types-PyYAML --python .venv/bin/python`. The handoff file records `skillFeedback.followedProcedure: true` at lines 152-155."
+    },
+    {
+      "area": "knowledge",
+      "observation": "There is no shared-state note warning future primer authors that F1.3's hash-based tests are only a reorg check and must be relaxed or removed before M3/M4/M6/M7 intentionally edit those primers.",
+      "evidence": "engine/testgrid/tests/test_integration_reorg.py:70-101 hard-codes hashes for cert-manager, traefik, istio-service-mesh, istio-ingress-gateway, gateway-api, and opa-gatekeeper. Upcoming features explicitly rewrite/refresh those same files in features.json:169-170 (f3-1 cert-manager), 288-289 (f4-1 traefik), 484-485 (f6-1 istio-service-mesh), 518-519 (f6-2 istio-ingress-gateway), and 584-585 (f7-1 opa-gatekeeper)."
+    },
+    {
+      "area": "conventions",
+      "observation": "Mission guidance does not make it explicit enough to stage only feature-owned paths when the repo starts with many untracked files. This feature commit bundled a wide set of unrelated additions, which obscures the intended reorg and makes later review harder.",
+      "evidence": "`git show --stat --summary ec94adc` reports 28 files / 3942 insertions, including `engine/testgrid/dist/*`, `engine/testgrid/src/testgrid/render.py`, and other dashboard files outside the F1.3 description. `git ls-tree -r --name-only bc0074c -- engine/skills/chart-test-swarm/references/integrations` shows only `engine/skills/chart-test-swarm/references/integrations/gateway-api.md` was tracked before the commit; the worker transcript also notes the other primers were untracked before the move."
+    }
+  ],
+  "evidence": {
+    "featureEntry": "features.json:1099-1114",
+    "handoffFile": "/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/handoffs/2026-05-27T23-43-59-651Z__f1-3-integration-category-reorg__99b6883d-927e-4681-ab11-0d0f79b4d95e.json",
+    "commandsReviewed": [
+      "git -C /Users/rohit/Documents/chart-test-swarm status --short --branch",
+      "git -C /Users/rohit/Documents/chart-test-swarm show --stat --summary --find-renames=100% ec94adc",
+      "git -C /Users/rohit/Documents/chart-test-swarm show --name-status --find-renames=100% --format=medium ec94adc",
+      "git -C /Users/rohit/Documents/chart-test-swarm ls-tree -r --name-only bc0074c -- engine/skills/chart-test-swarm/references/integrations",
+      "git -C /Users/rohit/Documents/chart-test-swarm ls-tree -r --name-only ec94adc -- engine/skills/chart-test-swarm/references/integrations"
+    ],
+    "futureFeatureRefs": [
+      "features.json:169-170",
+      "features.json:288-289",
+      "features.json:484-485",
+      "features.json:518-519",
+      "features.json:584-585"
+    ],
+    "transcriptEvidence": "worker-transcripts.jsonl:3",
+    "skillEvidence": "library/environment.md:21"
+  },
+  "addressesFailureFrom": null,
+  "summary": "Fail. The reorg itself looks correct, but the new `test_integration_reorg.py` suite turns a one-time byte-identical move into a permanent content freeze for primers that later milestones are supposed to rewrite, so this feature plants a future blocker."
+}

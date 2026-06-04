@@ -1,0 +1,10 @@
+commands:
+  install: bash /Users/rohit/Documents/chart-test-swarm/init.sh
+  build: uv sync --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid
+  test: bats /Users/rohit/Documents/chart-test-swarm/engine/scripts/tests /Users/rohit/Documents/chart-test-swarm/engine/asserts/tests && uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid pytest -n 2
+  typecheck: uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid mypy src/testgrid
+  lint: uv run --directory /Users/rohit/Documents/chart-test-swarm/engine/testgrid ruff check src/testgrid && shellcheck /Users/rohit/Documents/chart-test-swarm/engine/scripts/*.sh /Users/rohit/Documents/chart-test-swarm/engine/asserts/*.sh && yamllint /Users/rohit/Documents/chart-test-swarm/engine/skills/chart-test-swarm/references/integrations /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios && helm lint /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart
+  sweep_scenarios: bash /Users/rohit/Documents/chart-test-swarm/engine/scripts/sweep-scenarios.sh
+  orphan_audit: bash /Users/rohit/Documents/chart-test-swarm/engine/scripts/orphan-audit.sh
+
+services: {}

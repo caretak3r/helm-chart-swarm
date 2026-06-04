@@ -1,0 +1,2 @@
+helm status: deployed
+PASS: release ztunnel in ns/istio-system is deployed

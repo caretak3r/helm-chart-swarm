@@ -1,0 +1,73 @@
+scenario_id: gateway-api-contour-gateway-api-basic
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-contour-gateway-api-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T22:35:12Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-contour-basic -n projectcontour wait --for=condition=Ready pods --timeout=5m -l control-plane=contour-gateway-provisioner
+      pod/contour-gateway-provisioner-555bf78b46-pt4fx condition met
+      PASS: pods Ready in ns/projectcontour (selector=control-plane=contour-gateway-provisioner)
+      NAME                                           READY   STATUS    RESTARTS   AGE
+      contour-gateway-provisioner-555bf78b46-pt4fx   1/1     Running   0          7s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-contour-basic -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-57lrk condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-57lrk   1/1     Running   0          7s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+        resourceVersion: "666"
+        uid: 306c88f6-0ed5-41e6-8478-2701651ee051
+      spec:
+        parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: sample-gw
+          sectionName: http
+        rules:
+        - backendRefs:
+          - group: ""
+            kind: Service
+            name: sample
+            port: 80
+            weight: 1
+          matches:
+          - path:
+              type: PathPrefix
+              value: /
+      status:
+        parents:
+        - conditions:
+          - lastTransitionTime: "2026-05-31T22:35:49Z"
+            message: HTTPRoute's Match has conflict with other HTTPRoute's Match
+            observedGeneration: 1
+            reason: RuleMatchConflict
+            status: "False"
+            type: Accepted
+          - lastTransitionTime: "2026-05-31T22:35:49Z"
+            message: References resolved
+            observedGeneration: 1
+            reason: ResolvedRefs
+            status: "True"
+            type: ResolvedRefs
+          controllerName: projectcontour.io/gateway-controller
+          parentRef:
+            group: gateway.networking.k8s.io
+            kind: Gateway
+            name: sample-gw
+            sectionName: http
+status: FAIL
+finished_at: 2026-05-31T22:37:53Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-contour-gateway-api-basic-20260531-183512/artifacts/logs

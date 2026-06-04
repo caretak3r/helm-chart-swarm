@@ -1,0 +1,11 @@
+scenario_id: certificates-cert-manager-self-signed-ca
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/certificates-cert-manager-self-signed-ca.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T14:43:29Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-cert-manager-self-signed-ca-20260601-104329-10/artifacts/logs/preinstall.log
+finished_at: 2026-06-01T14:46:58Z

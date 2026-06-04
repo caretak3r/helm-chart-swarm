@@ -1,0 +1,7 @@
+- app_version: 1.0.0
+  chart: sample-product-0.1.0
+  name: sample
+  namespace: sample
+  revision: "1"
+  status: deployed
+  updated: 2026-06-01 03:17:36.938674 -0400 EDT

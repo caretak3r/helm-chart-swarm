@@ -1,0 +1,87 @@
+scenario_id: policy-opa-gatekeeper-required-labels
+scenario_path: examples/sample-product-chart/chart-test/scenarios/policy-opa-gatekeeper-required-labels.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T07:16:23Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-gktest2 -n gatekeeper-system wait --for=condition=Ready pods --timeout=4m --all
+      pod/gatekeeper-audit-65579cd9f9-srp2d condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-fptdn condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-tgkdk condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-x64c5 condition met
+      PASS: pods Ready in ns/gatekeeper-system
+      NAME                                             READY   STATUS    RESTARTS   AGE
+      gatekeeper-audit-65579cd9f9-srp2d                1/1     Running   0          45s
+      gatekeeper-controller-manager-64bbbfbdbb-fptdn   1/1     Running   0          45s
+      gatekeeper-controller-manager-64bbbfbdbb-tgkdk   1/1     Running   0          45s
+      gatekeeper-controller-manager-64bbbfbdbb-x64c5   1/1     Running   0          45s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-gktest2 -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/ingress-nginx-controller-d74c658c5-hcs4n condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      ingress-nginx-controller-d74c658c5-hcs4n   1/1     Running   0          29s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-gktest2 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-2bmgt condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-2bmgt   1/1     Running   0          3s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      Waiting for ConstraintTemplate k8srequiredlabels to reconcile (60s max)...
+      PASS: observedGeneration (1) >= generation (1) at attempt 1
+      ==> Wait for CRD Established (90s max)
+      customresourcedefinition.apiextensions.k8s.io/k8srequiredlabels.constraints.gatekeeper.sh condition met
+      PASS: CRD k8srequiredlabels.constraints.gatekeeper.sh Established=True
+      ==> Apply Constraint
+      k8srequiredlabels.constraints.gatekeeper.sh/require-app-name-label created
+      PASS: K8sRequiredLabels constraint applied
+      ==> Phase 2a: Non-compliant Deployment (missing app.kubernetes.io/name)
+      Error from server (Forbidden): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-noncompliant-labels.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [require-app-name-label] Missing required label(s): {"app.kubernetes.io/name"}
+      PASS: non-compliant Deployment rejected (missing required label)
+      ==> Phase 2b: Compliant Deployment (has app.kubernetes.io/name)
+      deployment.apps/test-compliant created (server dry run)
+      PASS: compliant Deployment accepted
+      ==> Phase 3a: Non-compliant Ingress (missing app.kubernetes.io/name)
+      Error from server (Forbidden): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-ingress-noncompliant.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [require-app-name-label] Missing required label(s): {"app.kubernetes.io/name"}
+      PASS: non-compliant Ingress rejected (missing required label)
+      ==> Phase 3b: Compliant Ingress (has app.kubernetes.io/name)
+      ingress.networking.k8s.io/test-compliant-ingress created
+      PASS: compliant Ingress applied
+      NOTE: compliant Ingress may not yet have address (NGINX controller processes async)
+      ==> Phase 4: Webhook failure mode — verify Fail policy + outage behavior
+      PASS: webhook gatekeeper-validating-webhook-configuration failurePolicy=Fail
+      Scaling gatekeeper-controller-manager to 0 in gatekeeper-system (original replicas: 3)...
+      deployment.apps/gatekeeper-controller-manager scaled
+      pod/gatekeeper-controller-manager-64bbbfbdbb-fptdn condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-tgkdk condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-x64c5 condition met
+      PASS: gatekeeper controller scaled to 0
+      Attempting kubectl apply with webhook unavailable...
+      Error from server (InternalError): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-compliant.yaml": Internal error occurred: failed calling webhook "validation.gatekeeper.sh": failed to call webhook: Post "https://gatekeeper-webhook-service.gatekeeper-system.svc:443/v1/admit?timeout=3s": dial tcp 10.96.144.136:443: connect: connection refused
+      PASS: admission correctly blocked during webhook outage (Fail policy)
+      Restoring gatekeeper-controller-manager to 3 in gatekeeper-system...
+      deployment.apps/gatekeeper-controller-manager scaled
+      Waiting for gatekeeper controller to be Ready again...
+      pod/gatekeeper-controller-manager-64bbbfbdbb-hb9cd condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-sfvjr condition met
+      pod/gatekeeper-controller-manager-64bbbfbdbb-tvtr9 condition met
+      Waiting for webhook service endpoints to be ready (30s max)...
+      FAIL: webhook service endpoints still not ready after 60s
+status: FAIL
+finished_at: 2026-06-01T07:19:05Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-policy-opa-gatekeeper-required-labels-20260601-031623-5/artifacts/logs

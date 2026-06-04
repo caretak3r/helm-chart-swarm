@@ -1,0 +1,12 @@
+run_id: test-par-3
+timestamp_utc: 2026-06-01T09:54:04Z
+num_agents: 3
+suite: pr-subset
+cluster_provider: kind
+k8s_version: "v1.30.0"
+project:
+  name: sample-product-chart
+  dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+chart:
+  name: sample-product
+  version: 0.1.0

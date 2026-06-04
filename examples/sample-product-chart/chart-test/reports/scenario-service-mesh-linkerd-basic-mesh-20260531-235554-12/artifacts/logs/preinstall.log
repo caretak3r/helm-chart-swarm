@@ -1,0 +1,57 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: linkerd-crds (linkerd/linkerd-crds @ 1.8.0) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-crds" does not exist. Installing it now.
+NAME: linkerd-crds
+LAST DEPLOYED: Sun May 31 23:56:21 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The linkerd-crds chart was successfully installed 🎉
+
+To complete the linkerd core installation, please now proceed to install the
+linkerd-control-plane chart in the linkerd namespace.
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+
+==> [2/2] kind=helm
+    helm: linkerd-control-plane (linkerd/linkerd-control-plane @ 1.16.11) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-control-plane" does not exist. Installing it now.
+NAME: linkerd-control-plane
+LAST DEPLOYED: Sun May 31 23:56:21 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The Linkerd control plane was successfully installed 🎉
+
+To help you manage your Linkerd service mesh you can install the Linkerd CLI by running:
+
+  curl -sL https://run.linkerd.io/install | sh
+
+Alternatively, you can download the CLI directly via the Linkerd releases page:
+
+  https://github.com/linkerd/linkerd2/releases/
+
+To make sure everything works as expected, run the following:
+
+  linkerd check
+
+The viz extension can be installed by running:
+
+  helm install linkerd-viz linkerd/linkerd-viz
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

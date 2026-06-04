@@ -1,0 +1,62 @@
+kubectl --context kind-chart-test-swarm-default -n linkerd wait --for=condition=Ready pods --timeout=10m --all
+pod/linkerd-destination-789bf5f987-k8b2l condition met
+pod/linkerd-destination-965866687-8t479 condition met
+pod/linkerd-identity-c5fd94fd-snvvq condition met
+pod/linkerd-proxy-injector-7545d95d78-pkz2x condition met
+Error from server (NotFound): pods "linkerd-identity-69f4bbc8ff-qd7qp" not found
+Error from server (NotFound): pods "linkerd-proxy-injector-5bb898746-sz5kr" not found
+FAIL: pods not Ready in ns/linkerd within 10m
+NAME                                      READY   STATUS    RESTARTS   AGE
+linkerd-destination-965866687-8t479       4/4     Running   0          61s
+linkerd-identity-c5fd94fd-snvvq           2/2     Running   0          61s
+linkerd-proxy-injector-7545d95d78-pkz2x   2/2     Running   0          60s
+    Restart Count:  0
+    Liveness:       http-get http://:9995/ping delay=10s timeout=1s period=10s #success=1 #failure=3
+    Readiness:      http-get http://:9995/ready delay=0s timeout=1s period=10s #success=1 #failure=7
+    Environment:    <none>
+    Mounts:
+      /var/run/linkerd/config from config (rw)
+      /var/run/linkerd/identity/trust-roots from trust-roots (rw)
+      /var/run/linkerd/tls from tls (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-v8zdj (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  config:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      linkerd-config
+    Optional:  false
+  trust-roots:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      linkerd-identity-trust-roots
+    Optional:  false
+  tls:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  linkerd-proxy-injector-k8s-tls
+    Optional:    false
+  linkerd-proxy-init-xtables-lock:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  linkerd-identity-token:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  86400
+  linkerd-identity-end-entity:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  <unset>
+  kube-api-access-v8zdj:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s

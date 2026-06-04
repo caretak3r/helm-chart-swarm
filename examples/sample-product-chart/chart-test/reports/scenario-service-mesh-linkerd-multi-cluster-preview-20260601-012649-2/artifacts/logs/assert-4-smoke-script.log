@@ -1,0 +1,48 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-gen-certs.sh (RELEASE=sample NAMESPACE=sample)
+==> Generating ephemeral ECDSA P-256 trust anchor and issuer certs
+==> Creating temp values.yaml with generated certs
+==> Upgrading linkerd-control-plane (v1.16.11) with generated certs
+Release "linkerd-control-plane" has been upgraded. Happy Helming!
+NAME: linkerd-control-plane
+LAST DEPLOYED: Mon Jun  1 01:27:38 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 2
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+NOTES:
+The Linkerd control plane was successfully installed 🎉
+
+To help you manage your Linkerd service mesh you can install the Linkerd CLI by running:
+
+  curl -sL https://run.linkerd.io/install | sh
+
+Alternatively, you can download the CLI directly via the Linkerd releases page:
+
+  https://github.com/linkerd/linkerd2/releases/
+
+To make sure everything works as expected, run the following:
+
+  linkerd check
+
+The viz extension can be installed by running:
+
+  helm install linkerd-viz linkerd/linkerd-viz
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+==> Waiting for linkerd control-plane rollout to complete
+  Waiting for deployment/linkerd-destination rollout (5m max)...
+Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+deployment "linkerd-destination" successfully rolled out
+  Waiting for deployment/linkerd-identity rollout (5m max)...
+deployment "linkerd-identity" successfully rolled out
+  Waiting for deployment/linkerd-proxy-injector rollout (5m max)...
+deployment "linkerd-proxy-injector" successfully rolled out
+==> Cleaning up any stuck old pods
+  Force-deleting stuck pod: linkerd-destination-7475d755c-wqht6
+pod "linkerd-destination-7475d755c-wqht6" force deleted from linkerd namespace
+PASS: linkerd-control-plane upgraded with ephemeral certs

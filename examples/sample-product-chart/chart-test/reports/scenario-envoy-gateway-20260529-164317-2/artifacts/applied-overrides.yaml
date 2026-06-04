@@ -1,0 +1,4 @@
+helm_values:
+  {replicaCount: 1, image: {repository: nginx, tag: "1.27-alpine"}, service: {type: ClusterIP, port: 80}}
+raw_manifest_refs:
+  - https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml

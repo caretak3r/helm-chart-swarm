@@ -1,0 +1,1008 @@
+scenarios:
+- id: annotations-on
+  name: "Capability: custom annotations stamped on every object (ON)"
+  description: >-
+    Renders the product chart with a global annotation knob set (extraAnnotations.example\.com/owner=team-x) and asserts every rendered object (all kinds) carries the configured annotation at .metadata.annotations. The sample chart does NOT expose an extraAnnotations/commonAnnotations knob — this scenario is EXPECTED to FAIL (honest red gap) documenting that the chart lacks global annotation propagation.
+  labels:
+    customer: enterprise
+    profile: compliance
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      ingress.enabled: true
+      "extraAnnotations.example\\.com/owner": team-x
+  asserts:
+    - type: annotations-present
+      namespace: sample
+      source: rendered
+      annotations:
+        example.com/owner: team-x
+  tags: [capability, compliance, curated-live]
+  mechanisms: ["capability:annotations"]
+- id: labels-on
+  name: "Capability: extra labels stamped on every object (ON)"
+  description: >-
+    Renders the product chart with a global extra-label knob set (extraLabels.team=platform, extraLabels.cost-center=42) and asserts every rendered object (all kinds, not just pod templates) carries the configured labels at .metadata.labels. The sample chart does NOT expose an extraLabels/commonLabels knob — this scenario is EXPECTED to FAIL (honest red gap) documenting that the chart lacks global label propagation.
+  labels:
+    customer: enterprise
+    profile: compliance
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      ingress.enabled: true
+      extraLabels.team: platform
+      extraLabels.cost-center: "42"
+  asserts:
+    - type: labels-present
+      namespace: sample
+      source: rendered
+      labels:
+        team: platform
+        cost-center: "42"
+  tags: [capability, compliance, curated-live]
+  mechanisms: ["capability:labels"]
+- id: rbac-on
+  name: "Capability: RBAC objects present when enabled (ON)"
+  description: >-
+    Renders the product chart with rbac.create=true and serviceAccount.create=true and asserts a ServiceAccount, Role or ClusterRole, and matching RoleBinding or ClusterRoleBinding are present with correct wiring (roleRef, subjects, serviceAccountName). The sample chart does NOT include RBAC templates — no serviceaccount.yaml, role.yaml, or rolebinding.yaml exists. Setting rbac.create=true has no effect because the chart lacks the templates. This scenario is EXPECTED to FAIL (honest red gap) documenting that the chart lacks rbac.create and serviceAccount.create knobs.
+  labels:
+    customer: enterprise
+    profile: compliance
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      rbac.create: true
+      serviceAccount.create: true
+  asserts:
+    - type: rbac-objects
+      namespace: sample
+      source: rendered
+      expect_present: true
+  tags: [capability, compliance, curated-live]
+  mechanisms: ["capability:rbac"]
+- id: scheme-https-only
+  name: "Capability: HTTPS-only scheme enforcement (ON)"
+  description: >-
+    Renders the product chart with TLS enabled (tls.enabled=true) and asserts no plain-HTTP Service port, container port, probe, or Ingress backend is present. The sample chart does NOT support suppressing the HTTP port — when TLS is enabled it merely ADDS an HTTPS port (443) alongside the always-present HTTP port 80 on the Service, containerPort 80 on the Deployment, probes targeting port 80, and the Ingress backend pointing at service.port (80). This scenario is EXPECTED to FAIL (honest red gap) documenting that the chart lacks an HTTPS-only / http-disable knob. A TLS secret fixture is preinstalled so the chart can deploy with tls.enabled=true.
+  labels:
+    customer: enterprise
+    profile: compliance
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/manual-tls/manual-tls-basic-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: true
+      tls.secretName: manual-tls-basic
+      ingress.enabled: true
+      ingress.host: sample.local
+  asserts:
+    - type: scheme-enforced
+      namespace: sample
+      source: rendered
+      scheme: https-only
+  tags: [capability, compliance, curated-live]
+  mechanisms: ["capability:scheme"]
+- id: tls-cert-manager-self-signed
+  name: "cert-manager self-signed Issuer -> CA Cert -> CA Issuer -> leaf Cert"
+  description: >-
+    Installs cert-manager with CRDs, applies a self-signed Issuer, a CA Certificate bootstrapping a CA Secret, a CA Issuer backed by that Secret, and a leaf Certificate for the product Service FQDN. Deploys chart with tls.enabled=true and tls.secretName pointing at the issued Secret. Verifies HTTPS 200 with --cacert and SAN match.
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: jetstack/cert-manager
+        version: v1.14.0
+        release: cert-manager
+        namespace: cert-manager
+        repo:
+          name: jetstack
+          url: "https://charts.jetstack.io"
+        values:
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      # Chain: self-signed Issuer -> CA Certificate -> CA Issuer -> leaf Certificate
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/selfsigned-issuer.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/ca-certificate.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/ca-issuer.yaml
+        namespace: sample
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/leaf-certificate.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: sample-tls
+      tls.servicePort: "443"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/tls-cert-manager-self-signed.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:cert-manager']
+- id: tls-manual-secret
+  name: "Manual TLS Secret via raw_manifest"
+  description: >-
+    Delivers a pre-provisioned kubernetes.io/tls Secret (RSA 2048) via raw_manifest preinstall sourced from chart-test/fixtures/, no inline base64 blobs. The chart mounts it with tls.volumeType=secret (default) and serves HTTPS 200. Validates Secret type, data keys, PEM validity, and in-cluster HTTPS reachability.
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/manual-tls/manual-tls-basic-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: manual-tls-basic
+      tls.servicePort: "443"
+      tls.volumeType: "secret"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/manual-tls-basic.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:manual-tls-secret']
+- id: tls-mounted-projected
+  name: "TLS via projected volume"
+  description: >-
+    Creates a kubernetes.io/tls Secret, then deploys the chart with tls.volumeType=projected so the pod has a projected volume sourcing the TLS Secret. Verifies projected volume source, tls.crt/tls.key present at mountPath, and in-cluster HTTPS curl returns 200.
+  labels:
+    customer: any
+    profile: tls
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: raw_manifest
+        path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-projected-secret.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      tls.enabled: "true"
+      tls.secretName: mounted-tls-projected
+      tls.servicePort: "443"
+      tls.volumeType: "projected"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/mounted-tls-projected-volume.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:mounted-tls-certs']
+- id: gateway-api-istio-gateway-api-basic
+  name: "Istio Gateway API Basic"
+  description: "Installs istio/base + istio/istiod and Gateway API CRDs, creates GatewayClass istio + Gateway + HTTPRoute, and verifies HTTP routing through auto-provisioned Istio data-plane."
+  labels:
+    customer: any
+    profile: gateway-api
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "nginx"
+      image.tag: "1.27-alpine"
+      gatewayRoute.enabled: "true"
+      gatewayRoute.parentRef.name: "sample-gw"
+      gatewayRoute.parentRef.sectionName: "http"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-gateway-api-basic.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:istio', 'gateway-api:istio']
+- id: ingress-controllers-contour-basic-httpproxy
+  name: "Contour basic HTTPProxy (gap-probe)"
+  description: >-
+    Installs Contour, creates an HTTPProxy for the product Service via fixture, and verifies HTTP routing through the envoy pod IP with Host header matching and HTTPProxy status valid. Then runs a gap-probe: the chart does NOT natively emit a Contour HTTPProxy CRD — the HTTPProxy was created by the fixture, not by a chart template. This is an honest gap (red cell); do NOT over-engineer the chart.
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: projectcontour/contour
+        version: "0.6.0"
+        release: contour
+        namespace: projectcontour
+        repo:
+          name: projectcontour
+          url: "https://projectcontour.github.io/helm-charts"
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/ingress-controllers/contour-basic-httpproxy.yaml
+        namespace: sample
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: projectcontour
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/contour-basic.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:contour']
+- id: networking-kong-ingress
+  name: "Kong Ingress (className=kong)"
+  description: >-
+    Installs Kong Ingress Controller, deploys the product chart with ingress.enabled=true and ingress.className=kong, and verifies end-to-end routing through the Kong proxy data path via the chart's built-in Ingress resource. Also includes a KongPlugin gap-probe documenting that the sample chart exposes no konghq.com/plugins annotation or KongPlugin CRD knob, which is an honest gap (red cell) — do NOT over-engineer the chart.
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: kong/ingress
+        version: 0.24.0
+        release: kong
+        namespace: kong
+        repo:
+          name: kong
+          url: "https://charts.konghq.com"
+        values:
+          ingressController:
+            enabled: true
+            ingressClass: kong
+            installCRDs: true
+          proxy:
+            type: NodePort
+            http:
+              enabled: true
+              nodePort: 30080
+            tls:
+              enabled: true
+              nodePort: 30443
+          env:
+            database: "off"
+          replicaCount: 1
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "true"
+      ingress.className: "kong"
+      ingress.host: "sample.test.local"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: kong
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/kong-ingress.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:kong']
+- id: networking-metallb-loadbalancer
+  name: "MetalLB LoadBalancer (service.type=LoadBalancer)"
+  description: >-
+    Installs MetalLB, configures an IPAddressPool + L2Advertisement whose CIDR is inside the kind Docker bridge subnet, deploys the product chart with service.type=LoadBalancer, and verifies that MetalLB assigns an external IP from the pool and the LB endpoint serves HTTP 200.
+  labels:
+    customer: any
+    profile: loadbalancer
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: metallb/metallb
+        version: 0.16.1
+        release: metallb
+        namespace: metallb
+        repo:
+          name: metallb
+          url: "https://metallb.github.io/metallb"
+        values:
+          controller:
+            resources:
+              requests:
+                cpu: "50m"
+                memory: "64Mi"
+          speaker:
+            resources:
+              requests:
+                cpu: "50m"
+                memory: "64Mi"
+          installCRDs: true
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/networking/metallb-ip-pool.yaml
+        namespace: metallb
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      service.type: "LoadBalancer"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: metallb
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/metallb-loadbalancer.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:metallb']
+- id: networking-traefik-ingress
+  name: "Traefik Ingress (className=traefik)"
+  description: >-
+    Installs Traefik, deploys the product chart with ingress.enabled=true and ingress.className=traefik, and verifies end-to-end routing through the Traefik data path via the chart's built-in Ingress resource.
+  labels:
+    customer: any
+    profile: ingress
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: traefik/traefik
+        version: v28.3.0
+        release: traefik
+        namespace: traefik
+        repo:
+          name: traefik
+          url: "https://traefik.github.io/charts"
+        values:
+          image:
+            registry: ghcr.io
+            repository: traefik/traefik
+          ingressClass:
+            enabled: true
+            isDefaultClass: false
+          ingressRoute:
+            dashboard:
+              enabled: false
+          ports:
+            web:
+              exposedPort: 80
+            websecure:
+              exposedPort: 443
+          service:
+            type: NodePort
+          providers:
+            kubernetesIngress:
+              enabled: true
+            kubernetesCRD:
+              enabled: true
+        wait: pods-ready
+        wait_timeout: 3m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "true"
+      ingress.className: "traefik"
+      ingress.host: "sample.test.local"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: pods-ready
+      namespace: traefik
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/traefik-ingress.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:traefik']
+- id: policy-opa-gatekeeper-required-labels
+  name: "OPA Gatekeeper required labels enforcement (gap-probe)"
+  description: >-
+    Installs OPA Gatekeeper + NGINX Ingress, creates k8srequiredlabels ConstraintTemplate + Constraint targeting Deployments and Ingresses. Verifies non-compliant resources denied, compliant accepted. Cross-feature compose with M4 nginx-ingress. Then runs a gap-probe: the chart's Ingress template uses selectorLabels (just app: <release>) instead of the full common labels (which include app.kubernetes.io/name), so the chart's Ingress fails the required-labels constraint — an honest gap (red cell); do NOT over-engineer the chart.
+  labels:
+    customer: any
+    profile: policy
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: gatekeeper/gatekeeper
+        version: "3.17.1"
+        release: gatekeeper
+        namespace: gatekeeper-system
+        repo:
+          name: gatekeeper
+          url: "https://open-policy-agent.github.io/gatekeeper/charts"
+        values:
+          auditInterval: 10
+          constraintViolationsLimit: 20
+          enableExternalData: false
+          postInstall:
+            labelNamespace:
+              enabled: false
+          validatingWebhookFailurePolicy: Fail
+        wait: pods-ready
+        wait_timeout: 4m
+      - kind: helm
+        chart: ingress-nginx/ingress-nginx
+        version: "4.10.0"
+        release: ingress-nginx
+        namespace: ingress-nginx
+        repo:
+          name: ingress-nginx
+          url: "https://kubernetes.github.io/ingress-nginx"
+        values:
+          controller:
+            service:
+              type: NodePort
+            allowSnippetAnnotations: true
+            ingressClassResource:
+              name: nginx
+              enabled: true
+              default: false
+              controllerValue: "k8s.io/ingress-nginx"
+            watchIngressWithoutClass: true
+          admissionWebhooks:
+            enabled: false
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/policy/k8srequiredlabels-template.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      image.repository: "public.ecr.aws/nginx/nginx"
+      image.tag: "1.27-alpine"
+      ingress.enabled: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: gatekeeper-system
+      timeout: 4m
+    - type: pods-ready
+      namespace: ingress-nginx
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/opa-gatekeeper-required-labels.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:opa-gatekeeper', 'addon:nginx-ingress']
+- id: service-mesh-istio-ambient-live
+  name: "Istio Ambient Mesh — Live mTLS Verification (ztunnel/HBONE)"
+  description: >-
+    Installs istio/base + istio/istiod (profile=ambient) + istio/cni (profile=ambient) + istio/ztunnel, annotates the product namespace istio.io/dataplane-mode=ambient via raw_manifest, deploys the chart with mesh.inject=false (NO sidecar), and proves: (1) ztunnel DaemonSet pods are Ready in istio-system, (2) the product namespace carries the ambient annotation and every product pod has exactly 1 container (no istio-proxy), (3) in-mesh traffic to the product Service returns HTTP 200 and the connection is mTLS over HBONE — confirmed via ztunnel metrics/logs. Emits a PASS artifact bundle with 1-container pod manifest, ambient-annotated namespace manifest, applied-overrides recording inject: false, and versions.json.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          profile: ambient
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: helm
+        chart: istio/cni
+        version: 1.27.9
+        release: istio-cni
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          profile: ambient
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: helm
+        chart: istio/ztunnel
+        version: 1.27.9
+        release: ztunnel
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: pods-ready
+        wait_timeout: 3m
+      - kind: raw_manifest
+        path: chart-test/fixtures/service-mesh/istio-ambient-namespace.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      mesh.inject: "false"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istio-cni
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: ztunnel
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=ztunnel
+      timeout: 5m
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-ambient-live.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:istio-ambient', 'mesh:istio-ambient']
+- id: service-mesh-istio-ingress-gateway-basic
+  name: "Istio Ingress Gateway — Basic"
+  description: >-
+    Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with ingress disabled, creates an Istio Gateway + VirtualService to route external traffic through the ingressgateway pod, and verifies HTTP 200 via the gateway with a Host header.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: helm
+        chart: istio/gateway
+        version: 1.27.9
+        release: istio-ingressgateway
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          service:
+            type: NodePort
+            ports:
+              - name: http2
+                port: 80
+                nodePort: 30080
+        wait: pods-ready
+        wait_timeout: 3m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      ingress.enabled: false
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istio-ingressgateway
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istio-ingressgateway
+      timeout: 3m
+    - type: pods-ready
+      namespace: sample
+      timeout: 3m
+    - type: smoke-script
+      path: chart-test/assertions/istio-ingress-gateway-basic.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:istio', 'mesh:istio-ingress-gateway']
+- id: service-mesh-istio-service-mesh-strict-mtls
+  name: "Istio Service Mesh — strict mTLS"
+  description: >-
+    Installs istio/base + istio/istiod, enables mesh injection, deploys the product chart with scope.enabled=true, creates a PeerAuthentication with mode=STRICT in the product namespace, and verifies: (a) plain HTTP from a non-mesh pod is rejected, (b) in-mesh probe pod still reaches the product Service with 200 via auto-upgraded mTLS.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+        wait: pods-ready
+        wait_timeout: 5m
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      mesh.inject: "true"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-strict-mtls.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
+- id: service-mesh-istio-sidecar-live
+  name: "Istio Sidecar Mesh — Live mTLS Verification"
+  description: >-
+    Installs istio/base + istio/istiod, pre-labels the product namespace istio-injection=enabled via raw_manifest, deploys the chart with mesh.inject=true, and proves: (1) istiod is Ready and the sidecar injector webhook is present, (2) every product pod has exactly 2 containers including istio-proxy, (3) in-mesh traffic to the product Service returns HTTP 200 and the connection is mTLS — confirmed via istio-proxy stats reporting non-zero inbound SSL handshakes. Emits a PASS artifact bundle with 2-container pod manifest, applied-overrides recording inject: true, and versions.json.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      - kind: helm
+        chart: istio/base
+        version: 1.27.9
+        release: istio-base
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      - kind: helm
+        chart: istio/istiod
+        version: 1.27.9
+        release: istiod
+        namespace: istio-system
+        repo:
+          name: istio
+          url: "https://istio-release.storage.googleapis.com/charts"
+        values:
+          pilot:
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "384Mi"
+          global:
+            proxy:
+              holdApplicationUntilProxyStarts: true
+        wait: pods-ready
+        wait_timeout: 5m
+      - kind: raw_manifest
+        path: chart-test/fixtures/service-mesh/istio-inject-namespace.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set:
+      mesh.inject: "true"
+  asserts:
+    - type: helm-status-deployed
+      release: istio-base
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: istiod
+      namespace: istio-system
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: pods-ready
+      namespace: istio-system
+      selector: app=istiod
+      timeout: 5m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+    - type: smoke-script
+      path: chart-test/assertions/istio-sidecar-live.sh
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:istio', 'mesh:istio-sidecar']
+- id: service-mesh-linkerd-live
+  name: "Linkerd — Live mTLS Sidecar Mesh"
+  description: >-
+    Installs linkerd-crds + linkerd-control-plane (with a preinstalled trust anchor / issuer cert via raw_manifest), annotates the product namespace with linkerd.io/inject=enabled, deploys the chart, and proves: (1) linkerd control-plane pods Ready and proxy-injector webhook present, (2) every product pod has a linkerd-proxy container alongside the app container, (3) linkerd check --proxy -n sample exits 0 confirming the data plane is healthy. Emits a PASS artifact bundle with a 2-container pod manifest, linkerd.io/inject-annotated namespace, and versions.json.
+  labels:
+    customer: any
+    profile: mesh
+  cluster:
+    provider: kind
+    k8s_version: v1.30.0
+    preinstall:
+      # Step 1: Install Linkerd CRDs (required before control-plane)
+      - kind: helm
+        chart: linkerd/linkerd-crds
+        version: 1.8.0
+        release: linkerd-crds
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: {}
+        wait: helm-deployed
+        wait_timeout: 2m
+      # Step 2: Pre-create linkerd namespace + identity issuer Secret (trust anchor via raw_manifest)
+      - kind: raw_manifest
+        path: chart-test/fixtures/service-mesh/linkerd-identity-secret.yaml
+      # Step 3: Install Linkerd control plane with REPLACE_AT_RUNTIME cert placeholders.
+      # linkerd-live.sh generates real ephemeral certs and upgrades the release before
+      # any other checks run, so the initial install uses wait:none (pods won't be Ready
+      # with placeholder certs).
+      - kind: helm
+        chart: linkerd/linkerd-control-plane
+        version: 1.16.11
+        release: linkerd-control-plane
+        namespace: linkerd
+        repo:
+          name: linkerd
+          url: "https://helm.linkerd.io/stable"
+        values: chart-test/fixtures/service-mesh/linkerd-live-values.yaml
+        wait: none
+      # Step 4: Annotate the product namespace for linkerd injection (before product chart install)
+      - kind: raw_manifest
+        path: chart-test/fixtures/service-mesh/linkerd-inject-namespace.yaml
+  product:
+    chart: ./chart
+    release: sample
+    namespace: sample
+    set: {}
+  asserts:
+    - type: helm-status-deployed
+      release: linkerd-crds
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: linkerd-control-plane
+      namespace: linkerd
+    - type: helm-status-deployed
+      release: sample
+      namespace: sample
+    - type: smoke-script
+      path: chart-test/assertions/linkerd-live.sh
+    - type: pods-ready
+      namespace: linkerd
+      timeout: 10m
+    - type: pods-ready
+      namespace: sample
+      timeout: 5m
+  tags: [nightly, curated-live]
+  mechanisms: ['addon:linkerd', 'mesh:linkerd']

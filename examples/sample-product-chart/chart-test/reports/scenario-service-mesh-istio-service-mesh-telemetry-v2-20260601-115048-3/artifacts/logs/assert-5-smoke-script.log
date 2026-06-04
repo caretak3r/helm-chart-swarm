@@ -1,0 +1,27 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-telemetry-v2.sh (RELEASE=sample NAMESPACE=sample)
+==> Labeling namespace sample for istio injection
+namespace/sample labeled
+==> Restarting deployments to pick up sidecar injection
+  Restarting deployment/sample
+deployment.apps/sample restarted
+  Waiting for rollout of deployment/sample to complete (3m max)
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+deployment "sample" successfully rolled out
+PASS: all deployments rolled out with sidecars
+==> Applying Telemetry resource in namespace sample
+telemetry.telemetry.istio.io/sample-telemetry created
+PASS: Telemetry resource sample-telemetry created
+==> Verifying Telemetry resource exists
+PASS: Telemetry resource confimed
+==> Verifying Telemetry spec has accessLogging
+Access log provider: envoy
+PASS: access logging configured with envoy provider
+==> Querying istio-proxy stats endpoint for metrics
+  Probing proxy stats on pod sample-6f8587999b-zc89q sidecar istio-proxy
+NOTE: istio-proxy stats returned but no upstream_cx_active metrics found (may be initial)
+NOTE: istio_requests_total not yet present (no traffic generated)
+==> Verifying istio-proxy can generate access logs
+NOTE: local request returned empty (may be normal for nginx default page)
+NOTE: prometheus metrics path may not be directly visible in stats endpoint
+PASS: istio Telemetry v2 integration verified

@@ -1,0 +1,26 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/kyverno-mutate.sh (RELEASE=sample NAMESPACE=sample)
+=== Kyverno: Mutate (add-managed-by-annotation) ===
+==> Phase 0: Wait for kyverno admission controller pods Ready
+pod/kyverno-admission-controller-6c47f7875-5r92z condition met
+pod/kyverno-background-controller-546f9479c7-l2c7l condition met
+pod/kyverno-cleanup-controller-5787967fcd-whkk2 condition met
+pod/kyverno-reports-controller-669cbff555-9czgc condition met
+PASS: kyverno controller pods Ready
+pod/sample-69469cb4c6-rcgh8 condition met
+PASS: product pods Ready
+==> Phase 1: Verify ClusterPolicy applied
+Waiting for ClusterPolicy add-managed-by-annotation to be ready (30s max)...
+clusterpolicy.kyverno.io/add-managed-by-annotation condition met
+PASS: ClusterPolicy add-managed-by-annotation Ready=True
+==> Clean up any prior test pod
+==> Phase 2: Apply Pod manifest (lacking target annotation)
+pod/test-mutate-kyverno created
+PASS: Pod test-mutate-kyverno applied
+==> Wait for Pod to be Ready (30s max)
+pod/test-mutate-kyverno condition met
+PASS: Pod test-mutate-kyverno Ready
+==> Phase 3: Verify annotation auto-added by mutating webhook
+PASS: annotation kyverno.io/managed-by=chart-test-swarm auto-added by mutating webhook
+==> Clean up test pod
+pod "test-mutate-kyverno" deleted from sample namespace
+PASS: Kyverno mutate variant verified

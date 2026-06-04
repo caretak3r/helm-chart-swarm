@@ -1,0 +1,108 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-05-31T22:36:00Z"
+    generation: 1
+    labels:
+      app: sample
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "720"
+    uid: f8fa511d-3b9d-40f2-a796-401c7af48415
+  spec:
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-05-31T22:36:04Z"
+        message: Route is accepted
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-05-31T22:36:04Z"
+        message: Resolved all the Object references for the Route
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: gateway.envoyproxy.io/gatewayclass-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"sample-route","namespace":"sample"},"spec":{"parentRefs":[{"name":"sample-gw","sectionName":"http"}],"rules":[{"backendRefs":[{"name":"sample","port":80}],"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]}}
+    creationTimestamp: "2026-05-31T22:36:03Z"
+    generation: 1
+    name: sample-route
+    namespace: sample
+    resourceVersion: "717"
+    uid: 31506aeb-4a67-43c2-a2c2-93a685191f8c
+  spec:
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-05-31T22:36:04Z"
+        message: Route is accepted
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-05-31T22:36:04Z"
+        message: Resolved all the Object references for the Route
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: gateway.envoyproxy.io/gatewayclass-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+kind: List
+metadata:
+  resourceVersion: ""

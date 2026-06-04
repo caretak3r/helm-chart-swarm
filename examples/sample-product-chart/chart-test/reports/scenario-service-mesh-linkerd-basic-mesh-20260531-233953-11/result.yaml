@@ -1,0 +1,38 @@
+scenario_id: service-mesh-linkerd-basic-mesh
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-linkerd-basic-mesh.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T03:39:53Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-crds in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-control-plane in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-gen-certs.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Generating ephemeral ECDSA P-256 trust anchor and issuer certs
+      ==> Creating temp values.yaml with generated certs
+      ==> Upgrading linkerd-control-plane (v1.16.11) with generated certs
+      level=WARN msg="upgrade failed" name=linkerd-control-plane error="resource Deployment/linkerd/linkerd-destination not ready. status: InProgress, message: Pending termination: 1\nresource Deployment/linkerd/linkerd-identity not ready. status: InProgress, message: Pending termination: 1\nresource Deployment/linkerd/linkerd-proxy-injector not ready. status: InProgress, message: Pending termination: 1\ncontext deadline exceeded"
+      Error: UPGRADE FAILED: resource Deployment/linkerd/linkerd-destination not ready. status: InProgress, message: Pending termination: 1
+      resource Deployment/linkerd/linkerd-identity not ready. status: InProgress, message: Pending termination: 1
+      resource Deployment/linkerd/linkerd-proxy-injector not ready. status: InProgress, message: Pending termination: 1
+      context deadline exceeded
+status: INTERRUPTED
+fail_stage: signal
+fail_msg: |
+  Interrupted by signal (SIGINT or SIGTERM)
+finished_at: 2026-06-01T03:54:53Z

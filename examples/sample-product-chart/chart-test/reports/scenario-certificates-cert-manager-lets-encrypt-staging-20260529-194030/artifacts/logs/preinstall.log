@@ -1,0 +1,50 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 4 preinstall item(s)
+
+==> [1/4] kind=helm
+    helm: cert-manager (jetstack/cert-manager @ v1.14.0) in ns/cert-manager
+    repo 'jetstack' already exists with URL https://charts.jetstack.io (skipping add)
+Release "cert-manager" does not exist. Installing it now.
+NAME: cert-manager
+LAST DEPLOYED: Fri May 29 19:40:58 2026
+NAMESPACE: cert-manager
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+cert-manager v1.14.0 has been deployed successfully!
+
+In order to begin issuing certificates, you will need to set up a ClusterIssuer
+or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
+
+More information on the different types of issuers and how to configure them
+can be found in our documentation:
+
+https://cert-manager.io/docs/configuration/
+
+For information on how to configure cert-manager to automatically provision
+Certificates for Ingress resources, take a look at the `ingress-shim`
+documentation:
+
+https://cert-manager.io/docs/usage/ingress/
+pod/cert-manager-c69c859c4-fwxk4 condition met
+pod/cert-manager-cainjector-d6d64f75f-wg6rz condition met
+pod/cert-manager-webhook-566849c7fc-fk8h9 condition met
+
+==> [2/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+clusterissuer.cert-manager.io/chart-test-swarm-selfsigned serverside-applied
+
+==> [3/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/letsencrypt-staging-clusterissuer.yaml
+clusterissuer.cert-manager.io/chart-test-swarm-letsencrypt-staging serverside-applied
+
+==> [4/4] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/sample-tls-certificate.yaml in ns/sample
+namespace/sample created
+certificate.cert-manager.io/sample-tls serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

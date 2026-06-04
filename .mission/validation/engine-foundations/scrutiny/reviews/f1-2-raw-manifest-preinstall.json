@@ -1,0 +1,82 @@
+{
+  "featureId": "f1-2-raw-manifest-preinstall",
+  "reviewedAt": "2026-05-28T00:20:11Z",
+  "commitId": "bc0074c",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "blockingIssues": [
+    {
+      "file": "engine/scripts/apply-scenario.sh",
+      "line": 97,
+      "severity": "blocking",
+      "description": "The new raw_manifest path never creates the target namespace before running `kubectl apply`. VAL-ENGINE-008's canonical case is a ConfigMap manifest in namespace `cts-raw`; with this implementation, a scenario that sets `namespace: cts-raw` will fail with a missing-namespace error instead of exiting 0. The helm path handles this by creating the namespace first, but the raw_manifest path does not."
+    }
+  ],
+  "nonBlockingIssues": [
+    {
+      "file": "engine/scripts/tests/raw-manifest-preinstall.bats",
+      "line": 241,
+      "severity": "non_blocking",
+      "description": "The new bats coverage for `apply-scenario.sh` is mostly grep-based and never executes the script or `kubectl`. The dispatch, unknown-kind, tempfile-cleanup, and URL-handling checks only assert that certain strings exist in the source, so they do not actually verify VAL-ENGINE-008 or the cleanup side effects."
+    }
+  ],
+  "codeReview": {
+    "summary": "The schema split and backward-compatibility work look reasonable, but the runtime `raw_manifest` implementation misses namespaced resources, so the feature does not satisfy the namespaced ConfigMap case in VAL-ENGINE-008. The added tests are too shallow to catch that runtime failure because they mostly inspect source text instead of executing the new path.",
+    "issues": [
+      {
+        "file": "engine/scripts/apply-scenario.sh",
+        "line": 97,
+        "severity": "blocking",
+        "description": "In `apply_raw_manifest`, lines 97-102 only append `--namespace` to the `kubectl apply` command. There is no `kubectl get ns ... || kubectl create ns ...` equivalent here, even though the helm branch does that at line 135. As a result, raw manifests targeting a fresh namespace (including the validation contract's `cts-raw` ConfigMap example) fail before the feature's core behavior can succeed."
+      },
+      {
+        "file": "engine/scripts/tests/raw-manifest-preinstall.bats",
+        "line": 241,
+        "severity": "non_blocking",
+        "description": "The runtime tests added for `apply-scenario.sh` do not run the script. Lines 241-280 only grep for function names and error strings, so they do not exercise declared-order application, unknown-kind rejection at runtime, tempfile cleanup behavior, or actual `kubectl apply` success. That gap is why the missing-namespace bug above went undetected."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The worker marked `skillFeedback.followedProcedure: true`, but the handoff also says VAL-ENGINE-008 and VAL-ENGINE-010 were not run. The `engine-bash` skill explicitly requires a real-cluster round-trip when cluster scripts are touched, so the recorded skill feedback does not match what happened.",
+      "evidence": "skills/engine-bash/SKILL.md:39-43 requires a real `chart-test-swarm-mvalid` run for touched cluster scripts. The handoff file says `whatWasLeftUndone` includes skipped VAL-ENGINE-008 and VAL-ENGINE-010, while `skillFeedback.followedProcedure` remains true (handoff lines 13 and 132-134)."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Mission artifacts disagree on the Envoy Gateway primer path/name. F1.2 expected behavior and VAL-ENGINE-009 point to `engine/skills/chart-test-swarm/references/integrations/gateway-api/envoy-gateway.md`, while later mission state and the repo use `gateway-api.md` / `gateway-api/gateway-api.md`.",
+      "evidence": "features.json:1078 and validation-contract.md:77-79 expect `gateway-api/envoy-gateway.md`. validation-contract.md:87 and the current repo path `engine/skills/chart-test-swarm/references/integrations/gateway-api/gateway-api.md` use `gateway-api.md` instead."
+    }
+  ],
+  "evidence": {
+    "featureEntry": "features.json:1066-1088",
+    "handoffFile": "/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/handoffs/2026-05-27T23-36-14-850Z__f1-2-raw-manifest-preinstall__ac4fac50-e780-479b-bf7b-550a9abb52fb.json",
+    "transcriptEvidence": "worker-transcripts.jsonl session `ac4fac50-e780-479b-bf7b-550a9abb52fb` extracted with jq",
+    "docsReviewed": [
+      "/Users/rohit/Documents/chart-test-swarm/README.md",
+      "/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/AGENTS.md",
+      "/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/services.yaml",
+      "/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/library/environment.md",
+      "/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/library/user-testing.md",
+      "/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/skills/engine-bash/SKILL.md"
+    ],
+    "commandsReviewed": [
+      "jq -s --arg sid \"ac4fac50-e780-479b-bf7b-550a9abb52fb\" '[.[] | select(.workerSessionId == $sid)] | first' /Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/worker-transcripts.jsonl",
+      "git -C /Users/rohit/Documents/chart-test-swarm show --stat --summary bc0074c",
+      "git -C /Users/rohit/Documents/chart-test-swarm show bc0074c:engine/scripts/apply-scenario.sh | nl -ba | sed -n '60,150p'",
+      "git -C /Users/rohit/Documents/chart-test-swarm show bc0074c:engine/scripts/tests/raw-manifest-preinstall.bats | nl -ba | sed -n '190,280p'",
+      "git -C /Users/rohit/Documents/chart-test-swarm show bc0074c:engine/templates/scenario.schema.json | nl -ba | sed -n '75,145p'",
+      "git -C /Users/rohit/Documents/chart-test-swarm show bc0074c:examples/sample-product-chart/chart-test/scenarios/envoy-gateway.yaml | nl -ba"
+    ],
+    "keyReferences": [
+      "validation-contract.md:71-74",
+      "engine/scripts/apply-scenario.sh@bc0074c:64-105",
+      "engine/scripts/tests/raw-manifest-preinstall.bats@bc0074c:239-280"
+    ]
+  },
+  "addressesFailureFrom": null,
+  "summary": "Fail. The feature adds the schema and dispatch structure for `raw_manifest`, but the runtime path does not create an explicit target namespace before `kubectl apply`, so the namespaced ConfigMap case in VAL-ENGINE-008 would fail. The added bats coverage is mostly source-grep based, which is why that runtime bug slipped through."
+}

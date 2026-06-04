@@ -1,0 +1,25 @@
+# AKS AGIC: Ingress resource targeting the Application Gateway
+# Ingress Controller. The controller provisions Azure Application
+# Gateway rules from this Ingress.
+# chart-test-swarm/target-k8s-version: aks-1.30
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chart-test-swarm-agic-ingress
+  namespace: <REPLACE_WITH_NAMESPACE>
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+    - host: "<REPLACE_WITH_HOSTNAME>"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: <REPLACE_WITH_SERVICE_NAME>
+                port:
+                  number: 80

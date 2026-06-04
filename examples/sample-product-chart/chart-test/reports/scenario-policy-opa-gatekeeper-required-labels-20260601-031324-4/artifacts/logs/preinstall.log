@@ -1,0 +1,85 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: gatekeeper (gatekeeper/gatekeeper @ 3.17.1) in ns/gatekeeper-system
+    repo 'gatekeeper' already exists with URL https://open-policy-agent.github.io/gatekeeper/charts (skipping add)
+Release "gatekeeper" does not exist. Installing it now.
+NAME: gatekeeper
+LAST DEPLOYED: Mon Jun  1 03:13:53 2026
+NAMESPACE: gatekeeper-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+pod/gatekeeper-audit-65579cd9f9-w862p condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-44fm2 condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-c54pj condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-j75fd condition met
+
+==> [2/3] kind=helm
+    helm: ingress-nginx (ingress-nginx/ingress-nginx @ 4.10.0) in ns/ingress-nginx
+    repo 'ingress-nginx' already exists with URL https://kubernetes.github.io/ingress-nginx (skipping add)
+Release "ingress-nginx" does not exist. Installing it now.
+NAME: ingress-nginx
+LAST DEPLOYED: Mon Jun  1 03:14:09 2026
+NAMESPACE: ingress-nginx
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The ingress-nginx controller has been installed.
+Get the application URL by running these commands:
+  export HTTP_NODE_PORT=$(kubectl get service --namespace ingress-nginx ingress-nginx-controller --output jsonpath="{.spec.ports[0].nodePort}")
+  export HTTPS_NODE_PORT=$(kubectl get service --namespace ingress-nginx ingress-nginx-controller --output jsonpath="{.spec.ports[1].nodePort}")
+  export NODE_IP="$(kubectl get nodes --output jsonpath="{.items[0].status.addresses[1].address}")"
+
+  echo "Visit http://${NODE_IP}:${HTTP_NODE_PORT} to access your application via HTTP."
+  echo "Visit https://${NODE_IP}:${HTTPS_NODE_PORT} to access your application via HTTPS."
+
+An example Ingress that makes use of the controller:
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: example
+    namespace: foo
+  spec:
+    ingressClassName: nginx
+    rules:
+      - host: www.example.com
+        http:
+          paths:
+            - pathType: Prefix
+              backend:
+                service:
+                  name: exampleService
+                  port:
+                    number: 80
+              path: /
+    # This section is only required if TLS is to be enabled for the Ingress
+    tls:
+      - hosts:
+        - www.example.com
+        secretName: example-tls
+
+If TLS is enabled for the Ingress, a Secret containing the certificate and key must also be provided:
+
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: example-tls
+    namespace: foo
+  data:
+    tls.crt: <base64 encoded cert>
+    tls.key: <base64 encoded key>
+  type: kubernetes.io/tls
+pod/ingress-nginx-controller-d74c658c5-rf95q condition met
+
+==> [3/3] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/policy/k8srequiredlabels-template.yaml
+constrainttemplate.templates.gatekeeper.sh/k8srequiredlabels serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

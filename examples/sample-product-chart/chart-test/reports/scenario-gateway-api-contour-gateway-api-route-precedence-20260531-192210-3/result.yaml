@@ -1,0 +1,53 @@
+scenario_id: gateway-api-contour-gateway-api-route-precedence
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-contour-gateway-api-route-precedence.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T23:22:11Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utest-contour-precedence -n projectcontour wait --for=condition=Ready pods --timeout=5m -l control-plane=contour-gateway-provisioner
+      pod/contour-gateway-provisioner-555bf78b46-59r2b condition met
+      PASS: pods Ready in ns/projectcontour (selector=control-plane=contour-gateway-provisioner)
+      NAME                                           READY   STATUS    RESTARTS   AGE
+      contour-gateway-provisioner-555bf78b46-59r2b   1/1     Running   0          4s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utest-contour-precedence -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-qxd2d condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-qxd2d   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      ==> Verifying auto-provisioned Envoy Deployment in sample namespace
+      PASS: auto-provisioned Envoy Deployment found (1)
+      ==> Waiting for Envoy pods Ready (3m max)
+      pod/contour-sample-gw-7c77855479-gjqf7 condition met
+      pod/contour-sample-gw-7c77855479-hrgs4 condition met
+      pod/envoy-sample-gw-sxdft condition met
+      PASS: Envoy pods Ready
+      ==> Verifying HTTPRoute sample-route-api Accepted=True
+      PASS: HTTPRoute sample-route-api Accepted=True
+      ==> Verifying HTTPRoute sample-route-api-v2 Accepted=True
+      PASS: HTTPRoute sample-route-api-v2 Accepted=True
+      ==> Getting Envoy Service ClusterIP in sample
+      Envoy Service IP: 10.96.6.230
+      ==> Test 1: /api/v2/foo → expect X-Route: v2 (more specific prefix wins)
+      Test /api/v2/foo → X-Route header: x-route: v2
+      PASS: /api/v2/foo routed to v2 (more specific prefix wins)
+      ==> Test 2: /api/foo → expect X-Route: v1 (less specific prefix wins for non-overlapping paths)
+      Test /api/foo → X-Route header: x-route: v1
+      PASS: /api/foo routed to v1 (less specific prefix wins for non-overlapping)
+      PASS: contour-gateway-api route-precedence integration verified
+status: PASS
+finished_at: 2026-05-31T23:28:00Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-contour-gateway-api-route-precedence-20260531-192210-3/artifacts/logs

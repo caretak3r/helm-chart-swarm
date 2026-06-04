@@ -1,0 +1,52 @@
+scenario_id: ingress-controllers-nginx-ingress-snippet-annotations
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-nginx-ingress-snippet-annotations.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T17:47:00Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-zqf94 condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-zqf94   1/1     Running   0          3s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/ingress-nginx-controller-d74c658c5-9c4nq condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      ingress-nginx-controller-d74c658c5-9c4nq   1/1     Running   0          29s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-snippet-annotations.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for nginx controller pod Ready (3m max)
+      pod/ingress-nginx-controller-d74c658c5-9c4nq condition met
+      PASS: nginx controller pod Ready
+      ==> Waiting for product pod Ready (3m max)
+      pod/sample-69469cb4c6-zqf94 condition met
+      PASS: product pods Ready
+      ==> Verifying Ingress has configuration-snippet annotation
+      PASS: Ingress has nginx.ingress.kubernetes.io/configuration-snippet annotation
+      Snippet content: add_header X-Test "chart-test-swarm";
+      ==> Getting nginx controller pod IP
+      NGINX pod IP: 10.244.0.6
+      ==> Probing HTTP with Host header (expect 200 with X-Test header)
+      HTTP response code: 200
+      PASS: HTTP 200 with Host header
+      ==> Verifying snippet-injected header 'X-Test: chart-test-swarm'
+      Response header X-Test: 'chart-test-swarm'
+      PASS: snippet-injected header 'X-Test: chart-test-swarm' present
+      PASS: NGINX Ingress snippet annotations integration verified
+status: PASS
+finished_at: 2026-05-30T17:48:10Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-nginx-ingress-snippet-annotations-20260530-134659/artifacts/logs

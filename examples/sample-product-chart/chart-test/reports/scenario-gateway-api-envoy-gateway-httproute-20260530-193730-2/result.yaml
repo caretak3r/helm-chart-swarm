@@ -1,0 +1,11 @@
+scenario_id: gateway-api-envoy-gateway-httproute
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-envoy-gateway-httproute.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T23:37:31Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-envoy-gateway-httproute-20260530-193730-2/artifacts/logs/preinstall.log
+finished_at: 2026-05-30T23:43:17Z

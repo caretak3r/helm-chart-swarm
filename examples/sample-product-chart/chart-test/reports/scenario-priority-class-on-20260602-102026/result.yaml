@@ -1,0 +1,14 @@
+scenario_id: priority-class-on
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/priority-class-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T14:20:26Z
+provider: kind
+asserts:
+  - type: priority-class-present
+    status: FAIL
+    notes: |
+        Deployment/sample: missing priorityClassName on pod spec
+      FAIL: 1 priorityClassName check(s) failed across 1 workload(s)
+status: FAIL
+finished_at: 2026-06-02T14:20:57Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-priority-class-on-20260602-102026/artifacts/logs

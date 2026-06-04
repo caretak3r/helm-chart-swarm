@@ -1,0 +1,6 @@
+run_id: run-20260531-230537
+timestamp_utc: "2026-05-31T23:05:37Z"
+num_agents: 1
+suite: ingress-traefik
+cluster_provider: kind
+k8s_version: v1.30.0

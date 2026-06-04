@@ -1,0 +1,114 @@
+{
+  "featureId": "f1-1-minikube-backend",
+  "reviewedAt": "2026-05-28T00:20:31Z",
+  "commitId": "20e16a6",
+  "repoPath": "/Users/rohit/Documents/chart-test-swarm",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "blockingIssues": [
+    {
+      "file": "engine/scripts/cluster-up.sh",
+      "line": 33,
+      "severity": "blocking",
+      "description": "At the reviewed commit, `cluster-up.sh` restores the caller's previous kubeconfig context on EXIT (lines 17-33) after switching to the new cluster (lines 87-91). `run-scenario.sh` then invokes it as a subprocess at lines 145-147 and immediately runs `apply-scenario.sh`, `kubectl`, and `helm` against the ambient context at lines 150-179. If the caller already had a context selected, the scenario run executes against that old cluster instead of the freshly-created kind/minikube cluster."
+    },
+    {
+      "file": "engine/scripts/run-scenario.sh",
+      "line": 107,
+      "severity": "blocking",
+      "description": "Failure and signal cleanup are both gated on `KEEP_CLUSTER=0` (lines 107-111 and 128-132). With the documented default/unset `KEEP_CLUSTER=1`, failed or interrupted runs leak the cluster, so the feature does not satisfy its own 'Failed/interrupted scenarios still tear down their cluster (SIGINT cleanup)' requirement or VAL-ENGINE-027."
+    },
+    {
+      "file": "engine/scripts/run-scenario.sh",
+      "line": 68,
+      "severity": "blocking",
+      "description": "The reviewed `run-scenario.sh` only creates `result.yaml` plus a top-level `logs/` directory under `scenario-<id>-<ts>` (lines 68-83) and contains no code anywhere in the file to create `artifacts/`, copy `scenario.yaml`, or write `versions.json`. A failed run therefore cannot produce the partial artifacts bundle promised by F1.1 and VAL-ENGINE-026."
+    }
+  ],
+  "nonBlockingIssues": [
+    {
+      "file": "engine/scripts/cluster-down.sh",
+      "line": 36,
+      "severity": "non_blocking",
+      "description": "`minikube delete -p \"$CLUSTER_NAME\" 2>/dev/null || true` suppresses real deletion failures as well as the benign 'already absent' case. If `minikube delete` errors out, the script still exits 0 and may leave the profile behind, which makes the claimed idempotent teardown less trustworthy."
+    }
+  ],
+  "codeReview": {
+    "summary": "The minikube branch, prefix guard, and provider-enum update are present, but the feature does not hold up end-to-end: `cluster-up.sh` restores the previous kube context before `run-scenario.sh` continues, failure/interrupt cleanup only happens when `KEEP_CLUSTER=0`, and the claimed partial artifacts bundle is not implemented in this commit.",
+    "issues": [
+      {
+        "file": "engine/scripts/cluster-up.sh",
+        "line": 33,
+        "severity": "blocking",
+        "description": "At the reviewed commit, `cluster-up.sh` restores the caller's previous kubeconfig context on EXIT (lines 17-33) after switching to the new cluster (lines 87-91). `run-scenario.sh` then invokes it as a subprocess at lines 145-147 and immediately runs `apply-scenario.sh`, `kubectl`, and `helm` against the ambient context at lines 150-179. If the caller already had a context selected, the scenario run executes against that old cluster instead of the freshly-created kind/minikube cluster."
+      },
+      {
+        "file": "engine/scripts/run-scenario.sh",
+        "line": 107,
+        "severity": "blocking",
+        "description": "Failure and signal cleanup are both gated on `KEEP_CLUSTER=0` (lines 107-111 and 128-132). With the documented default/unset `KEEP_CLUSTER=1`, failed or interrupted runs leak the cluster, so the feature does not satisfy its own 'Failed/interrupted scenarios still tear down their cluster (SIGINT cleanup)' requirement or VAL-ENGINE-027."
+      },
+      {
+        "file": "engine/scripts/run-scenario.sh",
+        "line": 68,
+        "severity": "blocking",
+        "description": "The reviewed `run-scenario.sh` only creates `result.yaml` plus a top-level `logs/` directory under `scenario-<id>-<ts>` (lines 68-83) and contains no code anywhere in the file to create `artifacts/`, copy `scenario.yaml`, or write `versions.json`. A failed run therefore cannot produce the partial artifacts bundle promised by F1.1 and VAL-ENGINE-026."
+      },
+      {
+        "file": "engine/scripts/cluster-down.sh",
+        "line": 36,
+        "severity": "non_blocking",
+        "description": "`minikube delete -p \"$CLUSTER_NAME\" 2>/dev/null || true` suppresses real deletion failures as well as the benign 'already absent' case. If `minikube delete` errors out, the script still exits 0 and may leave the profile behind, which makes the claimed idempotent teardown less trustworthy."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "Mission docs and the `engine-bash` skill still tell workers to validate scenario YAML directly with `jsonschema -i <scenario.yaml>`, but this environment's `jsonschema` CLI does not accept YAML input. The worker had to deviate to `yq -o=json | jsonschema -i /dev/stdin` and recorded that deviation in the handoff.",
+      "evidence": "skills/engine-bash/SKILL.md:15,37,43; AGENTS.md:85,103; handoff 2026-05-27T23-28-45-662Z__f1-1-minikube-backend__5ade1fd8-0557-43b3-b722-7ba1c5d4f1a5.json:186-188"
+    },
+    {
+      "area": "skills",
+      "observation": "The `engine-bash` verification procedure is too narrow for cross-script cluster-context changes. It asks for bats plus direct cluster-up/down manual checks, but nothing that exercises `run-scenario.sh` end-to-end after `cluster-up.sh` changes. The worker followed that pattern and missed the context regression above.",
+      "evidence": "skills/engine-bash/SKILL.md:39-43; handoff 2026-05-27T23-28-45-662Z__f1-1-minikube-backend__5ade1fd8-0557-43b3-b722-7ba1c5d4f1a5.json:27-49,63-69"
+    },
+    {
+      "area": "knowledge",
+      "observation": "The feature contract and mission docs disagree on where cluster names live. `features.json`/`validation-contract.md` still say the schema should reject unprefixed cluster names, but mission guidance says cluster names are supplied only via `CLUSTER_NAME` and the scenario schema does not carry that field.",
+      "evidence": "features.json:1036; validation-contract.md:56-59; AGENTS.md:62; library/environment.md:73"
+    },
+    {
+      "area": "conventions",
+      "observation": "Shared-state guidance around cleanup semantics is internally inconsistent: the feature/environment docs say unset `KEEP_CLUSTER` should keep the cluster for debugging, while other validation/hand-off rules expect no residual `chart-test-swarm-*` clusters after a run. That ambiguity makes it easy for workers to choose the wrong cleanup behavior on failure/interrupt paths.",
+      "evidence": "features.json:1038-1040; validation-contract.md:147,166-167,231-234; AGENTS.md:109-111; library/environment.md:40"
+    }
+  ],
+  "evidence": {
+    "featureEntry": "features.json:1024-1055",
+    "handoffFile": "/Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/handoffs/2026-05-27T23-28-45-662Z__f1-1-minikube-backend__5ade1fd8-0557-43b3-b722-7ba1c5d4f1a5.json",
+    "commandsReviewed": [
+      "jq --arg id \"f1-1-minikube-backend\" '.features | map(select(.id == $id)) | first' /Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/features.json",
+      "jq -s --arg sid \"5ade1fd8-0557-43b3-b722-7ba1c5d4f1a5\" '[.[] | select(.workerSessionId == $sid)] | first' /Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/worker-transcripts.jsonl",
+      "git -C /Users/rohit/Documents/chart-test-swarm show --stat --summary 20e16a6",
+      "git -C /Users/rohit/Documents/chart-test-swarm show 20e16a6:engine/scripts/cluster-up.sh | nl -ba",
+      "git -C /Users/rohit/Documents/chart-test-swarm show 20e16a6:engine/scripts/cluster-down.sh | nl -ba",
+      "git -C /Users/rohit/Documents/chart-test-swarm show 20e16a6:engine/scripts/run-scenario.sh | nl -ba",
+      "git -C /Users/rohit/Documents/chart-test-swarm show 20e16a6:engine/scripts/dispatch-swarm.sh | nl -ba",
+      "git -C /Users/rohit/Documents/chart-test-swarm show 20e16a6:engine/templates/scenario.schema.json | nl -ba",
+      "nl -ba /Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/AGENTS.md",
+      "nl -ba /Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/library/environment.md",
+      "nl -ba /Users/rohit/.factory/missions/4ef7f3ec-f44b-44c4-b618-87f6cef5e8d0/skills/engine-bash/SKILL.md"
+    ],
+    "transcriptEvidence": "worker-transcripts.jsonl:1",
+    "skillEvidence": [
+      "skills/engine-bash/SKILL.md:15-16",
+      "skills/engine-bash/SKILL.md:39-43",
+      "AGENTS.md:62,85,103",
+      "library/environment.md:40,73"
+    ]
+  },
+  "addressesFailureFrom": null,
+  "summary": "Fail. F1.1 lands the minikube/prefix surface area, but the reviewed commit breaks the end-to-end scenario path by restoring the caller's kube context before `run-scenario.sh` continues, only cleans up failed/interrupted runs when `KEEP_CLUSTER=0`, and does not implement the partial `artifacts/` bundle it claims."
+}

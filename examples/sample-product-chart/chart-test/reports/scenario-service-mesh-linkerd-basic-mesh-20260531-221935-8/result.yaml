@@ -1,0 +1,101 @@
+scenario_id: service-mesh-linkerd-basic-mesh
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-linkerd-basic-mesh.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T02:19:36Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-crds in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-control-plane in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: FAIL
+    notes: |
+        Type                        Status
+        PodReadyToStartContainers   True 
+        Initialized                 True 
+        Ready                       False 
+        ContainersReady             False 
+        PodScheduled                True 
+      Volumes:
+        config:
+          Type:      ConfigMap (a volume populated by a ConfigMap)
+          Name:      linkerd-config
+          Optional:  false
+        trust-roots:
+          Type:      ConfigMap (a volume populated by a ConfigMap)
+          Name:      linkerd-identity-trust-roots
+          Optional:  false
+        tls:
+          Type:        Secret (a volume populated by a Secret)
+          SecretName:  linkerd-proxy-injector-k8s-tls
+          Optional:    false
+        linkerd-proxy-init-xtables-lock:
+          Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+          Medium:     
+          SizeLimit:  <unset>
+        linkerd-identity-token:
+          Type:                    Projected (a volume that contains injected data from multiple sources)
+          TokenExpirationSeconds:  86400
+        linkerd-identity-end-entity:
+          Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+          Medium:     Memory
+          SizeLimit:  <unset>
+        kube-api-access-pdqmt:
+          Type:                    Projected (a volume that contains injected data from multiple sources)
+          TokenExpirationSeconds:  3607
+          ConfigMapName:           kube-root-ca.crt
+          Optional:                false
+          DownwardAPI:             true
+      QoS Class:                   Burstable
+      Node-Selectors:              kubernetes.io/os=linux
+      Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                                   node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-jvtbn condition met
+      pod/sample-scope-c689dc867-569mf condition met
+      PASS: pods Ready in ns/sample
+      NAME                           READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-jvtbn        1/1     Running   0          10m
+      sample-scope-c689dc867-569mf   1/1     Running   0          10m
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-basic-mesh.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Annotating namespace sample for linkerd injection
+      namespace/sample annotated
+      ==> Restarting deployments to pick up proxy injection
+        Restarting deployment/sample
+      deployment.apps/sample restarted
+        Waiting for rollout of deployment/sample to complete (3m max)
+      Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+      deployment "sample" successfully rolled out
+        Restarting deployment/sample-scope
+      deployment.apps/sample-scope restarted
+        Waiting for rollout of deployment/sample-scope to complete (3m max)
+      Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+      deployment "sample-scope" successfully rolled out
+      PASS: all deployments rolled out
+      ==> Waiting 5s for old pods to terminate
+      ==> Verifying linkerd-proxy sidecar injected into every product pod
+        Pod sample-d87bb4844-snr9v (deploy/sample) containers (1): app
+      FAIL: Pod sample-d87bb4844-snr9v missing linkerd-proxy sidecar (containers: app)
+status: FAIL
+finished_at: 2026-06-01T02:30:20Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-basic-mesh-20260531-221935-8/artifacts/logs

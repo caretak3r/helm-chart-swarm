@@ -1,0 +1,19 @@
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: sample-ratelimit
+  namespace: sample
+spec:
+  virtualhost:
+    fqdn: sample.test.local
+    rateLimitPolicy:
+      local:
+        requests: 5
+        unit: minute
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: sample
+          port: 80

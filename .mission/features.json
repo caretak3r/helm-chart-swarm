@@ -1,0 +1,1416 @@
+{
+  "features": [
+    {
+      "id": "f-fix-1-4b-apply-scenario-product-replay",
+      "description": "Extend apply-scenario.sh to install product.chart (the product helm release) in addition to cluster.preinstall items, so `PROJECT_DIR=<bundle> apply-scenario.sh artifacts/scenario.yaml` fully replays a scenario from artifacts alone. Add a `--preinstall-only` flag that run-scenario.sh uses to preserve current behavior (it installs the product chart itself after calling apply-scenario.sh). Update run-scenario.sh to pass `--preinstall-only` to apply-scenario.sh. Add a real bats integration test: copy artifacts/ to a tmpdir, spin up a fresh chart-test-swarm-replay1 kind cluster, run `PROJECT_DIR=<tmpdir> apply-scenario.sh <tmpdir>/scenario.yaml` against it, assert the helm release is deployed, then tear down.",
+      "skillName": "engine-bash",
+      "milestone": "engine-foundations",
+      "preconditions": [
+        "f-fix-1-4 vendored chart into artifacts/chart/ and rewrote scenario.yaml to product.chart: ./chart",
+        "run-scenario.sh currently installs product.chart at ~line 635-660 after calling apply-scenario.sh for preinstalls",
+        "apply-scenario.sh has no product.chart install step"
+      ],
+      "expectedBehavior": [
+        "apply-scenario.sh with no flags: applies cluster.preinstall items AND installs product.chart (helm install/upgrade with product.release, product.namespace, product.set, product.values); fails fast with named error if product.chart is not resolvable",
+        "apply-scenario.sh --preinstall-only: applies only cluster.preinstall items, does NOT install product.chart (backward compat for run-scenario.sh)",
+        "run-scenario.sh calls apply-scenario.sh --preinstall-only, then installs product.chart separately (behavior unchanged)",
+        "Replay test: PROJECT_DIR=<copied-bundle> apply-scenario.sh artifacts/scenario.yaml against a fresh kind cluster exits 0 and the product helm release is present in helm list -n <namespace>",
+        "PROJECT_DIR is respected for resolving ./chart, ./fixtures/* paths in the scenario YAML",
+        "All existing 121 bats tests continue to pass",
+        "New bats cases: (a) apply-scenario.sh without --preinstall-only installs product.chart, (b) --preinstall-only skips product install, (c) full replay test from copied artifacts/ bundle"
+      ],
+      "fulfills": [],
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f-misc-engine-1-minor-quality",
+      "description": "Two minor non-blocking quality fixes from round-2 scrutiny: (1) engine/testgrid/tests/test_integration_reorg.py defines REQUIRED_H2_SECTIONS (a set of named section titles: Overview, Variants, How to apply, Assertions, Known gotchas) but the structural check is count-based (>=3 H2), not name-based. Either enforce named-section checking using REQUIRED_H2_SECTIONS (preferred — aligns with primer-author SKILL.md requirements), or remove the unused constant. (2) engine/scripts/tests/context-and-failure-cleanup.bats has one bats case that only asserts the ABSENCE of a prefix-error string rather than positive teardown behavior — tighten it to assert the cluster was actually removed (kind get clusters shows no chart-test-swarm-* entry after the step).",
+      "skillName": "testgrid-python",
+      "milestone": "misc-fixes-1",
+      "preconditions": [
+        "f-fix-1-3 added TestPrimerStructure with REQUIRED_H2_SECTIONS defined but unused",
+        "f-fix-1-1 added context-and-failure-cleanup.bats with one overclaiming assertion"
+      ],
+      "expectedBehavior": [
+        "TestPrimerStructure either enforces named H2 sections from REQUIRED_H2_SECTIONS or removes the unused constant — no dead code",
+        "The tightened bats case asserts a positive side effect (kind get clusters shows no chart-test-swarm-* entry) rather than only absence of a string",
+        "All existing pytest + bats tests continue to pass"
+      ],
+      "fulfills": [],
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "scrutiny-validator-engine-foundations",
+      "description": "Scrutiny validation for milestone \"engine-foundations\". Runs test suite, typecheck, and lint. Spawns review subagents for each completed feature. Synthesizes findings. Always returns to orchestrator.",
+      "skillName": "scrutiny-validator",
+      "preconditions": [
+        "All implementation features for milestone \"engine-foundations\" are complete"
+      ],
+      "expectedBehavior": [
+        "Validators pass (test, typecheck, lint)",
+        "Review subagents spawned for each feature",
+        "Findings synthesized into scrutiny report"
+      ],
+      "milestone": "engine-foundations",
+      "status": "pending",
+      "workerSessionIds": [
+        "9b2b2f5b-5ae9-4d81-8be0-fcda1980a0e9"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "user-testing-validator-engine-foundations",
+      "description": "User testing validation for milestone \"engine-foundations\". Determines testable assertions from features' fulfills field, sets up environment, spawns flow validator subagents, synthesizes results. Always returns to orchestrator.",
+      "skillName": "user-testing-validator",
+      "preconditions": [
+        "All implementation features for milestone \"engine-foundations\" are complete"
+      ],
+      "expectedBehavior": [
+        "Testable assertions determined from fulfills mapping",
+        "Environment set up (services started, data seeded)",
+        "Flow validator subagents spawned and completed",
+        "Results synthesized, validation-state.json updated"
+      ],
+      "milestone": "engine-foundations",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "scrutiny-validator-engine-foundations",
+      "description": "Scrutiny validation for milestone \"engine-foundations\". Runs test suite, typecheck, and lint. Spawns review subagents for each completed feature. Synthesizes findings. Always returns to orchestrator.",
+      "skillName": "scrutiny-validator",
+      "preconditions": [
+        "All implementation features for milestone \"engine-foundations\" are complete"
+      ],
+      "expectedBehavior": [
+        "Validators pass (test, typecheck, lint)",
+        "Review subagents spawned for each feature",
+        "Findings synthesized into scrutiny report"
+      ],
+      "milestone": "engine-foundations",
+      "status": "pending",
+      "workerSessionIds": [
+        "f7c26249-9bf8-47d5-a339-8595e96cfe29"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "user-testing-validator-engine-foundations",
+      "description": "User testing validation for milestone \"engine-foundations\". Determines testable assertions from features' fulfills field, sets up environment, spawns flow validator subagents, synthesizes results. Always returns to orchestrator.",
+      "skillName": "user-testing-validator",
+      "preconditions": [
+        "All implementation features for milestone \"engine-foundations\" are complete"
+      ],
+      "expectedBehavior": [
+        "Testable assertions determined from fulfills mapping",
+        "Environment set up (services started, data seeded)",
+        "Flow validator subagents spawned and completed",
+        "Results synthesized, validation-state.json updated"
+      ],
+      "milestone": "engine-foundations",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f2-1-per-scenario-linked-artifacts",
+      "description": "Render anchor links on each dashboard scenario card to the scenario YAML, applied-overrides YAML, every fixture file, and every applied manifest under the run's artifacts/ bundle. Hrefs must resolve on disk, legacy runs without an artifacts/ bundle must omit the section (or render an explicit empty placeholder) without dead links.",
+      "skillName": "testgrid-python",
+      "preconditions": [
+        "F1.4 artifact bundle is produced for every successful run",
+        "engine/testgrid/render.py owns the scenario-card template"
+      ],
+      "expectedBehavior": [
+        "Each scenario card with an artifacts/ bundle exposes a visible 'Scenario YAML' anchor whose href ends with artifacts/scenario.yaml",
+        "Each scenario card exposes an 'Applied Overrides' anchor whose href ends with artifacts/applied-overrides.yaml (present even when the file is empty)",
+        "Each fixture file under artifacts/fixtures/ renders as a link with the filename as text; no fixture is omitted",
+        "Each manifest file under artifacts/manifests/ renders as a link; empty manifests/ renders an explicit empty-list placeholder rather than silent omission",
+        "Every artifact link href resolves to an existing regular file on disk (no 404s)",
+        "Legacy runs without an artifacts/ bundle render cards that omit the artifact link sections entirely (or show an explicit 'no artifacts' placeholder) — no anchors with empty/missing hrefs"
+      ],
+      "fulfills": [
+        "VAL-DASH-001",
+        "VAL-DASH-002",
+        "VAL-DASH-003",
+        "VAL-DASH-004",
+        "VAL-DASH-005",
+        "VAL-DASH-006"
+      ],
+      "milestone": "dashboard-uplift",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f2-2-variant-grouping",
+      "description": "Collapse 3-4 lean variants per integration under a single header row in the matrix view, with variant count + pass/fail breakdown displayed on the header. Clicking the header toggles expand/collapse; the collapsed header reflects the worst-of-set rolled-up status using the project's STATUS_RANK ordering.",
+      "skillName": "testgrid-python",
+      "preconditions": [
+        "F2.1 artifact links are rendering per scenario card",
+        "Scenarios snapshot carries (mechanism-category, integration, variant) information per scenario"
+      ],
+      "expectedBehavior": [
+        "When 3+ scenarios share a (category, integration), the matrix renders exactly one header row followed by the variants beneath it — not one row per variant at the top",
+        "Integration header row contains '<N> variants: <P> PASS / <F> FAIL' text (with PARTIAL/UNTESTED when present), counts equal the per-variant statuses",
+        "Clicking the integration header toggles visibility of its variant rows (aria-expanded, [hidden], display:none, or <details open> transition); second click returns to prior state",
+        "Collapsed integration header status badge shows the worst-of-set status using STATUS_RANK (FAIL < PARTIAL < INCONCLUSIVE < UNTESTED < PASS)",
+        "Cross-feature: variant grouping correctly aggregates mixed PASS/FAIL outcomes across any integration milestone (M3-M7), with expand revealing each variant's individual status"
+      ],
+      "fulfills": [
+        "VAL-DASH-007",
+        "VAL-DASH-008",
+        "VAL-DASH-009",
+        "VAL-DASH-010",
+        "VAL-CROSS-011"
+      ],
+      "milestone": "dashboard-uplift",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f2-3-cloud-platform-column-rendering",
+      "description": "Surface scenarios whose cluster.provider is in {gke, eks, aks} with a distinct visual marker (icon + accessible 'authored, not run locally' tooltip) and display their status as AUTHORED (not PASS/FAIL/UNTESTED) so reviewers can tell at a glance that cloud-native cards were never run locally.",
+      "skillName": "testgrid-python",
+      "preconditions": [
+        "F2.2 variant grouping renders correctly",
+        "Cloud-native cluster.provider values (gke, eks, aks) appear in collected scenarios"
+      ],
+      "expectedBehavior": [
+        "Scenario cards/rows for gke|eks|aks (or mechanisms cloud:*) render an additional visual cue distinct from local kind/minikube (.badge.cloud with 'AUTHORED ONLY' text or cloud-icon span)",
+        "The marker carries an accessible tooltip (title/aria-label or sibling text node) matching 'authored, not run locally' (case-insensitive)",
+        "Cloud-platform per-row Status column and detail-summary badge display AUTHORED (or AUTHORED ONLY), not PASS/FAIL/UNTESTED, even when no result.yaml entry exists for the scenario"
+      ],
+      "fulfills": [
+        "VAL-DASH-011",
+        "VAL-DASH-012",
+        "VAL-DASH-013"
+      ],
+      "milestone": "dashboard-uplift",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f2-4-multi-run-aggregation-safeguards",
+      "description": "Make build-dashboard.sh and the testgrid collector robust to mixed legacy/rich report shapes, orphaned run directories, corrupt result.yaml files, and zero-scenario runs. Guarantee deterministic byte-identical rebuilds, surface FAIL detail (error string or log link), preserve prior runs in the index after rebuilds, normalize unknown statuses, and HTML-escape user-controlled fields against XSS.",
+      "skillName": "testgrid-python",
+      "preconditions": [
+        "F2.1, F2.2, F2.3 dashboard features are in place",
+        "engine/scripts/build-dashboard.sh and engine/testgrid/src/testgrid/collect.py + render.py exist"
+      ],
+      "expectedBehavior": [
+        "build-dashboard.sh exits 0 against a reports/ tree containing both legacy (snapshot + agent-*/result.yaml only) and rich (full artifacts/) runs, and writes reports/dist/index.html",
+        "Both legacy-shape and rich-shape run ids appear in the rendered Runs table with linkable rows and correct scenario counts",
+        "An orphaned run dir (no result.yaml, no snapshot) is skipped without crashing — stderr warning identifies the skipped run; the index omits it",
+        "Repeated dashboard builds produce byte-identical HTML (diff -r returns 0 modulo a single rendered_at line); ordering is deterministic (lex-sorted scenario ids)",
+        "Rendered dashboard loads in a browser with zero console errors and zero non-200 file:// fetches",
+        "Every FAIL scenario card surfaces either a non-empty error summary text (>=40 chars OK) or a Log/Error log anchor that resolves to a non-empty logs/*.log; PASS cards do not emit empty error-summary nodes",
+        "Re-running a scenario into a new run-* dir leaves prior runs intact in the rebuilt index; run-A artifact links still resolve on disk",
+        "A corrupt result.yaml in a run dir is reported on stderr (run id + corruption reason); the rendered index either places a 'metadata error' placeholder row or omits the run — never crashes",
+        "STATUS_RANK orders UNTESTED strictly less than INCONCLUSIVE so an UNTESTED + INCONCLUSIVE rollup surfaces as UNTESTED (unit test + synthetic render confirm)",
+        "collect.py rejects (or visibly surfaces) result.yaml files whose status is not in the known status set — never silently CSS-coerced to status-unknown",
+        "Dashboard HTML escapes user-controlled fields (name, description, notes, fail_msg, log_dir) so XSS payloads render as literal text, not live HTML",
+        "When result.yaml has scenarios: [], build exits 0, run id appears with scenario-count 0, and the run detail block renders an explicit '0 scenarios in this run' placeholder",
+        "Cross-feature: the dashboard correctly reads engine reports across every integration category (M3-M8) with no missing scenarios, no schema-mismatch warnings, and every artifact anchor resolving"
+      ],
+      "fulfills": [
+        "VAL-DASH-014",
+        "VAL-DASH-015",
+        "VAL-DASH-016",
+        "VAL-DASH-017",
+        "VAL-DASH-018",
+        "VAL-DASH-019",
+        "VAL-DASH-020",
+        "VAL-DASH-021",
+        "VAL-DASH-022",
+        "VAL-DASH-023",
+        "VAL-DASH-024",
+        "VAL-DASH-025",
+        "VAL-CROSS-021"
+      ],
+      "milestone": "dashboard-uplift",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f3-1-cert-manager",
+      "description": "Rewrite the cert-manager primer under certificates/ and author 3-4 lean scenarios (self-signed CA issuer, Let's Encrypt staging, wildcard, optional JKS/PKCS12) that drive the cert-manager helm preinstall, issue Certificates against the sample chart, and surface the resulting TLS Secrets to the chart.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.2 raw_manifest preinstall available",
+        "F1.3 category reorg complete (certificates/ subdir exists)",
+        "F3.4 shared certificates fixture set populated (or co-authored alongside)"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../certificates/cert-manager.md exists, non-empty, has a Cluster preinstall section and What/When/How sections (>=3 H2 headings)",
+        "At least three scenarios match certificates-cert-manager-*.yaml with ids matching filename stems",
+        "self-signed-ca scenario runs PASS: cert-manager namespace controller+webhook+cainjector pods Ready; ClusterIssuer selfSigned exists; Certificate Ready=True; TLS Secret contains tls.crt, tls.key, ca.crt",
+        "self-signed-ca scenario: in-cluster HTTPS curl with --cacert returns 200 and peer cert SAN includes the configured host",
+        "lets-encrypt-staging scenario runs PASS using ACME staging URL (or stubbed challenge) with Issuer/ClusterIssuer Ready=True and chart pods Ready",
+        "wildcard scenario runs PASS and issued TLS Secret cert has SAN DNS:*.test.local plus base-domain SAN",
+        "Optional jks-pkcs12 variant (if authored) PASS and resulting Secret contains keystore.jks/keystore.p12 alongside tls.crt/tls.key"
+      ],
+      "fulfills": [
+        "VAL-CERT-001",
+        "VAL-CERT-002",
+        "VAL-CERT-007",
+        "VAL-CERT-008",
+        "VAL-CERT-009",
+        "VAL-CERT-010",
+        "VAL-CERT-011"
+      ],
+      "milestone": "certificates",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f3-2-manual-tls-secret",
+      "description": "Author the manual-tls-secret primer under certificates/ plus 3-4 scenarios (basic, multiple SANs, ECDSA key) that deliver a pre-existing TLS Secret to the sample chart via raw_manifest preinstall, referencing fixtures from F3.4 rather than inline base64 blobs.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.2 raw_manifest preinstall available",
+        "F3.4 shared certificates fixture set populated with TLS material"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../certificates/manual-tls-secret.md exists, non-empty, documents what + when + how + Cluster preinstall (>=3 of these H2 sections)",
+        "At least three scenarios match certificates-manual-tls-secret-*.yaml (basic, multiple-sans, ecdsa)",
+        "basic scenario runs PASS: preinstall includes a raw_manifest kind delivering a kind:Secret of type kubernetes.io/tls with tls.crt+tls.key populated in the product namespace",
+        "multiple-sans scenario runs PASS: certificate has >=2 DNS: SANs",
+        "ecdsa scenario runs PASS: certificate public-key algorithm is id-ecPublicKey (P-256 or P-384), pods serve TLS using the ECDSA key"
+      ],
+      "fulfills": [
+        "VAL-CERT-003",
+        "VAL-CERT-004",
+        "VAL-CERT-012",
+        "VAL-CERT-013",
+        "VAL-CERT-014"
+      ],
+      "milestone": "certificates",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f3-3-mounted-tls-certs",
+      "description": "Author the mounted-tls-certs primer under certificates/ plus 3-4 scenarios covering PVC mount, projected volume, and CSI secret-store delivery of TLS material into the product pod.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.2 raw_manifest preinstall available",
+        "F3.4 shared certificates fixture set populated"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../certificates/mounted-tls-certs.md exists, non-empty, has >=3 H2 sections documenting what/when (PVC vs projected vs CSI) and how the consumer chart references the mounted path",
+        "At least three scenarios match certificates-mounted-tls-certs-*.yaml (pvc-mount, projected-volume, csi-secret-store)",
+        "pvc-mount scenario PASS: product pod has a volumeMount whose mountPath matches tls.mountPath and volume source is persistentVolumeClaim; exec stat /etc/tls/tls.crt succeeds",
+        "projected-volume scenario PASS: product pod has a projected volume with at least one secret source; mount path reachable from inside the pod",
+        "csi-secret-store scenario PASS (or SKIP with documented reason): preinstall installs secrets-store-csi-driver helm chart + stub SecretProviderClass; pod has csi.driver=secrets-store.csi.k8s.io volume; mount contains expected cert files"
+      ],
+      "fulfills": [
+        "VAL-CERT-005",
+        "VAL-CERT-006",
+        "VAL-CERT-015",
+        "VAL-CERT-016",
+        "VAL-CERT-017"
+      ],
+      "milestone": "certificates",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f3-4-certificates-fixture-set",
+      "description": "Populate the shared certificate fixture set under examples/sample-product-chart/chart-test/fixtures/certificates/ (CA cert + key plus any per-variant material) so cert-manager, manual-tls-secret, and mounted-tls-certs scenarios reference canonical files rather than embedding base64 inline. Add the helm lint gate and schema-validation sweep that prove the certificates milestone is self-consistent.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.5 lint scaffolding is installed (helm lint, yamllint, jsonschema sweep)",
+        "F3.1, F3.2, F3.3 primers/scenarios are landing in parallel"
+      ],
+      "expectedBehavior": [
+        "Every certificates-*.yaml scenario validates against engine/templates/scenario.schema.json (sweep exits 0 across the area)",
+        "helm lint examples/sample-product-chart/chart exits 0 with no [ERROR] lines for the certificates milestone",
+        "fixtures/certificates/ contains at minimum ca.crt and ca.key as non-empty files; ca.crt parses as PEM cert, ca.key parses as PEM private key (RSA or ECDSA)",
+        "Shared fixtures referenced by multiple scenarios are byte-identical (single sha256 per file); no scenario embeds raw BEGIN CERTIFICATE PEM inline",
+        "manual-tls-secret scenarios deliver TLS material via raw_manifest paths resolving under chart-test/fixtures/certificates/ — never inline base64 blobs",
+        "Private-key fixtures are gitignored OR carry a header comment declaring them test-only ephemeral keys; no fixture key is bound to a production-shaped certificate"
+      ],
+      "fulfills": [
+        "VAL-CERT-018",
+        "VAL-CERT-019",
+        "VAL-CERT-020",
+        "VAL-CERT-021",
+        "VAL-CERT-022",
+        "VAL-CERT-023"
+      ],
+      "milestone": "certificates",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f4-1-traefik",
+      "description": "Refresh the Traefik primer into ingress-controllers/ and author 3-4 lean variants: basic, TLS-passthrough, middleware-chain, and (optionally) IngressRoute CRD. HTTP probes target the Traefik pod IP from inside the cluster.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.2 raw_manifest preinstall available",
+        "F1.3 category reorg complete (ingress-controllers/ subdir exists)"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../ingress-controllers/traefik.md exists with a Cluster preinstall section declaring the traefik/traefik chart + repo + pods-ready wait, plus what/when/how (>=3 H2 sections)",
+        "At least three scenarios match ingress-controllers-traefik-*.yaml with mechanisms including addon:traefik",
+        "traefik-basic PASS: in-cluster curl with Host: header returns 200 from the product chart; without the Host header it returns the Traefik 404",
+        "traefik-tls-passthrough PASS: IngressRoute (or IngressRouteTCP) tls.passthrough is true; HTTPS curl returns 200 and the served cert matches the backend's cert (not Traefik's default)",
+        "traefik-middleware-chain PASS: IngressRoute references >=1 Middleware CR; the middleware's effect is observable (added header or stripped path); without the middleware the effect disappears",
+        "Optional traefik-ingressroute-crd variant (if authored) PASS: routing resource is IngressRoute.traefik.io/v1alpha1, no classic Ingress used"
+      ],
+      "fulfills": [
+        "VAL-INGRESS-001",
+        "VAL-INGRESS-002",
+        "VAL-INGRESS-007",
+        "VAL-INGRESS-008",
+        "VAL-INGRESS-009",
+        "VAL-INGRESS-010"
+      ],
+      "milestone": "ingress-controllers",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f4-2-nginx-ingress",
+      "description": "Author the nginx-ingress primer under ingress-controllers/ plus 3-4 lean variants: basic, snippet annotations, default-backend, canary. Validate composition with cert-manager (M3) where a TLS-terminated HTTPS path exercises both controllers in one scenario.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F3.1 cert-manager primer/scenarios are available",
+        "F1.2, F1.3, F1.4 engine work is merged"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../ingress-controllers/nginx-ingress.md exists with Cluster preinstall declaring ingress-nginx/ingress-nginx helm chart + repo URL + pods-ready wait, plus what/when/how guidance and ingressClassName: nginx wiring",
+        "At least three scenarios match ingress-controllers-nginx-ingress-*.yaml (basic, snippet-annotations, default-backend, canary)",
+        "nginx-ingress-basic PASS: Ingress carries ingressClassName: nginx; in-cluster curl with Host: header returns 200; controller logs show the request matched the product Service",
+        "nginx-ingress-snippet-annotations PASS: Ingress has nginx.ingress.kubernetes.io/*-snippet annotation; controller enables snippet validation; curl exhibits the snippet effect (added header)",
+        "nginx-ingress-default-backend PASS: nginx controller uses a custom default backend; curl without matching Host returns the custom backend's distinctive body",
+        "nginx-ingress-canary PASS: two Ingresses for the same host (one with canary annotations + weight 20); a 100-curl probe shows 10-30 routed to canary",
+        "Cross-feature compose: cert-manager (M3) + nginx-ingress (M4) — Certificate issued, Secret referenced by nginx Ingress TLS, HTTPS curl returns 200 with cert chain rooted at ClusterIssuer CA"
+      ],
+      "fulfills": [
+        "VAL-INGRESS-003",
+        "VAL-INGRESS-004",
+        "VAL-INGRESS-011",
+        "VAL-INGRESS-012",
+        "VAL-INGRESS-013",
+        "VAL-INGRESS-014",
+        "VAL-CROSS-005"
+      ],
+      "milestone": "ingress-controllers",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f4-3-contour",
+      "description": "Author the Contour primer under ingress-controllers/ plus 3-4 lean variants: basic HTTPProxy, TLS delegation, rate-limit, and (optionally) JWT auth. Land the area-wide validation sweeps (jsonschema, helm lint, variant-pair diff, controller readiness gate) that close the ingress-controllers milestone.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F4.1 and F4.2 primers/scenarios are landing",
+        "F1.4 artifact contract and F1.5 lint scaffolding are merged"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../ingress-controllers/contour.md exists with Cluster preinstall declaring bitnami/contour or projectcontour/contour helm chart, plus what/when/how + HTTPProxy vs Ingress + TLS delegation guidance",
+        "At least three scenarios match ingress-controllers-contour-*.yaml (basic-httpproxy, tls-delegation, rate-limit, optional jwt-auth)",
+        "contour-basic-httpproxy PASS: routing resource is HTTPProxy.projectcontour.io/v1; in-cluster curl returns 200; HTTPProxy status.currentStatus is valid",
+        "contour-tls-delegation PASS: TLSCertificateDelegation grants the HTTPProxy access to a cross-namespace TLS Secret; HTTPS curl returns 200 with the delegated Secret's cert",
+        "contour-rate-limit PASS: HTTPProxy rateLimitPolicy enforced; >limit probes produce at least one 429; <limit probes all 200",
+        "Optional contour-jwt-auth (if authored) PASS: requests without Bearer token get 401/403; with a valid JWT they get 200",
+        "Every ingress-controllers-*.yaml validates against the schema (sweep exits 0)",
+        "helm lint examples/sample-product-chart/chart exits 0 with no [ERROR] lines for the ingress-controllers milestone",
+        "Variant scenarios for the same controller differ ONLY in product.set, ingress/route annotations or spec fields, or an added raw_manifest preinstall — no variant changes ingress controller chart or product namespace",
+        "Each controller's pod (traefik, nginx-ingress, contour) is Ready before its HTTP probe runs; kubectl wait --for=condition=ready exits 0"
+      ],
+      "fulfills": [
+        "VAL-INGRESS-005",
+        "VAL-INGRESS-006",
+        "VAL-INGRESS-015",
+        "VAL-INGRESS-016",
+        "VAL-INGRESS-017",
+        "VAL-INGRESS-018",
+        "VAL-INGRESS-019",
+        "VAL-INGRESS-020",
+        "VAL-INGRESS-021",
+        "VAL-INGRESS-022"
+      ],
+      "milestone": "ingress-controllers",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f5-1-envoy-gateway",
+      "description": "Author the envoy-gateway primer under gateway-api/ (using the F1.2 OCI helm chart and the gateway.envoyproxy.io/gatewayclass-controller controllerName) plus 3-4 lean variants: HTTPRoute, GRPCRoute, SecurityPolicy attach. Demonstrate composition with cert-manager (M3) where Gateway listener TLS is terminated by a cert-manager-issued Secret.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.2 raw_manifest preinstall + OCI envoy-gateway helm ref are merged",
+        "F3.1 cert-manager scenarios available"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../gateway-api/envoy-gateway.md exists, references oci://docker.io/envoyproxy/gateway-helm, notes GatewayClass envoy and controllerName gateway.envoyproxy.io/gatewayclass-controller, no defunct helm-chart URL appears",
+        "At least three scenarios match gateway-api-envoy-gateway-*.yaml; each preinstall has >=1 raw_manifest delivering Gateway API CRDs and a helm item for the OCI envoy-gateway chart",
+        "envoy-gateway-httproute PASS: GatewayClass envoy Accepted=True; Gateway Programmed=True; HTTPRoute parents[0] Accepted=True; HTTP curl returns 200",
+        "envoy-gateway-grpcroute PASS: GRPCRoute Accepted=True; in-cluster grpcurl reflection probe lists >=1 service",
+        "envoy-gateway-security-policy-attach PASS: SecurityPolicy targetRef binds HTTPRoute/Gateway with Accepted=True; policy effect observable (CORS header on preflight OR 401 on unauth)",
+        "Cross-feature compose: envoy-gateway (M5) + cert-manager (M3) — Gateway listener tls.certificateRefs points to a cert-manager Secret; HTTPRoute attaches, listener Programmed=True, HTTPS curl returns 200 with expected cert"
+      ],
+      "fulfills": [
+        "VAL-GW-001",
+        "VAL-GW-002",
+        "VAL-GW-007",
+        "VAL-GW-008",
+        "VAL-GW-009",
+        "VAL-CROSS-008"
+      ],
+      "milestone": "gateway-api-variants",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f5-2-istio-gateway-api",
+      "description": "Author the istio-gateway-api primer under gateway-api/ (istio/base + istio/istiod preinstall, GatewayClass istio + controllerName istio.io/gateway-controller) plus 3-4 lean variants: basic, multi-listener, BackendTLSPolicy.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.2 raw_manifest preinstall available for Gateway API CRD bootstrap",
+        "Istio helm charts reachable"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../gateway-api/istio-gateway-api.md exists, references istio/base + istio/istiod helm preinstall, notes gatewayClassName: istio and controllerName istio.io/gateway-controller, explains differences from classic ingress-gateway mode",
+        "At least three scenarios match gateway-api-istio-gateway-api-*.yaml; preinstall installs istio base + istiod and a Gateway API CRD raw_manifest",
+        "istio-gateway-api-basic PASS: GatewayClass istio Accepted=True; Gateway Programmed=True; auto-provisioned Deployment in the Gateway namespace; HTTPRoute Accepted=True; HTTP curl returns 200",
+        "istio-gateway-api-multi-listener PASS: Gateway declares >=2 listeners (HTTP:80 + HTTPS:443) both Programmed=True; HTTP curl returns 200; HTTPS curl returns 200",
+        "istio-gateway-api-backend-tls-policy PASS: BackendTLSPolicy targets product Service with Accepted=True; gateway initiates TLS to upstream (visible in Istio access logs)"
+      ],
+      "fulfills": [
+        "VAL-GW-003",
+        "VAL-GW-004",
+        "VAL-GW-010",
+        "VAL-GW-011",
+        "VAL-GW-012"
+      ],
+      "milestone": "gateway-api-variants",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f5-3-contour-gateway-api",
+      "description": "Author the contour-gateway-api primer under gateway-api/ (Contour helm chart with Gateway-API provisioner, GatewayClass contour + controllerName projectcontour.io/gateway-controller) plus 3-4 lean variants: basic, response-header-modifier, route-precedence. Land the area-wide gateway-api validation sweeps (CRD raw_manifest presence, correct GatewayClass per impl, jsonschema, helm lint, gateway_api_crds version stamp).",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F5.1 and F5.2 primers/scenarios are landing",
+        "F1.4 artifact contract supports versions.json extension keys"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../gateway-api/contour-gateway-api.md exists, references the Contour helm chart with Gateway-API provisioner enabled, notes gatewayClassName: contour + controllerName projectcontour.io/gateway-controller, explains differences from HTTPProxy mode",
+        "At least three scenarios match gateway-api-contour-gateway-api-*.yaml (basic, response-header-modifier, route-precedence)",
+        "contour-gateway-api-basic PASS: GatewayClass contour Accepted=True; Gateway Programmed=True; HTTPRoute Accepted=True; curl returns 200",
+        "contour-gateway-api-response-header-modifier PASS: HTTPRoute rules[0].filters[] includes ResponseHeaderModifier adding the configured header; curl response includes it",
+        "contour-gateway-api-route-precedence PASS: two HTTPRoutes for the same host with overlapping prefixes resolve per spec — more specific (/api/v2) wins, less specific (/api) wins for non-overlapping paths (verified via response header per backend)",
+        "Every gateway-api-*.yaml scenario has >=1 cluster.preinstall item with kind: raw_manifest delivering Gateway API CRDs (no scenario relies on out-of-band CRD install)",
+        "Each scenario's embedded/referenced gatewayClassName matches its implementation prefix (envoy / istio / contour) — no mismatched GatewayClass references",
+        "Every gateway-api-*.yaml validates against the schema (sweep exits 0)",
+        "helm lint examples/sample-product-chart/chart exits 0 with no [ERROR] lines for the gateway-api milestone",
+        "For every PASS gateway-api run, artifacts/manifests/ contains at least one apiVersion: gateway.networking.k8s.io/v1 (or v1beta1) file AND artifacts/versions.json includes a gateway_api_crds version key"
+      ],
+      "fulfills": [
+        "VAL-GW-005",
+        "VAL-GW-006",
+        "VAL-GW-013",
+        "VAL-GW-014",
+        "VAL-GW-015",
+        "VAL-GW-016",
+        "VAL-GW-017",
+        "VAL-GW-018",
+        "VAL-GW-019",
+        "VAL-GW-020"
+      ],
+      "milestone": "gateway-api-variants",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f6-1-istio-service-mesh",
+      "description": "Refresh the istio-service-mesh primer into service-mesh/ and author 3-4 lean variants: sidecar-injection, strict-mTLS, peer-authentication, telemetry-v2. Compose with cert-manager (M3) where an istio Gateway listener uses a cert-manager-issued Secret.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.3 category reorg places istio-service-mesh under service-mesh/",
+        "F3.1 cert-manager primer + variants available for cross-feature composition"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../service-mesh/istio-service-mesh.md exists at the canonical post-reorg path, documenting cluster preinstall, feasibility checklist, helm-test pattern, and common failure modes",
+        "Scenarios named service-mesh-istio-service-mesh-{sidecar-injection,strict-mtls,peer-authentication,telemetry-v2}.yaml exist with cluster.provider: kind and istio base + istiod helm preinstall",
+        "sidecar-injection variant: every product pod has exactly 2 containers including istio-proxy",
+        "In-mesh pod with sidecar.istio.io/inject=true reaches the product Service FQDN over the sidecar with HTTP 200",
+        "strict-mtls variant: PeerAuthentication <release>-mtls in product namespace with spec.mtls.mode==STRICT",
+        "Under STRICT mTLS, plain HTTP from a non-mesh pod is rejected (non-zero curl exit / connection reset / HTTP 503) within 15s",
+        "Under STRICT mTLS, in-mesh probe pod's HTTP request still succeeds with 200 via auto-upgraded mTLS",
+        "Cross-feature compose: istio-service-mesh (M6) + cert-manager (M3) — istio Gateway credentialName references cert-manager Secret; istioctl analyze clean; HTTPS request through gateway returns 200 with the cert-manager-issued cert"
+      ],
+      "fulfills": [
+        "VAL-MESH-001",
+        "VAL-MESH-005",
+        "VAL-MESH-008",
+        "VAL-MESH-009",
+        "VAL-MESH-010",
+        "VAL-MESH-011",
+        "VAL-MESH-012",
+        "VAL-CROSS-006"
+      ],
+      "milestone": "service-mesh",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f6-2-istio-ingress-gateway",
+      "description": "Refresh the istio-ingress-gateway primer into service-mesh/ and author 3-4 lean variants: basic, multi-host, JWT, request-authentication. JWT variants reference fixtures under fixtures/service-mesh/jwt/.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F6.1 istio-service-mesh primer/scenarios are landing",
+        "fixtures/service-mesh/ directory available for JWT material"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../service-mesh/istio-ingress-gateway.md exists at the canonical post-reorg path with gateway-component preinstall block, feasibility checklist, helm-test pattern covering Gateway + VirtualService application, and Istio Gateway vs Gateway API disambiguation",
+        "Scenarios named service-mesh-istio-ingress-gateway-{basic,multi-host,jwt,request-authentication}.yaml exist with istio gateway helm chart in preinstall and JWT fixtures referenced from fixtures/service-mesh/",
+        "basic variant: networking.istio.io/v1beta1 Gateway <release>-igw exists in the product namespace and kubectl get gateway succeeds",
+        "VirtualService routes traffic — request to istio-ingressgateway pod IP with the configured Host header returns 200 from the application",
+        "JWT variant: curl without Authorization Bearer header (or invalid token) returns 401/403 from RequestAuthentication / AuthorizationPolicy",
+        "JWT variant: helm-test pod signs a JWT with the test issuer key (from fixtures/service-mesh/jwt/) and curl with the bearer token returns 200"
+      ],
+      "fulfills": [
+        "VAL-MESH-002",
+        "VAL-MESH-006",
+        "VAL-MESH-013",
+        "VAL-MESH-014",
+        "VAL-MESH-015",
+        "VAL-MESH-016"
+      ],
+      "milestone": "service-mesh",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f6-3-linkerd",
+      "description": "Author the linkerd primer under service-mesh/ plus 3-4 lean variants: basic mesh, multi-cluster preview, ServiceProfile, mTLS rotation. Land the area-wide service-mesh validation sweeps (jsonschema, helm lint, yamllint clean, mesh-webhook teardown).",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F6.1 and F6.2 primers/scenarios are landing",
+        "F1.5 lint scaffolding installed"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../service-mesh/linkerd.md exists documenting linkerd-control-plane preinstall, feasibility checklist, helm-test injection pattern, and failure-mode discussion (linkerd check failures, proxy not injected, mTLS rotation lag)",
+        "Every service-mesh scenario YAML (12 variants combined) parses and validates against the schema",
+        "Scenarios named service-mesh-linkerd-{basic-mesh,multi-cluster-preview,service-profile,mtls-rotation}.yaml exist with linkerd helm preinstall and the linkerd.io/inject: enabled namespace annotation",
+        "linkerd-basic-mesh variant: every product pod has a linkerd-proxy container alongside the product container (2-container pod)",
+        "helm-test probe pod runs `linkerd check --proxy` and the command exits 0 with 'Status check results are √'",
+        "Every service-mesh variant on kind produces result.yaml status PASS with populated artifacts/ (scenario.yaml, applied-overrides.yaml, versions.json with helm/kubectl/kind/minikube/k8s_server keys)",
+        "For each of the 12 service-mesh variants, helm lint examples/sample-product-chart/chart --values <applied-overrides> exits 0",
+        "yamllint over service-mesh primer YAMLs and service-mesh-*.yaml scenarios exits 0 (clean-as-you-go)",
+        "After cluster-down.sh, the next clean kind cluster shows zero MutatingWebhookConfiguration or ValidatingWebhookConfiguration entries matching istio-sidecar-injector or linkerd-proxy-injector-webhook"
+      ],
+      "fulfills": [
+        "VAL-MESH-003",
+        "VAL-MESH-004",
+        "VAL-MESH-007",
+        "VAL-MESH-017",
+        "VAL-MESH-018",
+        "VAL-MESH-019",
+        "VAL-MESH-020",
+        "VAL-MESH-021",
+        "VAL-MESH-022"
+      ],
+      "milestone": "service-mesh",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f7-1-opa-gatekeeper",
+      "description": "Refresh the opa-gatekeeper primer into policy/ and author 3-4 lean variants: required-labels, image-allowlist, resource-limits, sync-config. Each variant uses ConstraintTemplates + Constraints with kubectl --dry-run=server admission probing. Compose with nginx-ingress (M4) where a required-labels Constraint targets Ingress resources.",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F1.3 category reorg places opa-gatekeeper under policy/",
+        "F4.2 nginx-ingress scenarios available for cross-feature compose"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../policy/opa-gatekeeper.md exists documenting gatekeeper preinstall, the inverted feasibility model (soft checks surface chart non-compliances), helm-test pattern using ConstraintTemplates + Constraints with dry-run server-side apply",
+        "Scenarios named policy-opa-gatekeeper-{required-labels,image-allowlist,resource-limits,sync-config}.yaml exist with cluster.provider: kind and gatekeeper/gatekeeper helm preinstall pinned per the primer",
+        "required-labels: ConstraintTemplate k8srequiredlabels has observedGeneration >= generation; CRD k8srequiredlabels.constraints.gatekeeper.sh Established=True within 90s",
+        "required-labels: non-compliant Deployment apply --dry-run=server is rejected by the admission webhook (stderr names constraint + missing label)",
+        "required-labels: compliant Deployment apply --dry-run=server exits 0",
+        "image-allowlist: non-allowlisted image Deployment denied at admission (stderr names disallowed registry)",
+        "image-allowlist: allowlisted image Deployment accepted (exit 0)",
+        "resource-limits: Deployment without resources.limits denied with K8sContainerLimits constraint message",
+        "sync-config: Gatekeeper Config resource in gatekeeper-system has non-empty spec.sync.syncOnly",
+        "Cross-feature compose: opa-gatekeeper (M7) + nginx-ingress (M4) — required-labels Constraint targets Ingress resources; non-compliant nginx Ingress is rejected by admission webhook (stderr contains constraint violation text); compliant Ingress is admitted and reaches Ready"
+      ],
+      "fulfills": [
+        "VAL-POLICY-001",
+        "VAL-POLICY-004",
+        "VAL-POLICY-006",
+        "VAL-POLICY-007",
+        "VAL-POLICY-008",
+        "VAL-POLICY-009",
+        "VAL-POLICY-010",
+        "VAL-POLICY-011",
+        "VAL-POLICY-012",
+        "VAL-CROSS-007"
+      ],
+      "milestone": "policy-engines",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f7-2-kyverno",
+      "description": "Author the kyverno primer under policy/ plus 3-4 lean variants: validate, mutate, generate, image-verify. Pin chart version and configure validatingWebhookFailurePolicy: Fail so enforcement is not silently skipped. Land area-wide policy validation sweeps (jsonschema, helm lint, webhook-failure-mode doc + exercise).",
+      "skillName": "scenario-author",
+      "preconditions": [
+        "F7.1 opa-gatekeeper primer/scenarios are landing",
+        "F1.5 lint scaffolding installed"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../policy/kyverno.md exists documenting kyverno helm chart preinstall, feasibility checklist, helm-test pattern for ClusterPolicy authoring + dry-run admission probing, and failure-mode discussion (webhook timeout, policy-report lag, image-verify keyring trust)",
+        "Every policy scenario YAML (8 variants combined) parses and validates against the schema",
+        "Scenarios named policy-kyverno-{validate,mutate,generate,image-verify}.yaml exist with kyverno/kyverno helm chart at a pinned version and validatingWebhookFailurePolicy: Fail override",
+        "kyverno-validate: non-compliant Deployment denied (stderr names admission webhook validate.kyverno.svc-fail and the policy name)",
+        "kyverno-validate: compliant Deployment accepted (exit 0)",
+        "kyverno-mutate: Pod manifest lacking the target annotation gets it auto-added after the mutating webhook fires (kubectl get pod jsonpath returns the policy-injected key/value)",
+        "kyverno-generate: creating a fresh namespace matching the ClusterPolicy match block causes kyverno to generate the template's downstream resource within 10s",
+        "kyverno-image-verify: Pod referencing an image without the configured signature attestation is denied by verifyImages rule (stderr names rule)",
+        "Every policy variant on kind produces PASS result.yaml with populated artifacts/",
+        "For each of the 8 policy variants, helm lint examples/sample-product-chart/chart --values <applied-overrides> exits 0",
+        "Each policy primer declares a 'Webhook failure mode' section; rendered admission webhooks show the declared failurePolicy; a deliberate-outage probe per engine exhibits the documented behavior (apply succeeds under Ignore; webhook-timeout under Fail)"
+      ],
+      "fulfills": [
+        "VAL-POLICY-002",
+        "VAL-POLICY-003",
+        "VAL-POLICY-005",
+        "VAL-POLICY-013",
+        "VAL-POLICY-014",
+        "VAL-POLICY-015",
+        "VAL-POLICY-016",
+        "VAL-POLICY-017",
+        "VAL-POLICY-018",
+        "VAL-POLICY-019",
+        "VAL-POLICY-020"
+      ],
+      "milestone": "policy-engines",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f8-1-gke",
+      "description": "Author the GKE primer under cloud-native/ documenting Workload Identity, IAP, GKE Gateway Controller, and regional cluster networking. Authored-only — no kubectl apply against a real GKE cluster from this repo.",
+      "skillName": "primer-author",
+      "preconditions": [
+        "F1.1 schema includes gke in cluster.provider enum",
+        "F1.3 category reorg places cloud-native/ alongside other categories"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../cloud-native/gke.md exists with H2 sections for Workload Identity, IAP, GKE Gateway Controller, regional cluster networking",
+        "Primer carries an explicit 'AUTHORED ONLY — not run from this repo' notice",
+        "Primer documents credential prerequisites (gcloud auth, IAM bindings) and cluster prerequisites (GKE version, add-ons, network mode)"
+      ],
+      "fulfills": [
+        "VAL-CLOUD-001"
+      ],
+      "milestone": "cloud-native-primers",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f8-2-eks",
+      "description": "Author the EKS primer under cloud-native/ documenting IRSA, ALB Ingress Controller, ACK (AWS Controllers for Kubernetes), and Fargate. Authored-only.",
+      "skillName": "primer-author",
+      "preconditions": [
+        "F1.1 schema includes eks in cluster.provider enum",
+        "F1.3 category reorg places cloud-native/ alongside other categories"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../cloud-native/eks.md exists with H2 sections for IRSA, ALB Ingress Controller, ACK, Fargate",
+        "Primer carries an explicit 'AUTHORED ONLY' notice",
+        "Primer documents credential prerequisites (AWS IAM role, OIDC provider) and cluster prerequisites"
+      ],
+      "fulfills": [
+        "VAL-CLOUD-002"
+      ],
+      "milestone": "cloud-native-primers",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f8-3-aks",
+      "description": "Author the AKS primer under cloud-native/ documenting Workload Identity, AGIC, App Routing addon, and Azure Policy. Land the area-wide cloud-native authored-only safeguards: 3+ per-cloud scenario YAMLs, non-local cluster.provider per scenario, schema + dry-run + kubeval + helm template lint, dispatch-swarm.sh skip behavior, no cloud CLIs invoked, no real secrets in fixtures, dashboard AUTHORED ONLY badge integration, version-pin annotation, and exclusion from default `run --all`.",
+      "skillName": "primer-author",
+      "preconditions": [
+        "F8.1 and F8.2 primers are landing",
+        "F2.3 dashboard cloud-platform rendering is merged"
+      ],
+      "expectedBehavior": [
+        "engine/skills/.../cloud-native/aks.md exists with H2 sections for Workload Identity, AGIC, App Routing addon, Azure Policy and an explicit 'AUTHORED ONLY' notice; documents credential + cluster prerequisites",
+        "At least 3 scenario YAMLs exist per cloud under examples/sample-product-chart/chart-test/scenarios/cloud-native/ (gke-*, eks-*, aks-*)",
+        "Every cloud-native scenario sets cluster.provider to one of gke|eks|aks — no kind/minikube/k3d slips in",
+        "Every cloud-native scenario is designed to be invoked with CLUSTER_NAME matching ^chart-test-swarm-[a-z0-9-]+$; the script-level prefix guard accepts chart-test-swarm-* and refuses bad-name",
+        "Every cloud-native scenario passes jsonschema validation",
+        "Every cloud-native scenario applies cleanly with kubectl apply -f --dry-run=client -o yaml",
+        "Every raw_manifest preinstall path passes kubeval --strict --kubernetes-version <pinned>",
+        "Every helm preinstall renders successfully with helm template --repo <url> <chart> --version <ver> --generate-name (no cluster I/O)",
+        "Dashboard renders cloud-native scenario cards with the AUTHORED ONLY badge (class=badge authored-only or equivalent), triggered strictly on cluster.provider",
+        "dispatch-swarm.sh on a cloud-native scenario emits an explanatory 'authored only; skipping cluster operations' stderr message, exits 0, and invokes no kind / minikube / kubectl --context / gcloud / aws / az",
+        "Static grep across engine/scripts/*.sh shows any kubectl --context is gated by a cluster.provider check excluding gke|eks|aks (or no such invocation exists)",
+        "Static grep across engine/scripts/ and engine/testgrid/src/ shows no gcloud/aws/az subprocess calls outside comments/docstrings",
+        "Default chart-test-swarm run --all filters out cloud-native scenarios; --include-cloud-native opts them in and each is annotated as authored-only",
+        "Cloud-native fixtures contain only placeholders (e.g. <REPLACE_WITH_PROJECT_ID>) — no AKIA*, no arn:aws:iam::*, no real project ids, no private_key blobs",
+        "yamllint on cloud-native primers and scenarios exits 0",
+        "Each cloud-native primer has top-level H2 'Credential prerequisites' and 'Cluster prerequisites' sections",
+        "Each cloud-native primer documents a 'Target Kubernetes version'; every authored YAML carries chart-test-swarm/target-k8s-version annotation matching the kubeval-pinned version",
+        "Cross-feature: a mixed scenario set drawn from every integration category renders on the dashboard with six category groupings and cloud-native cards visually distinct",
+        "Cross-feature: cloud-native scenarios appear alongside locally-run scenarios on the dashboard with AUTHORED ONLY indicator (not failure / not untested) while local scenarios show PASS/FAIL",
+        "Cross-feature: the full lint suite (yamllint + kubectl --dry-run=client + helm lint + kubeval) passes over every cloud-native YAML"
+      ],
+      "fulfills": [
+        "VAL-CLOUD-003",
+        "VAL-CLOUD-004",
+        "VAL-CLOUD-005",
+        "VAL-CLOUD-006",
+        "VAL-CLOUD-007",
+        "VAL-CLOUD-008",
+        "VAL-CLOUD-009",
+        "VAL-CLOUD-010",
+        "VAL-CLOUD-011",
+        "VAL-CLOUD-012",
+        "VAL-CLOUD-013",
+        "VAL-CLOUD-014",
+        "VAL-CLOUD-015",
+        "VAL-CLOUD-016",
+        "VAL-CLOUD-017",
+        "VAL-CLOUD-018",
+        "VAL-CLOUD-019",
+        "VAL-CROSS-009",
+        "VAL-CROSS-010",
+        "VAL-CROSS-023"
+      ],
+      "milestone": "cloud-native-primers",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f9-1-cli-scaffolding",
+      "description": "Scaffold the `chart-test-swarm` console script as a typer-based CLI installed via engine/testgrid/pyproject.toml. Wire the root command, --help, --version, and the four subcommand stubs (run, dashboard, list, generate). Make the binary discoverable on PATH after `uv sync` and ensure no-args / unknown-subcommand produce clear errors.",
+      "skillName": "cli-builder",
+      "preconditions": [
+        "F1.5 pytest + ruff + mypy harness installed",
+        "engine/testgrid/ uses uv with pyproject.toml"
+      ],
+      "expectedBehavior": [
+        "engine/testgrid/pyproject.toml [project.scripts] declares a chart-test-swarm entry pointing at a main/app callable in the testgrid package",
+        "After uv sync, engine/testgrid/.venv/bin/chart-test-swarm is executable; chart-test-swarm --help/--version yields non-empty stdout",
+        "chart-test-swarm --help exits 0 and lists all four subcommands: run, dashboard, list, generate",
+        "chart-test-swarm with no subcommand exits non-zero and prints a Usage / subcommand list message",
+        "chart-test-swarm not-a-real-subcommand exits non-zero with stderr naming the offending token",
+        "chart-test-swarm --version exits 0 within 2s and prints a semver-shaped version matching engine/testgrid/pyproject.toml [project].version"
+      ],
+      "fulfills": [
+        "VAL-CLI-001",
+        "VAL-CLI-002",
+        "VAL-CLI-003",
+        "VAL-CLI-004",
+        "VAL-CLI-005",
+        "VAL-CLI-020"
+      ],
+      "milestone": "cli-tool",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f9-2-run-subcommand",
+      "description": "Implement `chart-test-swarm run` wrapping engine/scripts/dispatch-swarm.sh with flags --scenario, --integration, --backend, --parallelism, --cluster-name, --run-id, --reports-dir, --project-dir, --suite. Enforce cluster-name prefix before subprocess dispatch, emit the run id as the last line of stdout for chaining, return clear errors on missing scenarios, surface artifacts equivalent to direct script invocation, document the flag→env-var mapping, and stress-test concurrent invocations.",
+      "skillName": "cli-builder",
+      "preconditions": [
+        "F9.1 CLI scaffolding installed",
+        "F1.1-F1.4 engine work merged (minikube backend, raw_manifest, artifact contract)"
+      ],
+      "expectedBehavior": [
+        "chart-test-swarm run --help exits 0 and advertises --scenario, --integration, --backend, --parallelism",
+        "run --scenario <path> dispatches via dispatch-swarm.sh (verifiable via PATH stub) and creates a single new reports/run-* dir with result.yaml",
+        "run --integration <name> filters scenarios to those whose path/integration field matches; mismatch yields exit non-zero with 'no scenarios matched'",
+        "run --backend minikube forwards backend to engine scripts (PROVIDER=minikube); invalid backend yields non-zero with the schema enum hint before any cluster work",
+        "run --parallelism N caps concurrent scenarios at N; --parallelism 0/-1/foo are rejected non-zero",
+        "Cluster name prefix is enforced before any cluster-creating subprocess dispatch; CLUSTER_NAME=not-prefixed-cluster yields non-zero with the offending name in stderr and no kind create/minikube start invocation",
+        "After CLI run exits, docker ps / kind get clusters / minikube profile list show no chart-test-swarm-* entries; no child processes of the CLI remain",
+        "run emits the resolved RUN_ID (matching ^run-[0-9]{8}-[0-9]{6}$) as the last line of stdout; reports/<run-id>/ exists on disk",
+        "run --scenario /tmp/does-not-exist.yaml exits non-zero within 5s, stderr names the path + actionable phrasing ('not found' / 'no such file'), no Python traceback",
+        "CLI run and bash engine/scripts/run-scenario.sh produce equivalent reports/run-* outputs (status equivalence + artifact-shape equivalence: scenario.yaml byte-identical, versions.json keys identical, applied-overrides.yaml byte-identical)",
+        "Every CLI flag has a documented engine-script env-var mapping (FLAG_TO_ENV dict); CTS_DEBUG=1 trace shows PROVIDER, NUM_AGENTS, CLUSTER_NAME, RUN_ID, REPORTS_DIR, PROJECT_DIR, SUITE set from CLI flags",
+        "Cross-feature: --parallelism 2 with scenarios from two different categories produces two simultaneous chart-test-swarm-* clusters; both result.yaml's written under the same run-<id>/; dashboard shows both cards under their category groupings",
+        "Cross-feature: re-running the full pipeline from a clean state produces byte-identical PASS/FAIL outcomes across two runs (deterministic)",
+        "Cross-feature: --backend minikube triggers minikube start --profile chart-test-swarm-*; --backend kind triggers kind create cluster",
+        "Cross-feature: --parallelism 4 against a multi-scenario suite clamps to <=2 concurrent clusters; monitoring loop confirms peak <=2; run-meta.yaml shows num_agents capped",
+        "Cross-feature: two concurrent CLI run invocations produce distinct reports/run-<id>/ subdirs (no overlap, both visible in rebuilt dashboard)"
+      ],
+      "fulfills": [
+        "VAL-CLI-006",
+        "VAL-CLI-007",
+        "VAL-CLI-008",
+        "VAL-CLI-009",
+        "VAL-CLI-010",
+        "VAL-CLI-014",
+        "VAL-CLI-016",
+        "VAL-CLI-018",
+        "VAL-CLI-019",
+        "VAL-CLI-021",
+        "VAL-CLI-022",
+        "VAL-CROSS-002",
+        "VAL-CROSS-018",
+        "VAL-CROSS-019",
+        "VAL-CROSS-025",
+        "VAL-CROSS-026"
+      ],
+      "milestone": "cli-tool",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f9-3-dashboard-subcommand",
+      "description": "Implement `chart-test-swarm dashboard` wrapping engine/scripts/build-dashboard.sh so users can render the dashboard from the CLI without invoking the bash script directly.",
+      "skillName": "cli-builder",
+      "preconditions": [
+        "F9.1 CLI scaffolding installed",
+        "F2.x dashboard features available"
+      ],
+      "expectedBehavior": [
+        "chart-test-swarm dashboard shells out to engine/scripts/build-dashboard.sh and on a non-empty reports/ tree writes reports/<run-id>/dist/index.html (or reports/dist/index.html); stub mode captures build-dashboard.sh in argv log",
+        "Cross-feature end-to-end: chart-test-swarm run <scenario> followed by chart-test-swarm dashboard renders reports/run-<id>/dist/index.html with a card whose artifact anchors (scenario.yaml, applied-overrides.yaml, fixtures, manifests) all resolve on disk"
+      ],
+      "fulfills": [
+        "VAL-CLI-011",
+        "VAL-CROSS-001"
+      ],
+      "milestone": "cli-tool",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f9-4-list-subcommand",
+      "description": "Implement `chart-test-swarm list integrations` (walks category subdirs) and `chart-test-swarm list variants --integration <name>` (walks examples scenarios). Add pytest coverage for every CLI subcommand, repo lint/typecheck gates, the service-reachable.sh kubectl flag audit, and the area-wide --help coverage cross-check.",
+      "skillName": "cli-builder",
+      "preconditions": [
+        "F9.1, F9.2, F9.3 subcommands implemented",
+        "F1.3 category reorg in place so list walks the new subdirs"
+      ],
+      "expectedBehavior": [
+        "list integrations walks engine/skills/.../integrations/<category>/<integration>.md, prints one line per primer in sorted order with both category and integration visible",
+        "list variants --integration <name> prints every scenario YAML path matching the integration; omitting --integration lists all variants across all integrations",
+        "engine/testgrid/tests/test_cli.py contains pytest cases exercising --help, valid invocation, and at least one invalid-flag case for each of run, dashboard, list integrations, list variants, generate pick, generate author, generate explore",
+        "ruff check src/testgrid and mypy src/testgrid both exit 0 against the CLI module (cli.py + commands/)",
+        "service-reachable.sh kubectl run invocation uses only documented flags (no --timeout; --pod-running-timeout instead); bash exit shows 0 when reachable",
+        "list integrations against the production tree emits exactly {certificates, ingress-controllers, gateway-api, service-mesh, policy, cloud-native} categories — no spurious top-level entries",
+        "Cross-feature: every CLI subcommand path (run, dashboard, list integrations, list variants, generate pick/author/explore) exposes --help (exit 0 within 5s, non-empty stdout) and the root --help advertises exactly those subcommands (no dark commands, no orphans)"
+      ],
+      "fulfills": [
+        "VAL-CLI-012",
+        "VAL-CLI-013",
+        "VAL-CLI-015",
+        "VAL-CLI-017",
+        "VAL-CLI-023",
+        "VAL-CLI-024",
+        "VAL-CROSS-027"
+      ],
+      "milestone": "cli-tool",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f10-1-generate-pick",
+      "description": "Implement `chart-test-swarm generate pick` as a non-interactive selector over (category, integration, variant) tuples that emits a schema-valid scenario YAML. Supports --category/--integration/--variant flags, stdin JSON/YAML feed, and --output for file capture.",
+      "skillName": "llm-generator",
+      "preconditions": [
+        "F9.1-F9.4 CLI scaffolding + subcommands installed",
+        "F1.3 category reorg so pick can walk subdirs"
+      ],
+      "expectedBehavior": [
+        "chart-test-swarm generate --help exits 0 and advertises all three modes (pick, author, explore)",
+        "generate pick --category certificates --integration cert-manager --variant self-signed --non-interactive (or equivalent stdin feed) completes without prompting and exits 0; with no selection in a non-TTY context, exits non-zero within 5s with a clear 'no selection provided' message (no hang)",
+        "YAML emitted by generate pick (stdout or --output file) validates against engine/templates/scenario.schema.json",
+        "generate pick --output /tmp/pick.yaml writes the scenario to the file and stdout contains only a confirmation/path line (no YAML body)"
+      ],
+      "fulfills": [
+        "VAL-LLM-001",
+        "VAL-LLM-002",
+        "VAL-LLM-003",
+        "VAL-LLM-004"
+      ],
+      "milestone": "llm-generator",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f10-2-generate-author",
+      "description": "Implement `chart-test-swarm generate author <description>` which shells out to CTS_LLM_CMD (default discovers `droid` on PATH) to author a schema-valid scenario YAML from natural language. Bounded retries on invalid LLM output, reject empty descriptions, clear actionable error when no LLM binary is reachable, diagnose schema-failing output with offending field path.",
+      "skillName": "llm-generator",
+      "preconditions": [
+        "F10.1 generate pick provides shared schema/scenario emission plumbing",
+        "Host droid/agent CLI may be discoverable on PATH"
+      ],
+      "expectedBehavior": [
+        "With CTS_LLM_CMD set to a fake stub that echoes a canned scenario, generate author '<desc>' emits that canned YAML on stdout; the chart-test-swarm process makes zero outbound network calls",
+        "YAML emitted by generate author (with a schema-valid fake) validates against engine/templates/scenario.schema.json",
+        "With a fake that emits invalid YAML on the first 2 calls and valid on the 3rd, generate author --max-retries 3 exits 0 with exactly 3 fake invocations; --max-retries 1 against the same fake exits non-zero with stderr naming 'invalid' or 'schema'",
+        "generate author '' and generate author '   ' exit non-zero before invoking the LLM; stderr explains a non-empty description is required",
+        "With CTS_LLM_CMD unset AND no droid on PATH, generate author '<desc>' exits non-zero with stderr explaining how to set CTS_LLM_CMD and which binaries were searched",
+        "Auto-discovery: when CTS_LLM_CMD is unset but a droid shim is on PATH, generate author invokes that shim (not any vendored binary), the description is passed through unchanged",
+        "When CTS_LLM_CMD emits parseable but schema-failing YAML and retries are exhausted, CLI exits non-zero with stderr naming the failing schema path (e.g., cluster.provider: not in enum)",
+        "Cross-feature: generate author '<desc>' emits schema-valid YAML; piped to chart-test-swarm run, it executes end-to-end; resulting dashboard card carries generated_by.by provenance"
+      ],
+      "fulfills": [
+        "VAL-LLM-005",
+        "VAL-LLM-006",
+        "VAL-LLM-007",
+        "VAL-LLM-008",
+        "VAL-LLM-013",
+        "VAL-LLM-014",
+        "VAL-LLM-018",
+        "VAL-CROSS-003"
+      ],
+      "milestone": "llm-generator",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f10-3-generate-explore",
+      "description": "Implement `chart-test-swarm generate explore --chart <path> --integrations <list>` that iteratively shells out to CTS_LLM_CMD to propose combos, invokes `chart-test-swarm run` per iteration, feeds the prior result back to the LLM, and emits an incremental summary report. Bounded by --max-iterations and --budget. Carries generated_by provenance, refuses to overwrite without --force, rejects mid-iteration scenarios that fail schema/prefix validation before any cluster spin-up, and audits bd issue closures at mission close.",
+      "skillName": "llm-generator",
+      "preconditions": [
+        "F10.1 generate pick + F10.2 generate author are implemented",
+        "F9.2 chart-test-swarm run is callable in-process or via subprocess"
+      ],
+      "expectedBehavior": [
+        "generate explore --chart <path> --integrations <list> --max-iterations 3 performs exactly 3 propose→run iterations against a fake CTS_LLM_CMD that always proposes",
+        "--budget halts exploration when budget is exhausted even if --max-iterations is higher; CLI exits 0 with a 'budget exhausted' log line",
+        "generate explore --output /tmp/explore.json writes an array of {iteration, scenario_yaml, run_id, status, integrations} records, one per iteration",
+        "Cross-mode determinism: pick, author, explore each twice under canned CTS_LLM_CMD produce byte-identical scenario YAML (timestamps stripped per --no-timestamps or sed)",
+        "Static grep across engine/ and examples/ finds zero credential patterns (sk-*, OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, GOOGLE_API_KEY) and zero BEGIN PRIVATE KEY blocks in engine/testgrid/src",
+        "On iteration N>1, the CTS_LLM_CMD stub stdin includes the result.yaml summary from iteration N-1 (PASS/FAIL counts + prior scenario id); iteration 1 stdin has no prior-run reference",
+        "All three generate modes accept --output <path>; with --output provided, stdout is a one-line confirmation (<=2 lines) and the file holds the full payload",
+        "generate <mode> --output /tmp/exists.yaml on a pre-existing non-empty file exits non-zero, leaves content byte-identical, stderr suggests --force; --force succeeds + replaces",
+        "explore writes its summary incrementally: with a fake that succeeds iter 1 then crashes (exit 137) iter 2, the summary JSON has exactly one record and is valid JSON",
+        "Every scenario from pick/author/explore carries top-level generated_by mapping with `by` (pick|author|explore), `cmd` (resolved CTS_LLM_CMD for author/explore; absent/null for pick), `timestamp` (ISO-8601 UTC)",
+        "explore rejects mid-iteration scenarios that fail prefix/schema validation BEFORE any cluster spin-up — the offending iteration is recorded with the schema/prefix error reason; no cluster created for the rejected iteration",
+        "Cross-feature: explore drives the LLM through >=2 combos, invokes chart-test-swarm run per combo, and emits a summary listing each combo with outcome + reasoning",
+        "Cross-feature: explore shells out to chart-test-swarm run (not stubs), real reports/run-*/ dirs with artifacts are produced per iteration, and the LLM's feed-result step reads those real files",
+        "Cross-feature: at mission close, bd list --status closed matches the feature ids from features.json (one closed bd issue per feature)"
+      ],
+      "fulfills": [
+        "VAL-LLM-009",
+        "VAL-LLM-010",
+        "VAL-LLM-011",
+        "VAL-LLM-012",
+        "VAL-LLM-015",
+        "VAL-LLM-016",
+        "VAL-LLM-017",
+        "VAL-LLM-019",
+        "VAL-LLM-020",
+        "VAL-LLM-021",
+        "VAL-LLM-022",
+        "VAL-CROSS-004",
+        "VAL-CROSS-020",
+        "VAL-CROSS-024"
+      ],
+      "milestone": "llm-generator",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f-misc-1-bats-teardown-cluster-lifecycle",
+      "description": "Add a teardown() block to engine/scripts/tests/cluster-lifecycle.bats that runs `minikube delete -p chart-test-swarm-bats-mk 2>/dev/null || true` (and any other transient profiles created by the suite) so that interrupted bats runs don't leave stale minikube profiles behind. Optionally gate the real-cluster bats cases behind an env flag (e.g. CTS_BATS_REAL_CLUSTERS=1) so the default run is fast and hermetic. Verify by interrupting the suite mid-run and confirming `minikube profile list` shows no chart-test-swarm-bats-* entries.",
+      "skillName": "engine-bash",
+      "preconditions": [
+        "engine/scripts/tests/cluster-lifecycle.bats exists from f1-1",
+        "minikube binary is on PATH"
+      ],
+      "expectedBehavior": [
+        "Running `bats engine/scripts/tests/cluster-lifecycle.bats` followed by SIGINT mid-suite leaves zero chart-test-swarm-bats-* minikube profiles",
+        "Existing 14 cluster-lifecycle.bats cases continue to pass (no regression)",
+        "If gating env flag added, default run skips real-cluster cases and completes in <10s with all-pass"
+      ],
+      "fulfills": [],
+      "milestone": "misc-fixes-1",
+      "status": "pending",
+      "workerSessionIds": [],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f1-1-minikube-backend",
+      "description": "Extend cluster-up.sh and cluster-down.sh with a minikube branch so the engine can spin up and tear down minikube profiles alongside kind. Add `minikube` to the scenario schema provider enum so scenarios can target it. Enforce the `chart-test-swarm-*` cluster name prefix invariant in every cluster-touching script and validate that the default CLUSTER_NAME values satisfy the prefix.",
+      "skillName": "engine-bash",
+      "preconditions": [
+        "kind, minikube, kubectl, helm, jsonschema are installed",
+        "engine/scripts/cluster-up.sh and cluster-down.sh exist with kind support",
+        "engine/templates/scenario.schema.json exists with provider enum"
+      ],
+      "expectedBehavior": [
+        "cluster-up.sh PROVIDER=minikube creates a chart-test-swarm-* minikube profile within 180s and sets the active kubeconfig context",
+        "cluster-up.sh and cluster-down.sh refuse any CLUSTER_NAME lacking the chart-test-swarm- prefix (and refuse the bare prefix with no suffix) before any kind/minikube operation",
+        "cluster-down.sh idempotently removes minikube and kind clusters (re-running on a removed cluster exits 0)",
+        "Scenario schema accepts cluster.provider=minikube and rejects unknown providers and unprefixed cluster names",
+        "All cluster-touching engine scripts (cluster-up.sh, cluster-down.sh, run-scenario.sh, dispatch-swarm.sh) enforce the prefix at the script level with stderr referencing the requirement",
+        "Failed/interrupted scenarios still tear down their cluster (SIGINT cleanup); partial artifacts bundle persists",
+        "cluster-up.sh does not mutate the user's global active kubeconfig context",
+        "KEEP_CLUSTER=1 default keeps the cluster around; KEEP_CLUSTER=0 tears it down (observable, not just commented)",
+        "Default CLUSTER_NAME values in cluster-up.sh, cluster-down.sh, run-scenario.sh satisfy ^chart-test-swarm-[a-z0-9-]+$",
+        "Static audit confirms no engine script ever creates a cluster without the chart-test-swarm- prefix"
+      ],
+      "fulfills": [
+        "VAL-ENGINE-001",
+        "VAL-ENGINE-002",
+        "VAL-ENGINE-003",
+        "VAL-ENGINE-004",
+        "VAL-ENGINE-005",
+        "VAL-ENGINE-022",
+        "VAL-ENGINE-026",
+        "VAL-ENGINE-027",
+        "VAL-ENGINE-038",
+        "VAL-ENGINE-040",
+        "VAL-CROSS-015"
+      ],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "5ade1fd8-0557-43b3-b722-7ba1c5d4f1a5"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f1-2-raw-manifest-preinstall",
+      "description": "Teach apply-scenario.sh a new preinstall kind `raw_manifest` (with `path` and optional namespace) so scenarios can apply arbitrary Kubernetes manifests before installing the product chart. Relax the schema's preinstall_item additionalProperties via per-kind sub-schemas (`helm` and `raw_manifest`) and update the envoy-gateway primer and template to the OCI chart `oci://docker.io/envoyproxy/gateway-helm`. Preserve backward compatibility for pre-F1.2 helm-only scenarios.",
+      "skillName": "engine-bash",
+      "preconditions": [
+        "F1.1 prefix-enforcing engine scripts and minikube provider are merged",
+        "engine/templates/scenario.schema.json currently sets additionalProperties: false on preinstall_item",
+        "Envoy-gateway primer currently references the defunct classic helm repo URL"
+      ],
+      "expectedBehavior": [
+        "Schema validates scenarios containing {kind: raw_manifest, path: ...} preinstall items, rejects raw_manifest with no path, and still validates helm-only preinstall items (no regression)",
+        "Schema rejects unknown preinstall kinds (e.g. kustomize) with a stderr message naming the kind discriminator",
+        "apply-scenario.sh executes raw_manifest preinstall items via kubectl apply -f, and mixed (helm + raw_manifest) preinstall lists succeed in declared order",
+        "engine/skills/chart-test-swarm/references/integrations/gateway-api/envoy-gateway.md (and its scenario template) reference the OCI helm chart and contain none of the old gateway.envoyproxy.io/install/ URL",
+        "Envoy-gateway scenario runs end-to-end on kind, status PASS, helm release deployed, no classic-repo error",
+        "Pre-F1.2 helm-only scenarios (customer-A-istio.yaml, with-cert-manager.yaml, customer-B-gatekeeper.yaml, subchart-postgres-internal.yaml, minimal.yaml) continue to validate against the post-F1.2 schema with no warnings"
+      ],
+      "fulfills": [
+        "VAL-ENGINE-006",
+        "VAL-ENGINE-007",
+        "VAL-ENGINE-008",
+        "VAL-ENGINE-009",
+        "VAL-ENGINE-010",
+        "VAL-CROSS-030"
+      ],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "ac4fac50-e780-479b-bf7b-550a9abb52fb"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f1-3-integration-category-reorg",
+      "description": "Move the six pre-existing integration primers into category subdirectories under `engine/skills/chart-test-swarm/references/integrations/` (certificates/, ingress-controllers/, service-mesh/, gateway-api/, policy/). The move is byte-identical (pure git renames). collect.py and any scenario-discovery code must walk the new subdir layout.",
+      "skillName": "testgrid-python",
+      "preconditions": [
+        "Six pre-existing primers live at the top of references/integrations/",
+        "F1.1 and F1.2 schema/script work is complete"
+      ],
+      "expectedBehavior": [
+        "No primer remains at the top level of references/integrations/; each of the six primers (cert-manager.md, traefik.md, istio-service-mesh.md, istio-ingress-gateway.md, gateway-api.md, opa-gatekeeper.md) lives under its correct category subdir",
+        "Each primer's content is byte-identical to the pre-reorg version (git rename with similarity 100% OR sha256sum matches)",
+        "SKILL.md and workflow.md text references update to the new subdir paths"
+      ],
+      "fulfills": [
+        "VAL-ENGINE-011",
+        "VAL-ENGINE-012"
+      ],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "99b6883d-927e-4681-ab11-0d0f79b4d95e"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f1-4-reports-artifact-contract",
+      "description": "Every reports/run-*/scenario-*/artifacts/ bundle must include scenario.yaml (verbatim input), applied-overrides.yaml (final merged helm values plus raw_manifest_refs), fixtures/ (copies of referenced fixtures), manifests/ (kubectl get -o yaml dumps), versions.json (helm/kubectl/kind/minikube/k8s_server versions), and a logs/ subdir. Bundles must be self-contained so a reviewer can re-apply from artifacts alone, dispatch-swarm.sh must restore product+asserts in its scenarios snapshot, and apply-scenario.sh must clean up inline-values tempfiles and tolerate repeated helm repo adds.",
+      "skillName": "engine-bash",
+      "preconditions": [
+        "F1.1 and F1.2 are merged so cluster lifecycle and raw_manifest preinstalls work",
+        "engine/scripts/dispatch-swarm.sh and run-scenario.sh produce reports/run-* output"
+      ],
+      "expectedBehavior": [
+        "Every successful run emits artifacts/scenario.yaml (with matching .id) and artifacts/applied-overrides.yaml (parseable mapping containing all keys from product.set)",
+        "artifacts/fixtures/ contains byte-identical copies of referenced fixture files (sha256 match); artifacts/manifests/ contains parseable Kubernetes resource YAML",
+        "artifacts/versions.json contains non-empty helm, kubectl, kind, minikube, and k8s_server values",
+        "A reviewer can re-apply the scenario from the artifact bundle alone against a fresh kind cluster",
+        "bats engine/scripts/tests/ exits 0 with at least one passing test and no lingering bats processes",
+        "uv run --directory engine/testgrid pytest exits 0 within 120s with all tests passing",
+        "scenarios-snapshot.yaml carries non-null product.chart, product.release, product.namespace, and a non-empty asserts[] array per scenario",
+        "apply-scenario.sh is idempotent over `helm repo add` (no error on identical repo; refusal on URL mismatch)",
+        "apply-scenario.sh cleans up every inline-values tempfile, even on SIGTERM mid-loop",
+        "aggregate.sh correctly handles assertion notes with commas, newlines, and quotes (CSV round-trip preserved)",
+        "F1.3 primer reorg path updates land in SKILL.md and workflow.md (every reference resolves to a real file or the documented subdir convention)",
+        "run-meta.yaml reflects the actual mix of providers/k8s_versions used in a multi-scenario run (or dispatcher refuses mixed-provider suites with a clear error)",
+        "dispatch-swarm.sh agent brief substitution does NOT re-expand $VAR / ${VAR} in scenario name/description fields",
+        "Inline product.set style is preserved on the five pre-mission scenarios (no migration to a values: file reference)",
+        "Audit walk shows every PASS run has a complete artifact bundle (scenario.yaml, applied-overrides.yaml, fixtures/, manifests/, versions.json) regardless of integration",
+        "applied-overrides.yaml shape is uniform across integrations: top-level helm_values (map) and raw_manifest_refs (sequence)",
+        "RUN_ID collisions across concurrent dispatches are detected (unique suffix in RUN_ID OR refusal naming the existing run) — never silent overwrite",
+        "helm --set overrides with backslash-escaped dots survive scenario → engine round-trip (key with literal '.' preserved in applied-overrides.yaml)"
+      ],
+      "fulfills": [
+        "VAL-ENGINE-013",
+        "VAL-ENGINE-014",
+        "VAL-ENGINE-015",
+        "VAL-ENGINE-016",
+        "VAL-ENGINE-017",
+        "VAL-ENGINE-018",
+        "VAL-ENGINE-031",
+        "VAL-ENGINE-032",
+        "VAL-ENGINE-033",
+        "VAL-ENGINE-034",
+        "VAL-ENGINE-035",
+        "VAL-ENGINE-036",
+        "VAL-ENGINE-037",
+        "VAL-ENGINE-041",
+        "VAL-CROSS-013",
+        "VAL-CROSS-014",
+        "VAL-CROSS-028",
+        "VAL-CROSS-029"
+      ],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "c392d8aa-b277-4ee2-b34b-86dd69819d06"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f1-5-repo-test-scaffolding",
+      "description": "Install the repo-wide test harness: bats directories under engine/scripts/tests/ and engine/asserts/tests/, pytest + ruff + mypy (with types-PyYAML and jinja2 stubs) config under engine/testgrid/, root-level shellcheck and yamllint configs, sample tests proving each gate works, and non-watch test command wiring. Add the cross-scenario sweep tool, orphan-cleanup audits, and milestone-gate lint/typecheck/test invocations.",
+      "skillName": "testgrid-python",
+      "preconditions": [
+        "F1.4 artifact contract is merged",
+        "engine/testgrid/ uses uv with pyproject.toml",
+        "shellcheck and yamllint binaries are available",
+        "jsonschema python CLI is deprecated; check-jsonschema is the preferred replacement"
+      ],
+      "expectedBehavior": [
+        "ruff check on src/testgrid exits 0 with no findings",
+        "mypy on src/testgrid exits 0 (no missing-stub diagnostics for yaml or jinja2; if jinja2-stubs is not available on PyPI, configure mypy to ignore-missing-imports for jinja2 specifically rather than disabling strict mode wholesale)",
+        "shellcheck on engine/scripts/*.sh and engine/asserts/*.sh exits 0; yamllint on integration primers and example scenarios exits 0",
+        "INVARIANT: post-run, kind get clusters and minikube profile list show no chart-test-swarm-* entries for both pass and fail paths",
+        "INVARIANT: post-run, docker ps / docker ps -a show no chart-test-swarm-* containers attributable to the run",
+        "run-scenario.sh emits an actionable pre-boot error naming the offending scenario id, preinstall index, and missing path when a fixture path is missing — no cluster created",
+        "Every engine script accepts --help and exits 0 with a Usage banner; no cluster ops performed",
+        "Scenario id collisions in the same reports/run-<id>/ produce a deterministic suffix or refusal — never silent overwrite",
+        "Engine scripts either run cleanly under bash 3.2 or fail preflight with a clear bash-version error (never the cryptic `mapfile: command not found`)",
+        "A sweep tool runs schema validation (using check-jsonschema CLI; install via uv if not present) over every scenario YAML under examples and exits 0 across all integrations",
+        "An orphan-cleanup audit confirms zero chart-test-swarm-* kind/minikube clusters after each integration-category scenario run",
+        "An orphan-cleanup audit confirms zero chart-test-swarm-* docker containers after each integration-category scenario run",
+        "Milestone gate: commands.test, commands.typecheck, commands.lint from services.yaml each exit 0 against the modified codebase"
+      ],
+      "fulfills": [
+        "VAL-ENGINE-019",
+        "VAL-ENGINE-020",
+        "VAL-ENGINE-021",
+        "VAL-ENGINE-023",
+        "VAL-ENGINE-024",
+        "VAL-ENGINE-025",
+        "VAL-ENGINE-028",
+        "VAL-ENGINE-029",
+        "VAL-ENGINE-030",
+        "VAL-ENGINE-039",
+        "VAL-CROSS-012",
+        "VAL-CROSS-016",
+        "VAL-CROSS-017",
+        "VAL-CROSS-022"
+      ],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "a9449fad-efa6-4f6e-8377-5b0ed4812309"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f-fix-1-1-context-and-failure-cleanup",
+      "description": "Two cluster-lifecycle fixes for run-scenario.sh + cluster-up.sh: (1) Pin the scenario workflow to the newly created chart-test-swarm-<id> context. cluster-up.sh must NOT restore the caller's previous context on EXIT until the full scenario lifecycle is done; OR pass explicit `--context $CLUSTER_NAME` to every kubectl/helm invocation inside apply-scenario.sh/run-scenario.sh so it never depends on global current-context. The kubeconfig restore must happen at the very end (after cluster-down) so a long-running scenario does not race the caller's kubectl. (2) Clarify KEEP_CLUSTER semantics: KEEP_CLUSTER=1 (default) means 'keep on success'. On failure or SIGINT/SIGTERM, the cluster MUST be torn down regardless of KEEP_CLUSTER unless KEEP_ON_FAILURE=1 is set (new explicit override for debug). Update bats tests for both behaviors.",
+      "skillName": "engine-bash",
+      "preconditions": [
+        "f1-1 already added kubeconfig save/restore via EXIT trap",
+        "f1-1 added KEEP_CLUSTER=1 default but does not tear down on failure"
+      ],
+      "expectedBehavior": [
+        "While a scenario runs, kubectl/helm invocations executed by apply-scenario.sh and asserts run against the chart-test-swarm-<id> cluster regardless of the caller's previous current-context",
+        "After run-scenario.sh exits (success OR failure), the caller's pre-existing current-context is restored",
+        "Failure path: any non-zero exit from a step tears down the cluster (unless KEEP_ON_FAILURE=1 is explicitly set)",
+        "SIGINT/SIGTERM path: trap writes INTERRUPTED status and tears down the cluster regardless of KEEP_CLUSTER",
+        "Success path with default KEEP_CLUSTER=1: cluster is kept",
+        "Success path with KEEP_CLUSTER=0: cluster is torn down",
+        "All previous prefix-enforcement, idempotent-teardown, and default-regex bats tests continue to pass",
+        "New bats cases cover: (a) failure with default KEEP_CLUSTER=1 tears down; (b) failure with KEEP_ON_FAILURE=1 keeps; (c) SIGINT with default KEEP_CLUSTER=1 tears down"
+      ],
+      "fulfills": [],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "abd34846-354d-44bf-aad6-d75d7785f447"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f-fix-1-2-raw-manifest-namespace-create",
+      "description": "apply-scenario.sh raw_manifest preinstall items declaring `namespace: foo` must create the namespace (kubectl create namespace foo --dry-run=client -o yaml | kubectl apply -f -) before running `kubectl apply --namespace foo -f <manifest>`. The helm preinstall path already creates target namespaces; raw_manifest must mirror that behavior so namespaced raw-manifest scenarios work on a fresh cluster. Add a bats case that verifies the ensure-namespace call precedes the apply call.",
+      "skillName": "engine-bash",
+      "preconditions": [
+        "f1-2 added apply_raw_manifest function with optional --namespace flag",
+        "Helm preinstall path in apply-scenario.sh already ensures target namespace exists"
+      ],
+      "expectedBehavior": [
+        "When a raw_manifest preinstall item declares `namespace: <ns>` and <ns> does not yet exist, apply-scenario.sh creates it via `kubectl create namespace --dry-run=client -o yaml | kubectl apply -f -` (idempotent)",
+        "When namespace already exists, no error (idempotent)",
+        "After the ensure-namespace step, `kubectl apply --namespace <ns> -f <manifest>` succeeds on a fresh cluster",
+        "bats coverage: a raw_manifest item with namespace=foo creates ns=foo before applying the manifest",
+        "Existing 15 raw-manifest tests continue to pass"
+      ],
+      "fulfills": [],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "97a1a2e0-6e86-41b9-89b0-2da931d546e3"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f-fix-1-3-soften-sha-hash-test",
+      "description": "engine/testgrid/tests/test_integration_reorg.py currently hard-codes pre-reorg SHA-256 hashes for all 6 moved primers, which blocks any future intentional primer rewrite. Replace this permanent hash freeze with: (a) a one-time migration check by reading hashes from a frozen baseline file (e.g. tests/fixtures/pre_reorg_hashes.json) ONLY when env var CTS_REORG_BASELINE=1, OR (b) a structural reorg check verifying each primer is non-empty markdown with the required H2 sections (Overview, Variants, How to apply, Assertions, Known gotchas). Default test run does the structural check; baseline check is opt-in for one-time migration verification. The reorg invariant (no top-level .md) and discover_integrations() unit tests stay as-is.",
+      "skillName": "testgrid-python",
+      "preconditions": [
+        "f1-3 moved 6 primers and added test_integration_reorg.py with 13 SHA-256 byte-identical cases"
+      ],
+      "expectedBehavior": [
+        "Default `pytest tests/test_integration_reorg.py` does NOT compare SHA-256 hashes; it verifies each moved primer (a) exists at the expected category subdir path, (b) contains the required H2 sections from primer-author skill, (c) is non-empty markdown",
+        "Future primer rewrites that maintain the required structure pass the test",
+        "`CTS_REORG_BASELINE=1 pytest` (opt-in) compares against the frozen hashes for migration auditing",
+        "The reorg invariant test (no top-level .md under references/integrations/) continues to pass",
+        "discover_integrations() unit tests continue to pass",
+        "mypy --strict + ruff check continue to pass"
+      ],
+      "fulfills": [],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "0eb9fdad-6d32-43df-9123-be4b3f7bf184"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    },
+    {
+      "id": "f-fix-1-4-artifact-bundle-replay",
+      "description": "Two artifact-contract fixes for run-scenario.sh: (1) Make the artifacts/ bundle truly replayable from artifacts alone. Vendor the chart directory (or a pointer + verified checksum) and ALL referenced fixtures into the bundle. Rewrite scenario.yaml in the bundle so all paths are relative to the bundle root (not the source tree). Verify by running `PROJECT_DIR=<copied-bundle> apply-scenario.sh artifacts/scenario.yaml` from a tempdir against a fresh kind cluster and confirming the same resources are applied. (2) artifacts/applied-overrides.yaml must materialize ONE final merged helm_values map per release, computed by reading product.values (YAML file if present) AND product.set (inline) AND `helm template --debug` rendered values, then merging with set taking precedence per Helm semantics. Use `yq` or `helm template --show-only` to obtain the resolved values. The raw_manifest_refs sequence stays separate.",
+      "skillName": "engine-bash",
+      "preconditions": [
+        "f1-4 created artifacts/ bundle structure but scenario.yaml references source-tree paths",
+        "f1-4's applied-overrides.yaml appends product.set + values fragments separately"
+      ],
+      "expectedBehavior": [
+        "artifacts/chart/ exists, contains the helm chart copied verbatim from the source",
+        "artifacts/fixtures/ contains every referenced fixture file",
+        "artifacts/scenario.yaml has paths rewritten to be relative to the bundle root (e.g. ./chart, ./fixtures/<file>) so the bundle is self-contained",
+        "Replay test: `cd <tempdir>/<copied-bundle> && PROJECT_DIR=. bash <repo>/engine/scripts/apply-scenario.sh ./scenario.yaml` succeeds on a fresh kind cluster",
+        "artifacts/applied-overrides.yaml contains a single helm_values: <merged-map> key per release, computed from values file + product.set + chart defaults with correct Helm precedence (set > values file > defaults)",
+        "raw_manifest_refs remains a separate sequence in applied-overrides.yaml",
+        "Existing 18 artifact-contract bats tests continue to pass",
+        "New bats case: applied-overrides.yaml helm_values is a single merged map (not multiple appended fragments)",
+        "New bats case: scenario.yaml in artifacts uses only bundle-relative paths"
+      ],
+      "fulfills": [],
+      "milestone": "engine-foundations",
+      "status": "completed",
+      "workerSessionIds": [
+        "40725225-a1f2-4ac3-8e59-e59f00901238"
+      ],
+      "currentWorkerSessionId": null,
+      "completedWorkerSessionId": null
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+# Self-signed root Issuer — bootstraps the CA trust anchor.
+# cert-manager auto-generates a root CA key+cert from this Issuer.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: chart-test-swarm-selfsigned-issuer
+  namespace: sample
+spec:
+  selfSigned: {}

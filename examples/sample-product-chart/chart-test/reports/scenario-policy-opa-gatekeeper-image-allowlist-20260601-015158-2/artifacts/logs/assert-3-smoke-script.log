@@ -1,0 +1,12 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/opa-gatekeeper-image-allowlist.sh (RELEASE=sample NAMESPACE=sample)
+=== OPA Gatekeeper: Image Allowlist ===
+==> Phase 0: Wait for gatekeeper controller pods Ready
+pod/gatekeeper-controller-manager-64bbbfbdbb-99btk condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-lp6sc condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-mt549 condition met
+PASS: gatekeeper controller Ready
+pod/sample-69469cb4c6-2k9ll condition met
+PASS: product pod Ready
+==> Phase 1: Verify ConstraintTemplate applied
+Waiting for ConstraintTemplate k8sallowedrepos to reconcile (60s max)...
+FAIL: ConstraintTemplate k8sallowedrepos not reconciled after 60s (gen=1, obs=)

@@ -1,0 +1,1715 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kuma.io/gateway: enabled
+      kuma.io/service-account-token-volume: kong-controller-token
+      traffic.kuma.io/exclude-outbound-ports: "8444"
+      traffic.sidecar.istio.io/excludeOutboundPorts: "8444"
+      traffic.sidecar.istio.io/includeInboundPorts: ""
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    generateName: kong-controller-84db4dc787-
+    labels:
+      app: kong-controller
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: controller-3.2.0
+      pod-template-hash: 84db4dc787
+      version: "3.9"
+    name: kong-controller-84db4dc787-62x6n
+    namespace: kong
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: kong-controller-84db4dc787
+      uid: 6e58b432-d452-4d34-865c-5c7cb4b1298f
+    resourceVersion: "639"
+    uid: 1981a0c2-7caa-4f03-9288-6313a6fd6374
+  spec:
+    automountServiceAccountToken: false
+    containers:
+    - env:
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: CONTROLLER_ADMISSION_WEBHOOK_LISTEN
+        value: 0.0.0.0:8080
+      - name: CONTROLLER_ELECTION_ID
+        value: kong-ingress-controller-leader-kong
+      - name: CONTROLLER_INGRESS_CLASS
+        value: kong
+      - name: CONTROLLER_KONG_ADMIN_SVC
+        value: kong/kong-gateway-admin
+      - name: CONTROLLER_KONG_ADMIN_TLS_SKIP_VERIFY
+        value: "true"
+      - name: CONTROLLER_PUBLISH_SERVICE
+        value: kong/kong-gateway-proxy
+      image: kong/kubernetes-ingress-controller:3.5
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 10254
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
+      name: ingress-controller
+      ports:
+      - containerPort: 8080
+        name: webhook
+        protocol: TCP
+      - containerPort: 10255
+        name: cmetrics
+        protocol: TCP
+      - containerPort: 10254
+        name: cstatus
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: 10254
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /admission-webhook
+        name: webhook-cert
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kong-controller-token
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-default-control-plane
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      seccompProfile:
+        type: RuntimeDefault
+    serviceAccount: kong-controller
+    serviceAccountName: kong-controller
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - emptyDir:
+        sizeLimit: 256Mi
+      name: kong-controller-prefix-dir
+    - emptyDir:
+        sizeLimit: 1Gi
+      name: kong-controller-tmp
+    - name: kong-controller-token
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+    - name: webhook-cert
+      secret:
+        defaultMode: 420
+        secretName: kong-controller-validation-webhook-keypair
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:17Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:14Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:34Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:34Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:14Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://82deb5d42ef8b79dbce0ed5741a890b8fa6328aadd17426ea89006245d4cfe54
+      image: docker.io/kong/kubernetes-ingress-controller:3.5
+      imageID: docker.io/kong/kubernetes-ingress-controller@sha256:e981a6d135c6011f0554b80050a57269ca1d557261fa4e44987e96053a00186e
+      lastState: {}
+      name: ingress-controller
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-02T19:13:16Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.5
+    podIPs:
+    - ip: 10.244.0.5
+    qosClass: BestEffort
+    startTime: "2026-06-02T19:13:14Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kuma.io/gateway: enabled
+      kuma.io/service-account-token-volume: kong-gateway-token
+      traffic.sidecar.istio.io/includeInboundPorts: ""
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    generateName: kong-gateway-86698f6995-
+    labels:
+      app: kong-gateway
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gateway
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: gateway-3.2.0
+      pod-template-hash: 86698f6995
+      version: "3.9"
+    name: kong-gateway-86698f6995-mzcpr
+    namespace: kong
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: kong-gateway-86698f6995
+      uid: 434a3ca8-4331-4b55-8f8d-c8dbd873960a
+    resourceVersion: "645"
+    uid: 940cdb7c-f9c5-48be-a823-7900a24d6604
+  spec:
+    automountServiceAccountToken: false
+    containers:
+    - env:
+      - name: KONG_ADMIN_ACCESS_LOG
+        value: /dev/stdout
+      - name: KONG_ADMIN_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_ADMIN_GUI_ACCESS_LOG
+        value: /dev/stdout
+      - name: KONG_ADMIN_GUI_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_ADMIN_LISTEN
+        value: 0.0.0.0:8444 http2 ssl, [::]:8444 http2 ssl
+      - name: KONG_CLUSTER_LISTEN
+        value: "off"
+      - name: KONG_DATABASE
+        value: "off"
+      - name: KONG_LUA_PACKAGE_PATH
+        value: /opt/?.lua;/opt/?/init.lua;;
+      - name: KONG_NGINX_WORKER_PROCESSES
+        value: "2"
+      - name: KONG_PORTAL_API_ACCESS_LOG
+        value: /dev/stdout
+      - name: KONG_PORTAL_API_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_PORT_MAPS
+        value: 80:8000, 443:8443
+      - name: KONG_PREFIX
+        value: /kong_prefix/
+      - name: KONG_PROXY_ACCESS_LOG
+        value: /dev/stdout
+      - name: KONG_PROXY_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_PROXY_LISTEN
+        value: 0.0.0.0:8000, [::]:8000, 0.0.0.0:8443 http2 ssl, [::]:8443 http2 ssl
+      - name: KONG_PROXY_STREAM_ACCESS_LOG
+        value: /dev/stdout basic
+      - name: KONG_PROXY_STREAM_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_ROLE
+        value: traditional
+      - name: KONG_ROUTER_FLAVOR
+        value: traditional
+      - name: KONG_STATUS_ACCESS_LOG
+        value: "off"
+      - name: KONG_STATUS_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_STATUS_LISTEN
+        value: 0.0.0.0:8100, [::]:8100
+      - name: KONG_STREAM_LISTEN
+        value: "off"
+      - name: KONG_NGINX_DAEMON
+        value: "off"
+      image: kong:3.9
+      imagePullPolicy: IfNotPresent
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - kong
+            - quit
+            - --wait=15
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /status
+          port: status
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
+      name: proxy
+      ports:
+      - containerPort: 8444
+        name: admin-tls
+        protocol: TCP
+      - containerPort: 8000
+        name: proxy
+        protocol: TCP
+      - containerPort: 8443
+        name: proxy-tls
+        protocol: TCP
+      - containerPort: 8100
+        name: status
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /status/ready
+          port: status
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /kong_prefix/
+        name: kong-gateway-prefix-dir
+      - mountPath: /tmp
+        name: kong-gateway-tmp
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    initContainers:
+    - command:
+      - rm
+      - -vrf
+      - $KONG_PREFIX/pids
+      env:
+      - name: KONG_ADMIN_ACCESS_LOG
+        value: /dev/stdout
+      - name: KONG_ADMIN_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_ADMIN_GUI_ACCESS_LOG
+        value: /dev/stdout
+      - name: KONG_ADMIN_GUI_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_ADMIN_LISTEN
+        value: 0.0.0.0:8444 http2 ssl, [::]:8444 http2 ssl
+      - name: KONG_CLUSTER_LISTEN
+        value: "off"
+      - name: KONG_DATABASE
+        value: "off"
+      - name: KONG_LUA_PACKAGE_PATH
+        value: /opt/?.lua;/opt/?/init.lua;;
+      - name: KONG_NGINX_WORKER_PROCESSES
+        value: "2"
+      - name: KONG_PORTAL_API_ACCESS_LOG
+        value: /dev/stdout
+      - name: KONG_PORTAL_API_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_PORT_MAPS
+        value: 80:8000, 443:8443
+      - name: KONG_PREFIX
+        value: /kong_prefix/
+      - name: KONG_PROXY_ACCESS_LOG
+        value: /dev/stdout
+      - name: KONG_PROXY_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_PROXY_LISTEN
+        value: 0.0.0.0:8000, [::]:8000, 0.0.0.0:8443 http2 ssl, [::]:8443 http2 ssl
+      - name: KONG_PROXY_STREAM_ACCESS_LOG
+        value: /dev/stdout basic
+      - name: KONG_PROXY_STREAM_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_ROLE
+        value: traditional
+      - name: KONG_ROUTER_FLAVOR
+        value: traditional
+      - name: KONG_STATUS_ACCESS_LOG
+        value: "off"
+      - name: KONG_STATUS_ERROR_LOG
+        value: /dev/stderr
+      - name: KONG_STATUS_LISTEN
+        value: 0.0.0.0:8100, [::]:8100
+      - name: KONG_STREAM_LISTEN
+        value: "off"
+      image: kong:3.9
+      imagePullPolicy: IfNotPresent
+      name: clear-stale-pid
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /kong_prefix/
+        name: kong-gateway-prefix-dir
+      - mountPath: /tmp
+        name: kong-gateway-tmp
+    nodeName: chart-test-swarm-default-control-plane
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      seccompProfile:
+        type: RuntimeDefault
+    serviceAccount: kong-gateway
+    serviceAccountName: kong-gateway
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - emptyDir:
+        sizeLimit: 256Mi
+      name: kong-gateway-prefix-dir
+    - emptyDir:
+        sizeLimit: 1Gi
+      name: kong-gateway-tmp
+    - name: kong-gateway-token
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:20Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:20Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:34Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:34Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T19:13:14Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://4c18e0881005866ff0d999302425e190ece48982530e9aef9759a8d665550a36
+      image: docker.io/library/kong:3.9
+      imageID: docker.io/library/kong@sha256:76c14b93e989f7f4418039f7f9789ca32564016211c86ac1a18022f4788e7b9c
+      lastState: {}
+      name: proxy
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-02T19:13:20Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    initContainerStatuses:
+    - containerID: containerd://f8627f216e931ef7a0464d24a1fc66861b169795c85a68329e7599e0f5347f53
+      image: docker.io/library/kong:3.9
+      imageID: docker.io/library/kong@sha256:76c14b93e989f7f4418039f7f9789ca32564016211c86ac1a18022f4788e7b9c
+      lastState: {}
+      name: clear-stale-pid
+      ready: true
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: containerd://f8627f216e931ef7a0464d24a1fc66861b169795c85a68329e7599e0f5347f53
+          exitCode: 0
+          finishedAt: "2026-06-02T19:13:19Z"
+          reason: Completed
+          startedAt: "2026-06-02T19:13:19Z"
+    phase: Running
+    podIP: 10.244.0.6
+    podIPs:
+    - ip: 10.244.0.6
+    qosClass: BestEffort
+    startTime: "2026-06-02T19:13:14Z"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    labels:
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: controller-3.2.0
+    name: kong-controller-metrics
+    namespace: kong
+    resourceVersion: "509"
+    uid: ac165533-5c98-4d81-8bf4-3177a2ecaada
+  spec:
+    clusterIP: 10.96.200.95
+    clusterIPs:
+    - 10.96.200.95
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: cmetrics
+      port: 10255
+      protocol: TCP
+      targetPort: cmetrics
+    - name: status
+      port: 10254
+      protocol: TCP
+      targetPort: cstatus
+    selector:
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: controller-3.2.0
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    labels:
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: controller-3.2.0
+    name: kong-controller-validation-webhook
+    namespace: kong
+    resourceVersion: "517"
+    uid: 0f8401af-f50a-4176-838b-6bbdff08a7a6
+  spec:
+    clusterIP: 10.96.211.52
+    clusterIPs:
+    - 10.96.211.52
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: webhook
+      port: 443
+      protocol: TCP
+      targetPort: webhook
+    selector:
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: controller-3.2.0
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    labels:
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gateway
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: gateway-3.2.0
+    name: kong-gateway-admin
+    namespace: kong
+    resourceVersion: "504"
+    uid: 1a37f522-0263-4f8f-b4a1-5f0b486df83d
+  spec:
+    clusterIP: None
+    clusterIPs:
+    - None
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: kong-admin-tls
+      port: 8444
+      protocol: TCP
+      targetPort: 8444
+    selector:
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/name: gateway
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    labels:
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gateway
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: gateway-3.2.0
+    name: kong-gateway-manager
+    namespace: kong
+    resourceVersion: "523"
+    uid: 86427b86-3d4b-4790-900a-e7e54a19b961
+  spec:
+    clusterIP: 10.96.193.143
+    clusterIPs:
+    - 10.96.193.143
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: kong-manager
+      nodePort: 32332
+      port: 8002
+      protocol: TCP
+      targetPort: 8002
+    - name: kong-manager-tls
+      nodePort: 32467
+      port: 8445
+      protocol: TCP
+      targetPort: 8445
+    selector:
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/name: gateway
+    sessionAffinity: None
+    type: NodePort
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    labels:
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gateway
+      app.kubernetes.io/version: "3.9"
+      enable-metrics: "true"
+      helm.sh/chart: gateway-3.2.0
+    name: kong-gateway-proxy
+    namespace: kong
+    resourceVersion: "513"
+    uid: 5517e09d-34ac-4f0f-84c5-edd03045104e
+  spec:
+    allocateLoadBalancerNodePorts: true
+    clusterIP: 10.96.50.52
+    clusterIPs:
+    - 10.96.50.52
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: kong-proxy
+      nodePort: 31180
+      port: 80
+      protocol: TCP
+      targetPort: 8000
+    - name: kong-proxy-tls
+      nodePort: 30844
+      port: 443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/name: gateway
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: controller-3.2.0
+    name: kong-controller
+    namespace: kong
+    resourceVersion: "646"
+    uid: 35551d93-daed-4440-94e3-4b24b97e3158
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: app
+        app.kubernetes.io/instance: kong
+        app.kubernetes.io/name: controller
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          kuma.io/gateway: enabled
+          kuma.io/service-account-token-volume: kong-controller-token
+          traffic.kuma.io/exclude-outbound-ports: "8444"
+          traffic.sidecar.istio.io/excludeOutboundPorts: "8444"
+          traffic.sidecar.istio.io/includeInboundPorts: ""
+        creationTimestamp: null
+        labels:
+          app: kong-controller
+          app.kubernetes.io/component: app
+          app.kubernetes.io/instance: kong
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: controller
+          app.kubernetes.io/version: "3.9"
+          helm.sh/chart: controller-3.2.0
+          version: "3.9"
+      spec:
+        automountServiceAccountToken: false
+        containers:
+        - env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: CONTROLLER_ADMISSION_WEBHOOK_LISTEN
+            value: 0.0.0.0:8080
+          - name: CONTROLLER_ELECTION_ID
+            value: kong-ingress-controller-leader-kong
+          - name: CONTROLLER_INGRESS_CLASS
+            value: kong
+          - name: CONTROLLER_KONG_ADMIN_SVC
+            value: kong/kong-gateway-admin
+          - name: CONTROLLER_KONG_ADMIN_TLS_SKIP_VERIFY
+            value: "true"
+          - name: CONTROLLER_PUBLISH_SERVICE
+            value: kong/kong-gateway-proxy
+          image: kong/kubernetes-ingress-controller:3.5
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: ingress-controller
+          ports:
+          - containerPort: 8080
+            name: webhook
+            protocol: TCP
+          - containerPort: 10255
+            name: cmetrics
+            protocol: TCP
+          - containerPort: 10254
+            name: cstatus
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /admission-webhook
+            name: webhook-cert
+            readOnly: true
+          - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+            name: kong-controller-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
+        serviceAccount: kong-controller
+        serviceAccountName: kong-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            sizeLimit: 256Mi
+          name: kong-controller-prefix-dir
+        - emptyDir:
+            sizeLimit: 1Gi
+          name: kong-controller-tmp
+        - name: kong-controller-token
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                expirationSeconds: 3607
+                path: token
+            - configMap:
+                items:
+                - key: ca.crt
+                  path: ca.crt
+                name: kube-root-ca.crt
+            - downwardAPI:
+                items:
+                - fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+                  path: namespace
+        - name: webhook-cert
+          secret:
+            defaultMode: 420
+            secretName: kong-controller-validation-webhook-keypair
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-02T19:13:34Z"
+      lastUpdateTime: "2026-06-02T19:13:34Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-02T19:13:14Z"
+      lastUpdateTime: "2026-06-02T19:13:34Z"
+      message: ReplicaSet "kong-controller-84db4dc787" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gateway
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: gateway-3.2.0
+    name: kong-gateway
+    namespace: kong
+    resourceVersion: "654"
+    uid: 727b1633-2155-408b-a0fc-4cc82a9208e8
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: app
+        app.kubernetes.io/instance: kong
+        app.kubernetes.io/name: gateway
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          kuma.io/gateway: enabled
+          kuma.io/service-account-token-volume: kong-gateway-token
+          traffic.sidecar.istio.io/includeInboundPorts: ""
+        creationTimestamp: null
+        labels:
+          app: kong-gateway
+          app.kubernetes.io/component: app
+          app.kubernetes.io/instance: kong
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: gateway
+          app.kubernetes.io/version: "3.9"
+          helm.sh/chart: gateway-3.2.0
+          version: "3.9"
+      spec:
+        automountServiceAccountToken: false
+        containers:
+        - env:
+          - name: KONG_ADMIN_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_GUI_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_GUI_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_LISTEN
+            value: 0.0.0.0:8444 http2 ssl, [::]:8444 http2 ssl
+          - name: KONG_CLUSTER_LISTEN
+            value: "off"
+          - name: KONG_DATABASE
+            value: "off"
+          - name: KONG_LUA_PACKAGE_PATH
+            value: /opt/?.lua;/opt/?/init.lua;;
+          - name: KONG_NGINX_WORKER_PROCESSES
+            value: "2"
+          - name: KONG_PORTAL_API_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PORTAL_API_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_PORT_MAPS
+            value: 80:8000, 443:8443
+          - name: KONG_PREFIX
+            value: /kong_prefix/
+          - name: KONG_PROXY_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PROXY_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_PROXY_LISTEN
+            value: 0.0.0.0:8000, [::]:8000, 0.0.0.0:8443 http2 ssl, [::]:8443 http2
+              ssl
+          - name: KONG_PROXY_STREAM_ACCESS_LOG
+            value: /dev/stdout basic
+          - name: KONG_PROXY_STREAM_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ROLE
+            value: traditional
+          - name: KONG_ROUTER_FLAVOR
+            value: traditional
+          - name: KONG_STATUS_ACCESS_LOG
+            value: "off"
+          - name: KONG_STATUS_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_STATUS_LISTEN
+            value: 0.0.0.0:8100, [::]:8100
+          - name: KONG_STREAM_LISTEN
+            value: "off"
+          - name: KONG_NGINX_DAEMON
+            value: "off"
+          image: kong:3.9
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - kong
+                - quit
+                - --wait=15
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /status
+              port: status
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: proxy
+          ports:
+          - containerPort: 8444
+            name: admin-tls
+            protocol: TCP
+          - containerPort: 8000
+            name: proxy
+            protocol: TCP
+          - containerPort: 8443
+            name: proxy-tls
+            protocol: TCP
+          - containerPort: 8100
+            name: status
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /status/ready
+              port: status
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /kong_prefix/
+            name: kong-gateway-prefix-dir
+          - mountPath: /tmp
+            name: kong-gateway-tmp
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - command:
+          - rm
+          - -vrf
+          - $KONG_PREFIX/pids
+          env:
+          - name: KONG_ADMIN_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_GUI_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_GUI_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_LISTEN
+            value: 0.0.0.0:8444 http2 ssl, [::]:8444 http2 ssl
+          - name: KONG_CLUSTER_LISTEN
+            value: "off"
+          - name: KONG_DATABASE
+            value: "off"
+          - name: KONG_LUA_PACKAGE_PATH
+            value: /opt/?.lua;/opt/?/init.lua;;
+          - name: KONG_NGINX_WORKER_PROCESSES
+            value: "2"
+          - name: KONG_PORTAL_API_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PORTAL_API_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_PORT_MAPS
+            value: 80:8000, 443:8443
+          - name: KONG_PREFIX
+            value: /kong_prefix/
+          - name: KONG_PROXY_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PROXY_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_PROXY_LISTEN
+            value: 0.0.0.0:8000, [::]:8000, 0.0.0.0:8443 http2 ssl, [::]:8443 http2
+              ssl
+          - name: KONG_PROXY_STREAM_ACCESS_LOG
+            value: /dev/stdout basic
+          - name: KONG_PROXY_STREAM_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ROLE
+            value: traditional
+          - name: KONG_ROUTER_FLAVOR
+            value: traditional
+          - name: KONG_STATUS_ACCESS_LOG
+            value: "off"
+          - name: KONG_STATUS_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_STATUS_LISTEN
+            value: 0.0.0.0:8100, [::]:8100
+          - name: KONG_STREAM_LISTEN
+            value: "off"
+          image: kong:3.9
+          imagePullPolicy: IfNotPresent
+          name: clear-stale-pid
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /kong_prefix/
+            name: kong-gateway-prefix-dir
+          - mountPath: /tmp
+            name: kong-gateway-tmp
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
+        serviceAccount: kong-gateway
+        serviceAccountName: kong-gateway
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            sizeLimit: 256Mi
+          name: kong-gateway-prefix-dir
+        - emptyDir:
+            sizeLimit: 1Gi
+          name: kong-gateway-tmp
+        - name: kong-gateway-token
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                expirationSeconds: 3607
+                path: token
+            - configMap:
+                items:
+                - key: ca.crt
+                  path: ca.crt
+                name: kube-root-ca.crt
+            - downwardAPI:
+                items:
+                - fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+                  path: namespace
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-02T19:13:34Z"
+      lastUpdateTime: "2026-06-02T19:13:34Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-02T19:13:14Z"
+      lastUpdateTime: "2026-06-02T19:13:34Z"
+      message: ReplicaSet "kong-gateway-86698f6995" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    generation: 1
+    labels:
+      app: kong-controller
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: controller-3.2.0
+      pod-template-hash: 84db4dc787
+      version: "3.9"
+    name: kong-controller-84db4dc787
+    namespace: kong
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: kong-controller
+      uid: 35551d93-daed-4440-94e3-4b24b97e3158
+    resourceVersion: "644"
+    uid: 6e58b432-d452-4d34-865c-5c7cb4b1298f
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: app
+        app.kubernetes.io/instance: kong
+        app.kubernetes.io/name: controller
+        pod-template-hash: 84db4dc787
+    template:
+      metadata:
+        annotations:
+          kuma.io/gateway: enabled
+          kuma.io/service-account-token-volume: kong-controller-token
+          traffic.kuma.io/exclude-outbound-ports: "8444"
+          traffic.sidecar.istio.io/excludeOutboundPorts: "8444"
+          traffic.sidecar.istio.io/includeInboundPorts: ""
+        creationTimestamp: null
+        labels:
+          app: kong-controller
+          app.kubernetes.io/component: app
+          app.kubernetes.io/instance: kong
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: controller
+          app.kubernetes.io/version: "3.9"
+          helm.sh/chart: controller-3.2.0
+          pod-template-hash: 84db4dc787
+          version: "3.9"
+      spec:
+        automountServiceAccountToken: false
+        containers:
+        - env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: CONTROLLER_ADMISSION_WEBHOOK_LISTEN
+            value: 0.0.0.0:8080
+          - name: CONTROLLER_ELECTION_ID
+            value: kong-ingress-controller-leader-kong
+          - name: CONTROLLER_INGRESS_CLASS
+            value: kong
+          - name: CONTROLLER_KONG_ADMIN_SVC
+            value: kong/kong-gateway-admin
+          - name: CONTROLLER_KONG_ADMIN_TLS_SKIP_VERIFY
+            value: "true"
+          - name: CONTROLLER_PUBLISH_SERVICE
+            value: kong/kong-gateway-proxy
+          image: kong/kubernetes-ingress-controller:3.5
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: ingress-controller
+          ports:
+          - containerPort: 8080
+            name: webhook
+            protocol: TCP
+          - containerPort: 10255
+            name: cmetrics
+            protocol: TCP
+          - containerPort: 10254
+            name: cstatus
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /admission-webhook
+            name: webhook-cert
+            readOnly: true
+          - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+            name: kong-controller-token
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
+        serviceAccount: kong-controller
+        serviceAccountName: kong-controller
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            sizeLimit: 256Mi
+          name: kong-controller-prefix-dir
+        - emptyDir:
+            sizeLimit: 1Gi
+          name: kong-controller-tmp
+        - name: kong-controller-token
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                expirationSeconds: 3607
+                path: token
+            - configMap:
+                items:
+                - key: ca.crt
+                  path: ca.crt
+                name: kube-root-ca.crt
+            - downwardAPI:
+                items:
+                - fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+                  path: namespace
+        - name: webhook-cert
+          secret:
+            defaultMode: 420
+            secretName: kong-controller-validation-webhook-keypair
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: kong
+      meta.helm.sh/release-namespace: kong
+    creationTimestamp: "2026-06-02T19:13:14Z"
+    generation: 1
+    labels:
+      app: kong-gateway
+      app.kubernetes.io/component: app
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: gateway
+      app.kubernetes.io/version: "3.9"
+      helm.sh/chart: gateway-3.2.0
+      pod-template-hash: 86698f6995
+      version: "3.9"
+    name: kong-gateway-86698f6995
+    namespace: kong
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: kong-gateway
+      uid: 727b1633-2155-408b-a0fc-4cc82a9208e8
+    resourceVersion: "653"
+    uid: 434a3ca8-4331-4b55-8f8d-c8dbd873960a
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: app
+        app.kubernetes.io/instance: kong
+        app.kubernetes.io/name: gateway
+        pod-template-hash: 86698f6995
+    template:
+      metadata:
+        annotations:
+          kuma.io/gateway: enabled
+          kuma.io/service-account-token-volume: kong-gateway-token
+          traffic.sidecar.istio.io/includeInboundPorts: ""
+        creationTimestamp: null
+        labels:
+          app: kong-gateway
+          app.kubernetes.io/component: app
+          app.kubernetes.io/instance: kong
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: gateway
+          app.kubernetes.io/version: "3.9"
+          helm.sh/chart: gateway-3.2.0
+          pod-template-hash: 86698f6995
+          version: "3.9"
+      spec:
+        automountServiceAccountToken: false
+        containers:
+        - env:
+          - name: KONG_ADMIN_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_GUI_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_GUI_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_LISTEN
+            value: 0.0.0.0:8444 http2 ssl, [::]:8444 http2 ssl
+          - name: KONG_CLUSTER_LISTEN
+            value: "off"
+          - name: KONG_DATABASE
+            value: "off"
+          - name: KONG_LUA_PACKAGE_PATH
+            value: /opt/?.lua;/opt/?/init.lua;;
+          - name: KONG_NGINX_WORKER_PROCESSES
+            value: "2"
+          - name: KONG_PORTAL_API_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PORTAL_API_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_PORT_MAPS
+            value: 80:8000, 443:8443
+          - name: KONG_PREFIX
+            value: /kong_prefix/
+          - name: KONG_PROXY_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PROXY_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_PROXY_LISTEN
+            value: 0.0.0.0:8000, [::]:8000, 0.0.0.0:8443 http2 ssl, [::]:8443 http2
+              ssl
+          - name: KONG_PROXY_STREAM_ACCESS_LOG
+            value: /dev/stdout basic
+          - name: KONG_PROXY_STREAM_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ROLE
+            value: traditional
+          - name: KONG_ROUTER_FLAVOR
+            value: traditional
+          - name: KONG_STATUS_ACCESS_LOG
+            value: "off"
+          - name: KONG_STATUS_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_STATUS_LISTEN
+            value: 0.0.0.0:8100, [::]:8100
+          - name: KONG_STREAM_LISTEN
+            value: "off"
+          - name: KONG_NGINX_DAEMON
+            value: "off"
+          image: kong:3.9
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - kong
+                - quit
+                - --wait=15
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /status
+              port: status
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: proxy
+          ports:
+          - containerPort: 8444
+            name: admin-tls
+            protocol: TCP
+          - containerPort: 8000
+            name: proxy
+            protocol: TCP
+          - containerPort: 8443
+            name: proxy-tls
+            protocol: TCP
+          - containerPort: 8100
+            name: status
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /status/ready
+              port: status
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /kong_prefix/
+            name: kong-gateway-prefix-dir
+          - mountPath: /tmp
+            name: kong-gateway-tmp
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - command:
+          - rm
+          - -vrf
+          - $KONG_PREFIX/pids
+          env:
+          - name: KONG_ADMIN_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_GUI_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_GUI_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_LISTEN
+            value: 0.0.0.0:8444 http2 ssl, [::]:8444 http2 ssl
+          - name: KONG_CLUSTER_LISTEN
+            value: "off"
+          - name: KONG_DATABASE
+            value: "off"
+          - name: KONG_LUA_PACKAGE_PATH
+            value: /opt/?.lua;/opt/?/init.lua;;
+          - name: KONG_NGINX_WORKER_PROCESSES
+            value: "2"
+          - name: KONG_PORTAL_API_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PORTAL_API_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_PORT_MAPS
+            value: 80:8000, 443:8443
+          - name: KONG_PREFIX
+            value: /kong_prefix/
+          - name: KONG_PROXY_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PROXY_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_PROXY_LISTEN
+            value: 0.0.0.0:8000, [::]:8000, 0.0.0.0:8443 http2 ssl, [::]:8443 http2
+              ssl
+          - name: KONG_PROXY_STREAM_ACCESS_LOG
+            value: /dev/stdout basic
+          - name: KONG_PROXY_STREAM_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ROLE
+            value: traditional
+          - name: KONG_ROUTER_FLAVOR
+            value: traditional
+          - name: KONG_STATUS_ACCESS_LOG
+            value: "off"
+          - name: KONG_STATUS_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_STATUS_LISTEN
+            value: 0.0.0.0:8100, [::]:8100
+          - name: KONG_STREAM_LISTEN
+            value: "off"
+          image: kong:3.9
+          imagePullPolicy: IfNotPresent
+          name: clear-stale-pid
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /kong_prefix/
+            name: kong-gateway-prefix-dir
+          - mountPath: /tmp
+            name: kong-gateway-tmp
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
+        serviceAccount: kong-gateway
+        serviceAccountName: kong-gateway
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            sizeLimit: 256Mi
+          name: kong-gateway-prefix-dir
+        - emptyDir:
+            sizeLimit: 1Gi
+          name: kong-gateway-tmp
+        - name: kong-gateway-token
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                expirationSeconds: 3607
+                path: token
+            - configMap:
+                items:
+                - key: ca.crt
+                  path: ca.crt
+                name: kube-root-ca.crt
+            - downwardAPI:
+                items:
+                - fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+                  path: namespace
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+kind: List
+metadata:
+  resourceVersion: ""

@@ -1,0 +1,11 @@
+scenario_id: networking-kong-ingress
+scenario_path: examples/sample-product-chart/chart-test/scenarios/networking/networking-kong-ingress.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-06-02T19:06:57Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see examples/sample-product-chart/chart-test/reports/scenario-networking-kong-ingress-20260602-150656-2/artifacts/logs/preinstall.log
+finished_at: 2026-06-02T19:12:41Z

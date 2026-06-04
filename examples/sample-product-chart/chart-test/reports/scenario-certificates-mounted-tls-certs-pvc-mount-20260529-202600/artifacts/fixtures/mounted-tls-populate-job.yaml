@@ -1,0 +1,41 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: populate-mounted-tls-pvc
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: gen-certs
+          image: alpine/openssl:3.3.2
+          command:
+            - sh
+            - -c
+            - |
+              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout /certs/tls.key \
+                -out /certs/tls.crt \
+                -subj "/CN=sample.sample.svc" \
+                -addext "subjectAltName=DNS:sample.sample.svc"
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+      containers:
+        - name: done
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "TLS certs written to PVC"
+              ls -la /certs/
+              [ -f /certs/tls.crt ] && [ -f /certs/tls.key ] && echo "OK" || { echo "FAIL: missing cert files"; exit 1; }
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+      volumes:
+        - name: certs
+          persistentVolumeClaim:
+            claimName: mounted-tls-pvc

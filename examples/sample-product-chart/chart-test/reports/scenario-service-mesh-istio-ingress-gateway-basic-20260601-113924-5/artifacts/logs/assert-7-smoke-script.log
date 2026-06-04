@@ -1,0 +1,15 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-basic.sh (RELEASE=sample NAMESPACE=sample)
+==> Creating Istio Gateway + VirtualService
+gateway.networking.istio.io/sample-igw created
+virtualservice.networking.istio.io/sample-vs created
+==> Waiting for istiod to reconcile Gateway (15s)
+==> Verifying Gateway resource is admitted
+  ✓ Gateway sample-igw exists
+==> Verifying VirtualService resource exists
+  ✓ VirtualService sample-vs exists
+==> Getting istio-ingressgateway pod IP
+  Gateway pod IP: 10.244.0.6
+==> Probing product through istio ingress gateway
+HTTP response through gateway: 200
+PASS: traffic routed through istio ingress gateway
+PASS: istio ingress gateway basic integration verified

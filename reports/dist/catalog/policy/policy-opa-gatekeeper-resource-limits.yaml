@@ -1,0 +1,55 @@
+---
+id: policy-opa-gatekeeper-resource-limits
+name: "OPA Gatekeeper resource limits enforcement"
+description: >-
+  Installs OPA Gatekeeper, creates k8scontainerlimits ConstraintTemplate + Constraint requiring CPU and memory limits on all containers. Verifies Deployment without limits denied,
+  compliant Deployment accepted.
+labels: {customer: any, profile: policy}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: gatekeeper/gatekeeper
+      version: "3.17.1"
+      release: gatekeeper
+      namespace: gatekeeper-system
+      repo:
+        name: gatekeeper
+        url: "https://open-policy-agent.github.io/gatekeeper/charts"
+      values:
+        auditInterval: 10
+        constraintViolationsLimit: 20
+        enableExternalData: false
+        postInstall:
+          labelNamespace:
+            enabled: false
+        validatingWebhookFailurePolicy: Fail
+      wait: pods-ready
+      wait_timeout: 4m
+    - kind: raw_manifest
+      path: chart-test/fixtures/policy/k8scontainerlimits-template.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: gatekeeper-system
+    timeout: 4m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/opa-gatekeeper-resource-limits.sh
+tags: [nightly]
+mechanisms: ['addon:opa-gatekeeper']
+category: policy
+integration: opa-gatekeeper
+tier: live

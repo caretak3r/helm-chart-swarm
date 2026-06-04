@@ -1,0 +1,18 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/envoy-gateway-httproute.sh (RELEASE=sample NAMESPACE=sample)
+==> Applying GatewayClass + Gateway + HTTPRoute
+gatewayclass.gateway.networking.k8s.io/envoy created
+gateway.gateway.networking.k8s.io/sample-gw created
+httproute.gateway.networking.k8s.io/sample-route created
+==> Waiting for GatewayClass envoy Accepted=True (3m max)
+PASS: GatewayClass envoy Accepted=True
+==> Waiting for Gateway listener http Programmed=True (5m max)
+PASS: Gateway listener http Programmed=True
+==> Verifying HTTPRoute sample-route Accepted=True
+PASS: HTTPRoute sample-route Accepted=True
+==> Getting envoy data-plane Service ClusterIP
+Gateway Service: envoy-sample-sample-gw-038a7a21 IP: 10.96.23.165
+==> Probing backend via gateway (retry up to 2m for data-plane ready)
+HTTP response: 200 (attempt 2)
+HTTP response: 200
+PASS: HTTP 200 through Envoy Gateway
+PASS: envoy-gateway HTTPRoute integration verified

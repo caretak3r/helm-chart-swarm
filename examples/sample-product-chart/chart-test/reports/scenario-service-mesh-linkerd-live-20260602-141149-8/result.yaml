@@ -1,0 +1,67 @@
+scenario_id: service-mesh-linkerd-live
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh/service-mesh-linkerd-live.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T18:11:49Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-crds in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-control-plane in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: smoke-script
+    status: PASS
+    notes: |
+          see https://linkerd.io/2.14/checks/#l5d-data-plane-version for hints
+      √ data plane and cli versions match
+      √ data plane pod labels are configured correctly
+      √ data plane service labels are configured correctly
+      √ data plane service annotations are configured correctly
+      √ opaque ports are properly annotated
+      
+      Status check results are √
+      ==> Check exit code: 0
+        ✓ linkerd check --proxy -n sample exited 0
+        ✓ linkerd check output contains 'Status check results are'
+      pod "ct-linkerd-live-check" deleted from sample namespace
+      clusterrolebinding.rbac.authorization.k8s.io "ct-linkerd-check" deleted
+      serviceaccount "ct-linkerd-check" deleted from sample namespace
+      
+      PASS: Linkerd LIVE service mesh integration verified
+        - Control-plane pods Ready, proxy-injector webhook present
+        - Namespace annotated linkerd.io/inject=enabled
+        - Product pods have linkerd-proxy sidecar
+        - linkerd check --proxy -n sample healthy
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n linkerd wait --for=condition=Ready pods --timeout=10m --all
+      pod/linkerd-destination-684df6948d-zcp6r condition met
+      pod/linkerd-identity-58b8b7b4f9-vdzrj condition met
+      pod/linkerd-proxy-injector-5c75fdd5dd-gj85f condition met
+      PASS: pods Ready in ns/linkerd
+      NAME                                      READY   STATUS    RESTARTS   AGE
+      linkerd-destination-684df6948d-zcp6r      4/4     Running   0          85s
+      linkerd-identity-58b8b7b4f9-vdzrj         2/2     Running   0          85s
+      linkerd-proxy-injector-5c75fdd5dd-gj85f   2/2     Running   0          85s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-d765cdbd8-cg4ft condition met
+      PASS: pods Ready in ns/sample
+      NAME                     READY   STATUS    RESTARTS   AGE
+      sample-d765cdbd8-cg4ft   2/2     Running   0          22s
+status: PASS
+finished_at: 2026-06-02T18:13:53Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-live-20260602-141149-8/artifacts/logs

@@ -1,0 +1,72 @@
+scenario_id: service-mesh-istio-ingress-gateway-multi-host
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-istio-ingress-gateway-multi-host.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T05:20:04Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-ingressgateway in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utmesh5 -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-ts5wq condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-ts5wq   1/1     Running   0          12s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utmesh5 -n istio-system wait --for=condition=Ready pods --timeout=3m -l app=istio-ingressgateway
+      pod/istio-ingressgateway-8584b67974-sd8nv condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istio-ingressgateway)
+      NAME                                    READY   STATUS    RESTARTS   AGE
+      istio-ingressgateway-8584b67974-sd8nv   1/1     Running   0          7s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utmesh5 -n sample wait --for=condition=Ready pods --timeout=3m --all
+      pod/sample-7dcd986bd4-k8wzr condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-k8wzr   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-multi-host.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Creating multi-host Istio Gateway + VirtualService
+      gateway.networking.istio.io/sample-igw-multi created
+      Warning: virtualService rule #1 match #0 is not used (duplicate/overlapping match in rule #0)
+      Warning: virtualService rule #1 not used (all matches used by prior rules)
+      virtualservice.networking.istio.io/sample-vs-multi created
+      ==> Waiting for istiod to reconcile Gateway + VirtualService (15s)
+      ==> Verifying Gateway resource is admitted
+        ✓ Gateway sample-igw-multi exists
+      ==> Getting istio-ingressgateway pod IP
+        Gateway pod IP: 10.244.0.6
+      ==> Probing skywatcher host through gateway
+        Skywatcher HTTP code: 200
+      ==> Probing api host through gateway
+        API HTTP code: 200
+      PASS: multi-host routing through istio ingress gateway verified
+status: PASS
+finished_at: 2026-06-01T05:21:06Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-ingress-gateway-multi-host-20260601-012003-3/artifacts/logs

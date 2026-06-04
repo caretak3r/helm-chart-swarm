@@ -1,0 +1,50 @@
+---
+id: certificates-mounted-tls-certs-csi-secret-store
+name: "mounted-tls-certs csi-secret-store"
+description: >-
+  Installs the secrets-store-csi-driver helm chart and a stub SecretProviderClass, then installs the chart with a TLS secret volume. Verifies CSI driver presence, SecretProviderClass resource, and that the product pod serves HTTPS. Full CSI volume mount verification requires a real CSI provider plugin (e.g. AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, or HashiCorp Vault) which is not available on kind; the scenario validates CSI infrastructure deployment and documents the mount verification as a SKIP on kind.
+labels: {customer: any, profile: tls}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: secrets-store-csi-driver/secrets-store-csi-driver
+      version: 1.4.8
+      release: csi-secrets-store
+      namespace: kube-system
+      repo:
+        name: secrets-store-csi-driver
+        url: "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
+      values:
+        syncSecret:
+          enabled: true
+        enableSecretRotation: false
+      wait: pods-ready
+      wait_timeout: 5m
+    - kind: raw_manifest
+      path: ./fixtures/mounted-tls-csi-secretproviderclass.yaml
+      namespace: sample
+    - kind: raw_manifest
+      path: ./fixtures/mounted-tls-csi-tls-secret.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    tls.enabled: "true"
+    tls.secretName: "mounted-tls-csi-tls"
+    tls.servicePort: "443"
+    tls.volumeType: "secret"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/mounted-tls-csi-secret-store.sh
+tags: [nightly]
+mechanisms: ['addon:mounted-tls-certs']

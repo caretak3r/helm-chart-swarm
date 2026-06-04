@@ -1,0 +1,7 @@
+kubectl --context kind-chart-test-swarm-eg-grpc -n sample wait --for=condition=Ready pods --timeout=5m --all
+pod/grpc-backend-775f8dc876-b8mq7 condition met
+pod/sample-7dcd986bd4-lhclh condition met
+PASS: pods Ready in ns/sample
+NAME                            READY   STATUS    RESTARTS   AGE
+grpc-backend-775f8dc876-b8mq7   1/1     Running   0          5s
+sample-7dcd986bd4-lhclh         1/1     Running   0          5s

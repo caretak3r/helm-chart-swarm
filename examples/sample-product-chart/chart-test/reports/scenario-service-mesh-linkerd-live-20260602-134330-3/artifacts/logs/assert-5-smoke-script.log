@@ -1,0 +1,52 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-live.sh (RELEASE=sample NAMESPACE=sample)
+==> VAL-MSH-009: Verifying linkerd control-plane pods are Ready
+  ✓ linkerd control-plane pods are Ready
+==> VAL-MSH-009: Verifying linkerd-proxy-injector MutatingWebhookConfiguration
+  ✓ linkerd-proxy-injector webhook present: mutatingwebhookconfiguration.admissionregistration.k8s.io/linkerd-proxy-injector-webhook-config
+==> VAL-MSH-010: Verifying namespace sample is annotated linkerd.io/inject=enabled
+  ✓ Namespace sample annotated linkerd.io/inject=enabled
+==> VAL-MSH-010: Verifying product pods have linkerd-proxy sidecar
+  Pod sample-7dcd986bd4-qfx8w (deploy/sample) containers (2): linkerd-proxy app
+    ✓ linkerd-proxy sidecar present
+PASS: every Running product pod has linkerd-proxy sidecar
+  Capturing pod manifest with linkerd-proxy sidecar to artifacts
+==> VAL-MSH-011: Setting up RBAC for linkerd check probe
+serviceaccount/ct-linkerd-check created
+clusterrolebinding.rbac.authorization.k8s.io/ct-linkerd-check created
+  ✓ RBAC service account ct-linkerd-check created
+==> VAL-MSH-011: Running linkerd check --proxy -n sample
+pod/ct-linkerd-live-check created
+  Waiting for linkerd check pod (3m max)
+  Check pod phase: Failed
+  linkerd check output (last 30 lines):
+==> Downloading linkerd CLI...
+==> Running linkerd check --proxy -n sample...
+kubernetes-api
+--------------
+√ can initialize the client
+√ can query the Kubernetes API
+
+kubernetes-version
+------------------
+√ is running the minimum Kubernetes API version
+
+linkerd-existence
+-----------------
+× 'linkerd-config' config map exists
+    configmaps "linkerd-config" is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot get resource "configmaps" in API group "" in the namespace "linkerd": RBAC: clusterrole.rbac.authorization.k8s.io "ct-linkerd-check" not found
+    see https://linkerd.io/2.14/checks/#l5d-existence-linkerd-config for hints
+
+Failed to run extensions checks: namespaces is forbidden: User "system:serviceaccount:sample:ct-linkerd-check" cannot list resource "namespaces" in API group "" at the cluster scope: RBAC: clusterrole.rbac.authorization.k8s.io "ct-linkerd-check" not found
+WARN: linkerd check --proxy did not exit 0 or produce expected output
+  Checking alternative indicators...
+  ✓ All linkerd-proxy containers are ready
+  ✓ linkerd-identity deployment is Available
+pod "ct-linkerd-live-check" deleted from sample namespace
+clusterrolebinding.rbac.authorization.k8s.io "ct-linkerd-check" deleted
+serviceaccount "ct-linkerd-check" deleted from sample namespace
+
+PASS: Linkerd LIVE service mesh integration verified
+  - Control-plane pods Ready, proxy-injector webhook present
+  - Namespace annotated linkerd.io/inject=enabled
+  - Product pods have linkerd-proxy sidecar
+  - linkerd check --proxy -n sample healthy

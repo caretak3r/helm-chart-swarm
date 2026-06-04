@@ -1,0 +1,87 @@
+scenario_id: service-mesh-istio-service-mesh-cert-manager-tls
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-istio-service-mesh-cert-manager-tls.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T00:18:23Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release cert-manager in ns/cert-manager is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-ingressgateway in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n cert-manager wait --for=condition=Ready pods --timeout=5m --all
+      pod/cert-manager-c69c859c4-dw6t2 condition met
+      pod/cert-manager-cainjector-d6d64f75f-wmg4t condition met
+      pod/cert-manager-webhook-566849c7fc-zxg54 condition met
+      PASS: pods Ready in ns/cert-manager
+      NAME                                      READY   STATUS    RESTARTS   AGE
+      cert-manager-c69c859c4-dw6t2              1/1     Running   0          39s
+      cert-manager-cainjector-d6d64f75f-wmg4t   1/1     Running   0          39s
+      cert-manager-webhook-566849c7fc-zxg54     1/1     Running   0          39s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m --all
+      pod/istio-ingressgateway-8584b67974-xphfm condition met
+      pod/istiod-54b585df85-287x8 condition met
+      PASS: pods Ready in ns/istio-system
+      NAME                                    READY   STATUS    RESTARTS   AGE
+      istio-ingressgateway-8584b67974-xphfm   1/1     Running   0          8s
+      istiod-54b585df85-287x8                 1/1     Running   0          15s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-6f8587999b-dkq2f condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-6f8587999b-dkq2f   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      2026-06-01T00:19:26.545770Zinfocachereturned workload certificate from cachettl=23h59m59.454230079s
+      2026-06-01T00:19:26.545915Zinfocachereturned workload trust anchor from cachettl=23h59m59.454085371s
+      2026-06-01T00:19:26.545994Zinfocachereturned workload trust anchor from cachettl=23h59m59.454005996s
+      2026-06-01T00:19:26.915710ZinfoReadiness succeeded in 646.41675ms
+      2026-06-01T00:19:26.915967ZinfoEnvoy proxy is ready
+      ==> Running istioctl analyze (downloading if needed)
+        Downloading istioctl 1.27.9...
+      SKIP: istioctl not available; skipping analyze step
+      ==> Testing HTTPS through Istio Gateway with TLS
+      pod/ct-gw-tls-probe created
+      pod/ct-gw-tls-probe condition met
+      PASS: test pod ct-gw-tls-probe ready
+      Gateway service IP: 10.96.144.5
+      HTTPS response through Gateway: 200
+      PASS: HTTPS 200 through Istio Gateway with cert-manager-issued cert
+      ==> Verifying peer certificate issuer matches cert-manager
+      Peer cert issuer: 
+      pod "ct-gw-tls-probe" force deleted from sample namespace
+      NOTE: peer certificate issuer not matching expected pattern: 
+      PASS: Istio Gateway + cert-manager TLS cross-feature compose verified
+status: PASS
+finished_at: 2026-06-01T00:19:58Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-service-mesh-cert-manager-tls-20260531-201823-2/artifacts/logs

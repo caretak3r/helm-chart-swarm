@@ -1,0 +1,11 @@
+scenario_id: security-context-off
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/security-context-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T13:37:54Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-security-context-off-20260602-093754/artifacts/logs/product-install.log
+finished_at: 2026-06-02T13:37:55Z

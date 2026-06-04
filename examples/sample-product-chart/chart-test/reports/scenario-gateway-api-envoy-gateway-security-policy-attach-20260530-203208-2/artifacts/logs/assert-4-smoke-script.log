@@ -1,0 +1,10 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/envoy-gateway-security-policy-attach.sh (RELEASE=sample NAMESPACE=sample)
+==> Applying GatewayClass + Gateway + HTTPRoute + SecurityPolicy
+gatewayclass.gateway.networking.k8s.io/envoy created
+gateway.gateway.networking.k8s.io/sample-gw created
+httproute.gateway.networking.k8s.io/sample-route created
+securitypolicy.gateway.envoyproxy.io/sample-cors-policy created
+==> Waiting for GatewayClass envoy Accepted=True (3m max)
+PASS: GatewayClass envoy Accepted=True
+==> Waiting for Gateway listener http Programmed=True (5m max)
+FAIL: Gateway listener http not Programmed after 5m

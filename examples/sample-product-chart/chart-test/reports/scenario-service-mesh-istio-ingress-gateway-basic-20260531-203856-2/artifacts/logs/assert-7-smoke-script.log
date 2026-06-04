@@ -1,0 +1,4 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-basic.sh (RELEASE=sample NAMESPACE=sample)
+==> Creating Istio Gateway + VirtualService
+the namespace from the provided object "SAMPLE-NS" does not match the namespace "sample". You must pass '--namespace=SAMPLE-NS' to perform this operation.
+the namespace from the provided object "SAMPLE-NS" does not match the namespace "sample". You must pass '--namespace=SAMPLE-NS' to perform this operation.

@@ -1,0 +1,52 @@
+scenario_id: ingress-controllers-traefik-ingressroute-crd
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/ingress-controllers-traefik-ingressroute-crd.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T15:26:55Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-33 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-jtblq condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-jtblq   1/1     Running   0          2s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-33 -n traefik wait --for=condition=Ready pods --timeout=3m --all
+      pod/traefik-77657478fd-s79bt condition met
+      PASS: pods Ready in ns/traefik
+      NAME                       READY   STATUS    RESTARTS   AGE
+      traefik-77657478fd-s79bt   1/1     Running   0          9s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/traefik-ingressroute-crd.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for Traefik pod Ready (3m max)
+      pod/traefik-77657478fd-s79bt condition met
+      PASS: Traefik pod Ready
+      ==> Waiting for product pod Ready (3m max)
+      pod/sample-69469cb4c6-jtblq condition met
+      PASS: product pods Ready
+      ==> Verifying IngressRoute CRD is used (not classic Ingress)
+      IngressRoute count: 1
+      PASS: IngressRoute.traefik.io/v1alpha1 resources present
+      ==> Verifying no classic Ingress resources exist
+      Classic Ingress count: 0
+      PASS: no classic Ingress resources (CRD-only routing)
+      ==> Getting Traefik pod IP
+      Traefik pod IP: 10.244.0.5
+      ==> Probing HTTP with Host header (expect 200)
+      HTTP response: 200
+      PASS: HTTP 200 through IngressRoute CRD
+      PASS: Traefik IngressRoute CRD integration verified
+status: PASS
+finished_at: 2026-06-01T15:27:34Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-traefik-ingressroute-crd-20260601-112654-3/artifacts/logs

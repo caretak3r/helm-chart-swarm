@@ -1,0 +1,7 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: contour (projectcontour/contour @ 19.2.0) in ns/projectcontour
+Release "contour" does not exist. Installing it now.
+Error: chart "contour" matching 19.2.0 not found in projectcontour index. (try 'helm repo update'): no chart version found for contour-19.2.0

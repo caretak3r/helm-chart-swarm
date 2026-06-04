@@ -1,0 +1,16 @@
+---
+id: c2-deliberate-fail
+name: "Deliberately failing scenario for VAL-ENGINE-023/024"
+description: "Uses a non-existent chart to force product-install failure."
+labels: {customer: test, profile: fail-test}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: fail-sample
+  namespace: sample
+asserts:
+  - {type: helm-status-deployed, release: fail-sample, namespace: sample}
+tags: [test]
+mechanisms: ['addon:none']

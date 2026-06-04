@@ -1,0 +1,13 @@
+scenario_id: c3fail-deliberate
+scenario_path: /tmp/c3fail-scenario.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-05-29T18:58:22Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: FAIL
+    notes: |
+      jq: parse error: Invalid numeric literal at line 1, column 6
+status: FAIL
+finished_at: 2026-05-29T18:58:52Z
+log_dir: examples/sample-product-chart/chart-test/reports/scenario-c3fail-deliberate-20260529-145822/artifacts/logs

@@ -1,0 +1,11 @@
+==> PROJECT_DIR=examples/sample-product-chart
+==> Applying 1 preinstall item(s)
+
+==> [1/1] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/mounted-tls/mounted-tls-projected-secret.yaml in ns/sample
+namespace/sample created
+secret/mounted-tls-projected serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

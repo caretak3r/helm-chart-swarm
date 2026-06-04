@@ -1,0 +1,32 @@
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        add_header X-Test "chart-test-swarm";
+    creationTimestamp: "2026-05-30T17:48:02Z"
+    generation: 1
+    name: sample-snippet
+    namespace: sample
+    resourceVersion: "634"
+    uid: ce67c989-3e96-45c1-b688-0c546edef133
+  spec:
+    ingressClassName: nginx
+    rules:
+    - host: sample.test.local
+      http:
+        paths:
+        - backend:
+            service:
+              name: sample
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

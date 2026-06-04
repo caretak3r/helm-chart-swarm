@@ -1,0 +1,55 @@
+scenario_id: ingress-controllers-contour-tls-delegation
+scenario_path: examples/sample-product-chart/chart-test/scenarios/ingress-controllers-contour-tls-delegation.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T19:07:53Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-q225g condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-q225g   1/1     Running   0          2s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n projectcontour wait --for=condition=Ready pods --timeout=3m --all
+      pod/contour-contour-5847f7c7f9-qgjmz condition met
+      pod/contour-envoy-f4dld condition met
+      PASS: pods Ready in ns/projectcontour
+      NAME                               READY   STATUS    RESTARTS   AGE
+      contour-contour-5847f7c7f9-qgjmz   1/1     Running   0          28s
+      contour-envoy-f4dld                2/2     Running   0          28s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      pod/sample-69469cb4c6-q225g condition met
+      PASS: product pods Ready
+      ==> Verifying TLSCertificateDelegation exists
+      tlscertificatedelegation.projectcontour.io/sample-tls-delegation
+      PASS: TLSCertificateDelegation sample-tls-delegation exists
+      ==> Verifying TLS secret exists in tls-secrets namespace
+      secret/sample-tls
+      PASS: TLS secret sample-tls exists
+      ==> Verifying HTTPProxy status is valid
+      HTTPProxy status: valid
+      PASS: HTTPProxy status is valid
+      ==> Getting envoy pod IP
+      envoy pod IP: 10.244.0.6
+      ==> Probing HTTPS (expect 200) on envoy container port 8443
+      HTTPS response: 200
+      PASS: HTTPS 200 with delegated TLS cert
+      ==> Verifying cert subject (expect CN=sample.test.local)
+      Certificate subject: subject=CN=sample.test.local
+      PASS: certificate CN matches sample.test.local
+      PASS: Contour TLS delegation integration verified
+status: PASS
+finished_at: 2026-05-30T19:09:05Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-ingress-controllers-contour-tls-delegation-20260530-150753-4/artifacts/logs

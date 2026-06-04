@@ -1,0 +1,11 @@
+scenario_id: policy-opa-gatekeeper-required-labels
+scenario_path: examples/sample-product-chart/chart-test/scenarios/policy-opa-gatekeeper-required-labels.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T06:59:30Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-policy-opa-gatekeeper-required-labels-20260601-025930-3/artifacts/logs/preinstall.log
+finished_at: 2026-06-01T07:00:43Z

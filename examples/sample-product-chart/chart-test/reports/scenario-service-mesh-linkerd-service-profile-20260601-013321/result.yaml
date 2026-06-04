@@ -1,0 +1,92 @@
+scenario_id: service-mesh-linkerd-service-profile
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-linkerd-service-profile.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T05:33:22Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-crds in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-control-plane in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: smoke-script
+    status: PASS
+    notes: |
+      
+      The viz extension can be installed by running:
+      
+        helm install linkerd-viz linkerd/linkerd-viz
+      
+      Looking for more? Visit https://linkerd.io/2/getting-started/
+      ==> Waiting for linkerd control-plane rollout to complete
+        Waiting for deployment/linkerd-destination rollout (5m max)...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      deployment "linkerd-destination" successfully rolled out
+        Waiting for deployment/linkerd-identity rollout (5m max)...
+      deployment "linkerd-identity" successfully rolled out
+        Waiting for deployment/linkerd-proxy-injector rollout (5m max)...
+      deployment "linkerd-proxy-injector" successfully rolled out
+      ==> Cleaning up any stuck old pods
+        Force-deleting stuck pod: linkerd-destination-767c948947-8vdlc
+      pod "linkerd-destination-767c948947-8vdlc" force deleted from linkerd namespace
+      PASS: linkerd-control-plane upgraded with ephemeral certs
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utmesh6 -n linkerd wait --for=condition=Ready pods --timeout=3m --all
+      pod/linkerd-destination-fdcfffd64-zgk72 condition met
+      pod/linkerd-identity-9d6bd8ccd-m8qnd condition met
+      pod/linkerd-proxy-injector-57b584f578-r6bxp condition met
+      PASS: pods Ready in ns/linkerd
+      NAME                                      READY   STATUS    RESTARTS   AGE
+      linkerd-destination-fdcfffd64-zgk72       4/4     Running   0          64s
+      linkerd-identity-9d6bd8ccd-m8qnd          2/2     Running   0          64s
+      linkerd-proxy-injector-57b584f578-r6bxp   2/2     Running   0          64s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utmesh6 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-662k8 condition met
+      pod/sample-scope-c689dc867-j6sfx condition met
+      PASS: pods Ready in ns/sample
+      NAME                           READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-662k8        1/1     Running   0          75s
+      sample-scope-c689dc867-j6sfx   1/1     Running   0          75s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-service-profile.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Annotating namespace sample for linkerd injection
+      namespace/sample annotated
+      ==> Restarting deployments to pick up proxy injection
+      deployment.apps/sample restarted
+      Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "sample" rollout to finish: 1 old replicas are pending termination...
+      deployment "sample" successfully rolled out
+      deployment.apps/sample-scope restarted
+      Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "sample-scope" rollout to finish: 1 old replicas are pending termination...
+      deployment "sample-scope" successfully rolled out
+      ==> Waiting 5s for old pods to terminate
+      ==> Verifying linkerd-proxy sidecar injected
+        ✓ Pod sample-c48866964-km629: linkerd-proxy sidecar present
+        ✓ Pod sample-scope-788bc85f67-lb8bc: linkerd-proxy sidecar present
+      ==> Verifying ServiceProfile CRD is established
+        ✓ CRD serviceprofiles.linkerd.io established
+      ==> Authoring ServiceProfile for the product Service
+      Error from server (BadRequest): error when creating "STDIN": ServiceProfile in version "v1alpha2" cannot be handled as a ServiceProfile: strict decoding error: unknown field "spec.routes[2].retryBudget"
+status: FAIL
+finished_at: 2026-06-01T05:35:21Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-service-profile-20260601-013321/artifacts/logs

@@ -1,0 +1,39 @@
+---
+id: certificates-mounted-tls-certs-pvc-mount
+name: "mounted-tls-certs pvc-mount"
+description: "Creates a PVC, populates it with TLS certs via a Job, then installs the chart with a persistentVolumeClaim-backed TLS volume. Verifies the pod mount and HTTPS serving."
+labels: {customer: any, profile: tls}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: raw_manifest
+      path: ./fixtures/mounted-tls-pvc.yaml
+      namespace: sample
+    - kind: raw_manifest
+      path: ./fixtures/mounted-tls-pvc-certs-configmap.yaml
+      namespace: sample
+    - kind: raw_manifest
+      path: ./fixtures/mounted-tls-populate-job.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    tls.enabled: "true"
+    tls.secretName: "unused-for-pvc"
+    tls.servicePort: "443"
+    tls.volumeType: "persistentVolumeClaim"
+    tls.pvcClaimName: "mounted-tls-pvc"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 10m
+  - type: smoke-script
+    path: chart-test/assertions/mounted-tls-pvc-mount.sh
+tags: [nightly]
+mechanisms: ['addon:mounted-tls-certs']

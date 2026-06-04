@@ -1,0 +1,28 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-basic.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for envoy pod Ready (3m max)
+pod/contour-envoy-jftz5 condition met
+PASS: envoy pod Ready
+==> Waiting for contour controller pod Ready (3m max)
+pod/contour-contour-5847f7c7f9-p928p condition met
+PASS: contour controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-kmgw5 condition met
+PASS: product pods Ready
+==> Getting envoy pod IP (probe via pod IP)
+envoy pod IP: 10.244.0.6
+==> Verifying HTTPProxy exists and status is valid
+HTTPProxy status: valid
+PASS: HTTPProxy status is valid
+==> Probing HTTP with Host header (expect 200) on envoy container port 8080
+HTTP response (with Host): 200
+PASS: HTTP 200 with Host header
+==> Probing HTTP without Host header (expect 404) on envoy container port 8080
+HTTP response (without Host): 404
+PASS: HTTP 404 without Host header (envoy default)
+PASS: Contour basic HTTPProxy integration verified
+==> GAP-PROBE: Checking if chart natively emits an HTTPProxy CRD
+GAP-PROBE: No HTTPProxy emitted by the chart template found
+  The HTTPProxy 'sample-basic' was created by the raw_manifest fixture,
+  not by a Helm-managed chart template. The chart has no contour
+  HTTPProxy template — this is an honest gap (red cell).
+FAIL: Chart does not natively emit Contour HTTPProxy CRD — honest gap

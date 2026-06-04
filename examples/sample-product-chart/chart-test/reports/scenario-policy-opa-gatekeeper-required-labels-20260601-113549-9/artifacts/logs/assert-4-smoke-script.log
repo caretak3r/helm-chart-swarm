@@ -1,0 +1,55 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/opa-gatekeeper-required-labels.sh (RELEASE=sample NAMESPACE=sample)
+=== OPA Gatekeeper: Required Labels ===
+==> Phase 0: Wait for gatekeeper controller + nginx ingress pods Ready
+pod/gatekeeper-controller-manager-64bbbfbdbb-gf2sj condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-kl244 condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-zcsmc condition met
+PASS: gatekeeper controller Ready
+pod/ingress-nginx-controller-d74c658c5-bmmxz condition met
+PASS: nginx ingress controller Ready
+pod/sample-69469cb4c6-p7c64 condition met
+PASS: product pod Ready
+==> Phase 1: Verify ConstraintTemplate applied
+Waiting for ConstraintTemplate k8srequiredlabels to reconcile (60s max)...
+PASS: observedGeneration (1) >= generation (1) at attempt 1
+==> Wait for CRD Established (90s max)
+customresourcedefinition.apiextensions.k8s.io/k8srequiredlabels.constraints.gatekeeper.sh condition met
+PASS: CRD k8srequiredlabels.constraints.gatekeeper.sh Established=True
+==> Apply Constraint
+k8srequiredlabels.constraints.gatekeeper.sh/require-app-name-label created
+PASS: K8sRequiredLabels constraint applied
+==> Phase 2a: Non-compliant Deployment (missing app.kubernetes.io/name)
+Error from server (Forbidden): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-noncompliant-labels.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [require-app-name-label] Missing required label(s): {"app.kubernetes.io/name"}
+PASS: non-compliant Deployment rejected (missing required label)
+==> Phase 2b: Compliant Deployment (has app.kubernetes.io/name)
+deployment.apps/test-compliant created (server dry run)
+PASS: compliant Deployment accepted
+==> Phase 3a: Non-compliant Ingress (missing app.kubernetes.io/name)
+Error from server (Forbidden): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-ingress-noncompliant.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [require-app-name-label] Missing required label(s): {"app.kubernetes.io/name"}
+PASS: non-compliant Ingress rejected (missing required label)
+==> Phase 3b: Compliant Ingress (has app.kubernetes.io/name)
+ingress.networking.k8s.io/test-compliant-ingress created
+PASS: compliant Ingress applied
+NOTE: compliant Ingress may not yet have address (NGINX controller processes async)
+==> Phase 4: Webhook failure mode — verify Fail policy + outage behavior
+PASS: webhook gatekeeper-validating-webhook-configuration failurePolicy=Fail
+Scaling gatekeeper-controller-manager to 0 in gatekeeper-system (original replicas: 3)...
+deployment.apps/gatekeeper-controller-manager scaled
+pod/gatekeeper-controller-manager-64bbbfbdbb-gf2sj condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-kl244 condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-zcsmc condition met
+PASS: gatekeeper controller scaled to 0
+Attempting kubectl apply with webhook unavailable...
+Error from server (InternalError): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-compliant.yaml": Internal error occurred: failed calling webhook "validation.gatekeeper.sh": failed to call webhook: Post "https://gatekeeper-webhook-service.gatekeeper-system.svc:443/v1/admit?timeout=3s": dial tcp 10.96.168.172:443: connect: connection refused
+PASS: admission correctly blocked during webhook outage (Fail policy)
+Restoring gatekeeper-controller-manager to 3 in gatekeeper-system...
+deployment.apps/gatekeeper-controller-manager scaled
+Waiting for gatekeeper controller pods to be Ready again...
+pod/gatekeeper-controller-manager-64bbbfbdbb-fw6r7 condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-gwkj6 condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-zdk88 condition met
+PASS: gatekeeper controller pods Ready
+Waiting for admission webhook to accept requests (180s max, may be slow on resource-constrained clusters)...
+deployment.apps/test-compliant created (server dry run)
+PASS: admission restored after webhook recovery (attempt 1)
+PASS: OPA Gatekeeper required-labels + nginx-ingress cross-feature compose verified

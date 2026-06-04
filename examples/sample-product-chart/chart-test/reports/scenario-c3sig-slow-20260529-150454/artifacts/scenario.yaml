@@ -1,0 +1,24 @@
+---
+id: c3sig-slow
+name: "Slow scenario for SIGINT test"
+description: "Waits for pods that won't become ready, giving time to send SIGINT"
+labels: {test: sigint}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: raw_manifest
+      path: ./fixtures/raw-manifest-configmap.yaml
+      namespace: cts-raw
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    # Override image to a non-existent one so pods never become ready
+    image.repository: nginx-nonexistent
+    image.tag: never-exists
+asserts:
+  - {type: pods-ready, namespace: sample, timeout: 10m}
+tags: [test]
+mechanisms: ['addon:none']

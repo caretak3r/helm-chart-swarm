@@ -1,0 +1,59 @@
+scenario_id: policy-kyverno-validate
+scenario_path: examples/sample-product-chart/chart-test/scenarios/policy-kyverno-validate.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T07:29:07Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-kyvfinal -n kyverno wait --for=condition=Ready pods --timeout=4m --all
+      pod/kyverno-admission-controller-6c47f7875-r7ntm condition met
+      pod/kyverno-background-controller-546f9479c7-vchgm condition met
+      pod/kyverno-cleanup-controller-5787967fcd-fj8lz condition met
+      pod/kyverno-reports-controller-669cbff555-7g7j2 condition met
+      PASS: pods Ready in ns/kyverno
+      NAME                                             READY   STATUS    RESTARTS   AGE
+      kyverno-admission-controller-6c47f7875-r7ntm     1/1     Running   0          24s
+      kyverno-background-controller-546f9479c7-vchgm   1/1     Running   0          24s
+      kyverno-cleanup-controller-5787967fcd-fj8lz      1/1     Running   0          24s
+      kyverno-reports-controller-669cbff555-7g7j2      1/1     Running   0          24s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-kyvfinal -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-sb7wj condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-sb7wj   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: webhook kyverno-resource-validating-webhook-cfg failurePolicy=Fail
+      Scaling kyverno-admission-controller to 0 in kyverno (original replicas: 1)...
+      deployment.apps/kyverno-admission-controller scaled
+      pod/kyverno-admission-controller-6c47f7875-r7ntm condition met
+      PASS: kyverno admission controller scaled to 0
+      Attempting kubectl apply with webhook unavailable...
+      NOTE: webhook config kyverno-resource-validating-webhook-cfg removed by Kyverno dynamic GC (ownerReferences cleanup)
+      NOTE: Kyverno dynamically manages webhooks; webhook removal during controller outage
+      NOTE: means admission is bypassed despite failurePolicy=Fail on the original config.
+      deployment.apps/test-compliant-kyverno created (server dry run)
+      PASS: admission bypassed (webhook config removed — expected Kyverno dynamic GC behavior)
+      Restoring kyverno-admission-controller to 1 in kyverno...
+      deployment.apps/kyverno-admission-controller scaled
+      Waiting for kyverno admission controller to be Ready again...
+      pod/kyverno-admission-controller-6c47f7875-gh9c7 condition met
+      PASS: kyverno admission controller restored
+      Waiting for admission webhook to accept requests (90s max)...
+      deployment.apps/test-compliant-kyverno created (server dry run)
+      PASS: admission restored after webhook recovery (attempt 1)
+      PASS: Kyverno validate variant verified
+status: PASS
+finished_at: 2026-06-01T07:30:44Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-policy-kyverno-validate-20260601-032907-6/artifacts/logs

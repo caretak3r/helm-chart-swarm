@@ -1,0 +1,23 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-ingress-gateway-jwt.sh (RELEASE=sample NAMESPACE=sample)
+==> Generating ephemeral RSA 2048-bit JWT signing key
+==> JWT key generated at: /var/folders/10/9lylcxg10rd17gqmylhpw3740000gn/T/tmp.0DCiVX4VVv/jwt-key.pem
+==> Creating Istio Gateway + VirtualService
+gateway.networking.istio.io/sample-igw created
+virtualservice.networking.istio.io/sample-vs created
+==> Creating RequestAuthentication (JWT validation)
+configmap/jwt-jwks created
+requestauthentication.security.istio.io/sample-jwt-auth created
+==> Creating AuthorizationPolicy (require JWT via ALLOW)
+authorizationpolicy.security.istio.io/sample-require-jwt created
+==> Waiting for istiod to reconcile policies (15s)
+==> Getting istio-ingressgateway pod IP
+  Gateway pod IP: 10.244.0.6
+==> Signing JWT with test issuer key
+  JWT generated (expires in 1h)
+==> Test 1: Request WITHOUT Bearer token → expect 401 or 403
+  HTTP code (no auth): 403
+  ✓ Request without token correctly rejected
+==> Test 2: Request WITH valid Bearer token → expect 200
+  HTTP code (with valid JWT): 200
+  ✓ Request with valid JWT succeeds
+PASS: istio ingress gateway JWT authentication verified

@@ -1,0 +1,10 @@
+run_id: run-bats-f17-3-no-cloud-48006
+suite: curated-live
+timestamp_utc: 2026-06-03T05:20:44Z
+total: 1
+pass: 0
+fail: 1
+skip: 0
+scenarios:
+  - id: labels-on
+    status: FAIL

@@ -1,0 +1,17 @@
+{{- if .Values.scope.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-scope
+  labels:
+    {{- include "sample-product.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: scope
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "sample-product.scopeSelectorLabels" . | nindent 4 }}
+  ports:
+    - port: {{ .Values.scope.service.port }}
+      targetPort: {{ .Values.scope.service.port }}
+      name: api
+{{- end }}

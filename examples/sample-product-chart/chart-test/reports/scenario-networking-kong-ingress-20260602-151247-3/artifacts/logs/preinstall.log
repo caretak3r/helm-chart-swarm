@@ -1,0 +1,20 @@
+==> PROJECT_DIR=examples/sample-product-chart
+==> Applying 1 preinstall item(s)
+
+==> [1/1] kind=helm
+    helm: kong (kong/ingress @ 0.24.0) in ns/kong
+    repo 'kong' already exists with URL https://charts.konghq.com (skipping add)
+Release "kong" does not exist. Installing it now.
+NAME: kong
+LAST DEPLOYED: Tue Jun  2 15:13:13 2026
+NAMESPACE: kong
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+pod/kong-controller-84db4dc787-62x6n condition met
+pod/kong-gateway-86698f6995-mzcpr condition met
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

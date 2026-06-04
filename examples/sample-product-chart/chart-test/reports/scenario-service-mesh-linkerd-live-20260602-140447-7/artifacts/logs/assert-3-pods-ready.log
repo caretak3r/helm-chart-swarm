@@ -1,0 +1,59 @@
+kubectl --context kind-chart-test-swarm-default -n linkerd wait --for=condition=Ready pods --timeout=5m --all
+timed out waiting for the condition on pods/linkerd-destination-6df4d7c47f-ntgdd
+timed out waiting for the condition on pods/linkerd-identity-69f4bbc8ff-tj49g
+timed out waiting for the condition on pods/linkerd-proxy-injector-57b45c9d4f-62fdd
+FAIL: pods not Ready in ns/linkerd within 5m
+NAME                                      READY   STATUS               RESTARTS       AGE
+linkerd-destination-6df4d7c47f-ntgdd      0/4     PostStartHookError   0              5m7s
+linkerd-identity-69f4bbc8ff-tj49g         0/2     CrashLoopBackOff     5 (116s ago)   5m7s
+linkerd-proxy-injector-57b45c9d4f-62fdd   0/2     PostStartHookError   0              5m7s
+    Restart Count:  0
+    Liveness:       http-get http://:9995/ping delay=10s timeout=1s period=10s #success=1 #failure=3
+    Readiness:      http-get http://:9995/ready delay=0s timeout=1s period=10s #success=1 #failure=7
+    Environment:    <none>
+    Mounts:
+      /var/run/linkerd/config from config (rw)
+      /var/run/linkerd/identity/trust-roots from trust-roots (rw)
+      /var/run/linkerd/tls from tls (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-27pkm (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  config:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      linkerd-config
+    Optional:  false
+  trust-roots:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      linkerd-identity-trust-roots
+    Optional:  false
+  tls:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  linkerd-proxy-injector-k8s-tls
+    Optional:    false
+  linkerd-proxy-init-xtables-lock:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  linkerd-identity-token:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  86400
+  linkerd-identity-end-entity:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  <unset>
+  kube-api-access-27pkm:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s

@@ -1,0 +1,12 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 1 preinstall item(s)
+
+==> [1/1] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/capability/dummy-tls-secret.yaml in ns/sample
+namespace/sample created
+Warning: tls: failed to find any PEM data in certificate input
+secret/sample-tls serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

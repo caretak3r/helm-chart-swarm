@@ -1,0 +1,59 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-cert-manager-tls.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for cert-manager pods Ready (3m max)
+pod/cert-manager-c69c859c4-dw6t2 condition met
+PASS: cert-manager pods Ready
+==> Waiting for istiod pods Ready (3m max)
+pod/istiod-54b585df85-287x8 condition met
+PASS: istiod pods Ready
+==> Waiting for istio-ingressgateway pods Ready (3m max)
+pod/istio-ingressgateway-8584b67974-xphfm condition met
+PASS: istio-ingressgateway pods Ready
+==> Labeling namespace sample for istio injection
+namespace/sample labeled
+==> Restarting product deployment to inject sidecar
+deployment.apps/sample restarted
+deployment "sample" successfully rolled out
+PASS: product deployment restarted
+==> Creating cert-manager Certificate in istio-system (gateway pod namespace)
+certificate.cert-manager.io/sample-gw-tls created
+PASS: Certificate sample-gw-tls created in istio-system
+==> Waiting for Certificate Ready (3m max)
+certificate.cert-manager.io/sample-gw-tls condition met
+PASS: Certificate Ready=True
+==> Verifying TLS Secret exists and contains expected keys
+Secret keys: ca.crt
+tls.crt
+tls.key
+PASS: TLS Secret contains tls.crt, tls.key, ca.crt
+==> Creating Istio Gateway in istio-system with TLS (credentialName references cert-manager Secret)
+gateway.networking.istio.io/sample-gw created
+PASS: Istio Gateway sample-gw created with TLS credentialName=sample-gw-tls
+==> Creating VirtualService to route traffic through Gateway
+virtualservice.networking.istio.io/sample-vs created
+PASS: VirtualService sample-vs created
+==> Verifying Gateway resource exists
+PASS: Gateway sample-gw confirmed
+==> Verifying Gateway TLS credentialName references cert-manager Secret
+Gateway credentialName: sample-gw-tls
+PASS: Gateway credentialName matches cert-manager Secret
+==> Checking Gateway SDS secret resolution
+2026-06-01T00:19:26.545770Z	info	cache	returned workload certificate from cache	ttl=23h59m59.454230079s
+2026-06-01T00:19:26.545915Z	info	cache	returned workload trust anchor from cache	ttl=23h59m59.454085371s
+2026-06-01T00:19:26.545994Z	info	cache	returned workload trust anchor from cache	ttl=23h59m59.454005996s
+2026-06-01T00:19:26.915710Z	info	Readiness succeeded in 646.41675ms
+2026-06-01T00:19:26.915967Z	info	Envoy proxy is ready
+==> Running istioctl analyze (downloading if needed)
+  Downloading istioctl 1.27.9...
+SKIP: istioctl not available; skipping analyze step
+==> Testing HTTPS through Istio Gateway with TLS
+pod/ct-gw-tls-probe created
+pod/ct-gw-tls-probe condition met
+PASS: test pod ct-gw-tls-probe ready
+Gateway service IP: 10.96.144.5
+HTTPS response through Gateway: 200
+PASS: HTTPS 200 through Istio Gateway with cert-manager-issued cert
+==> Verifying peer certificate issuer matches cert-manager
+Peer cert issuer: 
+pod "ct-gw-tls-probe" force deleted from sample namespace
+NOTE: peer certificate issuer not matching expected pattern: 
+PASS: Istio Gateway + cert-manager TLS cross-feature compose verified

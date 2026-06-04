@@ -1,0 +1,94 @@
+scenario_id: service-mesh-linkerd-multi-cluster-preview
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-linkerd-multi-cluster-preview.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T05:29:08Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-crds in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-control-plane in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-multicluster in ns/linkerd-multicluster is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: smoke-script
+    status: PASS
+    notes: |
+      
+      The viz extension can be installed by running:
+      
+        helm install linkerd-viz linkerd/linkerd-viz
+      
+      Looking for more? Visit https://linkerd.io/2/getting-started/
+      ==> Waiting for linkerd control-plane rollout to complete
+        Waiting for deployment/linkerd-destination rollout (5m max)...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      deployment "linkerd-destination" successfully rolled out
+        Waiting for deployment/linkerd-identity rollout (5m max)...
+      deployment "linkerd-identity" successfully rolled out
+        Waiting for deployment/linkerd-proxy-injector rollout (5m max)...
+      deployment "linkerd-proxy-injector" successfully rolled out
+      ==> Cleaning up any stuck old pods
+        Force-deleting stuck pod: linkerd-destination-64d96654b9-nvl22
+      pod "linkerd-destination-64d96654b9-nvl22" force deleted from linkerd namespace
+      PASS: linkerd-control-plane upgraded with ephemeral certs
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utmesh6 -n linkerd wait --for=condition=Ready pods --timeout=3m --all
+      pod/linkerd-destination-cc4c56cdc-sgqsv condition met
+      pod/linkerd-identity-7f9d458b5b-blkr2 condition met
+      pod/linkerd-proxy-injector-8498644964-b9cz2 condition met
+      PASS: pods Ready in ns/linkerd
+      NAME                                      READY   STATUS    RESTARTS   AGE
+      linkerd-destination-cc4c56cdc-sgqsv       4/4     Running   0          64s
+      linkerd-identity-7f9d458b5b-blkr2         2/2     Running   0          64s
+      linkerd-proxy-injector-8498644964-b9cz2   2/2     Running   0          64s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utmesh6 -n linkerd-multicluster wait --for=condition=Ready pods --timeout=3m --all
+      pod/linkerd-gateway-6b546df458-jx864 condition met
+      PASS: pods Ready in ns/linkerd-multicluster
+      NAME                               READY   STATUS    RESTARTS   AGE
+      linkerd-gateway-6b546df458-jx864   1/1     Running   0          84s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-utmesh6 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-m2q9c condition met
+      pod/sample-scope-c689dc867-czbqx condition met
+      PASS: pods Ready in ns/sample
+      NAME                           READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-m2q9c        1/1     Running   0          69s
+      sample-scope-c689dc867-czbqx   1/1     Running   0          69s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-multi-cluster-preview.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Verifying linkerd-multicluster extension is installed
+        ✓ linkerd-gateway deployment exists
+      ==> Verifying multicluster CRDs are established
+        ✓ CRD links.multicluster.linkerd.io established
+        links.multicluster.linkerd.io Established: True
+        services.k8s.io Established: N/A
+      ==> Authoring a preview Link resource for a logical target cluster
+      /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/linkerd-multi-cluster-preview.sh: line 88: syntax error: unexpected end of file from `{' command on line 41
+status: FAIL
+finished_at: 2026-06-01T05:31:04Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-multi-cluster-preview-20260601-012908-3/artifacts/logs

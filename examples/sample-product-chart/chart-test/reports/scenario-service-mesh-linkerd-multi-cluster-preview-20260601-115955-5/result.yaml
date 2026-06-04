@@ -1,0 +1,11 @@
+scenario_id: service-mesh-linkerd-multi-cluster-preview
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/service-mesh-linkerd-multi-cluster-preview.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T15:59:55Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-multi-cluster-preview-20260601-115955-5/artifacts/logs/preinstall.log
+finished_at: 2026-06-01T16:00:24Z

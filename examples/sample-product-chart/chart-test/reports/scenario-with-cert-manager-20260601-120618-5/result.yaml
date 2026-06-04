@@ -1,0 +1,11 @@
+scenario_id: with-cert-manager
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/with-cert-manager.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T16:06:18Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: cluster-up
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-with-cert-manager-20260601-120618-5/artifacts/logs/cluster-up.log
+finished_at: 2026-06-01T16:06:28Z

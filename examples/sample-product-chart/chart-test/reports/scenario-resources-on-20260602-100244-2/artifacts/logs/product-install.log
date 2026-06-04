@@ -1,0 +1,8 @@
+Release "sample" has been upgraded. Happy Helming!
+NAME: sample
+LAST DEPLOYED: Tue Jun  2 10:02:45 2026
+NAMESPACE: sample
+STATUS: deployed
+REVISION: 2
+DESCRIPTION: Upgrade complete
+TEST SUITE: None

@@ -1,0 +1,45 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, yamllint.
+# Apply to your own AKS cluster per the azure-disk-file-csi primer instructions.
+---
+id: storage-azure-disk-csi-snapshot
+name: "Azure Disk CSI Snapshot"
+description: >-
+  Azure Disk CSI Driver creates a managed disk snapshot from a VolumeSnapshot
+  resource and provisions a new PVC from the snapshot. Verifies that restored
+  data matches the original volume.
+labels:
+  customer: any
+  profile: aks
+  chart-test-swarm/target-k8s-version: aks-1.30
+cluster:
+  provider: aks
+  k8s_version: "1.30"
+  preinstall:
+    - kind: raw_manifest
+      path: chart-test/fixtures/storage/azure-disk-file-csi/storageclass-disk.yaml
+    - kind: raw_manifest
+      path: chart-test/fixtures/storage/azure-disk-file-csi/volumesnapshotclass.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    darkroom.enabled: "true"
+    darkroom.persistence.enabled: "true"
+    darkroom.persistence.storageClassName: "managed-premium"
+    darkroom.persistence.accessMode: "ReadWriteOnce"
+    darkroom.persistence.size: "10Gi"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/storage/azure-disk-file-csi/disk-snapshot.sh
+tags: [cloud-native, storage]
+mechanisms: ['cloud:aks', 'addon:azure-disk-csi', 'feature:volume-snapshot']
+category: storage/csi
+tier: authored-only
+integration: azure-disk-file-csi

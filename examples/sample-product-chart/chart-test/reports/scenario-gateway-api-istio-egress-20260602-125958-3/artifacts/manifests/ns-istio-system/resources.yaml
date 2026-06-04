@@ -1,0 +1,1453 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      inject.istio.io/templates: gateway
+      istio.io/rev: default
+      prometheus.io/path: /stats/prometheus
+      prometheus.io/port: "15020"
+      prometheus.io/scrape: "true"
+      proxy.istio.io/overrides: '{"containers":[{"name":"istio-proxy","ports":[{"name":"http-envoy-prom","containerPort":15090,"protocol":"TCP"}],"resources":{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"50m","memory":"128Mi"}},"volumeMounts":[{"name":"kube-api-access-shjmp","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always","securityContext":{"capabilities":{"drop":["ALL"]},"privileged":false,"runAsUser":1337,"runAsGroup":1337,"runAsNonRoot":true,"readOnlyRootFilesystem":true,"allowPrivilegeEscalation":false}}]}'
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/status: '{"initContainers":null,"containers":["istio-proxy"],"volumes":["workload-socket","credential-socket","workload-certs","istio-envoy","istio-data","istio-podinfo","istio-token","istiod-ca-cert"],"imagePullSecrets":null,"revision":"default"}'
+    creationTimestamp: "2026-06-02T17:00:36Z"
+    generateName: istio-egressgateway-75dcd68558-
+    labels:
+      app: istio-egressgateway
+      app.kubernetes.io/instance: istio-egressgateway
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istio-egressgateway
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: gateway-1.27.9
+      istio: egressgateway
+      istio.io/dataplane-mode: none
+      pod-template-hash: 75dcd68558
+      service.istio.io/canonical-name: istio-egressgateway
+      service.istio.io/canonical-revision: 1.27.9
+      sidecar.istio.io/inject: "true"
+    name: istio-egressgateway-75dcd68558-p2vf2
+    namespace: istio-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: istio-egressgateway-75dcd68558
+      uid: c132a6c0-4d32-4a13-a917-b9774dfa4b70
+    resourceVersion: "644"
+    uid: bd774800-8f36-4588-aaef-b025e1c1e80e
+  spec:
+    containers:
+    - args:
+      - proxy
+      - router
+      - --domain
+      - $(POD_NAMESPACE).svc.cluster.local
+      - --proxyLogLevel=warning
+      - --proxyComponentLogLevel=misc:error
+      - --log_output_level=default:info
+      env:
+      - name: PILOT_CERT_PROVIDER
+        value: istiod
+      - name: CA_ADDR
+        value: istiod.istio-system.svc:15012
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: INSTANCE_IP
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: status.podIP
+      - name: SERVICE_ACCOUNT
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.serviceAccountName
+      - name: HOST_IP
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: status.hostIP
+      - name: ISTIO_CPU_LIMIT
+        valueFrom:
+          resourceFieldRef:
+            divisor: "0"
+            resource: limits.cpu
+      - name: PROXY_CONFIG
+        value: |
+          {}
+      - name: ISTIO_META_POD_PORTS
+        value: |-
+          [
+              {"name":"http-envoy-prom","containerPort":15090,"protocol":"TCP"}
+          ]
+      - name: GOMEMLIMIT
+        valueFrom:
+          resourceFieldRef:
+            divisor: "0"
+            resource: limits.memory
+      - name: GOMAXPROCS
+        valueFrom:
+          resourceFieldRef:
+            divisor: "0"
+            resource: limits.cpu
+      - name: ISTIO_META_APP_CONTAINERS
+      - name: ISTIO_META_CLUSTER_ID
+        value: Kubernetes
+      - name: ISTIO_META_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: ISTIO_META_INTERCEPTION_MODE
+        value: REDIRECT
+      - name: ISTIO_META_WORKLOAD_NAME
+        value: istio-egressgateway
+      - name: ISTIO_META_OWNER
+        value: kubernetes://apis/apps/v1/namespaces/istio-system/deployments/istio-egressgateway
+      - name: ISTIO_META_MESH_ID
+        value: cluster.local
+      - name: TRUST_DOMAIN
+        value: cluster.local
+      image: docker.io/istio/proxyv2:1.27.9
+      imagePullPolicy: Always
+      name: istio-proxy
+      ports:
+      - containerPort: 15090
+        name: http-envoy-prom
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 4
+        httpGet:
+          path: /healthz/ready
+          port: 15021
+          scheme: HTTP
+        periodSeconds: 15
+        successThreshold: 1
+        timeoutSeconds: 3
+      resources:
+        limits:
+          cpu: "2"
+          memory: 1Gi
+        requests:
+          cpu: 50m
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsGroup: 1337
+        runAsNonRoot: true
+        runAsUser: 1337
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/workload-spiffe-uds
+        name: workload-socket
+      - mountPath: /var/run/secrets/credential-uds
+        name: credential-socket
+      - mountPath: /var/run/secrets/workload-spiffe-credentials
+        name: workload-certs
+      - mountPath: /var/run/secrets/istio
+        name: istiod-ca-cert
+      - mountPath: /var/lib/istio/data
+        name: istio-data
+      - mountPath: /etc/istio/proxy
+        name: istio-envoy
+      - mountPath: /var/run/secrets/tokens
+        name: istio-token
+      - mountPath: /etc/istio/pod
+        name: istio-podinfo
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-shjmp
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-default-control-plane
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      sysctls:
+      - name: net.ipv4.ip_unprivileged_port_start
+        value: "0"
+    serviceAccount: istio-egressgateway
+    serviceAccountName: istio-egressgateway
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - emptyDir: {}
+      name: workload-socket
+    - emptyDir: {}
+      name: credential-socket
+    - emptyDir: {}
+      name: workload-certs
+    - emptyDir:
+        medium: Memory
+      name: istio-envoy
+    - emptyDir: {}
+      name: istio-data
+    - downwardAPI:
+        defaultMode: 420
+        items:
+        - fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.labels
+          path: labels
+        - fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.annotations
+          path: annotations
+      name: istio-podinfo
+    - name: istio-token
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            audience: istio-ca
+            expirationSeconds: 43200
+            path: istio-token
+    - configMap:
+        defaultMode: 420
+        name: istio-ca-root-cert
+      name: istiod-ca-cert
+    - name: kube-api-access-shjmp
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:40Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:36Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:40Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:40Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:36Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://5c5b698c44ba4824d7062ffb62b6ef614f24d2e6aac789695074827d97c27101
+      image: docker.io/istio/proxyv2:1.27.9
+      imageID: docker.io/istio/proxyv2@sha256:e810b82e84ba7d8bb8e45c953199dde7145dd76a20252ee073e3532a0624a691
+      lastState: {}
+      name: istio-proxy
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-02T17:00:39Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.6
+    podIPs:
+    - ip: 10.244.0.6
+    qosClass: Burstable
+    startTime: "2026-06-02T17:00:36Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      prometheus.io/port: "15014"
+      prometheus.io/scrape: "true"
+      sidecar.istio.io/inject: "false"
+    creationTimestamp: "2026-06-02T17:00:26Z"
+    generateName: istiod-54b585df85-
+    labels:
+      app: istiod
+      app.kubernetes.io/instance: istiod
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istiod
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: istiod-1.27.9
+      install.operator.istio.io/owning-resource: unknown
+      istio: pilot
+      istio.io/dataplane-mode: none
+      istio.io/rev: default
+      operator.istio.io/component: Pilot
+      pod-template-hash: 54b585df85
+      sidecar.istio.io/inject: "false"
+    name: istiod-54b585df85-gfh57
+    namespace: istio-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: istiod-54b585df85
+      uid: 93284104-9771-4309-a655-2865001156fa
+    resourceVersion: "571"
+    uid: 690bfb91-123f-40b1-a419-0f3bbe2225ff
+  spec:
+    containers:
+    - args:
+      - discovery
+      - --monitoringAddr=:15014
+      - --log_output_level=default:info
+      - --domain
+      - cluster.local
+      - --keepaliveMaxServerConnectionAge
+      - 30m
+      env:
+      - name: REVISION
+        value: default
+      - name: PILOT_CERT_PROVIDER
+        value: istiod
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: SERVICE_ACCOUNT
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.serviceAccountName
+      - name: KUBECONFIG
+        value: /var/run/secrets/remote/config
+      - name: CA_TRUSTED_NODE_ACCOUNTS
+        value: istio-system/ztunnel
+      - name: PILOT_TRACE_SAMPLING
+        value: "1"
+      - name: PILOT_ENABLE_ANALYSIS
+        value: "false"
+      - name: CLUSTER_ID
+        value: Kubernetes
+      - name: GOMEMLIMIT
+        valueFrom:
+          resourceFieldRef:
+            divisor: "1"
+            resource: limits.memory
+      - name: GOMAXPROCS
+        valueFrom:
+          resourceFieldRef:
+            divisor: "1"
+            resource: limits.cpu
+      - name: PLATFORM
+      image: docker.io/istio/pilot:1.27.9
+      imagePullPolicy: IfNotPresent
+      name: discovery
+      ports:
+      - containerPort: 8080
+        name: http-debug
+        protocol: TCP
+      - containerPort: 15010
+        name: grpc-xds
+        protocol: TCP
+      - containerPort: 15012
+        name: tls-xds
+        protocol: TCP
+      - containerPort: 15017
+        name: https-webhooks
+        protocol: TCP
+      - containerPort: 15014
+        name: http-monitoring
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /ready
+          port: 8080
+          scheme: HTTP
+        initialDelaySeconds: 1
+        periodSeconds: 3
+        successThreshold: 1
+        timeoutSeconds: 5
+      resources:
+        requests:
+          cpu: 100m
+          memory: 384Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/tokens
+        name: istio-token
+        readOnly: true
+      - mountPath: /var/run/secrets/istio-dns
+        name: local-certs
+      - mountPath: /etc/cacerts
+        name: cacerts
+        readOnly: true
+      - mountPath: /var/run/secrets/remote
+        name: istio-kubeconfig
+        readOnly: true
+      - mountPath: /var/run/secrets/istiod/tls
+        name: istio-csr-dns-cert
+        readOnly: true
+      - mountPath: /var/run/secrets/istiod/ca
+        name: istio-csr-ca-configmap
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-z8v4w
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-default-control-plane
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: istiod
+    serviceAccountName: istiod
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - key: cni.istio.io/not-ready
+      operator: Exists
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - emptyDir:
+        medium: Memory
+      name: local-certs
+    - name: istio-token
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            audience: istio-ca
+            expirationSeconds: 43200
+            path: istio-token
+    - name: cacerts
+      secret:
+        defaultMode: 420
+        optional: true
+        secretName: cacerts
+    - name: istio-kubeconfig
+      secret:
+        defaultMode: 420
+        optional: true
+        secretName: istio-kubeconfig
+    - name: istio-csr-dns-cert
+      secret:
+        defaultMode: 420
+        optional: true
+        secretName: istiod-tls
+    - configMap:
+        defaultMode: 420
+        name: istio-ca-root-cert
+        optional: true
+      name: istio-csr-ca-configmap
+    - name: kube-api-access-z8v4w
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:34Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:26Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:35Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:35Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T17:00:26Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://5839242061836d8f45b7ef946ecb94986edeeddd16b800cb13213642d2273f2c
+      image: docker.io/istio/pilot:1.27.9
+      imageID: docker.io/istio/pilot@sha256:71e17cc6b735f57901063de073d3c14bcd1bd7108947b6c375f4acc2e7332771
+      lastState: {}
+      name: discovery
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-02T17:00:33Z"
+    hostIP: 172.20.0.2
+    hostIPs:
+    - ip: 172.20.0.2
+    phase: Running
+    podIP: 10.244.0.5
+    podIPs:
+    - ip: 10.244.0.5
+    qosClass: Burstable
+    startTime: "2026-06-02T17:00:26Z"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: istio-egressgateway
+      meta.helm.sh/release-namespace: istio-system
+    creationTimestamp: "2026-06-02T17:00:36Z"
+    labels:
+      app: istio-egressgateway
+      app.kubernetes.io/instance: istio-egressgateway
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istio-egressgateway
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: gateway-1.27.9
+      istio: egressgateway
+      istio.io/dataplane-mode: none
+    name: istio-egressgateway
+    namespace: istio-system
+    resourceVersion: "609"
+    uid: c6eb7968-cc71-469a-acac-7c9c1b12f7f5
+  spec:
+    clusterIP: 10.96.248.38
+    clusterIPs:
+    - 10.96.248.38
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: status-port
+      port: 15021
+      protocol: TCP
+      targetPort: 15021
+    - name: http2
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 443
+    selector:
+      app: istio-egressgateway
+      istio: egressgateway
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: istiod
+      meta.helm.sh/release-namespace: istio-system
+    creationTimestamp: "2026-06-02T17:00:26Z"
+    labels:
+      app: istiod
+      app.kubernetes.io/instance: istiod
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istiod
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: istiod-1.27.9
+      install.operator.istio.io/owning-resource: unknown
+      istio: pilot
+      istio.io/rev: default
+      operator.istio.io/component: Pilot
+      release: istiod
+    name: istiod
+    namespace: istio-system
+    resourceVersion: "515"
+    uid: 389eb835-df42-4c90-a9c0-9634fa1af5d5
+  spec:
+    clusterIP: 10.96.107.109
+    clusterIPs:
+    - 10.96.107.109
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: grpc-xds
+      port: 15010
+      protocol: TCP
+      targetPort: 15010
+    - name: https-dns
+      port: 15012
+      protocol: TCP
+      targetPort: 15012
+    - name: https-webhook
+      port: 443
+      protocol: TCP
+      targetPort: 15017
+    - name: http-monitoring
+      port: 15014
+      protocol: TCP
+      targetPort: 15014
+    selector:
+      app: istiod
+      istio: pilot
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: istio-egressgateway
+      meta.helm.sh/release-namespace: istio-system
+    creationTimestamp: "2026-06-02T17:00:36Z"
+    generation: 1
+    labels:
+      app: istio-egressgateway
+      app.kubernetes.io/instance: istio-egressgateway
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istio-egressgateway
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: gateway-1.27.9
+      istio: egressgateway
+      istio.io/dataplane-mode: none
+    name: istio-egressgateway
+    namespace: istio-system
+    resourceVersion: "648"
+    uid: 227660c2-764f-45a2-ba7f-948b9c48ce02
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: istio-egressgateway
+        istio: egressgateway
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          inject.istio.io/templates: gateway
+          prometheus.io/path: /stats/prometheus
+          prometheus.io/port: "15020"
+          prometheus.io/scrape: "true"
+          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          app: istio-egressgateway
+          app.kubernetes.io/instance: istio-egressgateway
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: istio-egressgateway
+          app.kubernetes.io/part-of: istio
+          app.kubernetes.io/version: 1.27.9
+          helm.sh/chart: gateway-1.27.9
+          istio: egressgateway
+          istio.io/dataplane-mode: none
+          sidecar.istio.io/inject: "true"
+      spec:
+        containers:
+        - image: auto
+          imagePullPolicy: Always
+          name: istio-proxy
+          ports:
+          - containerPort: 15090
+            name: http-envoy-prom
+            protocol: TCP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1337
+            runAsNonRoot: true
+            runAsUser: 1337
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          sysctls:
+          - name: net.ipv4.ip_unprivileged_port_start
+            value: "0"
+        serviceAccount: istio-egressgateway
+        serviceAccountName: istio-egressgateway
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-02T17:00:40Z"
+      lastUpdateTime: "2026-06-02T17:00:40Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-02T17:00:36Z"
+      lastUpdateTime: "2026-06-02T17:00:40Z"
+      message: ReplicaSet "istio-egressgateway-75dcd68558" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: istiod
+      meta.helm.sh/release-namespace: istio-system
+    creationTimestamp: "2026-06-02T17:00:26Z"
+    generation: 1
+    labels:
+      app: istiod
+      app.kubernetes.io/instance: istiod
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istiod
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: istiod-1.27.9
+      install.operator.istio.io/owning-resource: unknown
+      istio: pilot
+      istio.io/rev: default
+      operator.istio.io/component: Pilot
+      release: istiod
+    name: istiod
+    namespace: istio-system
+    resourceVersion: "576"
+    uid: 7df011ad-31bd-4673-8682-ef06bbc02c5d
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        istio: pilot
+    strategy:
+      rollingUpdate:
+        maxSurge: 100%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          prometheus.io/port: "15014"
+          prometheus.io/scrape: "true"
+          sidecar.istio.io/inject: "false"
+        creationTimestamp: null
+        labels:
+          app: istiod
+          app.kubernetes.io/instance: istiod
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: istiod
+          app.kubernetes.io/part-of: istio
+          app.kubernetes.io/version: 1.27.9
+          helm.sh/chart: istiod-1.27.9
+          install.operator.istio.io/owning-resource: unknown
+          istio: pilot
+          istio.io/dataplane-mode: none
+          istio.io/rev: default
+          operator.istio.io/component: Pilot
+          sidecar.istio.io/inject: "false"
+      spec:
+        containers:
+        - args:
+          - discovery
+          - --monitoringAddr=:15014
+          - --log_output_level=default:info
+          - --domain
+          - cluster.local
+          - --keepaliveMaxServerConnectionAge
+          - 30m
+          env:
+          - name: REVISION
+            value: default
+          - name: PILOT_CERT_PROVIDER
+            value: istiod
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.serviceAccountName
+          - name: KUBECONFIG
+            value: /var/run/secrets/remote/config
+          - name: CA_TRUSTED_NODE_ACCOUNTS
+            value: istio-system/ztunnel
+          - name: PILOT_TRACE_SAMPLING
+            value: "1"
+          - name: PILOT_ENABLE_ANALYSIS
+            value: "false"
+          - name: CLUSTER_ID
+            value: Kubernetes
+          - name: GOMEMLIMIT
+            valueFrom:
+              resourceFieldRef:
+                divisor: "1"
+                resource: limits.memory
+          - name: GOMAXPROCS
+            valueFrom:
+              resourceFieldRef:
+                divisor: "1"
+                resource: limits.cpu
+          - name: PLATFORM
+          image: docker.io/istio/pilot:1.27.9
+          imagePullPolicy: IfNotPresent
+          name: discovery
+          ports:
+          - containerPort: 8080
+            name: http-debug
+            protocol: TCP
+          - containerPort: 15010
+            name: grpc-xds
+            protocol: TCP
+          - containerPort: 15012
+            name: tls-xds
+            protocol: TCP
+          - containerPort: 15017
+            name: https-webhooks
+            protocol: TCP
+          - containerPort: 15014
+            name: http-monitoring
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/secrets/tokens
+            name: istio-token
+            readOnly: true
+          - mountPath: /var/run/secrets/istio-dns
+            name: local-certs
+          - mountPath: /etc/cacerts
+            name: cacerts
+            readOnly: true
+          - mountPath: /var/run/secrets/remote
+            name: istio-kubeconfig
+            readOnly: true
+          - mountPath: /var/run/secrets/istiod/tls
+            name: istio-csr-dns-cert
+            readOnly: true
+          - mountPath: /var/run/secrets/istiod/ca
+            name: istio-csr-ca-configmap
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: istiod
+        serviceAccountName: istiod
+        terminationGracePeriodSeconds: 30
+        tolerations:
+        - key: cni.istio.io/not-ready
+          operator: Exists
+        volumes:
+        - emptyDir:
+            medium: Memory
+          name: local-certs
+        - name: istio-token
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                audience: istio-ca
+                expirationSeconds: 43200
+                path: istio-token
+        - name: cacerts
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: cacerts
+        - name: istio-kubeconfig
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: istio-kubeconfig
+        - name: istio-csr-dns-cert
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: istiod-tls
+        - configMap:
+            defaultMode: 420
+            name: istio-ca-root-cert
+            optional: true
+          name: istio-csr-ca-configmap
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-02T17:00:35Z"
+      lastUpdateTime: "2026-06-02T17:00:35Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-02T17:00:26Z"
+      lastUpdateTime: "2026-06-02T17:00:35Z"
+      message: ReplicaSet "istiod-54b585df85" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: istio-egressgateway
+      meta.helm.sh/release-namespace: istio-system
+    creationTimestamp: "2026-06-02T17:00:36Z"
+    generation: 1
+    labels:
+      app: istio-egressgateway
+      app.kubernetes.io/instance: istio-egressgateway
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istio-egressgateway
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: gateway-1.27.9
+      istio: egressgateway
+      istio.io/dataplane-mode: none
+      pod-template-hash: 75dcd68558
+      sidecar.istio.io/inject: "true"
+    name: istio-egressgateway-75dcd68558
+    namespace: istio-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: istio-egressgateway
+      uid: 227660c2-764f-45a2-ba7f-948b9c48ce02
+    resourceVersion: "647"
+    uid: c132a6c0-4d32-4a13-a917-b9774dfa4b70
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: istio-egressgateway
+        istio: egressgateway
+        pod-template-hash: 75dcd68558
+    template:
+      metadata:
+        annotations:
+          inject.istio.io/templates: gateway
+          prometheus.io/path: /stats/prometheus
+          prometheus.io/port: "15020"
+          prometheus.io/scrape: "true"
+          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          app: istio-egressgateway
+          app.kubernetes.io/instance: istio-egressgateway
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: istio-egressgateway
+          app.kubernetes.io/part-of: istio
+          app.kubernetes.io/version: 1.27.9
+          helm.sh/chart: gateway-1.27.9
+          istio: egressgateway
+          istio.io/dataplane-mode: none
+          pod-template-hash: 75dcd68558
+          sidecar.istio.io/inject: "true"
+      spec:
+        containers:
+        - image: auto
+          imagePullPolicy: Always
+          name: istio-proxy
+          ports:
+          - containerPort: 15090
+            name: http-envoy-prom
+            protocol: TCP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1337
+            runAsNonRoot: true
+            runAsUser: 1337
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          sysctls:
+          - name: net.ipv4.ip_unprivileged_port_start
+            value: "0"
+        serviceAccount: istio-egressgateway
+        serviceAccountName: istio-egressgateway
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: istiod
+      meta.helm.sh/release-namespace: istio-system
+    creationTimestamp: "2026-06-02T17:00:26Z"
+    generation: 1
+    labels:
+      app: istiod
+      app.kubernetes.io/instance: istiod
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istiod
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: istiod-1.27.9
+      install.operator.istio.io/owning-resource: unknown
+      istio: pilot
+      istio.io/dataplane-mode: none
+      istio.io/rev: default
+      operator.istio.io/component: Pilot
+      pod-template-hash: 54b585df85
+      sidecar.istio.io/inject: "false"
+    name: istiod-54b585df85
+    namespace: istio-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: istiod
+      uid: 7df011ad-31bd-4673-8682-ef06bbc02c5d
+    resourceVersion: "575"
+    uid: 93284104-9771-4309-a655-2865001156fa
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        istio: pilot
+        pod-template-hash: 54b585df85
+    template:
+      metadata:
+        annotations:
+          prometheus.io/port: "15014"
+          prometheus.io/scrape: "true"
+          sidecar.istio.io/inject: "false"
+        creationTimestamp: null
+        labels:
+          app: istiod
+          app.kubernetes.io/instance: istiod
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: istiod
+          app.kubernetes.io/part-of: istio
+          app.kubernetes.io/version: 1.27.9
+          helm.sh/chart: istiod-1.27.9
+          install.operator.istio.io/owning-resource: unknown
+          istio: pilot
+          istio.io/dataplane-mode: none
+          istio.io/rev: default
+          operator.istio.io/component: Pilot
+          pod-template-hash: 54b585df85
+          sidecar.istio.io/inject: "false"
+      spec:
+        containers:
+        - args:
+          - discovery
+          - --monitoringAddr=:15014
+          - --log_output_level=default:info
+          - --domain
+          - cluster.local
+          - --keepaliveMaxServerConnectionAge
+          - 30m
+          env:
+          - name: REVISION
+            value: default
+          - name: PILOT_CERT_PROVIDER
+            value: istiod
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.serviceAccountName
+          - name: KUBECONFIG
+            value: /var/run/secrets/remote/config
+          - name: CA_TRUSTED_NODE_ACCOUNTS
+            value: istio-system/ztunnel
+          - name: PILOT_TRACE_SAMPLING
+            value: "1"
+          - name: PILOT_ENABLE_ANALYSIS
+            value: "false"
+          - name: CLUSTER_ID
+            value: Kubernetes
+          - name: GOMEMLIMIT
+            valueFrom:
+              resourceFieldRef:
+                divisor: "1"
+                resource: limits.memory
+          - name: GOMAXPROCS
+            valueFrom:
+              resourceFieldRef:
+                divisor: "1"
+                resource: limits.cpu
+          - name: PLATFORM
+          image: docker.io/istio/pilot:1.27.9
+          imagePullPolicy: IfNotPresent
+          name: discovery
+          ports:
+          - containerPort: 8080
+            name: http-debug
+            protocol: TCP
+          - containerPort: 15010
+            name: grpc-xds
+            protocol: TCP
+          - containerPort: 15012
+            name: tls-xds
+            protocol: TCP
+          - containerPort: 15017
+            name: https-webhooks
+            protocol: TCP
+          - containerPort: 15014
+            name: http-monitoring
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/secrets/tokens
+            name: istio-token
+            readOnly: true
+          - mountPath: /var/run/secrets/istio-dns
+            name: local-certs
+          - mountPath: /etc/cacerts
+            name: cacerts
+            readOnly: true
+          - mountPath: /var/run/secrets/remote
+            name: istio-kubeconfig
+            readOnly: true
+          - mountPath: /var/run/secrets/istiod/tls
+            name: istio-csr-dns-cert
+            readOnly: true
+          - mountPath: /var/run/secrets/istiod/ca
+            name: istio-csr-ca-configmap
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: istiod
+        serviceAccountName: istiod
+        terminationGracePeriodSeconds: 30
+        tolerations:
+        - key: cni.istio.io/not-ready
+          operator: Exists
+        volumes:
+        - emptyDir:
+            medium: Memory
+          name: local-certs
+        - name: istio-token
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                audience: istio-ca
+                expirationSeconds: 43200
+                path: istio-token
+        - name: cacerts
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: cacerts
+        - name: istio-kubeconfig
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: istio-kubeconfig
+        - name: istio-csr-dns-cert
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: istiod-tls
+        - configMap:
+            defaultMode: 420
+            name: istio-ca-root-cert
+            optional: true
+          name: istio-csr-ca-configmap
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: autoscaling/v2
+  kind: HorizontalPodAutoscaler
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: istio-egressgateway
+      meta.helm.sh/release-namespace: istio-system
+    creationTimestamp: "2026-06-02T17:00:36Z"
+    labels:
+      app: istio-egressgateway
+      app.kubernetes.io/instance: istio-egressgateway
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istio-egressgateway
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: gateway-1.27.9
+      istio: egressgateway
+      istio.io/dataplane-mode: none
+    name: istio-egressgateway
+    namespace: istio-system
+    resourceVersion: "708"
+    uid: 25300c98-adb0-46bc-9560-ee42411b2876
+  spec:
+    maxReplicas: 5
+    metrics:
+    - resource:
+        name: cpu
+        target:
+          averageUtilization: 80
+          type: Utilization
+      type: Resource
+    minReplicas: 1
+    scaleTargetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: istio-egressgateway
+  status:
+    conditions:
+    - lastTransitionTime: "2026-06-02T17:00:51Z"
+      message: the HPA controller was able to get the target's current scale
+      reason: SucceededGetScale
+      status: "True"
+      type: AbleToScale
+    - lastTransitionTime: "2026-06-02T17:00:51Z"
+      message: 'the HPA was unable to compute the replica count: failed to get cpu
+        utilization: unable to get metrics for resource cpu: unable to fetch metrics
+        from resource metrics API: the server could not find the requested resource
+        (get pods.metrics.k8s.io)'
+      reason: FailedGetResourceMetric
+      status: "False"
+      type: ScalingActive
+    currentMetrics:
+    - type: ""
+    currentReplicas: 1
+    desiredReplicas: 0
+- apiVersion: autoscaling/v2
+  kind: HorizontalPodAutoscaler
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: istiod
+      meta.helm.sh/release-namespace: istio-system
+    creationTimestamp: "2026-06-02T17:00:26Z"
+    labels:
+      app: istiod
+      app.kubernetes.io/instance: istiod
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: istiod
+      app.kubernetes.io/part-of: istio
+      app.kubernetes.io/version: 1.27.9
+      helm.sh/chart: istiod-1.27.9
+      install.operator.istio.io/owning-resource: unknown
+      istio.io/rev: default
+      operator.istio.io/component: Pilot
+      release: istiod
+    name: istiod
+    namespace: istio-system
+    resourceVersion: "686"
+    uid: c54a56ac-2b5c-406b-838b-d28e2ec0f8ac
+  spec:
+    maxReplicas: 5
+    metrics:
+    - resource:
+        name: cpu
+        target:
+          averageUtilization: 80
+          type: Utilization
+      type: Resource
+    minReplicas: 1
+    scaleTargetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: istiod
+  status:
+    conditions:
+    - lastTransitionTime: "2026-06-02T17:00:41Z"
+      message: the HPA controller was able to get the target's current scale
+      reason: SucceededGetScale
+      status: "True"
+      type: AbleToScale
+    - lastTransitionTime: "2026-06-02T17:00:41Z"
+      message: 'the HPA was unable to compute the replica count: failed to get cpu
+        utilization: unable to get metrics for resource cpu: unable to fetch metrics
+        from resource metrics API: the server could not find the requested resource
+        (get pods.metrics.k8s.io)'
+      reason: FailedGetResourceMetric
+      status: "False"
+      type: ScalingActive
+    currentMetrics:
+    - type: ""
+    currentReplicas: 1
+    desiredReplicas: 0
+kind: List
+metadata:
+  resourceVersion: ""

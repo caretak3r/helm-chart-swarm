@@ -1,0 +1,1998 @@
+scenarios:
+- cluster:
+    provider: kind
+  id: c3bad-path
+  mechanisms:
+  - addon:none
+  name: c3bad-path
+  status: UNKNOWN
+  tags:
+  - test
+- cluster:
+    provider: kind
+  id: c3fail-deliberate
+  mechanisms:
+  - addon:none
+  name: c3fail-deliberate
+  status: FAIL
+  tags:
+  - test
+- cluster:
+    provider: kind
+  id: c3sig-slow
+  mechanisms:
+  - addon:none
+  name: c3sig-slow
+  status: FAIL
+  tags:
+  - test
+- cluster:
+    provider: kind
+  id: c3sig-slow2
+  mechanisms:
+  - addon:none
+  name: c3sig-slow2
+  status: FAIL
+  tags:
+  - test
+- cluster:
+    provider: kind
+  id: c3sig-slow2
+  mechanisms:
+  - addon:none
+  name: c3sig-slow2
+  status: INTERRUPTED
+  tags:
+  - test
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: INTERRUPTED
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-jks-pkcs12
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-jks-pkcs12
+  status: INTERRUPTED
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-lets-encrypt-staging
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-lets-encrypt-staging
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-lets-encrypt-staging
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-lets-encrypt-staging
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-lets-encrypt-staging
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-lets-encrypt-staging
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-lets-encrypt-staging
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-lets-encrypt-staging
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-lets-encrypt-staging
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-lets-encrypt-staging
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-lets-encrypt-staging
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-lets-encrypt-staging
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: INTERRUPTED
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-self-signed-ca
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-self-signed-ca
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-wildcard
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-wildcard
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-wildcard
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-wildcard
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-wildcard
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-wildcard
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-wildcard
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-wildcard
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-cert-manager-wildcard
+  mechanisms:
+  - addon:cert-manager
+  name: certificates-cert-manager-wildcard
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-basic
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-basic
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-basic
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-basic
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-ecdsa
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-ecdsa
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-ecdsa
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-ecdsa
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-ecdsa
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-ecdsa
+  status: INTERRUPTED
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-ecdsa
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-ecdsa
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-multiple-sans
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-multiple-sans
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-multiple-sans
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-multiple-sans
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-manual-tls-secret-multiple-sans
+  mechanisms:
+  - addon:manual-tls-secret
+  name: certificates-manual-tls-secret-multiple-sans
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-csi-secret-store
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-csi-secret-store
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-csi-secret-store
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-csi-secret-store
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-csi-secret-store
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-csi-secret-store
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-csi-secret-store
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-csi-secret-store
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-csi-secret-store
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-csi-secret-store
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-csi-secret-store
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-csi-secret-store
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-csi-secret-store
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-csi-secret-store
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-csi-secret-store
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-csi-secret-store
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-projected-volume
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-projected-volume
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-projected-volume
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-projected-volume
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-projected-volume
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-projected-volume
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-projected-volume
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-projected-volume
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-pvc-mount
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-pvc-mount
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-pvc-mount
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-pvc-mount
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-pvc-mount
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-pvc-mount
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-pvc-mount
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-pvc-mount
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-pvc-mount
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-pvc-mount
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: certificates-mounted-tls-certs-pvc-mount
+  mechanisms:
+  - addon:mounted-tls-certs
+  name: certificates-mounted-tls-certs-pvc-mount
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: customer-a-istio
+  mechanisms:
+  - addon:istio
+  - addon:cert-manager
+  - mesh:istio
+  - customer:A
+  name: customer-a-istio
+  status: PASS
+  tags:
+  - nightly
+  - customer-replica
+- cluster:
+    provider: kind
+  id: customer-a-istio
+  mechanisms:
+  - addon:istio
+  - addon:cert-manager
+  - mesh:istio
+  - customer:A
+  name: customer-a-istio
+  status: PASS
+  tags:
+  - nightly
+  - customer-replica
+- cluster:
+    provider: kind
+  id: customer-a-istio
+  mechanisms:
+  - addon:istio
+  - addon:cert-manager
+  - mesh:istio
+  - customer:A
+  name: customer-a-istio
+  status: PASS
+  tags:
+  - nightly
+  - customer-replica
+- cluster:
+    provider: kind
+  id: customer-b-gatekeeper
+  mechanisms:
+  - addon:gatekeeper
+  - customer:B
+  name: customer-b-gatekeeper
+  status: PASS
+  tags:
+  - nightly
+  - customer-replica
+- cluster:
+    provider: kind
+  id: envoy-gateway
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: envoy-gateway
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: envoy-gateway
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: envoy-gateway
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: envoy-gateway
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: envoy-gateway
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: envoy-gateway
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: envoy-gateway
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: envoy-gateway
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: envoy-gateway
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-contour-gateway-api-basic
+  mechanisms:
+  - addon:contour
+  - gateway-api:contour
+  name: gateway-api-contour-gateway-api-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-contour-gateway-api-basic
+  mechanisms:
+  - addon:contour
+  - gateway-api:contour
+  name: gateway-api-contour-gateway-api-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-contour-gateway-api-basic
+  mechanisms:
+  - addon:contour
+  - gateway-api:contour
+  name: gateway-api-contour-gateway-api-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-contour-gateway-api-response-header-modifier
+  mechanisms:
+  - addon:contour
+  - gateway-api:contour
+  name: gateway-api-contour-gateway-api-response-header-modifier
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-contour-gateway-api-response-header-modifier
+  mechanisms:
+  - addon:contour
+  - gateway-api:contour
+  name: gateway-api-contour-gateway-api-response-header-modifier
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-contour-gateway-api-route-precedence
+  mechanisms:
+  - addon:contour
+  - gateway-api:contour
+  name: gateway-api-contour-gateway-api-route-precedence
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-contour-gateway-api-route-precedence
+  mechanisms:
+  - addon:contour
+  - gateway-api:contour
+  name: gateway-api-contour-gateway-api-route-precedence
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-contour-gateway-api-route-precedence
+  mechanisms:
+  - addon:contour
+  - gateway-api:contour
+  name: gateway-api-contour-gateway-api-route-precedence
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-cert-manager-tls
+  mechanisms:
+  - addon:envoy-gateway
+  - addon:cert-manager
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-cert-manager-tls
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-cert-manager-tls
+  mechanisms:
+  - addon:envoy-gateway
+  - addon:cert-manager
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-cert-manager-tls
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-grpcroute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-grpcroute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-grpcroute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-grpcroute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-grpcroute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-grpcroute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-grpcroute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-grpcroute
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-grpcroute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-grpcroute
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-httproute
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-httproute
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-security-policy-attach
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-security-policy-attach
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-security-policy-attach
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-security-policy-attach
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-security-policy-attach
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-security-policy-attach
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-envoy-gateway-security-policy-attach
+  mechanisms:
+  - addon:envoy-gateway
+  - gateway-api:envoy
+  name: gateway-api-envoy-gateway-security-policy-attach
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-backend-tls-policy
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-backend-tls-policy
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-basic
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-basic
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-basic
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-basic
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-multi-listener
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-multi-listener
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-multi-listener
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-multi-listener
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-multi-listener
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-multi-listener
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: gateway-api-istio-gateway-api-multi-listener
+  mechanisms:
+  - addon:istio
+  - gateway-api:istio
+  name: gateway-api-istio-gateway-api-multi-listener
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-basic-httpproxy
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-basic-httpproxy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-basic-httpproxy
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-basic-httpproxy
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-basic-httpproxy
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-basic-httpproxy
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-basic-httpproxy
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-basic-httpproxy
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-rate-limit
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-rate-limit
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-tls-delegation
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-tls-delegation
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-tls-delegation
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-tls-delegation
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-tls-delegation
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-tls-delegation
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-tls-delegation
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-tls-delegation
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-contour-tls-delegation
+  mechanisms:
+  - addon:contour
+  name: ingress-controllers-contour-tls-delegation
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-basic
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-basic
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-canary
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-canary
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-canary
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-canary
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-default-backend
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-default-backend
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-default-backend
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-default-backend
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-default-backend
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-default-backend
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-default-backend
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-default-backend
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-default-backend
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-default-backend
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-default-backend
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-default-backend
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-default-backend
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-default-backend
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-snippet-annotations
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-snippet-annotations
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-snippet-annotations
+  mechanisms:
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-snippet-annotations
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-tls-cert-manager
+  mechanisms:
+  - addon:cert-manager
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-tls-cert-manager
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-tls-cert-manager
+  mechanisms:
+  - addon:cert-manager
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-tls-cert-manager
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-nginx-ingress-tls-cert-manager
+  mechanisms:
+  - addon:cert-manager
+  - addon:nginx-ingress
+  name: ingress-controllers-nginx-ingress-tls-cert-manager
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-basic
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-ingressroute-crd
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-ingressroute-crd
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-ingressroute-crd
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-ingressroute-crd
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-middleware-chain
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-middleware-chain
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-middleware-chain
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-middleware-chain
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-middleware-chain
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-middleware-chain
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-tls-passthrough
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-tls-passthrough
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-tls-passthrough
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-tls-passthrough
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-tls-passthrough
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-tls-passthrough
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-tls-passthrough
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-tls-passthrough
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-tls-passthrough
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-tls-passthrough
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: ingress-controllers-traefik-tls-passthrough
+  mechanisms:
+  - addon:traefik
+  name: ingress-controllers-traefik-tls-passthrough
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: INTERRUPTED
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: minimal
+  mechanisms:
+  - addon:none
+  name: minimal
+  status: INTERRUPTED
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-basic
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-basic
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-basic
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-basic
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-basic
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-jwt
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-jwt
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-jwt
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-jwt
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-jwt
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-jwt
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-multi-host
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-multi-host
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-multi-host
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-multi-host
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-request-authentication
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-request-authentication
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-ingress-gateway-request-authentication
+  mechanisms:
+  - addon:istio
+  - mesh:istio-ingress-gateway
+  name: service-mesh-istio-ingress-gateway-request-authentication
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-cert-manager-tls
+  mechanisms:
+  - addon:istio
+  - addon:cert-manager
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-cert-manager-tls
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-cert-manager-tls
+  mechanisms:
+  - addon:istio
+  - addon:cert-manager
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-cert-manager-tls
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-peer-authentication
+  mechanisms:
+  - addon:istio
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-peer-authentication
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-sidecar-injection
+  mechanisms:
+  - addon:istio
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-sidecar-injection
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-sidecar-injection
+  mechanisms:
+  - addon:istio
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-sidecar-injection
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-sidecar-injection
+  mechanisms:
+  - addon:istio
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-sidecar-injection
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-strict-mtls
+  mechanisms:
+  - addon:istio
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-strict-mtls
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-strict-mtls
+  mechanisms:
+  - addon:istio
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-strict-mtls
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-istio-service-mesh-telemetry-v2
+  mechanisms:
+  - addon:istio
+  - mesh:istio-service-mesh
+  name: service-mesh-istio-service-mesh-telemetry-v2
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: FAIL
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: service-mesh-linkerd-basic-mesh
+  mechanisms:
+  - addon:linkerd
+  - mesh:linkerd
+  name: service-mesh-linkerd-basic-mesh
+  status: PASS
+  tags:
+  - nightly
+- cluster:
+    provider: kind
+  id: subchart-postgres-internal
+  mechanisms:
+  - subchart:postgres-internal
+  name: subchart-postgres-internal
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: with-cert-manager
+  mechanisms:
+  - addon:cert-manager
+  name: with-cert-manager
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: with-cert-manager
+  mechanisms:
+  - addon:cert-manager
+  name: with-cert-manager
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: with-cert-manager
+  mechanisms:
+  - addon:cert-manager
+  name: with-cert-manager
+  status: FAIL
+  tags:
+  - pr-subset
+  - nightly
+- cluster:
+    provider: kind
+  id: with-cert-manager
+  mechanisms:
+  - addon:cert-manager
+  name: with-cert-manager
+  status: PASS
+  tags:
+  - pr-subset
+  - nightly

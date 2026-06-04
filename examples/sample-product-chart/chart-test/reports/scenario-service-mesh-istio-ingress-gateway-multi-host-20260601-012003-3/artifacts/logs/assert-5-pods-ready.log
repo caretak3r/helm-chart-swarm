@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-utmesh5 -n istio-system wait --for=condition=Ready pods --timeout=3m -l app=istio-ingressgateway
+pod/istio-ingressgateway-8584b67974-sd8nv condition met
+PASS: pods Ready in ns/istio-system (selector=app=istio-ingressgateway)
+NAME                                    READY   STATUS    RESTARTS   AGE
+istio-ingressgateway-8584b67974-sd8nv   1/1     Running   0          7s

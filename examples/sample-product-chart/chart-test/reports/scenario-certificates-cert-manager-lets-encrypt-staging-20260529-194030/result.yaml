@@ -1,0 +1,28 @@
+scenario_id: certificates-cert-manager-lets-encrypt-staging
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-cert-manager-lets-encrypt-staging.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-29T23:40:31Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-cm4 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-797bf47b77-7vl6f condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-797bf47b77-7vl6f   1/1     Running   0          4s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-letsencrypt-staging.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Verifying Let's Encrypt staging ClusterIssuer is Ready
+      error: timed out waiting for the condition on clusterissuers/chart-test-swarm-letsencrypt-staging
+status: FAIL
+finished_at: 2026-05-29T23:44:20Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-cert-manager-lets-encrypt-staging-20260529-194030/artifacts/logs

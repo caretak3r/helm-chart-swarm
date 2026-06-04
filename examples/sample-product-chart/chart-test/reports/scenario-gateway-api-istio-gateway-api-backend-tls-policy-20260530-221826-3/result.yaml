@@ -1,0 +1,83 @@
+scenario_id: gateway-api-istio-gateway-api-backend-tls-policy
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-istio-gateway-api-backend-tls-policy.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T02:18:26Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-94kgn condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-94kgn   1/1     Running   0          9s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcbc85748-tl7rt condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcbc85748-tl7rt   1/1     Running   0          4s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-gateway-api-backend-tls-policy.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Applying GatewayClass + Gateway + HTTPRoute (port 443)
+      Warning: resource gatewayclasses/istio is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+      gatewayclass.gateway.networking.k8s.io/istio configured
+      gateway.gateway.networking.k8s.io/sample-gw created
+      httproute.gateway.networking.k8s.io/sample-route created
+      ==> Waiting for GatewayClass istio Accepted=True (3m max)
+      PASS: GatewayClass istio Accepted=True
+      ==> Waiting for Gateway listener http Programmed=True (5m max)
+      PASS: Gateway listener http Programmed=True
+      ==> Verifying HTTPRoute sample-route Accepted=True
+      PASS: HTTPRoute sample-route Accepted=True
+      ==> Applying BackendTLSPolicy
+      backendtlspolicy.gateway.networking.k8s.io/sample-backend-tls created
+      ==> Waiting for BackendTLSPolicy Accepted=True (2m max)
+      FAIL: BackendTLSPolicy not Accepted after 2m
+      BackendTLSPolicy status:
+      apiVersion: gateway.networking.k8s.io/v1alpha3
+      kind: BackendTLSPolicy
+      metadata:
+        annotations:
+          kubectl.kubernetes.io/last-applied-configuration: |
+            {"apiVersion":"gateway.networking.k8s.io/v1alpha3","kind":"BackendTLSPolicy","metadata":{"annotations":{},"name":"sample-backend-tls","namespace":"sample"},"spec":{"targetRefs":[{"group":"","kind":"Service","name":"sample"}],"validation":{"caCertificateRefs":[{"group":"","kind":"ConfigMap","name":"backend-ca-cert"}],"hostname":"sample.sample.svc.cluster.local"}}}
+        creationTimestamp: "2026-05-31T02:19:04Z"
+        generation: 1
+        name: sample-backend-tls
+        namespace: sample
+        resourceVersion: "713"
+        uid: 917127b8-b3bb-4447-ac55-7659266fb51e
+      spec:
+        targetRefs:
+        - group: ""
+          kind: Service
+          name: sample
+        validation:
+          caCertificateRefs:
+          - group: ""
+            kind: ConfigMap
+            name: backend-ca-cert
+          hostname: sample.sample.svc.cluster.local
+status: FAIL
+finished_at: 2026-05-31T02:21:00Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-istio-gateway-api-backend-tls-policy-20260530-221826-3/artifacts/logs

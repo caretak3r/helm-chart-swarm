@@ -1,0 +1,64 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2026-05-31T00:28:00Z"
+    name: grpc-backend
+    namespace: sample
+    resourceVersion: "620"
+    uid: e21fb9a0-627e-421f-a27f-6aa01c23398d
+  spec:
+    clusterIP: 10.96.34.6
+    clusterIPs:
+    - 10.96.34.6
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: grpc
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    selector:
+      app: grpc-backend
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-05-31T00:28:00Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "635"
+    uid: 05fa44b3-d966-41a5-9a7e-a0eb19f059b1
+  spec:
+    clusterIP: 10.96.12.132
+    clusterIPs:
+    - 10.96.12.132
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

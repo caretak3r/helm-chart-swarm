@@ -1,0 +1,11 @@
+scenario_id: with-cert-manager
+scenario_path: examples/sample-product-chart/chart-test/scenarios/with-cert-manager.yaml
+project_dir: examples/sample-product-chart
+started_at: 2026-05-29T19:14:39Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see examples/sample-product-chart/chart-test/reports/scenario-with-cert-manager-20260529-151439-3/artifacts/logs/preinstall.log
+finished_at: 2026-05-29T19:15:11Z

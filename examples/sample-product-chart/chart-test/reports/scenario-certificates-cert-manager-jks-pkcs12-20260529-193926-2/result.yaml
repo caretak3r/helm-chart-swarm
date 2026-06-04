@@ -1,0 +1,39 @@
+scenario_id: certificates-cert-manager-jks-pkcs12
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-cert-manager-jks-pkcs12.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-29T23:39:27Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-cm3 -n sample wait --for=condition=Ready pods --timeout=3m --all
+      pod/sample-5967fcc884-49rtz condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-5967fcc884-49rtz   1/1     Running   0          3s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-jks-pkcs12.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for Certificate 'sample-jks-tls' Ready (3m max)
+      certificate.cert-manager.io/sample-jks-tls condition met
+      PASS: Certificate Ready=True
+      ==> Extracting cert and key, creating PKCS12 bundle
+      ==> Storing PKCS12 bundle as Secret 'sample-jks-bundle'
+      secret/sample-jks-bundle created
+      ==> Verifying JKS/PKCS12 Secret keys
+      Bundle keys: keystore.p12
+      tls.crt
+      tls.key
+      OK: keystore.p12, tls.crt, tls.key all present
+      PASS: PKCS12 bundle is valid
+      PASS: cert-manager JKS/PKCS12 integration verified
+status: PASS
+finished_at: 2026-05-29T23:40:14Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-cert-manager-jks-pkcs12-20260529-193926-2/artifacts/logs

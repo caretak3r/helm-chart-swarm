@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sample-wildcard-tls
+  namespace: sample
+spec:
+  secretName: sample-wildcard-tls
+  duration: 24h
+  renewBefore: 12h
+  issuerRef:
+    name: chart-test-swarm-selfsigned
+    kind: ClusterIssuer
+  commonName: "*.test.local"
+  dnsNames:
+    - "*.test.local"
+    - "test.local"

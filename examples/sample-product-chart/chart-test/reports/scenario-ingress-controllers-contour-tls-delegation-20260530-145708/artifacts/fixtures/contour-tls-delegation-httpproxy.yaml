@@ -1,0 +1,17 @@
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: sample-tls
+  namespace: sample
+spec:
+  virtualhost:
+    fqdn: sample.test.local
+    tls:
+      secretName: tls-secrets/sample-tls
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: sample
+          port: 80

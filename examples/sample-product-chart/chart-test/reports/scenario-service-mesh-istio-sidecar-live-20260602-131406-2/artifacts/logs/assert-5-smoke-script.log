@@ -1,0 +1,31 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-sidecar-live.sh (RELEASE=sample NAMESPACE=sample)
+==> VAL-MSH-001: Verifying istiod is Ready
+  ✓ istiod pods are Ready
+==> VAL-MSH-001: Verifying istio-sidecar-injector MutatingWebhookConfiguration
+  ✓ istio-sidecar-injector webhook present: mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector
+==> VAL-MSH-001: Verifying namespace sample is labeled istio-injection=enabled
+  ✓ Namespace sample labeled istio-injection=enabled
+==> VAL-MSH-002: Verifying product pods have 2 containers (app + istio-proxy)
+  Pod sample-6f8587999b-26hdv (deploy/sample) containers (2): istio-proxy app
+    ✓ istio-proxy sidecar present
+PASS: every Running product pod has exactly 2 containers including istio-proxy
+==> VAL-MSH-003: Creating in-mesh probe pod with sidecar injection
+pod/ct-sidecar-live-probe created
+  Waiting for probe pod to be ready (2m max)
+pod/ct-sidecar-live-probe condition met
+  Probe pod containers: istio-proxy ct-sidecar-live-probe
+==> Probing product Service over the mesh from in-mesh pod
+  HTTP response from in-mesh probe: 200
+  ✓ in-mesh pod reached product Service with HTTP 200
+==> VAL-MSH-003: Confirming mTLS via istio-proxy stats
+  Checking istio-proxy stats on pod sample-6f8587999b-26hdv
+  ✓ mTLS confirmed — istio telemetry reports connection_security_policy=mutual_tls
+    (counter value: 1)
+pod "ct-sidecar-live-probe" deleted from sample namespace
+error: timed out waiting for the condition on pods/ct-sidecar-live-probe
+
+PASS: Istio sidecar mesh LIVE integration verified
+  - istiod Ready, injector webhook present, namespace labeled
+  - Product pods have 2 containers (app + istio-proxy)
+  - In-mesh traffic returns HTTP 200
+  - mTLS confirmed via istio-proxy stats

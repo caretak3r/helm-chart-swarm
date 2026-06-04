@@ -1,0 +1,73 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: linkerd-crds (linkerd/linkerd-crds @ 1.8.0) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-crds" does not exist. Installing it now.
+NAME: linkerd-crds
+LAST DEPLOYED: Mon Jun  1 01:27:17 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The linkerd-crds chart was successfully installed 🎉
+
+To complete the linkerd core installation, please now proceed to install the
+linkerd-control-plane chart in the linkerd namespace.
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+
+==> [2/3] kind=helm
+    helm: linkerd-control-plane (linkerd/linkerd-control-plane @ 1.16.11) in ns/linkerd
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-control-plane" does not exist. Installing it now.
+NAME: linkerd-control-plane
+LAST DEPLOYED: Mon Jun  1 01:27:18 2026
+NAMESPACE: linkerd
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The Linkerd control plane was successfully installed 🎉
+
+To help you manage your Linkerd service mesh you can install the Linkerd CLI by running:
+
+  curl -sL https://run.linkerd.io/install | sh
+
+Alternatively, you can download the CLI directly via the Linkerd releases page:
+
+  https://github.com/linkerd/linkerd2/releases/
+
+To make sure everything works as expected, run the following:
+
+  linkerd check
+
+The viz extension can be installed by running:
+
+  helm install linkerd-viz linkerd/linkerd-viz
+
+Looking for more? Visit https://linkerd.io/2/getting-started/
+
+==> [3/3] kind=helm
+    helm: linkerd-multicluster (linkerd/linkerd-multicluster @ 30.11.11) in ns/linkerd-multicluster
+    repo 'linkerd' already exists with URL https://helm.linkerd.io/stable (skipping add)
+Release "linkerd-multicluster" does not exist. Installing it now.
+I0601 01:27:19.759303    2932 warnings.go:107] "Warning: policy.linkerd.io/v1alpha1 Server is deprecated; use policy.linkerd.io/v1beta1 Server"
+I0601 01:27:19.761311    2932 warnings.go:107] "Warning: policy.linkerd.io/v1alpha1 Server is deprecated; use policy.linkerd.io/v1beta1 Server"
+I0601 01:27:19.763290    2932 warnings.go:107] "Warning: policy.linkerd.io/v1alpha1 Server is deprecated; use policy.linkerd.io/v1beta1 Server"
+NAME: linkerd-multicluster
+LAST DEPLOYED: Mon Jun  1 01:27:19 2026
+NAMESPACE: linkerd-multicluster
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+pod/linkerd-gateway-6b546df458-b6nj7 condition met
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

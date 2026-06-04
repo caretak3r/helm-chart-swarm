@@ -1,0 +1,39 @@
+scenario_id: certificates-cert-manager-wildcard
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/certificates-cert-manager-wildcard.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T14:34:11Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-4 -n sample wait --for=condition=Ready pods --timeout=3m --all
+      pod/sample-5967fcc884-lwxmd condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-5967fcc884-lwxmd   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-wildcard.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for Certificate 'sample-wildcard-tls' Ready (3m max)
+      certificate.cert-manager.io/sample-wildcard-tls condition met
+      PASS: Certificate Ready=True
+      ==> Verifying TLS Secret 'sample-wildcard-tls' keys
+      Secret keys: ca.crt
+      tls.crt
+      tls.key
+      OK: tls.crt, tls.key, ca.crt all present
+      ==> Verifying wildcard certificate SANs
+      SAN: X509v3 Subject Alternative Name: 
+          DNS:*.test.local, DNS:test.local
+      PASS: cert SAN includes DNS:*.test.local and DNS:test.local
+      PASS: cert-manager wildcard certificate integration verified
+status: PASS
+finished_at: 2026-05-30T14:34:58Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-cert-manager-wildcard-20260530-103411-4/artifacts/logs

@@ -1,0 +1,2 @@
+helm status: deployed
+PASS: release cert-manager in ns/cert-manager is deployed

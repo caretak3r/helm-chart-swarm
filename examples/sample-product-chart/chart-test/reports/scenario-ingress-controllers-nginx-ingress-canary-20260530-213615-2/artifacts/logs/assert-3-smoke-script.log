@@ -1,0 +1,29 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-canary.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for nginx controller pod Ready (3m max)
+pod/ingress-nginx-controller-d74c658c5-c2npd condition met
+PASS: nginx controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-24fnm condition met
+PASS: stable product pods Ready
+==> Waiting for canary pod Ready (2m max)
+pod/sample-canary-575699b698-86scv condition met
+PASS: canary pod Ready
+==> Verifying stable Ingress exists
+ingress.networking.k8s.io/sample-stable
+PASS: stable Ingress exists
+==> Verifying canary Ingress exists with canary annotations
+Canary flag: 'true', canary-weight: '20'
+PASS: canary Ingress has correct annotations
+==> Getting nginx controller pod IP
+NGINX pod IP: 10.244.0.6
+==> Running 100 canary probes (expect 10-30 canary hits)
+  ... probe 20/100: canary=5 stable=15
+  ... probe 40/100: canary=11 stable=29
+  ... probe 60/100: canary=17 stable=43
+  ... probe 80/100: canary=22 stable=58
+  ... probe 100/100: canary=26 stable=74
+
+Canary hits: 26/100 (20% target)
+Stable hits: 74/100
+PASS: canary traffic in range [10, 30] — 26 hits
+PASS: NGINX Ingress canary integration verified

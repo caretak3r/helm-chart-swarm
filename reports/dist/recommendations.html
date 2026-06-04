@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — Recommendations</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— Recommendations</span></h1>
+    <p class="hint">Actionable chart-fix suggestions from FAIL scenario results.</p>
+  </div>
+<nav class="top-nav" aria-label="Main navigation">
+  <a href="home.html"
+     class="nav-item"
+>Home</a>
+  <a href="getting-started.html"
+     class="nav-item"
+>Getting Started</a>
+  <a href="support-matrix.html"
+     class="nav-item"
+>Matrix</a>
+  <a href="runs.html"
+     class="nav-item"
+>Runs</a>
+  <a href="recommendations.html"
+     class="nav-item nav-active"
+aria-current="page">Recommendations</a>
+  <a href="versions.html"
+     class="nav-item"
+>Versions</a>
+</nav></header>
+
+<section class="recommendations">
+
+<div class="rec-summary-bar">
+  <span class="rec-summary-item rec-status-open">0 Open</span>
+  <span class="rec-summary-item rec-status-in_progress">0 In Progress</span>
+  <span class="rec-summary-item rec-status-fixed">8 Fixed</span>
+  <span class="rec-summary-item rec-status-dismissed">1 Dismissed</span>
+</div>
+
+<div class="rec-tabs">
+  <button class="rec-tab rec-tab-active" data-tab="all" onclick="switchTab('all')">All</button>
+  <button class="rec-tab" data-tab="open" onclick="switchTab('open')">Open</button>
+  <button class="rec-tab" data-tab="in_progress" onclick="switchTab('in_progress')">In Progress</button>
+  <button class="rec-tab" data-tab="fixed" onclick="switchTab('fixed')">Fixed</button>
+  <button class="rec-tab" data-tab="dismissed" onclick="switchTab('dismissed')">Dismissed</button>
+</div>
+
+<div class="rec-filters">
+  <label for="rec-filter-category">Category:</label>
+  <select id="rec-filter-category" onchange="filterRecommendations()">
+    <option value="all">All</option>
+    <option value="chart-fix">chart-fix</option>
+    <option value="infrastructure">infrastructure</option>
+    <option value="gap-probe">gap-probe</option>
+    <option value="schema-missing">schema-missing</option>
+  </select>
+  <label for="rec-filter-severity">Severity:</label>
+  <select id="rec-filter-severity" onchange="filterRecommendations()">
+    <option value="all">All</option>
+    <option value="high">high</option>
+    <option value="medium">medium</option>
+    <option value="low">low</option>
+  </select>
+</div>
+
+<div class="rec-card" data-category="infrastructure" data-severity="low" data-status="fixed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-tag rec-tag-category">infrastructure</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Infrastructure preinstall missing for scenario &#39;customer-A-istio&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> customer-A-istio</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: sidecar injection enabled but pod stuck in PodInitializing.
+kubectl -n sample describe pod sample-... shows istio-init container
+waiting on CNI config — istio-cni-node not installed.
+Assert &#39;pods-ready&#39;: 0/1 pods Ready after 5m0s.
+sample-7d4f8c9b8-x7k2p: PodInitializing (istio-init waiting)
+REPRO: helm install sample ./chart -n sample --set podAnnotations.&#34;sidecar\.istio\.io/inject&#34;=true</pre>
+      <p><strong>Affected objects:</strong> Pod</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+    </div>
+  </details>
+</div>
+<div class="rec-card" data-category="chart-fix" data-severity="medium" data-status="fixed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
+    <span class="rec-title">Add example.com/owner annotation to Service, Deployment, Ingress</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> annotations-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Deployment/sample missing annotation example.com/owner
+Service/sample missing annotation example.com/owner
+Ingress/sample missing annotation example.com/owner</pre>
+      <p><strong>Affected objects:</strong> Deployment, Service, Ingress</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>,         <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
+    </div>
+  </details>
+</div>
+<div class="rec-card" data-category="chart-fix" data-severity="medium" data-status="fixed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
+    <span class="rec-title">Add cost-center=42 label to Deployment, Service</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> labels-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Deployment/sample missing label cost-center=42
+Service/sample missing label cost-center=42</pre>
+      <p><strong>Affected objects:</strong> Deployment, Service</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>,         <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
+    </div>
+  </details>
+</div>
+<div class="rec-card" data-category="chart-fix" data-severity="high" data-status="fixed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-tag rec-tag-severity rec-severity-high">high</span>
+    <span class="rec-title">Add RBAC ServiceAccount and RoleBinding to chart</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> rbac-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Missing ServiceAccount resource in chart templates
+Missing RoleBinding resource in chart templates</pre>
+      <p><strong>Affected objects:</strong> ServiceAccount, RoleBinding</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+    </div>
+  </details>
+</div>
+<div class="rec-card" data-category="chart-fix" data-severity="high" data-status="fixed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-tag rec-tag-severity rec-severity-high">high</span>
+    <span class="rec-title">Enforce HTTPS-only scheme on Ingress resource</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> scheme-https-only</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Ingress/sample allows HTTP scheme — should enforce HTTPS-only
+nginx.ingress.kubernetes.io/force-ssl-redirect annotation missing</pre>
+      <p><strong>Affected objects:</strong> Ingress</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260519-090000/index.html" class="rec-run-link">run-20260519-090000</a>,         <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+    </div>
+  </details>
+</div>
+<div class="rec-card" data-category="gap-probe" data-severity="low" data-status="dismissed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-dismissed">dismissed</span>
+    <span class="rec-tag rec-tag-category">gap-probe</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Chart does not support Contour HTTPProxy integration</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> contour-basic-httpproxy</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Contour HTTPProxy CRD not rendered by chart templates
+This is a gap-probe: the chart currently does not support Contour as an ingress type</pre>
+      <p><strong>Affected objects:</strong> HTTPProxy</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+      <p><strong>Dismissed reason:</strong> Contour not in product roadmap</p>
+    </div>
+  </details>
+</div>
+<div class="rec-card" data-category="gap-probe" data-severity="low" data-status="fixed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-tag rec-tag-category">gap-probe</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Chart does not include Gatekeeper required-labels constraint</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> gatekeeper-required-labels</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Gatekeeper ConstraintTemplate and Constraint for required-labels not included in chart
+This is a gap-probe: chart does not currently support OPA Gatekeeper policy enforcement</pre>
+      <p><strong>Affected objects:</strong> ConstraintTemplate, Constraint</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+    </div>
+  </details>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="medium" data-status="fixed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
+    <span class="rec-title">Missing value in values.yaml for unknown-assert-type scenario</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> unknown-assert-type</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Unclassifiable FAIL: assertion type &#39;custom-check&#39; not recognized
+Missing value in values.yaml</pre>
+      <p><strong>Affected objects:</strong> ConfigMap</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
+    </div>
+  </details>
+</div>
+<div class="rec-card" data-category="chart-fix" data-severity="medium" data-status="fixed">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
+    <span class="rec-title">Add cost-center annotation to Service (TEST)</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> annotations-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Test recommendation for VAL-FIX-005 validation</pre>
+      <p><strong>Affected objects:</strong> Service</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+    </div>
+  </details>
+</div>
+
+<script>
+/* ---- Tab switching ---- */
+var currentTab = 'all';
+
+function switchTab(tab) {
+  currentTab = tab;
+  // Update tab button active state
+  document.querySelectorAll('.rec-tab').forEach(function(btn) {
+    btn.classList.toggle('rec-tab-active', btn.dataset.tab === tab);
+  });
+  // Also sync the status dropdown (removed but still filter)
+  filterRecommendations();
+}
+
+/* ---- Category / severity / tab filter ---- */
+function filterRecommendations() {
+  var catFilter = document.getElementById('rec-filter-category').value;
+  var sevFilter = document.getElementById('rec-filter-severity').value;
+  var statFilter = currentTab;  // tab acts as status filter
+  var cards = document.querySelectorAll('.rec-card');
+  cards.forEach(function(card) {
+    var show = true;
+    if (catFilter !== 'all' && card.dataset.category !== catFilter) show = false;
+    if (sevFilter !== 'all' && card.dataset.severity !== sevFilter) show = false;
+    if (statFilter !== 'all' && card.dataset.status !== statFilter) show = false;
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+/* ---- FIX button handler ---- */
+function handleFix(recId) {
+  var panel = document.getElementById('fix-result-' + recId);
+  if (panel) {
+    panel.style.display = '';
+    panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  }
+}
+
+function copyFixCmd(recId) {
+  var cmd = 'chart-test-swarm fix ' + recId;
+  navigator.clipboard.writeText(cmd).then(function() {
+    var btns = document.querySelectorAll('#fix-result-' + recId + ' .btn-copy');
+    btns.forEach(function(btn) {
+      var orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = orig; }, 1500);
+    });
+  });
+}
+
+/* ---- Dismiss button handler ---- */
+function handleDismiss(recId) {
+  var reason = prompt('Dismiss reason:');
+  if (reason === null) return;
+  // Display a CLI command for the user to run
+  var card = document.querySelector('.rec-card[data-status] button.rec-btn-dismiss[onclick*="' + recId + '"]');
+  if (card) {
+    var actionsDiv = card.closest('.rec-actions');
+    if (actionsDiv && !actionsDiv.querySelector('.dismiss-result')) {
+      var resultDiv = document.createElement('div');
+      resultDiv.className = 'dismiss-result';
+      resultDiv.innerHTML = '<strong>⚠️ Dismiss requested</strong>' +
+        '<p class="hint">Run the following command to dismiss:</p>' +
+        '<code class="fix-cmd">chart-test-swarm dismiss ' + recId + ' --reason "' + reason.replace(/"/g, '\\"') + '"</code>';
+      actionsDiv.appendChild(resultDiv);
+    }
+  }
+}
+</script>
+
+
+</section>
+
+</body>
+</html>

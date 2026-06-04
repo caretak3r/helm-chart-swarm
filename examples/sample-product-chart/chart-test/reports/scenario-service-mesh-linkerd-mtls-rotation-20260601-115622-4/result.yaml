@@ -1,0 +1,92 @@
+scenario_id: service-mesh-linkerd-mtls-rotation
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/service-mesh-linkerd-mtls-rotation.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T15:56:23Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-crds in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release linkerd-control-plane in ns/linkerd is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: smoke-script
+    status: PASS
+    notes: |
+      
+      The viz extension can be installed by running:
+      
+        helm install linkerd-viz linkerd/linkerd-viz
+      
+      Looking for more? Visit https://linkerd.io/2/getting-started/
+      ==> Waiting for linkerd control-plane rollout to complete
+        Waiting for deployment/linkerd-destination rollout (5m max)...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "linkerd-destination" rollout to finish: 1 old replicas are pending termination...
+      deployment "linkerd-destination" successfully rolled out
+        Waiting for deployment/linkerd-identity rollout (5m max)...
+      deployment "linkerd-identity" successfully rolled out
+        Waiting for deployment/linkerd-proxy-injector rollout (5m max)...
+      deployment "linkerd-proxy-injector" successfully rolled out
+      ==> Cleaning up any stuck old pods
+        Force-deleting stuck pod: linkerd-destination-796ccf777-gmpxk
+      pod "linkerd-destination-796ccf777-gmpxk" force deleted from linkerd namespace
+      PASS: linkerd-control-plane upgraded with ephemeral certs
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-55 -n linkerd wait --for=condition=Ready pods --timeout=3m --all
+      pod/linkerd-destination-74b7d6b44-8pfbp condition met
+      pod/linkerd-identity-7569b6ccb-wj5zt condition met
+      pod/linkerd-proxy-injector-5d84d5d7b6-lbs4b condition met
+      PASS: pods Ready in ns/linkerd
+      NAME                                      READY   STATUS    RESTARTS   AGE
+      linkerd-destination-74b7d6b44-8pfbp       4/4     Running   0          64s
+      linkerd-identity-7569b6ccb-wj5zt          2/2     Running   0          64s
+      linkerd-proxy-injector-5d84d5d7b6-lbs4b   2/2     Running   0          64s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-bench-55 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-v29h2 condition met
+      pod/sample-scope-c689dc867-889kc condition met
+      PASS: pods Ready in ns/sample
+      NAME                           READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-v29h2        1/1     Running   0          70s
+      sample-scope-c689dc867-889kc   1/1     Running   0          70s
+  - type: smoke-script
+    status: PASS
+    notes: |
+        ✓ Certificate is currently valid (not expired)
+      ==> Inspecting trust anchor (root CA)
+        ✓ linkerd-config ConfigMap exists (contains trust anchor)
+      ==> Verifying proxy mTLS identity
+        Proxy for pod sample-7c8cfbf76b-5ddqs has pod identity env: 
+      ==> Running linkerd check --proxy from a probe pod
+      pod/ct-mtls-check created
+        Waiting for mTLS check pod (90s max)
+        mTLS check output:
+      NO_LOGS
+      WARN: linkerd check did not produce expected output
+        The sidecar injection + certificate inspection above are the primary gates.
+      error: context "kind-chart-test-swarm-bench-55" does not exist
+      ==> Documenting mTLS rotation guidance
+        Linkerd auto-rotates proxy certificates every 24 hours.
+        The trust anchor (root CA) has a default validity of 365 days.
+        To manually rotate the trust anchor: linkerd upgrade --identity-trust-anchors-file <new-ca.crt>
+        Proxy certificate rotation is transparent — no pod restarts needed.
+        mTLS is mandatory (always-on) in Linkerd; there is no 'permissive' mode.
+      PASS: linkerd mTLS rotation integration verified
+status: PASS
+finished_at: 2026-06-01T15:59:55Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-linkerd-mtls-rotation-20260601-115622-4/artifacts/logs

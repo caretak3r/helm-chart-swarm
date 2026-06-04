@@ -1,0 +1,46 @@
+==> Creating kind cluster 'chart-test-swarm-c3sig' (provider=kind)
+Creating cluster "chart-test-swarm-c3sig" ...
+ • Ensuring node image (kindest/node:v1.30.0) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.30.0) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Waiting ≤ 1m0s for control-plane = Ready ⏳  ...
+panic: runtime error: index out of range [0] with length 0
+
+goroutine 1 [running]:
+sigs.k8s.io/kind/pkg/cluster/internal/create/actions/waitforready.(*Action).Execute.waitForReady.func1()
+	sigs.k8s.io/kind/pkg/cluster/internal/create/actions/waitforready/waitforready.go:122 +0x17c
+sigs.k8s.io/kind/pkg/cluster/internal/create/actions/waitforready.tryUntil({0xc27e96c737ed5a30?, 0x104c10dc78?, 0x105312520?}, 0x140004197a0)
+	sigs.k8s.io/kind/pkg/cluster/internal/create/actions/waitforready/waitforready.go:138 +0x5c
+sigs.k8s.io/kind/pkg/cluster/internal/create/actions/waitforready.waitForReady(...)
+	sigs.k8s.io/kind/pkg/cluster/internal/create/actions/waitforready/waitforready.go:103
+sigs.k8s.io/kind/pkg/cluster/internal/create/actions/waitforready.(*Action).Execute(0x14000010280, 0x14000308180)
+	sigs.k8s.io/kind/pkg/cluster/internal/create/actions/waitforready/waitforready.go:87 +0x164
+sigs.k8s.io/kind/pkg/cluster/internal/create.Cluster({0x104fd5f60, 0x140001aa510}, {0x104fd8538, 0x140001245e8}, 0x14000182730)
+	sigs.k8s.io/kind/pkg/cluster/internal/create/create.go:135 +0x600
+sigs.k8s.io/kind/pkg/cluster.(*Provider).Create(0x1400011cb40, {0x16b3eec43, 0x16}, {0x14000141a48, 0x7, 0x0?})
+	sigs.k8s.io/kind/pkg/cluster/provider.go:195 +0xd4
+sigs.k8s.io/kind/pkg/cmd/kind/create/cluster.runE({0x104fd5f60, 0x140001aa510}, {{0x104fd15b8, 0x1400011a028}, {0x104fd15d8, 0x1400011a030}, {0x104fd15d8, 0x1400011a038}}, 0x140001824b0)
+	sigs.k8s.io/kind/pkg/cmd/kind/create/cluster/createcluster.go:110 +0x2bc
+sigs.k8s.io/kind/pkg/cmd/kind/create/cluster.NewCommand.func1(0x14000192500?, {0x1400014c360?, 0x4?, 0x104e0c325?})
+	sigs.k8s.io/kind/pkg/cmd/kind/create/cluster/createcluster.go:54 +0x58
+github.com/spf13/cobra.(*Command).execute(0x140001b3b08, {0x1400014c300, 0x6, 0x6})
+	github.com/spf13/cobra@v1.8.0/command.go:983 +0x7ec
+github.com/spf13/cobra.(*Command).ExecuteC(0x140001b2008)
+	github.com/spf13/cobra@v1.8.0/command.go:1115 +0x344
+github.com/spf13/cobra.(*Command).Execute(0x104fd5f60?)
+	github.com/spf13/cobra@v1.8.0/command.go:1039 +0x1c
+sigs.k8s.io/kind/cmd/kind/app.Run({0x104fd5f60, 0x140001aa510}, {{0x104fd15b8, 0x1400011a028}, {0x104fd15d8, 0x1400011a030}, {0x104fd15d8, 0x1400011a038}}, {0x14000152010, 0x8, ...})
+	sigs.k8s.io/kind/cmd/kind/app/main.go:53 +0xac
+sigs.k8s.io/kind/cmd/kind/app.Main()
+	sigs.k8s.io/kind/cmd/kind/app/main.go:35 +0xac
+main.main()
+	sigs.k8s.io/kind/main.go:25 +0x1c

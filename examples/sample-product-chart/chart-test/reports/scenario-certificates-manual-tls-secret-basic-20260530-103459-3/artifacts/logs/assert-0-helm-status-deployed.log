@@ -1,0 +1,2 @@
+helm status: deployed
+PASS: release sample in ns/sample is deployed

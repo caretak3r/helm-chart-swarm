@@ -1,0 +1,53 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: GRPCRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"GRPCRoute","metadata":{"annotations":{},"name":"sample-grpc-route","namespace":"sample"},"spec":{"hostnames":["grpc-backend.sample.svc.cluster.local"],"parentRefs":[{"name":"sample-gw","sectionName":"http"}],"rules":[{"backendRefs":[{"name":"grpc-backend","port":9000}]}]}}
+    creationTimestamp: "2026-05-31T22:38:50Z"
+    generation: 1
+    name: sample-grpc-route
+    namespace: sample
+    resourceVersion: "698"
+    uid: d3cf9744-e522-4c55-a9d6-0e5b5720423b
+  spec:
+    hostnames:
+    - grpc-backend.sample.svc.cluster.local
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: grpc-backend
+        port: 9000
+        weight: 1
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-05-31T22:38:51Z"
+        message: Route is accepted
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-05-31T22:38:51Z"
+        message: Resolved all the Object references for the Route
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: gateway.envoyproxy.io/gatewayclass-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+kind: List
+metadata:
+  resourceVersion: ""

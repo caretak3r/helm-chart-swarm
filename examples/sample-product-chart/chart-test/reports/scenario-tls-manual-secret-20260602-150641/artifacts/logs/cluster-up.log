@@ -1,0 +1,161 @@
+==> Creating kind cluster 'chart-test-swarm-default' (provider=kind)
+Creating cluster "chart-test-swarm-default" ...
+ • Ensuring node image (kindest/node:v1.30.0) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.30.0) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✗ Starting control-plane 🕹️
+ERROR: failed to create cluster: failed to init node with kubeadm: command "docker exec --privileged chart-test-swarm-default-control-plane kubeadm init --config=/kind/kubeadm.conf --skip-token-print --v=6" failed with error: exit status 137
+
+Command Output: I0602 19:06:43.280045     143 initconfiguration.go:260] loading configuration from "/kind/kubeadm.conf"
+W0602 19:06:43.280874     143 initconfiguration.go:348] [config] WARNING: Ignored YAML document with GroupVersionKind kubeadm.k8s.io/v1beta3, Kind=JoinConfiguration
+[init] Using Kubernetes version: v1.30.0
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+I0602 19:06:43.284318     143 certs.go:112] creating a new certificate authority for ca
+[certs] Generating "ca" certificate and key
+I0602 19:06:43.322189     143 certs.go:483] validating certificate period for ca certificate
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [chart-test-swarm-default-control-plane kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local localhost] and IPs [10.96.0.1 172.20.0.2 127.0.0.1]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+I0602 19:06:43.552252     143 certs.go:112] creating a new certificate authority for front-proxy-ca
+[certs] Generating "front-proxy-ca" certificate and key
+I0602 19:06:43.586880     143 certs.go:483] validating certificate period for front-proxy-ca certificate
+[certs] Generating "front-proxy-client" certificate and key
+I0602 19:06:43.691545     143 certs.go:112] creating a new certificate authority for etcd-ca
+[certs] Generating "etcd/ca" certificate and key
+I0602 19:06:43.724643     143 certs.go:483] validating certificate period for etcd/ca certificate
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [chart-test-swarm-default-control-plane localhost] and IPs [172.20.0.2 127.0.0.1 ::1]
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [chart-test-swarm-default-control-plane localhost] and IPs [172.20.0.2 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+I0602 19:06:43.995600     143 certs.go:78] creating new public/private key files for signing service account users
+[certs] Generating "sa" key and public key
+I0602 19:06:44.060652     143 kubeconfig.go:112] creating kubeconfig file for admin.conf
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+I0602 19:06:44.348879     143 kubeconfig.go:112] creating kubeconfig file for super-admin.conf
+[kubeconfig] Writing "super-admin.conf" kubeconfig file
+I0602 19:06:44.448565     143 kubeconfig.go:112] creating kubeconfig file for kubelet.conf
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+I0602 19:06:44.537462     143 kubeconfig.go:112] creating kubeconfig file for controller-manager.conf
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+I0602 19:06:44.670272     143 kubeconfig.go:112] creating kubeconfig file for scheduler.conf
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+I0602 19:06:44.838880     143 local.go:65] [etcd] wrote Static Pod manifest for a local etcd member to "/etc/kubernetes/manifests/etcd.yaml"
+I0602 19:06:44.838897     143 manifests.go:103] [control-plane] getting StaticPodSpecs
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+I0602 19:06:44.839004     143 certs.go:483] validating certificate period for CA certificate
+I0602 19:06:44.839038     143 manifests.go:129] [control-plane] adding volume "ca-certs" for component "kube-apiserver"
+I0602 19:06:44.839046     143 manifests.go:129] [control-plane] adding volume "etc-ca-certificates" for component "kube-apiserver"
+I0602 19:06:44.839048     143 manifests.go:129] [control-plane] adding volume "k8s-certs" for component "kube-apiserver"
+I0602 19:06:44.839049     143 manifests.go:129] [control-plane] adding volume "usr-local-share-ca-certificates" for component "kube-apiserver"
+I0602 19:06:44.839050     143 manifests.go:129] [control-plane] adding volume "usr-share-ca-certificates" for component "kube-apiserver"
+I0602 19:06:44.839351     143 manifests.go:158] [control-plane] wrote static Pod manifest for component "kube-apiserver" to "/etc/kubernetes/manifests/kube-apiserver.yaml"
+I0602 19:06:44.839359     143 manifests.go:103] [control-plane] getting StaticPodSpecs
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+I0602 19:06:44.839419     143 manifests.go:129] [control-plane] adding volume "ca-certs" for component "kube-controller-manager"
+I0602 19:06:44.839426     143 manifests.go:129] [control-plane] adding volume "etc-ca-certificates" for component "kube-controller-manager"
+I0602 19:06:44.839427     143 manifests.go:129] [control-plane] adding volume "flexvolume-dir" for component "kube-controller-manager"
+I0602 19:06:44.839428     143 manifests.go:129] [control-plane] adding volume "k8s-certs" for component "kube-controller-manager"
+I0602 19:06:44.839430     143 manifests.go:129] [control-plane] adding volume "kubeconfig" for component "kube-controller-manager"
+I0602 19:06:44.839431     143 manifests.go:129] [control-plane] adding volume "usr-local-share-ca-certificates" for component "kube-controller-manager"
+I0602 19:06:44.839432     143 manifests.go:129] [control-plane] adding volume "usr-share-ca-certificates" for component "kube-controller-manager"
+I0602 19:06:44.839681     143 manifests.go:158] [control-plane] wrote static Pod manifest for component "kube-controller-manager" to "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+I0602 19:06:44.839687     143 manifests.go:103] [control-plane] getting StaticPodSpecs
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+I0602 19:06:44.839752     143 manifests.go:129] [control-plane] adding volume "kubeconfig" for component "kube-scheduler"
+I0602 19:06:44.839889     143 manifests.go:158] [control-plane] wrote static Pod manifest for component "kube-scheduler" to "/etc/kubernetes/manifests/kube-scheduler.yaml"
+I0602 19:06:44.839902     143 kubelet.go:68] Stopping the kubelet
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+I0602 19:06:44.907616     143 loader.go:395] Config loaded from file:  /etc/kubernetes/admin.conf
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests"
+[kubelet-check] Waiting for a healthy kubelet. This can take up to 4m0s
+[kubelet-check] The kubelet is healthy after 2.001451334s
+[api-check] Waiting for a healthy API server. This can take up to 4m0s
+I0602 19:06:46.910338     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/healthz?timeout=10s  in 0 milliseconds
+I0602 19:06:47.411664     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/healthz?timeout=10s  in 0 milliseconds
+I0602 19:06:49.024212     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/healthz?timeout=10s 403 Forbidden in 1111 milliseconds
+I0602 19:06:49.024522     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/healthz?timeout=10s 403 Forbidden in 0 milliseconds
+I0602 19:06:49.415794     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/healthz?timeout=10s 403 Forbidden in 1 milliseconds
+I0602 19:06:49.913839     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/healthz?timeout=10s 403 Forbidden in 2 milliseconds
+I0602 19:06:50.415637     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/healthz?timeout=10s 200 OK in 0 milliseconds
+[api-check] The API server is healthy after 3.506309544s
+I0602 19:06:50.416172     143 loader.go:395] Config loaded from file:  /etc/kubernetes/admin.conf
+I0602 19:06:50.416669     143 loader.go:395] Config loaded from file:  /etc/kubernetes/super-admin.conf
+I0602 19:06:50.416995     143 kubeconfig.go:608] ensuring that the ClusterRoleBinding for the kubeadm:cluster-admins Group exists
+I0602 19:06:50.417719     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s 403 Forbidden in 0 milliseconds
+I0602 19:06:50.417877     143 kubeconfig.go:681] creating the ClusterRoleBinding for the kubeadm:cluster-admins Group by using super-admin.conf
+I0602 19:06:50.426195     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s 201 Created in 8 milliseconds
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+I0602 19:06:50.426519     143 uploadconfig.go:112] [upload-config] Uploading the kubeadm ClusterConfiguration to a ConfigMap
+I0602 19:06:50.430306     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/configmaps?timeout=10s 201 Created in 3 milliseconds
+I0602 19:06:50.434424     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-system/roles?timeout=10s 201 Created in 3 milliseconds
+I0602 19:06:50.437472     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-system/rolebindings?timeout=10s 201 Created in 2 milliseconds
+[kubelet] Creating a ConfigMap "kubelet-config" in namespace kube-system with the configuration for the kubelets in the cluster
+I0602 19:06:50.437608     143 uploadconfig.go:126] [upload-config] Uploading the kubelet component config to a ConfigMap
+I0602 19:06:50.439848     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/configmaps?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:50.441529     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-system/roles?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:50.443515     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-system/rolebindings?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:50.443622     143 uploadconfig.go:131] [upload-config] Preserving the CRISocket information for the control-plane node
+I0602 19:06:50.443647     143 patchnode.go:31] [patchnode] Uploading the CRI Socket information "unix:///run/containerd/containerd.sock" to the Node API object "chart-test-swarm-default-control-plane" as an annotation
+I0602 19:06:50.444780     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/api/v1/nodes/chart-test-swarm-default-control-plane?timeout=10s 200 OK in 1 milliseconds
+I0602 19:06:50.448198     143 round_trippers.go:553] PATCH https://chart-test-swarm-default-control-plane:6443/api/v1/nodes/chart-test-swarm-default-control-plane?timeout=10s 200 OK in 2 milliseconds
+[upload-certs] Skipping phase. Please see --upload-certs
+[mark-control-plane] Marking the node chart-test-swarm-default-control-plane as control-plane by adding the labels: [node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]
+[mark-control-plane] Marking the node chart-test-swarm-default-control-plane as control-plane by adding the taints [node-role.kubernetes.io/control-plane:NoSchedule]
+I0602 19:06:50.449942     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/api/v1/nodes/chart-test-swarm-default-control-plane?timeout=10s 200 OK in 1 milliseconds
+I0602 19:06:50.452957     143 round_trippers.go:553] PATCH https://chart-test-swarm-default-control-plane:6443/api/v1/nodes/chart-test-swarm-default-control-plane?timeout=10s 200 OK in 2 milliseconds
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+I0602 19:06:50.454174     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/secrets/bootstrap-token-abcdef?timeout=10s 404 Not Found in 0 milliseconds
+I0602 19:06:50.455950     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/secrets?timeout=10s 201 Created in 1 milliseconds
+[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to get nodes
+I0602 19:06:50.458001     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterroles?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:50.459526     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s 201 Created in 1 milliseconds
+[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+I0602 19:06:50.461261     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s 201 Created in 1 milliseconds
+[bootstrap-token] Configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+I0602 19:06:50.462633     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s 201 Created in 1 milliseconds
+[bootstrap-token] Configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+I0602 19:06:50.464036     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s 201 Created in 1 milliseconds
+[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+I0602 19:06:50.464116     143 clusterinfo.go:47] [bootstrap-token] loading admin kubeconfig
+I0602 19:06:50.464350     143 loader.go:395] Config loaded from file:  /etc/kubernetes/admin.conf
+I0602 19:06:50.464359     143 clusterinfo.go:58] [bootstrap-token] copying the cluster from admin.conf to the bootstrap kubeconfig
+I0602 19:06:50.464448     143 clusterinfo.go:70] [bootstrap-token] creating/updating ConfigMap in kube-public namespace
+I0602 19:06:50.466363     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-public/configmaps?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:50.466440     143 clusterinfo.go:84] creating the RBAC rules for exposing the cluster-info ConfigMap in the kube-public namespace
+I0602 19:06:50.618522     143 request.go:629] Waited for 152.018791ms due to client-side throttling, not priority and fairness, request: POST:https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-public/roles?timeout=10s
+I0602 19:06:50.621368     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-public/roles?timeout=10s 201 Created in 2 milliseconds
+I0602 19:06:50.818909     143 request.go:629] Waited for 197.192292ms due to client-side throttling, not priority and fairness, request: POST:https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-public/rolebindings?timeout=10s
+I0602 19:06:50.827637     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-public/rolebindings?timeout=10s 201 Created in 8 milliseconds
+I0602 19:06:50.828022     143 kubeletfinalize.go:91] [kubelet-finalize] Assuming that kubelet client certificate rotation is enabled: found "/var/lib/kubelet/pki/kubelet-client-current.pem"
+[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a rotatable kubelet client certificate and key
+I0602 19:06:50.828661     143 loader.go:395] Config loaded from file:  /etc/kubernetes/kubelet.conf
+I0602 19:06:50.829324     143 kubeletfinalize.go:145] [kubelet-finalize] Restarting the kubelet to enable client certificate rotation
+I0602 19:06:50.955695     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/apis/apps/v1/namespaces/kube-system/deployments?labelSelector=k8s-app%3Dkube-dns 200 OK in 2 milliseconds
+I0602 19:06:50.957655     143 round_trippers.go:553] GET https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/configmaps/coredns?timeout=10s 404 Not Found in 1 milliseconds
+I0602 19:06:50.959823     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/configmaps?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:51.019226     143 request.go:629] Waited for 59.092167ms due to client-side throttling, not priority and fairness, request: POST:https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterroles?timeout=10s
+I0602 19:06:51.021214     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterroles?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:51.217813     143 request.go:629] Waited for 196.381375ms due to client-side throttling, not priority and fairness, request: POST:https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s
+I0602 19:06:51.220109     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s 201 Created in 2 milliseconds
+I0602 19:06:51.221940     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/serviceaccounts?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:51.225627     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/apps/v1/namespaces/kube-system/deployments?timeout=10s 201 Created in 3 milliseconds
+I0602 19:06:51.228815     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/services?timeout=10s 201 Created in 2 milliseconds
+[addons] Applied essential addon: CoreDNS
+I0602 19:06:51.232474     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/configmaps?timeout=10s 201 Created in 1 milliseconds
+I0602 19:06:51.235207     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/apps/v1/namespaces/kube-system/daemonsets?timeout=10s 201 Created in 2 milliseconds
+I0602 19:06:51.429042     143 request.go:629] Waited for 193.576ms due to client-side throttling, not priority and fairness, request: POST:https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/serviceaccounts?timeout=10s
+I0602 19:06:51.432553     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/api/v1/namespaces/kube-system/serviceaccounts?timeout=10s 201 Created in 3 milliseconds
+I0602 19:06:51.435062     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?timeout=10s 201 Created in 2 milliseconds
+I0602 19:06:51.619000     143 request.go:629] Waited for 183.797333ms due to client-side throttling, not priority and fairness, request: POST:https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-system/roles?timeout=10s
+I0602 19:06:51.621737     143 round_trippers.go:553] POST https://chart-test-swarm-default-control-plane:6443/apis/rbac.authorization.k8s.io/v1/namespaces/kube-system/roles?timeout=10s 201 Created in 2 milliseconds

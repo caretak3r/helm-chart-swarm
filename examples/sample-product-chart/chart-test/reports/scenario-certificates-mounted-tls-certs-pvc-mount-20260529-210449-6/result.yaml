@@ -1,0 +1,45 @@
+scenario_id: certificates-mounted-tls-certs-pvc-mount
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-mounted-tls-certs-pvc-mount.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-30T01:04:49Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-pvc6 -n sample wait --for=condition=Ready pods --timeout=10m -l app=sample
+      pod/sample-6c94f9dbc-csskh condition met
+      PASS: pods Ready in ns/sample (selector=app=sample)
+      NAME                     READY   STATUS    RESTARTS   AGE
+      sample-6c94f9dbc-csskh   1/1     Running   0          10s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: mountPath=/etc/tls
+      ==> Verifying volume source is persistentVolumeClaim
+      PASS: volume source is persistentVolumeClaim (claim=mounted-tls-pvc)
+      ==> Waiting for pod Ready (3m max)
+      pod/sample-6c94f9dbc-csskh condition met
+      PASS: chart pods Ready
+      ==> Exec stat /etc/tls/tls.crt in pod
+      Defaulted container "app" out of: app, wait-for-tls (init)
+        File: /etc/tls/tls.crt
+        Size: 1176      Blocks: 8          IO Block: 4096   regular file
+      Device: fe01h/65025dInode: 55599       Links: 1
+      Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+      Access: 2026-05-30 01:05:21.962355009 +0000
+      Modify: 2026-05-30 01:05:21.963355009 +0000
+      Change: 2026-05-30 01:05:21.964355009 +0000
+      PASS: tls.crt accessible at /etc/tls
+      ==> Verifying HTTPS reachable from in-cluster curl
+      HTTPS response: 200
+      PASS: HTTPS 200
+      PASS: mounted-tls-certs pvc-mount scenario verified
+status: PASS
+finished_at: 2026-05-30T01:05:31Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-mounted-tls-certs-pvc-mount-20260529-210449-6/artifacts/logs

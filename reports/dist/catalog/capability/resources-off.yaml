@@ -1,0 +1,28 @@
+---
+id: resources-off
+name: "Capability: no populated resources block when unset (OFF)"
+description: >-
+  Renders the product chart with default values (no resources overrides)
+  and asserts that no workload container carries a populated resources
+  block. Since the skywatcher template has no resources block at all,
+  and scope/darkroom are disabled, no populated resources block should
+  appear. This scenario is EXPECTED to PASS — confirming no resources
+  leakage when the knob is off.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+asserts:
+  - type: resources-present
+    namespace: sample
+    source: rendered
+    expect_present: false
+tags: [capability, compliance]
+category: capability
+capability: resource-limits
+tier: capability
+mechanisms: ["capability:resources"]

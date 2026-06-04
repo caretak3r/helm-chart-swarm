@@ -1,0 +1,157 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — run-20260531-230537</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="run-header">
+  <div class="brand">
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— run-20260531-230537</span></h1>
+<nav class="top-nav" aria-label="Main navigation">
+  <a href="../home.html"
+     class="nav-item"
+>Home</a>
+  <a href="../getting-started.html"
+     class="nav-item"
+>Getting Started</a>
+  <a href="../support-matrix.html"
+     class="nav-item"
+>Matrix</a>
+  <a href="../runs.html"
+     class="nav-item nav-active"
+aria-current="page">Runs</a>
+  <a href="../recommendations.html"
+     class="nav-item"
+>Recommendations</a>
+  <a href="../versions.html"
+     class="nav-item"
+>Versions</a>
+</nav>  </div>
+  <dl>
+    <dt>Time (UTC)</dt><dd>2026-05-31T23:05:37Z</dd>
+    <dt>Project</dt><dd>—</dd>
+    <dt>Chart</dt><dd><code>—</code></dd>
+    <dt>Suite</dt><dd>ingress-traefik</dd>
+    <dt>Cluster</dt><dd>kind · k8s <code>v1.30.0</code></dd>
+    <dt>Agents</dt><dd>1</dd>
+  </dl>
+  <div class="counts">
+      <span class="badge status-pass">PASS · 1</span>
+  </div>
+</header>
+
+<section class="mechanism-rollup">
+  <h2>Mechanism coverage</h2>
+  <p class="hint">Worst status across all scenarios that exercise each mechanism. Covers: addons (cert-manager, istio, gatekeeper, …), subchart variants, customer profiles.</p>
+    <div class="mech-group">
+      <h3>addon</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>addon:traefik</code></span>
+            <span class="mech-status status-pass">PASS</span>
+            <span class="mech-caps">
+<a href="#ingress-controllers-traefik-basic">ingress-controllers-traefik-basic</a>            </span>
+          </li>
+      </ul>
+    </div>
+    <div class="mech-group">
+      <h3>ingress</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>ingress:ingressroute</code></span>
+            <span class="mech-status status-pass">PASS</span>
+            <span class="mech-caps">
+<a href="#ingress-controllers-traefik-basic">ingress-controllers-traefik-basic</a>            </span>
+          </li>
+      </ul>
+    </div>
+</section>
+
+<section class="matrix">
+  <h2>Scenarios</h2>
+  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.
+</p>
+
+  <table class="standalone-table">
+    <thead>
+      <tr>
+        <th class="row-head">Scenario</th>
+        <th>Cluster shape</th>
+        <th>Tags</th>
+        <th>Asserts</th>
+        <th>Status</th>
+        <th>Agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th class="row-head">
+          <a href="#ingress-controllers-traefik-basic"><code>ingress-controllers-traefik-basic</code></a>
+<div class="hint">Traefik basic IngressRoute</div>        </th>
+        <td>
+          <code>kind</code>
+<div class="hint">+ traefik</div>        </td>
+        <td><code class="mech-tag">ingress</code></td>
+        <td class="cell status-pass">1/1</td>
+        <td><span class="badge status-pass">PASS</span></td>
+        <td>0</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+</section>
+
+<section class="cap-details">
+  <h2>Scenarios — details</h2>
+  <details id="ingress-controllers-traefik-basic" class="cap" data-status="PASS" data-run-id="run-20260531-230537">
+    <summary>
+      <span class="cap-id"><code>ingress-controllers-traefik-basic</code></span>
+      <span class="cap-name">Traefik basic IngressRoute</span>
+      <span class="badge status-pass">PASS</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Installs Traefik, creates an IngressRoute for the product Service, and verifies HTTP routing.</dd>      <dt>Cluster</dt><dd><code>kind</code>
+      </dd>
+      <dt>Preinstalled</dt><dd><code>traefik</code></dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:traefik</code><code class="mech-tag">ingress:ingressroute</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">ingress</code></dd>
+      <dt>Labels</dt><dd><code>profile=ingress</code> </dd>
+    </dl>
+    <div class="artifact-links">
+      <h5>Artifacts</h5>
+      <ul>
+        <li><a href="ingress-controllers-traefik-basic/artifacts/scenario.yaml" data-artifact="scenario">Scenario YAML</a></li>
+        <li><a href="ingress-controllers-traefik-basic/artifacts/applied-overrides.yaml" data-artifact="overrides">Applied Overrides</a></li>
+        <li class="artifact-fixtures">
+          <span>Fixtures</span>
+          <ul>
+            <li><a href="ingress-controllers-traefik-basic/artifacts/fixtures/test-ingress.yaml" data-artifact="fixture">test-ingress.yaml</a></li>
+          </ul>
+        </li>
+        <li class="artifact-manifests">
+          <span>Manifests</span>
+          <ul>
+            <li><a href="ingress-controllers-traefik-basic/artifacts/manifests/deployment.yaml" data-artifact="manifest">deployment.yaml</a></li>
+            <li><a href="ingress-controllers-traefik-basic/artifacts/manifests/service.yaml" data-artifact="manifest">service.yaml</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="result">
+      <h5>Assertions · agent 0</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>All pods ready</pre></details>        </li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+</body>
+</html>

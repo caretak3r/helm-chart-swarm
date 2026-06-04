@@ -1,0 +1,63 @@
+scenario_id: service-mesh-istio-service-mesh-peer-authentication
+scenario_path: examples/sample-product-chart/chart-test/scenarios/service-mesh-istio-service-mesh-peer-authentication.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T00:03:58Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-vg2rp condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-vg2rp   1/1     Running   0          7s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-6f8587999b-cmc6x condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-6f8587999b-cmc6x   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: in-mesh traffic allowed under PERMISSIVE
+      ==> Phase 2: Updating PeerAuthentication to STRICT
+      peerauthentication.security.istio.io/sample-perm configured
+      ==> Verifying PeerAuthentication STRICT
+      PeerAuthentication mode: STRICT
+      PASS: PeerAuthentication updated to STRICT
+      ==> Waiting 10s for mTLS policy propagation
+      ==> Phase 2a: Non-mesh probe under STRICT (expect rejection)
+      Non-mesh HTTP under STRICT: 000
+      PASS: non-mesh traffic rejected under STRICT (code=000)
+      ==> Phase 2b: In-mesh probe under STRICT (expect 200)
+      In-mesh HTTP under STRICT: 200
+      PASS: in-mesh traffic still works under STRICT via auto-upgraded mTLS
+      ==> Cleaning up pods and control namespace
+      pod "ct-nonmesh" deleted from sample-plain namespace
+      error: timed out waiting for the condition on pods/ct-nonmesh
+      pod "ct-mesh-probe" deleted from sample namespace
+      error: timed out waiting for the condition on pods/ct-mesh-probe
+      namespace "sample-plain" deleted
+      PASS: istio PeerAuthentication lifecycle verified
+status: PASS
+finished_at: 2026-06-01T00:06:11Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-service-mesh-istio-service-mesh-peer-authentication-20260531-200357/artifacts/logs

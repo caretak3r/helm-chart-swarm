@@ -1,0 +1,76 @@
+scenario_id: gateway-api-envoy-gateway-grpcroute
+scenario_path: examples/sample-product-chart/chart-test/scenarios/gateway-api-envoy-gateway-grpcroute.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-31T00:15:11Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release envoy-gateway in ns/envoy-gateway-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n envoy-gateway-system wait --for=condition=Ready pods --timeout=5m -l app.kubernetes.io/name=gateway-helm
+      pod/envoy-gateway-56b969757f-6f57z condition met
+      PASS: pods Ready in ns/envoy-gateway-system (selector=app.kubernetes.io/name=gateway-helm)
+      NAME                             READY   STATUS    RESTARTS   AGE
+      envoy-gateway-56b969757f-6f57z   1/1     Running   0          14s
+  - type: pods-ready
+    status: FAIL
+    notes: |
+      Annotations:      <none>
+      Status:           Running
+      IP:               10.244.0.8
+      IPs:
+        IP:           10.244.0.8
+      Controlled By:  ReplicaSet/sample-7dcd986bd4
+      Containers:
+        app:
+          Container ID:   containerd://e2466653c977047f313de3dcd3a139ae2effd7665e83111e108c74d91951540e
+          Image:          nginx:1.27-alpine
+          Image ID:       docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+          Port:           80/TCP
+          Host Port:      0/TCP
+          State:          Running
+            Started:      Sat, 30 May 2026 20:15:58 -0400
+          Ready:          True
+          Restart Count:  0
+          Liveness:       http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
+          Readiness:      http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
+          Environment:    <none>
+          Mounts:
+            /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-m7dg9 (ro)
+      Conditions:
+        Type                        Status
+        PodReadyToStartContainers   True 
+        Initialized                 True 
+        Ready                       True 
+        ContainersReady             True 
+        PodScheduled                True 
+      Volumes:
+        kube-api-access-m7dg9:
+          Type:                    Projected (a volume that contains injected data from multiple sources)
+          TokenExpirationSeconds:  3607
+          ConfigMapName:           kube-root-ca.crt
+          Optional:                false
+          DownwardAPI:             true
+      QoS Class:                   BestEffort
+      Node-Selectors:              <none>
+      Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                                   node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/envoy-gateway-grpcroute.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for gRPC backend pod Ready (3m max)
+      error: timed out waiting for the condition on pods/grpc-backend-6d76f6dc9c-rb2lz
+status: FAIL
+finished_at: 2026-05-31T00:24:00Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-gateway-api-envoy-gateway-grpcroute-20260530-201511/artifacts/logs

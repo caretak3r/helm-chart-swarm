@@ -1,0 +1,56 @@
+kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+timed out waiting for the condition on pods/sample-6b5fd74c6d-k76kz
+timed out waiting for the condition on pods/sample-6db7f6944-sj9l7
+FAIL: pods not Ready in ns/sample within 5m
+NAME                     READY   STATUS    RESTARTS   AGE
+sample-6db7f6944-sj9l7   1/1     Running   0          5m2s
+    Image ID:       docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+    Ports:          80/TCP, 443/TCP
+    Host Ports:     0/TCP, 0/TCP
+    State:          Running
+      Started:      Fri, 29 May 2026 20:02:22 -0400
+    Ready:          True
+    Restart Count:  0
+    Liveness:       http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:      http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
+    Environment:    <none>
+    Mounts:
+      /etc/nginx/conf.d from nginx-tls-config (ro)
+      /etc/tls from tls (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-482rf (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  tls:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  manual-tls-multisite
+    Optional:    true
+  nginx-tls-config:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      sample-nginx-tls
+    Optional:  false
+  kube-api-access-482rf:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  5m2s  default-scheduler  Successfully assigned sample/sample-6db7f6944-sj9l7 to chart-test-swarm-default-control-plane
+  Normal  Pulled     5m1s  kubelet            spec.initContainers{wait-for-tls}: Container image "busybox:1.36" already present on machine
+  Normal  Created    5m1s  kubelet            spec.initContainers{wait-for-tls}: Created container wait-for-tls
+  Normal  Started    5m1s  kubelet            spec.initContainers{wait-for-tls}: Started container wait-for-tls
+  Normal  Pulled     5m1s  kubelet            spec.containers{app}: Container image "nginx:1.27-alpine" already present on machine
+  Normal  Created    5m1s  kubelet            spec.containers{app}: Created container app
+  Normal  Started    5m1s  kubelet            spec.containers{app}: Started container app

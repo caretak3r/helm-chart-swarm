@@ -1,0 +1,26 @@
+---
+id: rbac-on
+name: "Capability: RBAC objects present when enabled (ON)"
+description: >-
+  Renders the product chart with rbac.create=true and serviceAccount.create=true and asserts a ServiceAccount, Role or ClusterRole, and matching RoleBinding or ClusterRoleBinding are present with correct wiring (roleRef, subjects, serviceAccountName). The sample chart does NOT include RBAC templates — no serviceaccount.yaml, role.yaml, or rolebinding.yaml exists. Setting rbac.create=true has no effect because the chart lacks the templates. This scenario is EXPECTED to FAIL (honest red gap) documenting that the chart lacks rbac.create and serviceAccount.create knobs.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    rbac.create: true
+    serviceAccount.create: true
+asserts:
+  - type: rbac-objects
+    namespace: sample
+    source: rendered
+    expect_present: true
+tags: [capability, compliance]
+category: capability
+capability: rbac-toggle
+tier: capability
+mechanisms: ["capability:rbac"]

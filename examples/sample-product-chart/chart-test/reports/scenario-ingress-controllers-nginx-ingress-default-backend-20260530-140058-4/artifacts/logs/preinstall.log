@@ -1,0 +1,9 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 3 preinstall item(s)
+
+==> [1/3] kind=helm
+    helm: ingress-nginx (ingress-nginx/ingress-nginx @ 4.10.0) in ns/ingress-nginx
+    repo 'ingress-nginx' already exists with URL https://kubernetes.github.io/ingress-nginx (skipping add)
+Release "ingress-nginx" does not exist. Installing it now.
+Error: resource Deployment/ingress-nginx/ingress-nginx-controller not ready. status: InProgress, message: Available: 0/1
+context deadline exceeded

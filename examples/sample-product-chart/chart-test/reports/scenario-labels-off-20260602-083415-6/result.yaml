@@ -1,0 +1,11 @@
+scenario_id: labels-off
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/labels-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T12:34:15Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-labels-off-20260602-083415-6/artifacts/logs/product-install.log
+finished_at: 2026-06-02T12:39:42Z

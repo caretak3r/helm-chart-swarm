@@ -1,0 +1,11 @@
+kubectl --context kind-chart-test-swarm-gk-sync -n gatekeeper-system wait --for=condition=Ready pods --timeout=4m --all
+pod/gatekeeper-audit-65579cd9f9-h44k7 condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-f5knx condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-jdsgv condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-qqrbn condition met
+PASS: pods Ready in ns/gatekeeper-system
+NAME                                             READY   STATUS    RESTARTS   AGE
+gatekeeper-audit-65579cd9f9-h44k7                1/1     Running   0          14s
+gatekeeper-controller-manager-64bbbfbdbb-f5knx   1/1     Running   0          14s
+gatekeeper-controller-manager-64bbbfbdbb-jdsgv   1/1     Running   0          14s
+gatekeeper-controller-manager-64bbbfbdbb-qqrbn   1/1     Running   0          14s

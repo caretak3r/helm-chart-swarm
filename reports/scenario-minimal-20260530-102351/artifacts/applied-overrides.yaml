@@ -1,0 +1,4 @@
+helm_values:
+  {}
+raw_manifest_refs:
+  []

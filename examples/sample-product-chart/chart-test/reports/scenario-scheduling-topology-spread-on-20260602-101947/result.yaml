@@ -1,0 +1,14 @@
+scenario_id: scheduling-topology-spread-on
+scenario_path: examples/sample-product-chart/chart-test/scenarios/capability/scheduling-topology-spread-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-02T14:19:47Z
+provider: kind
+asserts:
+  - type: scheduling-present
+    status: FAIL
+    notes: |
+        Deployment/sample: missing topologySpreadConstraints on pod spec
+      FAIL: 1 scheduling check(s) failed across 1 workload(s)
+status: FAIL
+finished_at: 2026-06-02T14:20:20Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-scheduling-topology-spread-on-20260602-101947/artifacts/logs

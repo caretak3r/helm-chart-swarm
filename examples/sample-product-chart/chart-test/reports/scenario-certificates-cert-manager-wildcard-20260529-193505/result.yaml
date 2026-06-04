@@ -1,0 +1,11 @@
+scenario_id: certificates-cert-manager-wildcard
+scenario_path: examples/sample-product-chart/chart-test/scenarios/certificates-cert-manager-wildcard.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-05-29T23:35:05Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-certificates-cert-manager-wildcard-20260529-193505/artifacts/logs/preinstall.log
+finished_at: 2026-05-29T23:35:50Z

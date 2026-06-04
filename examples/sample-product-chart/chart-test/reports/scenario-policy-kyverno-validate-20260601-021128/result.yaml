@@ -1,0 +1,43 @@
+scenario_id: policy-kyverno-validate
+scenario_path: examples/sample-product-chart/chart-test/scenarios/policy-kyverno-validate.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-01T06:11:28Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n kyverno wait --for=condition=Ready pods --timeout=4m --all
+      pod/kyverno-admission-controller-6c47f7875-trdtd condition met
+      pod/kyverno-background-controller-546f9479c7-lrm9h condition met
+      pod/kyverno-cleanup-controller-5787967fcd-82vxg condition met
+      pod/kyverno-reports-controller-669cbff555-wz5h7 condition met
+      PASS: pods Ready in ns/kyverno
+      NAME                                             READY   STATUS    RESTARTS   AGE
+      kyverno-admission-controller-6c47f7875-trdtd     1/1     Running   0          23s
+      kyverno-background-controller-546f9479c7-lrm9h   1/1     Running   0          23s
+      kyverno-cleanup-controller-5787967fcd-82vxg      1/1     Running   0          23s
+      kyverno-reports-controller-669cbff555-wz5h7      1/1     Running   0          23s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-default -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-pwhkp condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-pwhkp   1/1     Running   0          4s
+  - type: smoke-script
+    status: FAIL
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/kyverno-validate.sh (RELEASE=sample NAMESPACE=sample)
+      === Kyverno: Validate (require-app-label) ===
+      ==> Phase 0: Wait for kyverno admission controller pods Ready
+      error: no matching resources found
+status: FAIL
+finished_at: 2026-06-01T06:12:21Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-policy-kyverno-validate-20260601-021128/artifacts/logs
