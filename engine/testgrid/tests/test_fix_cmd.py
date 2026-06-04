@@ -815,9 +815,7 @@ class TestMissingScenarioFileExits:
         prompt_data["scenario_path"] = "nonexistent-scenario"
         prompt_file.write_text(json.dumps(prompt_data), encoding="utf-8")
 
-        llm_stub = _make_stub_script(
-            tmp_path, "llm-miss", stdout="NO CHANGE"
-        )
+        llm_stub = _make_stub_script(tmp_path, "llm-miss", stdout="NO CHANGE")
 
         with (
             patch.dict(os.environ, {"CTS_LLM_CMD": str(llm_stub)}, clear=False),
