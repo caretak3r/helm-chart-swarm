@@ -138,9 +138,8 @@ itself acts as the LLM that reads fix prompts and applies chart edits.
 
 3.  Tear down the cluster:
     ```bash
-    chart-test-swarm test --keep-cluster  # cluster was already up
+    kind delete cluster --name chart-test-swarm-default
     ```
-    Or manually: `kind delete cluster --name chart-test-swarm-default`.
 
     (Unless the user explicitly asks to keep the cluster for inspection.)
 
