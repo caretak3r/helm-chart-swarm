@@ -617,16 +617,62 @@ class TestFailFixLoop:
         self._setup_fail_then_pass_dispatch(tmp_path, scripts)
         proj = _setup_stub_project(tmp_path, ["scenario-fix.yaml"])
         llm = _setup_llm_mock(tmp_path)
-        env = _build_env(scripts, llm, REPORTS_DIR=str(tmp_path / "reports"))
+        reports_dir = tmp_path / "reports"
+        env = _build_env(scripts, llm, REPORTS_DIR=str(reports_dir))
+
+        # Pre-create recommendations.json so update_recommendation_status
+        # can mark the rec as "fixed" after a successful re-run.
+        rec_id = "rec-scenario-fix"
+        reports_dir.mkdir(parents=True, exist_ok=True)
+        rec_json = reports_dir / "recommendations.json"
+        rec_json.write_text(
+            json.dumps(
+                {
+                    "recommendations": [
+                        {
+                            "id": rec_id,
+                            "scenario_id": "scenario-fix",
+                            "category": "chart-fix",
+                            "severity": "medium",
+                            "title": "Test rec",
+                            "detail": "",
+                            "affected_objects": [],
+                            "status": "open",
+                            "run_refs": [],
+                            "fix_prompt": "",
+                            "created_at": "2026-01-01T00:00:00Z",
+                            "updated_at": "2026-01-01T00:00:00Z",
+                            "dismissed_reason": "",
+                        }
+                    ]
+                },
+                indent=2,
+            )
+        )
 
         result = runner.invoke(
             app,
-            ["test", "--project-dir", str(proj), "--reports-dir", str(tmp_path / "reports")],
+            ["test", "--project-dir", str(proj), "--reports-dir", str(reports_dir)],
             env=env,
         )
         assert result.exit_code == 0
         # LLM should have been called at least once (first run fails)
         assert _get_llm_call_count(tmp_path) >= 1
+
+        # VAL-TEST-007: recommendation must be marked "fixed" after
+        # successful re-run PASS.
+        updated_data = json.loads(rec_json.read_text())
+        updated_rec = next(
+            (r for r in updated_data["recommendations"] if r["id"] == rec_id), None
+        )
+        assert updated_rec is not None, f"Recommendation {rec_id} not found"
+        assert updated_rec["status"] == "fixed", (
+            f"Expected status 'fixed', got '{updated_rec['status']}'"
+        )
+
+        # Summary should show the fixed count
+        assert "Fixed:" in result.stdout
+        assert "1" in result.stdout.split("Fixed:")[1].split("\n")[0]
 
     def test_fix_attempt_bounded_by_max_fix_attempts(self, tmp_path: Path) -> None:
         scripts = _setup_engine_stubs(tmp_path, verify_exit=0)
@@ -1020,25 +1066,25 @@ class TestHistoryJson:
         )
         assert result.exit_code == 0
 
-        # Check if history.json was created somewhere in reports/fixes
+        # VAL-TEST-014: history.json must exist with at least one entry
+        # after a fix attempt. No fallback pass path.
         reports_dir = tmp_path / "reports"
-        fixes_dir = reports_dir / "fixes"
-        if fixes_dir.exists():
-            for rec_dir in fixes_dir.iterdir():
-                hist_file = rec_dir / "history.json"
-                if hist_file.exists():
-                    hist = json.loads(hist_file.read_text())
-                    assert len(hist) >= 1, f"Expected at least 1 entry, got {len(hist)}"
-                    entry = hist[0]
-                    assert "timestamp" in entry
-                    assert "action" in entry
-                    assert entry["action"] == "fix_attempt"
-                    return
+        rec_id = "rec-scenario-history"
+        hist_file = reports_dir / "fixes" / rec_id / "history.json"
 
-        # If we get here, the test still passes since the stub-based loop
-        # may not fully populate history in this test setup.
-        # The real fix_cmd module handles history.json — this test verifies
-        # that the loop correctly enters the fix path.
+        assert hist_file.is_file(), (
+            f"Expected history.json at {hist_file}, but file not found.\n"
+            f"Contents of fixes dir: {list((reports_dir / 'fixes').rglob('*')) if (reports_dir / 'fixes').exists() else 'fixes dir does not exist'}"
+        )
+
+        hist = json.loads(hist_file.read_text())
+        assert len(hist) >= 1, f"Expected at least 1 history entry, got {len(hist)}"
+        entry = hist[0]
+        assert "timestamp" in entry, f"Missing 'timestamp' in history entry: {entry}"
+        assert "action" in entry, f"Missing 'action' in history entry: {entry}"
+        assert entry["action"] == "fix_attempt", (
+            f"Expected action 'fix_attempt', got '{entry['action']}'"
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1098,6 +1144,33 @@ class TestSummary:
         )
         assert result.exit_code == 0, f"Exit: {result.exit_code}, stderr: {result.stderr}"
         stdout = result.stdout
-        # All scenarios pass, so PASS = total, FAIL = 0
-        assert "total" in stdout.lower()
-        assert "pass" in stdout.lower()
+
+        # VAL-TEST-015: verify numeric consistency in the summary.
+        # Extract numbers from the summary block.
+        total_match = re.search(r"Total\s+scenarios:\s+(\d+)", stdout, re.IGNORECASE)
+        pass_match = re.search(r"PASS:\s+(\d+)", stdout)
+        fail_match = re.search(r"FAIL:\s+(\d+)", stdout)
+        fixed_match = re.search(r"Fixed:\s+(\d+)", stdout)
+        open_match = re.search(r"Open:\s+(\d+)", stdout)
+
+        assert total_match is not None, f"No 'Total scenarios' in summary:\n{stdout}"
+        assert pass_match is not None, f"No 'PASS' in summary:\n{stdout}"
+        assert fail_match is not None, f"No 'FAIL' in summary:\n{stdout}"
+        assert fixed_match is not None, f"No 'Fixed' in summary:\n{stdout}"
+        assert open_match is not None, f"No 'Open' in summary:\n{stdout}"
+
+        total = int(total_match.group(1))
+        pass_count = int(pass_match.group(1))
+        fail_count = int(fail_match.group(1))
+        fixed_count = int(fixed_match.group(1))
+        open_count = int(open_match.group(1))
+
+        # Invariant: pass + fail == total
+        assert pass_count + fail_count == total, (
+            f"pass ({pass_count}) + fail ({fail_count}) != total ({total})"
+        )
+
+        # Invariant: fixed + open <= fail
+        assert fixed_count + open_count <= fail_count, (
+            f"fixed ({fixed_count}) + open ({open_count}) > fail ({fail_count})"
+        )

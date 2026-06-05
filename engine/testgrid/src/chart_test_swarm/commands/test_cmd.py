@@ -22,20 +22,18 @@ Loop (observable behavior):
 
 from __future__ import annotations
 
-import json
 import os
 import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import NoReturn
 
 # ── Reused helpers (do not reimplement) ─────────────────────────────────────
-from chart_test_swarm.commands.fix_cmd import (  # noqa: F401
+from chart_test_swarm.commands.fix_cmd import (
     append_history_entry,
     apply_llm_suggestion,
     call_llm,
-    load_fix_prompt,
     update_recommendation_status,
     write_fix_prompt_file,
 )
@@ -216,34 +214,6 @@ def _resolve_reports_dir(explicit: str | None) -> Path:
 # ── Recommendation generation (reuses testgrid.recommendations) ──────────────
 
 
-def _generate_rec_for_scenario(
-    scenario_id: str,
-    reports_dir: Path,
-    chart_path: str = "chart",
-) -> dict[str, Any] | None:
-    """Generate a minimal recommendation dict for a failing scenario.
-
-    This is a lightweight wrapper that creates a recommendation without
-    needing the full testgrid.collect pipeline. Used when we need to
-    call fix_cmd helpers that expect recommendation data.
-    """
-    return {
-        "id": f"rec-{scenario_id.replace('.yaml', '')}",
-        "scenario_id": scenario_id,
-        "category": "chart-fix",
-        "severity": "medium",
-        "title": f"Fix failure for scenario '{scenario_id}'",
-        "detail": "Automatic fix attempt during test loop.",
-        "affected_objects": [],
-        "status": "open",
-        "run_refs": [],
-        "fix_prompt": _generate_fix_prompt_text(scenario_id),
-        "created_at": datetime.now(UTC).isoformat(),
-        "updated_at": datetime.now(UTC).isoformat(),
-        "dismissed_reason": "",
-    }
-
-
 def _generate_fix_prompt_text(scenario_id: str) -> str:
     """Generate a fix prompt text for a scenario failure."""
     return (
@@ -254,34 +224,6 @@ def _generate_fix_prompt_text(scenario_id: str) -> str:
         f"Modify the chart templates to resolve the failure in scenario `{scenario_id}`.\n"
         f"Only modify files under the chart directory.\n"
     )
-
-
-def _write_fix_prompt_for_scenario(
-    reports_dir: Path,
-    scenario_id: str,
-    project_dir: Path,
-) -> Path:
-    """Write a .fix-prompt.json for a scenario failure.
-
-    Returns the path to the fix prompt file.
-    """
-    rec_id = f"rec-{scenario_id.replace('.yaml', '').replace('.yml', '')}"
-    fix_dir = reports_dir / "fixes" / rec_id
-    fix_dir.mkdir(parents=True, exist_ok=True)
-
-    prompt_file = fix_dir / ".fix-prompt.json"
-    data: dict[str, str] = {
-        "recommendation_id": rec_id,
-        "fix_prompt": _generate_fix_prompt_text(scenario_id),
-        "scenario_path": scenario_id,
-        "chart_path": "chart",
-        "created_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-    }
-    prompt_file.write_text(
-        json.dumps(data, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-    return prompt_file
 
 
 # ── Test loop entry point ────────────────────────────────────────────────────
@@ -375,7 +317,7 @@ def run_test_loop(  # noqa: PLR0913, PLR0915
     )
 
     # ── 6. Per-scenario loop (in try/finally for teardown) ───────────────
-    cluster_up = True
+    cluster_up = True  # cluster-up.sh succeeded
     try:
         for scenario in scenarios:
             scenario_index += 1
@@ -406,10 +348,14 @@ def run_test_loop(  # noqa: PLR0913, PLR0915
                     print(f"  ✗ FAIL — entering fix sub-loop (max {max_fix_attempts} attempts)")
 
                     # Prepare fix prompt
-                    _write_fix_prompt_for_scenario(
-                        resolved_reports, scenario_name, resolved_project
-                    )
                     rec_id = f"rec-{scenario_name}"
+                    write_fix_prompt_file(
+                        reports_dir=resolved_reports,
+                        rec_id=rec_id,
+                        rec_data={"fix_prompt": _generate_fix_prompt_text(scenario_name)},
+                        scenario_path=scenario_name,
+                        chart_path="chart",
+                    )
 
                     chart_dir = resolved_project / "chart"
 
@@ -468,11 +414,15 @@ def run_test_loop(  # noqa: PLR0913, PLR0915
                             fixed += 1
                             failed -= 1  # WAS a failure, now fixed
                             # Update recommendation status
-                            _update_rec_status(resolved_reports, rec_id, "fixed")
+                            update_recommendation_status(
+                                resolved_reports, rec_id, "PASS"
+                            )
                             break
                         else:
                             print("    ✗ Re-run still FAIL")
-                            _update_rec_status(resolved_reports, rec_id, "open")
+                            update_recommendation_status(
+                                resolved_reports, rec_id, "FAIL"
+                            )
 
                     if not scenario_fixed and not no_fix:
                         open_count += 1
@@ -519,26 +469,6 @@ def run_test_loop(  # noqa: PLR0913, PLR0915
     print(f"  Open:               {open_count}")
     print(f"  Dashboard:          {dashboard_path}")
     print("=" * 60)
-
-
-def _update_rec_status(reports_dir: Path, rec_id: str, status: str) -> None:
-    """Update a recommendation's status in recommendations.json (best-effort)."""
-    rec_json = reports_dir / "recommendations.json"
-    if not rec_json.is_file():
-        return
-    try:
-        data = json.loads(rec_json.read_text(encoding="utf-8"))
-        for rec in data.get("recommendations", []):
-            if rec.get("id") == rec_id:
-                rec["status"] = status
-                rec["updated_at"] = datetime.now(UTC).isoformat()
-                rec_json.write_text(
-                    json.dumps(data, indent=2, ensure_ascii=False),
-                    encoding="utf-8",
-                )
-                return
-    except Exception as exc:
-        _debug(f"Failed to update rec status: {exc}")
 
 
 def _filter_by_suite_tag(
