@@ -797,3 +797,238 @@ def test_prereq_status_with_display_name() -> None:
     )
     assert status.name == "kind"
     assert status.display_name == "Kubernetes (kind/k3d)"
+
+
+# -----------------------------------------------------------------------------
+# One-command fastest-path section tests (VAL-GSU-001..003)
+# -----------------------------------------------------------------------------
+
+
+class TestOneCommandSection:
+    """VAL-GSU-001: One-command fastest-path section present."""
+
+    def test_one_command_section_visible(self, tmp_path: Path) -> None:
+        """One-command section heading is visible on the page."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        assert "Fastest Path" in html
+        assert "One Command" in html
+
+    def test_section_describes_what_command_does(self, tmp_path: Path) -> None:
+        """The one-command section describes the single command's capabilities."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        assert "verify" in html.lower() or "verifies" in html.lower()
+        assert "cluster" in html.lower()
+        assert "support matrix" in html.lower() or "matrix" in html.lower()
+        assert "dashboard" in html.lower()
+        assert "auto-fix" in html.lower() or "auto-fixes" in html.lower()
+
+    def test_section_surfaces_helm_swarm_test_skill(self, tmp_path: Path) -> None:
+        """The section mentions /helm-swarm-test Droid skill."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        assert "/helm-swarm-test" in html
+
+    def test_section_surfaces_chart_test_swarm_test_cli(self, tmp_path: Path) -> None:
+        """The section mentions chart-test-swarm test CLI."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        assert "chart-test-swarm test" in html
+
+    def test_one_command_section_appears_before_workflow(self, tmp_path: Path) -> None:
+        """One-command section appears before the step-by-step workflow."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        fp_pos = html.index("Fastest Path")
+        wf_pos = html.index("Workflow")
+        assert fp_pos < wf_pos, "One-command section should appear before Workflow section"
+
+
+class TestOneCommandCopyable:
+    """VAL-GSU-002: One-command section shows copy-able command."""
+
+    def test_command_in_code_block(self, tmp_path: Path) -> None:
+        """The chart-test-swarm test command is in a code block."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        # The command should appear inside a code block within the one-command section
+        assert "<code>chart-test-swarm test</code>" in html
+
+    def test_command_has_copy_button(self, tmp_path: Path) -> None:
+        """The command in the one-command section has a copy button."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        # The one-command card must contain a copy button
+        assert 'class="btn-copy"' in html
+
+    def test_command_uses_same_copy_pattern_as_steps(self, tmp_path: Path) -> None:
+        """The one-command section uses the same copy affordance pattern as steps."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        # Both use copyToClipboard function
+        assert "copyToClipboard" in html
+
+
+class TestOneCommandNoRegression:
+    """VAL-GSU-003: Existing Getting Started content remains intact."""
+
+    def test_prerequisites_section_unchanged(self, tmp_path: Path) -> None:
+        """Prerequisites section still renders correctly."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        assert "Prerequisites" in html
+        assert "Kubernetes (kind/k3d)" in html
+        assert "kubectl" in html
+        assert "helm" in html
+
+    def test_cluster_status_unchanged(self, tmp_path: Path) -> None:
+        """Cluster status section still renders correctly."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        assert "Cluster Status" in html
+        # running status should be shown
+        assert "Running" in html
+
+    def test_all_six_steps_unchanged(self, tmp_path: Path) -> None:
+        """All 6 numbered steps still present."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        for i in range(1, 7):
+            assert str(i) in html, f"Step {i} not found"
+        assert "make verify" in html
+        assert "make up" in html
+        assert "chart-test-swarm run" in html
+        assert "runs.html" in html
+        assert "recommendations.html" in html
+        assert "make down" in html
+
+    def test_nav_bar_still_present(self, tmp_path: Path) -> None:
+        """Nav bar still renders correctly."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        assert "<nav" in html
+        assert 'href="getting-started.html"' in html
+
+    def test_copy_functionality_still_present(self, tmp_path: Path) -> None:
+        """The copyToClipboard JavaScript function still exists."""
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
+        render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
+        html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
+        assert "function copyToClipboard" in html

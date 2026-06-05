@@ -60,6 +60,32 @@
   </div>
 </section>
 
+<!-- Fastest Path: One Command -->
+<section class="gs-section">
+  <h2>Fastest Path: One Command</h2>
+  <p class="hint">
+    Want to jump straight in? The <code>/helm-swarm-test</code> Droid skill wraps
+    <code>chart-test-swarm test</code> into a single command that verifies
+    prerequisites, spins up the cluster, runs the full support matrix, auto-fixes
+    failures, and updates the dashboard — all in one shot.
+  </p>
+  <div class="step-card one-command-card">
+    <div class="step-content">
+      <p>Run the agentic full-matrix test loop:</p>
+      <div class="code-block">
+        <pre><code>chart-test-swarm test</code></pre>
+        <button class="btn-copy" onclick="copyToClipboard(this)" title="Copy to clipboard">Copy</button>
+      </div>
+      <p class="hint">
+        Use <code>/helm-swarm-test</code> for interactive mode or
+        <code>chart-test-swarm test</code> for headless/CI.  See
+        <code>chart-test-swarm test --help</code> for all options including
+        <code>--no-fix</code>, <code>--suite</code>, and <code>--keep-cluster</code>.
+      </p>
+    </div>
+  </div>
+</section>
+
 <!-- Step-by-Step Workflow -->
 <section class="gs-section">
   <h2>Workflow</h2>
