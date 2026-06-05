@@ -662,9 +662,7 @@ class TestFailFixLoop:
         # VAL-TEST-007: recommendation must be marked "fixed" after
         # successful re-run PASS.
         updated_data = json.loads(rec_json.read_text())
-        updated_rec = next(
-            (r for r in updated_data["recommendations"] if r["id"] == rec_id), None
-        )
+        updated_rec = next((r for r in updated_data["recommendations"] if r["id"] == rec_id), None)
         assert updated_rec is not None, f"Recommendation {rec_id} not found"
         assert updated_rec["status"] == "fixed", (
             f"Expected status 'fixed', got '{updated_rec['status']}'"
