@@ -331,8 +331,7 @@ def run_test_loop(  # noqa: PLR0913, PLR0915
     )
     if verify_rc != 0:
         _die(
-            f"verify.sh exited with code {verify_rc}.\n"
-            f"Fix the issues above and re-run.",
+            f"verify.sh exited with code {verify_rc}.\nFix the issues above and re-run.",
             code=verify_rc,
         )
 

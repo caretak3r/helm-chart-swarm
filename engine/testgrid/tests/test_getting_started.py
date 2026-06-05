@@ -67,7 +67,9 @@ class TestDetectPrerequisites:
                 f"/path/to/{cmd}" if cmd in ["kind", "kubectl"] else None
             )
             prereqs = detect_prerequisites()
-            assert mock_which.call_count >= 7  # At least 7 tools checked (kind, k3d, kubectl, helm, yq, jq, uv)
+            assert (
+                mock_which.call_count >= 7
+            )  # At least 7 tools checked (kind, k3d, kubectl, helm, yq, jq, uv)
             mock_which.assert_any_call("kind")
             mock_which.assert_any_call("k3d")
             mock_which.assert_any_call("kubectl")
@@ -166,7 +168,15 @@ class TestRenderGettingStarted:
 
     def test_html_is_valid_html(self, tmp_path: Path) -> None:
         """getting-started.html is valid HTML with proper structure."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "<!DOCTYPE html>" in html
@@ -176,7 +186,15 @@ class TestRenderGettingStarted:
 
     def test_copies_style_css(self, tmp_path: Path) -> None:
         """render_getting_started copies style.css alongside HTML."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         assert (tmp_path / "style.css").is_file()
 
@@ -194,7 +212,15 @@ class TestGettingStartedPrerequisitesSection:
 
     def test_shows_all_required_tools(self, tmp_path: Path) -> None:
         """Page lists all required tools: kind, k3d, kubectl, helm, yq, jq, uv."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # Check for Kubernetes (kind/k3d) display label
@@ -223,7 +249,15 @@ class TestGettingStartedPrerequisitesSection:
 
     def test_shows_red_x_for_missing(self, tmp_path: Path) -> None:
         """Missing tools show red X."""
-        prereqs = {"kind": False, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": False,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # Check for X indicators
@@ -231,7 +265,15 @@ class TestGettingStartedPrerequisitesSection:
 
     def test_shows_install_hints_for_missing(self, tmp_path: Path) -> None:
         """Missing tools show install hints."""
-        prereqs = {"kind": False, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": False,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         hints = {"kind": "brew install kind"}
         render_getting_started(prereqs=prereqs, hints=hints, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
@@ -239,7 +281,15 @@ class TestGettingStartedPrerequisitesSection:
 
     def test_k3d_appears_in_prerequisites(self, tmp_path: Path) -> None:
         """k3d is detected and appears in the prerequisites section."""
-        prereqs = {"kind": False, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": False,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # k3d should appear with the combined display name
@@ -247,16 +297,34 @@ class TestGettingStartedPrerequisitesSection:
 
     def test_kind_and_k3d_share_display_name(self, tmp_path: Path) -> None:
         """Both kind and k3d show 'Kubernetes (kind/k3d)' as the display label."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # Should have two occurrences of "Kubernetes (kind/k3d)" - one for kind, one for k3d
         display_name_count = html.count("Kubernetes (kind/k3d)")
-        assert display_name_count >= 2, f"Expected at least 2 occurrences of 'Kubernetes (kind/k3d)', found {display_name_count}"
+        assert display_name_count >= 2, (
+            f"Expected at least 2 occurrences of 'Kubernetes (kind/k3d)', found {display_name_count}"
+        )
 
     def test_seven_tools_detected(self, tmp_path: Path) -> None:
         """All 7 tools (kind, k3d, kubectl, helm, yq, jq, uv) are detected."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # Count the prerequisite items
@@ -270,14 +338,30 @@ class TestGettingStartedClusterSection:
 
     def test_shows_running_status(self, tmp_path: Path) -> None:
         """When cluster is running, page shows 'running' status."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "running" in html.lower()
 
     def test_shows_not_running_status(self, tmp_path: Path) -> None:
         """When cluster is not running, page shows 'not running' status."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=False, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "not running" in html.lower() or "stopped" in html.lower()
@@ -288,7 +372,15 @@ class TestGettingStartedStepsSection:
 
     def test_shows_all_six_steps(self, tmp_path: Path) -> None:
         """Page shows all 6 numbered steps."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # Check for numbered steps
@@ -297,7 +389,15 @@ class TestGettingStartedStepsSection:
 
     def test_step_1_is_verify(self, tmp_path: Path) -> None:
         """Step 1 is 'Verify' with make verify command."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "verify" in html.lower()
@@ -305,7 +405,15 @@ class TestGettingStartedStepsSection:
 
     def test_step_2_is_create_cluster(self, tmp_path: Path) -> None:
         """Step 2 is 'Create cluster' with make up command."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "cluster" in html.lower()
@@ -313,7 +421,15 @@ class TestGettingStartedStepsSection:
 
     def test_step_3_is_run_scenarios(self, tmp_path: Path) -> None:
         """Step 3 is 'Run scenarios' with chart-test-swarm run command."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "run" in html.lower() or "scenario" in html.lower()
@@ -321,7 +437,15 @@ class TestGettingStartedStepsSection:
 
     def test_step_4_is_view_results(self, tmp_path: Path) -> None:
         """Step 4 is 'View results' with link to runs.html."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "view" in html.lower() or "result" in html.lower()
@@ -329,7 +453,15 @@ class TestGettingStartedStepsSection:
 
     def test_step_5_is_fix_failures(self, tmp_path: Path) -> None:
         """Step 5 is 'Fix failures' with link to recommendations.html."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "fix" in html.lower() or "failure" in html.lower()
@@ -337,7 +469,15 @@ class TestGettingStartedStepsSection:
 
     def test_step_6_is_teardown(self, tmp_path: Path) -> None:
         """Step 6 is 'Tear down' with make down command."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "tear" in html.lower() or "down" in html.lower()
@@ -349,14 +489,30 @@ class TestGettingStartedCopyableCommands:
 
     def test_commands_in_code_blocks(self, tmp_path: Path) -> None:
         """Commands are wrapped in code/pre blocks."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "<code>" in html or "<pre>" in html
 
     def test_has_copy_buttons(self, tmp_path: Path) -> None:
         """Commands have copy buttons."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # Check for copy button indicators
@@ -364,7 +520,15 @@ class TestGettingStartedCopyableCommands:
 
     def test_copyable_commands_are_selectable(self, tmp_path: Path) -> None:
         """Command text is user-selectable."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "user-select" in html or "select-all" in html or "pre" in html
@@ -375,28 +539,60 @@ class TestGettingStartedNavBar:
 
     def test_nav_bar_present(self, tmp_path: Path) -> None:
         """getting-started.html includes the shared nav bar."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "<nav" in html
 
     def test_getting_started_link_in_nav(self, tmp_path: Path) -> None:
         """Nav bar includes link to getting-started.html."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert 'href="getting-started.html"' in html or "Getting Started" in html
 
     def test_active_page_highlighted(self, tmp_path: Path) -> None:
         """Getting Started page has active state in nav."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert 'aria-current="page"' in html or "nav-active" in html
 
     def test_all_five_nav_links(self, tmp_path: Path) -> None:
         """Nav bar includes all 5 links: Home, Matrix, Runs, Recommendations, Versions."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "home.html" in html
@@ -497,7 +693,15 @@ class TestGettingStartedStepLinks:
 
     def test_step_4_links_to_runs_html(self, tmp_path: Path) -> None:
         """Step 4 (View results) links to runs.html."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # Find Step 4 section and check for runs.html link
@@ -505,7 +709,15 @@ class TestGettingStartedStepLinks:
 
     def test_step_5_links_to_recommendations_html(self, tmp_path: Path) -> None:
         """Step 5 (Fix failures) links to recommendations.html."""
-        prereqs = {"kind": True, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": True,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         assert "recommendations.html" in html
@@ -537,7 +749,15 @@ class TestToolStatusStyling:
 
     def test_missing_tool_has_red_class(self, tmp_path: Path) -> None:
         """Missing tools have CSS class for red styling."""
-        prereqs = {"kind": False, "k3d": True, "kubectl": True, "helm": True, "yq": True, "jq": True, "uv": True}
+        prereqs = {
+            "kind": False,
+            "k3d": True,
+            "kubectl": True,
+            "helm": True,
+            "yq": True,
+            "jq": True,
+            "uv": True,
+        }
         render_getting_started(prereqs=prereqs, cluster_running=True, out_dir=tmp_path)
         html = (tmp_path / "getting-started.html").read_text(encoding="utf-8")
         # Look for missing/fail class
