@@ -673,6 +673,109 @@ def fix_cmd_wrapper(
     )
 
 
+# -- test (F-HST-1 — agentic full-matrix test loop) -----------------------------
+
+
+@app.command(
+    name="test",
+    help="Run the full agentic test matrix loop: verify → cluster up → discover "
+    "→ run scenarios → auto-fix FAILs → progressive dashboard rebuild → "
+    "summary → teardown.",
+)
+def test_cmd(
+    suite: str | None = typer.Option(
+        None,
+        "--suite",
+        metavar="NAME",
+        help="Suite name to filter scenarios (default: all).",
+    ),
+    max_fix_attempts: int = typer.Option(
+        2,
+        "--max-fix-attempts",
+        metavar="N",
+        help="Maximum LLM fix attempts per failing scenario (default: 2).",
+    ),
+    no_fix: bool = typer.Option(
+        False,
+        "--no-fix",
+        help="Run and report only; never invoke the fix workflow or LLM.",
+    ),
+    rebuild_interval: int = typer.Option(
+        5,
+        "--rebuild-interval",
+        metavar="N",
+        help="Rebuild the dashboard every N scenarios (default: 5).",
+    ),
+    parallelism: int = typer.Option(
+        1,
+        "--parallelism",
+        "-p",
+        metavar="N",
+        help="Concurrent scenarios for plain runs (default: 1).",
+    ),
+    cluster_name: str = typer.Option(
+        "chart-test-swarm-default",
+        "--cluster-name",
+        metavar="NAME",
+        help="Cluster name (must match ^chart-test-swarm-[a-z0-9-]+$). "
+        "Default: chart-test-swarm-default.",
+    ),
+    backend: str = typer.Option(
+        "kind",
+        "--backend",
+        "-b",
+        metavar="PROVIDER",
+        help="Cluster provider: kind|minikube|k3d (default: kind).",
+    ),
+    keep_cluster: bool = typer.Option(
+        False,
+        "--keep-cluster",
+        help="Skip cluster teardown at the end (leave cluster for inspection).",
+    ),
+    project_dir: str | None = typer.Option(
+        None,
+        "--project-dir",
+        metavar="DIR",
+        help="Root of the consumer chart project (default: PROJECT_DIR env or cwd).",
+    ),
+    reports_dir: str | None = typer.Option(
+        None,
+        "--reports-dir",
+        metavar="DIR",
+        help="Override the reports root directory.",
+    ),
+) -> None:
+    """Run the full agentic test matrix loop.
+
+    Orchestrates the complete lifecycle: verify prerequisites,
+    bring up a cluster, discover and run all support-matrix scenarios,
+    automatically fix failures via LLM (bounded attempts), progressively
+    rebuild the dashboard, print a summary, and tear down the cluster.
+
+    \b
+    Examples:
+        chart-test-swarm test
+        chart-test-swarm test --project-dir ./my-chart
+        chart-test-swarm test --suite curated-live --no-fix
+        chart-test-swarm test --max-fix-attempts 3 --rebuild-interval 3
+        chart-test-swarm test --cluster-name chart-test-swarm-test1 --keep-cluster
+    """
+    from chart_test_swarm.commands.test_cmd import run_test_loop as _test_impl
+
+    _test_impl(
+        suite=suite,
+        max_fix_attempts=max_fix_attempts,
+        no_fix=no_fix,
+        rebuild_interval=rebuild_interval,
+        parallelism=parallelism,
+        cluster_name=cluster_name,
+        backend=backend,
+        keep_cluster=keep_cluster,
+        project_dir=project_dir,
+        reports_dir=reports_dir,
+    )
+
+
 # -- register sub-apps -------------------------------------------------------
 
 app.add_typer(list_app, name="list")
