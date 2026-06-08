@@ -14,15 +14,28 @@ SVC_PORT=80
 kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }
 
 echo "==> Locating Cilium per-Ingress Service (dedicated mode)"
-# Cilium ingress controller in dedicated loadbalancerMode creates a per-Ingress
-# Service named cilium-ingress-<ingress-name> in the same namespace as the Ingress.
-INGRESS_SVC=$(kctl -n "${NS}" get svc -o name 2>/dev/null | grep "cilium-ingress-${RELEASE}" | head -1 || echo "")
+# Cilium creates the per-Ingress Service asynchronously after the Ingress
+# resource is created. Poll with bounded retries to avoid false failures
+# on slow clusters.
+MAX_ATTEMPTS=30
+SLEEP_SECONDS=2
+INGRESS_SVC=""
+for i in $(seq 1 "${MAX_ATTEMPTS}"); do
+  # Primary search: specific per-Ingress Service for this Ingress
+  INGRESS_SVC=$(kctl -n "${NS}" get svc -o name 2>/dev/null | grep "cilium-ingress-${RELEASE}" | head -1 || echo "")
+  if [ -z "${INGRESS_SVC}" ]; then
+    # Fallback: search for any cilium-ingress service in the namespace
+    INGRESS_SVC=$(kctl -n "${NS}" get svc -o name 2>/dev/null | grep "cilium-ingress" | head -1 || echo "")
+  fi
+  if [ -n "${INGRESS_SVC}" ]; then
+    break
+  fi
+  if [ "${i}" -lt "${MAX_ATTEMPTS}" ]; then
+    sleep "${SLEEP_SECONDS}"
+  fi
+done
 if [ -z "${INGRESS_SVC}" ]; then
-  # Fallback: search for any cilium-ingress service in the namespace
-  INGRESS_SVC=$(kctl -n "${NS}" get svc -o name 2>/dev/null | grep "cilium-ingress" | head -1 || echo "")
-fi
-if [ -z "${INGRESS_SVC}" ]; then
-  echo "FAIL: No Cilium per-Ingress Service found in namespace ${NS}" >&2
+  echo "FAIL: No Cilium per-Ingress Service found in namespace ${NS} after ${MAX_ATTEMPTS} attempts" >&2
   echo "Available services:" >&2
   kctl -n "${NS}" get svc >&2
   exit 1
