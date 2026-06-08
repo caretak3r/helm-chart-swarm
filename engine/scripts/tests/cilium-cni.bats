@@ -594,6 +594,41 @@ _read_cni_version
   true
 }
 
+@test "bundled scenario schema is identical to canonical (byte-level)" {
+  # Guards against future drift — the two schema copies must stay in sync.
+  # If this test fails, copy canonical schema to bundled:
+  #   cp engine/templates/scenario.schema.json engine/skills/chart-test-swarm/engine/templates/scenario.schema.json
+  diff "$CANONICAL_SCHEMA" "$BUNDLED_SCHEMA" || {
+    echo "ERROR: scenario schema copies have diverged!" >&2
+    echo "  Canonical: $CANONICAL_SCHEMA" >&2
+    echo "  Bundled:   $BUNDLED_SCHEMA" >&2
+    echo "  To fix: cp $CANONICAL_SCHEMA $BUNDLED_SCHEMA" >&2
+    false
+  }
+}
+
+@test "all existing scenarios validate against bundled schema (no regressions)" {
+  if ! command -v check-jsonschema >/dev/null 2>&1; then
+    skip "check-jsonschema not installed"
+  fi
+
+  local scenarios_dir="$ROOT_DIR/examples/sample-product-chart/chart-test/scenarios"
+  [ -d "$scenarios_dir" ] || skip "scenarios dir not found: $scenarios_dir"
+
+  local failures=0
+  while IFS= read -r -d '' f; do
+    run check-jsonschema --schemafile "$BUNDLED_SCHEMA" "$f"
+    if [ "$status" -ne 0 ]; then
+      echo "FAIL: $f" >&2
+      failures=$((failures + 1))
+    fi
+  done < <(find "$scenarios_dir" -name "*.yaml" -print0 2>/dev/null)
+
+  [ "$failures" -eq 0 ] || {
+    echo "ERROR: $failures scenario(s) failed validation against bundled schema" >&2; false
+  }
+}
+
 # ---------------------------------------------------------------------------
 # Group 7: Functional tests with stubbed tools (VAL-CILIUM-003, VAL-CILIUM-005)
 # ---------------------------------------------------------------------------

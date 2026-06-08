@@ -5,6 +5,11 @@
   "description": "One customer-shaped cluster + product chart + assertions. Path fields are resolved relative to the consumer project root (the dir containing chart-test-swarm.yaml).",
   "type": "object",
   "required": ["id", "cluster", "product", "asserts"],
+  "not": {
+    "type": "object",
+    "required": ["capability", "integration"],
+    "description": "capability and integration are mutually exclusive — a scenario must have one or neither, never both."
+  },
   "additionalProperties": false,
   "properties": {
     "id":   { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
@@ -19,7 +24,7 @@
       "required": ["provider"],
       "additionalProperties": false,
       "properties": {
-        "provider":     { "enum": ["kind", "k3d", "eks", "gke", "aks", "vcluster"] },
+        "provider":     { "enum": ["kind", "minikube", "k3d", "eks", "gke", "aks", "vcluster"] },
         "k8s_version":  { "type": "string" },
         "config":       { "type": "string", "description": "Path to provider-specific config (e.g. kind --config yaml). Relative to project root." },
         "preinstall":   {
@@ -70,6 +75,22 @@
       "items": { "type": "string" },
       "description": "Suite membership filter (pr-subset, nightly, customer-replica, ...)."
     },
+    "category": {
+      "type": "string",
+      "description": "Library taxonomy category (e.g. networking, gateway-api, service-mesh, certificates, storage, capability, cloud-native). Drives catalog grouping and support-matrix placement."
+    },
+    "capability": {
+      "type": "string",
+      "description": "Chart capability/compliance test name (e.g. label-all-objects, scheme-enforced). Mutually exclusive with 'integration' at the scenario level — one or the other (or neither)."
+    },
+    "integration": {
+      "type": "string",
+      "description": "Integration target name (e.g. cert-manager, traefik, istio). Mutually exclusive with 'capability' at the scenario level — one or the other (or neither)."
+    },
+    "tier": {
+      "enum": ["live", "authored-only", "capability"],
+      "description": "Execution tier. live: runs on local kind. authored-only: cloud-specific, off by default. capability: addon-less render+deploy + manifest introspection."
+    },
     "mechanisms": {
       "type": "array",
       "items": { "type": "string" },
@@ -90,36 +111,63 @@
   "$defs": {
     "preinstall_item": {
       "type": "object",
-      "required": ["chart", "release", "namespace"],
-      "additionalProperties": false,
       "properties": {
-        "chart":     { "type": "string", "description": "Helm chart ref. Either 'repo/name' (needs prior helm repo add) or OCI ref." },
-        "version":   { "type": "string" },
-        "release":   { "type": "string" },
-        "namespace": { "type": "string" },
-        "values":    { "type": ["string", "object"], "description": "Path to values.yaml or inline object. Path is relative to project root." },
-        "repo": {
+        "kind": {
+          "enum": ["helm", "raw_manifest"],
+          "default": "helm",
+          "description": "Preinstall item kind. Defaults to 'helm' for backward compatibility with pre-F1.2 scenarios that omit this field."
+        }
+      },
+      "oneOf": [
+        {
+          "title": "Helm chart preinstall",
+          "description": "Install a Helm chart before the product chart. This is the default kind when 'kind' is omitted.",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
-            "name": { "type": "string" },
-            "url":  { "type": "string", "format": "uri" }
+            "kind":          { "enum": ["helm"] },
+            "chart":         { "type": "string", "description": "Helm chart ref. Either 'repo/name' (needs prior helm repo add) or OCI ref (oci://...)." },
+            "version":       { "type": "string" },
+            "release":       { "type": "string" },
+            "namespace":     { "type": "string" },
+            "values":        { "type": ["string", "object"], "description": "Path to values.yaml or inline object. Path is relative to project root." },
+            "repo": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "url":  { "type": "string", "format": "uri" }
+              },
+              "required": ["name", "url"],
+              "description": "If set, runs 'helm repo add <name> <url>' before install."
+            },
+            "wait": {
+              "enum": ["none", "helm-deployed", "pods-ready"],
+              "default": "pods-ready"
+            },
+            "wait_timeout": { "type": "string", "default": "5m" }
           },
-          "required": ["name", "url"],
-          "description": "If set, runs 'helm repo add <name> <url>' before install."
+          "required": ["chart", "release", "namespace"],
+          "additionalProperties": false
         },
-        "wait": {
-          "enum": ["none", "helm-deployed", "pods-ready"],
-          "default": "pods-ready"
-        },
-        "wait_timeout": { "type": "string", "default": "5m" }
-      }
+        {
+          "title": "Raw manifest preinstall",
+          "description": "Apply a raw Kubernetes manifest via kubectl apply -f before the product chart.",
+          "type": "object",
+          "properties": {
+            "kind":      { "const": "raw_manifest" },
+            "path":      { "type": "string", "description": "Path to the manifest file (relative to project root) or a URL (https://...). Required." },
+            "namespace": { "type": "string", "description": "Optional namespace override passed via kubectl --namespace." }
+          },
+          "required": ["kind", "path"],
+          "additionalProperties": false
+        }
+      ]
     },
     "assertion": {
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script"] },
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present"] },
         "timeout": { "type": "string", "default": "5m" }
       },
       "oneOf": [
@@ -155,6 +203,135 @@
             "path": { "type": "string", "description": "Path to executable. Receives RELEASE, NAMESPACE, KUBECONFIG as env." }
           },
           "required": ["path"]
+        },
+        {
+          "description": "Addon-less capability assert: every rendered/live object carries the configured extra labels.",
+          "properties": {
+            "type":      { "const": "labels-present" },
+            "namespace": { "type": "string", "description": "Product namespace." },
+            "labels":    { "type": "object", "additionalProperties": { "type": "string" }, "description": "Map of key=value labels expected on ALL objects (both .metadata.labels and pod template labels)." },
+            "source":    { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect: helm template output, live kubectl output, or both." },
+            "kinds":     { "type": "array", "items": { "type": "string" }, "description": "Kubernetes kinds to check (default: all rendered/live kinds)." }
+          },
+          "required": ["namespace", "labels"]
+        },
+        {
+          "description": "Addon-less capability assert: every rendered/live object carries the configured extra annotations.",
+          "properties": {
+            "type":        { "const": "annotations-present" },
+            "namespace":   { "type": "string", "description": "Product namespace." },
+            "annotations": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Map of key=value annotations expected on ALL objects (both .metadata.annotations and pod template annotations)." },
+            "source":      { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "kinds":       { "type": "array", "items": { "type": "string" }, "description": "Kubernetes kinds to check (default: all rendered/live kinds)." }
+          },
+          "required": ["namespace", "annotations"]
+        },
+        {
+          "description": "Addon-less capability assert: no plain-HTTP port/scheme when HTTPS-only is configured; Service/container ports reflect the configured scheme.",
+          "properties": {
+            "type":      { "const": "scheme-enforced" },
+            "namespace": { "type": "string", "description": "Product namespace." },
+            "scheme":    { "enum": ["https-only", "allow-http"], "description": "Expected scheme policy. https-only: no port 80 or http scheme on Service/container/probe/Ingress. allow-http: baseline check that http/80 is present." },
+            "source":    { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
+          },
+          "required": ["namespace", "scheme"]
+        },
+        {
+          "description": "Addon-less capability assert: rbac.create=true yields expected ServiceAccount + Role/ClusterRole + RoleBinding/ClusterRoleBinding; false yields none.",
+          "properties": {
+            "type":           { "const": "rbac-objects" },
+            "namespace":      { "type": "string", "description": "Product namespace." },
+            "expect_present": { "type": "boolean", "description": "true: RBAC objects MUST exist and be wired. false: zero RBAC-kind objects." },
+            "source":         { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: pod-level and container-level securityContext knobs are rendered with configured values (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":                      { "const": "security-context" },
+            "namespace":                 { "type": "string", "description": "Product namespace." },
+            "expect_present":            { "type": "boolean", "description": "true: pod-level and container-level securityContext fields MUST appear with configured values. false: no securityContext block on any workload." },
+            "source":                    { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "podSecurityContext":        { "type": "object", "description": "Expected pod-level securityContext fields (e.g. runAsNonRoot, seccompProfile.type). Checked when expect_present=true.", "additionalProperties": true },
+            "containerSecurityContext":  { "type": "object", "description": "Expected container-level securityContext fields (e.g. readOnlyRootFilesystem, allowPrivilegeEscalation, capabilities). Checked when expect_present=true.", "additionalProperties": true }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: networkPolicy.enabled=true yields a NetworkPolicy selecting the product pods; false yields none.",
+          "properties": {
+            "type":           { "const": "network-policy" },
+            "namespace":      { "type": "string", "description": "Product namespace." },
+            "expect_present": { "type": "boolean", "description": "true: at least one NetworkPolicy MUST exist selecting the workload. false: zero NetworkPolicy documents." },
+            "source":         { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: resource requests/limits are set on every workload container (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":           { "const": "resources-present" },
+            "namespace":      { "type": "string", "description": "Product namespace." },
+            "expect_present": { "type": "boolean", "description": "true: every workload container MUST carry resources.requests and resources.limits. false: no populated resources block on any container." },
+            "source":         { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "requests":       { "type": "object", "description": "Expected resources.requests fields (e.g. cpu, memory). Checked when expect_present=true.", "additionalProperties": true },
+            "limits":         { "type": "object", "description": "Expected resources.limits fields (e.g. cpu, memory). Checked when expect_present=true.", "additionalProperties": true }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: imagePullSecrets propagate to every workload pod spec and optionally to the chart ServiceAccount (expect_present=true) or are absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "imagepullsecrets-present" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: imagePullSecrets MUST appear on every workload pod spec (and ServiceAccount if one exists). false: no imagePullSecrets on any pod spec or ServiceAccount." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "secret_names":     { "type": "array", "items": { "type": "string" }, "description": "Expected imagePullSecret name(s) (e.g. ['regcred']). Checked when expect_present=true." },
+            "check_service_account": { "type": "boolean", "default": true, "description": "Also check imagePullSecrets on the chart's ServiceAccount (if one is rendered)." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: ServiceAccount carries configured cloud-identity annotations (IRSA / Azure workload identity / GKE WI) when expect_present=true, or omits them when false.",
+          "properties": {
+            "type":             { "const": "serviceaccount-annotations" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: the rendered ServiceAccount MUST carry the configured annotations. false: the ServiceAccount MUST NOT carry cloud-identity annotation keys." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "annotations":      { "type": "object", "additionalProperties": { "type": "string" }, "description": "Expected annotation key=value pairs on the ServiceAccount. Checked when expect_present=true." },
+            "identity_keys":    { "type": "array", "items": { "type": "string" }, "description": "Cloud-identity annotation keys that MUST be absent when expect_present=false (e.g. eks.amazonaws.com/role-arn, azure.workload.identity/client-id, iam.gke.io/gcp-service-account)." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: scheduling knobs (nodeSelector, tolerations, affinity, topologySpreadConstraints) are rendered with configured values on ALL workloads (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":                            { "const": "scheduling-present" },
+            "namespace":                       { "type": "string", "description": "Product namespace." },
+            "expect_present":                  { "type": "boolean", "description": "true: configured scheduling fields MUST appear on every workload pod spec. false: none of the checked scheduling fields may appear." },
+            "source":                          { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "check_nodeSelector":              { "type": "boolean", "default": true, "description": "Check nodeSelector field on pod specs." },
+            "check_tolerations":               { "type": "boolean", "default": true, "description": "Check tolerations field on pod specs." },
+            "check_affinity":                  { "type": "boolean", "default": true, "description": "Check affinity field on pod specs." },
+            "check_topologySpreadConstraints": { "type": "boolean", "default": true, "description": "Check topologySpreadConstraints field on pod specs." },
+            "nodeSelector":                    { "type": "object", "description": "Expected nodeSelector key=value pairs. Checked when expect_present=true and check_nodeSelector=true.", "additionalProperties": true },
+            "tolerations":                     { "type": "array", "description": "Expected tolerations entries. Checked when expect_present=true and check_tolerations=true.", "items": { "type": "object", "additionalProperties": true } },
+            "affinity":                        { "type": "object", "description": "Expected affinity block. Checked when expect_present=true and check_affinity=true.", "additionalProperties": true },
+            "topologySpreadConstraints":       { "type": "array", "description": "Expected topologySpreadConstraints entries. Checked when expect_present=true and check_topologySpreadConstraints=true.", "items": { "type": "object", "additionalProperties": true } }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: priorityClassName is rendered with configured value on ALL workloads (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":                { "const": "priority-class-present" },
+            "namespace":           { "type": "string", "description": "Product namespace." },
+            "expect_present":      { "type": "boolean", "description": "true: priorityClassName MUST appear on every workload pod spec with the configured value. false: no priorityClassName on any workload." },
+            "source":              { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "priority_class_name": { "type": "string", "description": "Expected priorityClassName value. Checked when expect_present=true." }
+          },
+          "required": ["namespace", "expect_present"]
         }
       ]
     }
