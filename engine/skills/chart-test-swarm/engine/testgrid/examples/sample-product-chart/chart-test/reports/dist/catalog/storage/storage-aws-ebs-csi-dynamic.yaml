@@ -1,0 +1,60 @@
+# AUTHORED ONLY — not run from this repo.
+# Validate with: kubectl --dry-run=client, yamllint.
+# Apply to your own EKS cluster per the aws-ebs-csi primer instructions.
+---
+id: storage-aws-ebs-csi-dynamic
+name: "AWS EBS CSI Dynamic Provision"
+description: >-
+  AWS EBS CSI Driver dynamically provisions an EBS volume from a PVC using a
+  gp3 StorageClass with WaitForFirstConsumer binding. The darkroom pod mounts
+  the volume and verifies data can be written and read.
+labels:
+  customer: any
+  profile: eks
+  chart-test-swarm/target-k8s-version: eks-1.30
+cluster:
+  provider: eks
+  k8s_version: "1.30"
+  preinstall:
+    - kind: helm
+      repo:
+        name: aws-ebs-csi-driver
+        url: https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+      chart: aws-ebs-csi-driver
+      version: "1.26.0"
+      release: aws-ebs-csi-driver
+      namespace: kube-system
+      values:
+        controller:
+          serviceAccount:
+            create: true
+            name: ebs-csi-controller-sa
+            annotations:
+              eks.amazonaws.com/role-arn: "<REPLACE_WITH_EBS_CSI_ROLE_ARN>"
+      wait: pods-ready
+      wait_timeout: 5m
+    - kind: raw_manifest
+      path: chart-test/fixtures/storage/aws-ebs-csi/storageclass.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    darkroom.enabled: "true"
+    darkroom.persistence.enabled: "true"
+    darkroom.persistence.storageClassName: "ebs-sc"
+    darkroom.persistence.accessMode: "ReadWriteOnce"
+    darkroom.persistence.size: "10Gi"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/storage/aws-ebs-csi/dynamic-provision.sh
+tags: [cloud-native, storage]
+mechanisms: ['cloud:eks', 'addon:aws-ebs-csi']
+category: storage/csi
+tier: authored-only
+integration: aws-ebs-csi

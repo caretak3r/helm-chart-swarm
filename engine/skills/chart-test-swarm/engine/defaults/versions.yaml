@@ -1,0 +1,86 @@
+# Engine-level defaults for chart-test-swarm version configuration.
+#
+# These values are used when no project-level chart-test/versions.yaml is
+# present, or to fill in keys that the project file does not override.
+#
+# IMPORTANT: This file is READ-ONLY. Workers must NEVER modify it.
+# Project-specific overrides belong in <project>/chart-test/versions.yaml.
+# Merge strategy: project values win on conflict; engine defaults fill gaps.
+
+kubernetes:
+  kind: "v1.31.0"
+  minikube: "v1.31.0"
+  gke: "1.30"
+  eks: "1.30"
+  aks: "1.30"
+
+cli_tools:
+  helm: "3.17"
+  kubectl: "1.31"
+  kind: "0.27"
+  minikube: "1.35"
+
+preinstalls:
+  cert-manager:
+    chart: "cert-manager"
+    version: "v1.17"
+    repo: "https://charts.jetstack.io"
+  istio-base:
+    chart: "base"
+    version: "1.24.0"
+    repo: "https://istio-release.storage.googleapis.com/charts"
+  istiod:
+    chart: "istiod"
+    version: "1.24.0"
+    repo: "https://istio-release.storage.googleapis.com/charts"
+  istio-gateway:
+    chart: "gateway"
+    version: "1.24.0"
+    repo: "https://istio-release.storage.googleapis.com/charts"
+  linkerd:
+    chart: "linkerd-control-plane"
+    version: "2024.6.1"
+    repo: "https://helm.linkerd.io/stable"
+  traefik:
+    chart: "traefik"
+    version: "34.0.0"
+    repo: "https://traefik.github.io/charts"
+  kong:
+    chart: "ingress"
+    version: "2.44.0"
+    repo: "https://charts.konghq.com"
+  metallb:
+    chart: "metallb"
+    version: "0.14.0"
+    repo: "https://metallb.github.io/metallb"
+  contour:
+    chart: "contour"
+    version: "21.0.0"
+    repo: "https://charts.bitnami.com/bitnami"
+  gatekeeper:
+    chart: "gatekeeper"
+    version: "3.17.0"
+    repo: "https://open-policy-agent.github.io/gatekeeper/charts"
+  kyverno:
+    chart: "kyverno"
+    version: "3.3.0"
+    repo: "https://kyverno.github.io/kyverno/"
+  envoy-gateway:
+    chart: "envoy-gateway"
+    version: "1.3.0"
+    repo: "https://charts.envoyproxy.io/"
+
+product:
+  chart: "sample"
+  version: "0.1.0"
+
+cloud:
+  gke:
+    k8s_version: "1.30"
+    region: "us-central1"
+  eks:
+    k8s_version: "1.30"
+    region: "us-east-1"
+  aks:
+    k8s_version: "1.30"
+    region: "eastus"

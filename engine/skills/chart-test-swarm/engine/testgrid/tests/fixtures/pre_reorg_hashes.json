@@ -1,0 +1,11 @@
+{
+  "description": "Frozen SHA-256 hashes of the 6 integration primers captured at the F1.3 reorg (2026-05-27). Used only when CTS_REORG_BASELINE=1 for one-time migration verification.",
+  "primers": {
+    "certificates/cert-manager.md": "3daa1307d34be3a2b448b2a0c01f4661730448dbddd0b3b32c06e3afcce9e1be",
+    "ingress-controllers/traefik.md": "563b514d8b3b66469bc6c0dc77a99b275d25d7842c231c92abed86166d92bc65",
+    "service-mesh/istio-service-mesh.md": "25ecc56431ddea504d3def3effb662d14a143ac6ac42aa7f0527472c20faff88",
+    "service-mesh/istio-ingress-gateway.md": "74c7797eb4d27462b58b24f8a87552cd53eb3ccefe8a7d3e0701147e1e7fabb5",
+    "gateway-api/gateway-api.md": "e1355184da721d0fb4c636818a71ded379924c63cb6a89f219e948fd7df6dcb2",
+    "policy/opa-gatekeeper.md": "04a123be0158e0d71b75634cc9d3750ef45b9ec0cc0744ddb799f952a88c0615"
+  }
+}

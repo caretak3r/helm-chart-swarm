@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <h1>chart-test-swarm</h1>
+    <p class="hint">Scenario-based regression dashboard for product Helm charts.</p>
+  </div>
+  {% include "_nav.html.j2" %}
+</header>
+
+<section class="home-cards">
+  <h2>Dashboard</h2>
+  <div class="card-grid">
+
+    <a href="getting-started.html" class="home-card" aria-label="Getting Started">
+      <div class="home-card-icon">🚀</div>
+      <div class="home-card-title">Getting Started</div>
+      <div class="home-card-metric">Quick Start</div>
+      <div class="home-card-hint">Prerequisites, setup, and step-by-step workflow</div>
+    </a>
+
+    <a href="support-matrix.html" class="home-card" aria-label="Support Matrix">
+      <div class="home-card-icon">🗂</div>
+      <div class="home-card-title">Support Matrix</div>
+      <div class="home-card-metric">
+        {% if coverage_pct is defined %}
+          {{ "%.1f"|format(coverage_pct) }}% covered
+        {% else %}
+          0% covered
+        {% endif %}
+      </div>
+      <div class="home-card-hint">Capability coverage across catalog scenarios</div>
+    </a>
+
+    <a href="runs.html" class="home-card" aria-label="Run History">
+      <div class="home-card-icon">🏃</div>
+      <div class="home-card-title">Run History</div>
+      <div class="home-card-metric">
+        {{ run_count }} {% if run_count == 1 %}Run{% else %}Runs{% endif %}
+      </div>
+      <div class="home-card-hint">All scenario test runs for this chart</div>
+    </a>
+
+    <a href="recommendations.html" class="home-card" aria-label="Recommendations">
+      <div class="home-card-icon">💡</div>
+      <div class="home-card-title">Recommendations</div>
+      <div class="home-card-metric">
+        {{ open_rec_count }} Open{% if fixed_rec_count > 0 %}, {{ fixed_rec_count }} Fixed{% endif %}
+      </div>
+      <div class="home-card-hint">Actionable chart-fix suggestions from FAIL results</div>
+    </a>
+
+    <a href="versions.html" class="home-card" aria-label="Versions">
+      <div class="home-card-icon">🔖</div>
+      <div class="home-card-title">Versions</div>
+      <div class="home-card-metric">
+        {{ version_status | capitalize }}
+      </div>
+      <div class="home-card-hint">Kubernetes, CLI tools and preinstall versions</div>
+    </a>
+
+  </div>
+</section>
+
+</body>
+</html>

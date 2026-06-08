@@ -19,8 +19,13 @@ url="http://${name}.${ns}.svc.cluster.local:${PORT}${PATH_}"
 echo "curl -> $url (expect HTTP $EXPECT)"
 
 pod="ct-probe-$$"
-kubectl -n "$ns" run "$pod" --rm -i --restart=Never --quiet \
-  --image=curlimages/curl:8.6.0 --timeout="$TIMEOUT" \
+kubectl_args=()
+if [ -n "${KUBE_CONTEXT:-}" ]; then
+  kubectl_args+=(--context "$KUBE_CONTEXT")
+fi
+
+kubectl "${kubectl_args[@]}" -n "$ns" run "$pod" --rm -i --restart=Never --quiet \
+  --image=curlimages/curl:8.6.0 --pod-running-timeout="$TIMEOUT" \
   -- sh -c "curl -sS -o /dev/null -w '%{http_code}' --max-time 30 '$url'" \
   > /tmp/${pod}.out 2>/tmp/${pod}.err || true
 

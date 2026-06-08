@@ -9,6 +9,32 @@
 #         PROJECT_DIR   consumer chart repo (used to compute default REPORTS_DIR)
 set -euo pipefail
 
+# ---- Usage banner ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [run-id] [OPTIONS]
+
+Invoke testgrid to build the static HTML dashboard from scenario run results.
+Best-effort: tolerates missing uv (warns + exits 0 — swarm not affected).
+
+Options:
+  --help    Show this usage banner and exit
+
+Arguments:
+  run-id    Optional specific run id to render (default: render all runs)
+
+Environment:
+  REPORTS_DIR    Reports root (default: auto-detected from PROJECT_DIR or ROOT_DIR)
+  DASHBOARD_OUT  Dashboard dist root (default: \$REPORTS_DIR/dist)
+  PROJECT_DIR    Consumer chart repo (for computing default REPORTS_DIR)
+EOF
+  exit 0
+}
+
+case "${1:-}" in
+  --help|-h) usage ;;
+esac
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ROOT_DIR="$(cd "$ENGINE_DIR/.." && pwd)"

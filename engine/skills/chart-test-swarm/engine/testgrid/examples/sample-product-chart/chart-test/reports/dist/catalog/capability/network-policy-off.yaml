@@ -1,0 +1,30 @@
+---
+id: network-policy-off
+name: "Capability: no NetworkPolicy when disabled (OFF)"
+description: >-
+  Renders the product chart with networkPolicy.enabled=false (or unset)
+  and asserts zero NetworkPolicy documents in the render. Since the chart
+  has no NetworkPolicy template at all, no NetworkPolicy objects are ever
+  emitted regardless of the networkPolicy.enabled value. This scenario is
+  EXPECTED to PASS — confirming no NetworkPolicy leakage when the knob
+  is off.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    networkPolicy.enabled: false
+asserts:
+  - type: network-policy
+    namespace: sample
+    source: rendered
+    expect_present: false
+tags: [capability, compliance]
+category: capability
+capability: network-policy
+tier: capability
+mechanisms: ["capability:network-policy"]

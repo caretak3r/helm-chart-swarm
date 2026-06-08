@@ -2,6 +2,32 @@
 # Preflight: every command + file the engine needs. Exit 1 with a punch list.
 set -euo pipefail
 
+# ---- Usage banner (checked before bash version preflight so --help always works) ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Preflight check: verify every command and file the engine needs.
+Exits 0 if all checks pass; exits 1 with a punch list of missing items.
+
+Options:
+  --help    Show this usage banner and exit
+EOF
+  exit 0
+}
+
+case "${1:-}" in
+  --help|-h) usage ;;
+esac
+
+# ---- Bash version preflight (VAL-ENGINE-039) ----
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+  echo "ERROR: bash >= 4 required (running ${BASH_VERSION:-unknown})." >&2
+  echo "       Install modern bash: brew install bash" >&2
+  echo "       Then re-run with: /opt/homebrew/bin/bash $0 $*" >&2
+  exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ROOT_DIR="$(cd "$ENGINE_DIR/.." && pwd)"

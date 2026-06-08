@@ -8,9 +8,35 @@
 #        PROJECT_DIR   consumer chart repo (used to compute default REPORTS_DIR)
 set -euo pipefail
 
+# ---- Usage banner ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") <run-id> [OPTIONS]
+
+Aggregate per-agent results into scenario-matrix.csv + lessons-learned.md,
+then refresh the dashboard (best-effort).
+
+Options:
+  --help    Show this usage banner and exit
+
+Arguments:
+  run-id    Run identifier (e.g. run-20260520-101500)
+
+Environment:
+  REPORTS_DIR   Override reports root (default: auto-detected)
+  PROJECT_DIR   Consumer chart repo (for computing default REPORTS_DIR)
+EOF
+  exit 0
+}
+
+case "${1:-}" in
+  --help|-h) usage ;;
+esac
+
 RUN_ID="${1:?usage: aggregate.sh <run-id>}"
 command -v yq >/dev/null 2>&1 || { echo "ERROR: yq required" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "ERROR: jq required" >&2; exit 1; }
+command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1 || { echo "ERROR: python required for CSV round-trip" >&2; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -34,7 +60,10 @@ LESSONS="$RUN_DIR/lessons-learned.md"
 # All scenario IDs from the snapshot (the source of truth for what *should* have run)
 EXPECTED_IDS=()
 if [ -f "$SNAPSHOT" ]; then
-  mapfile -t EXPECTED_IDS < <(yq '.scenarios[].id' "$SNAPSHOT")
+  EXPECTED_IDS=()
+  while IFS= read -r sid; do
+    EXPECTED_IDS+=("$sid")
+  done < <(yq '.scenarios[].id' "$SNAPSHOT")
 fi
 
 # Collect agent results into a single JSON stream:
@@ -60,7 +89,7 @@ for rfile in "$RUN_DIR"/agent-*/result.yaml; do
         "fail_stage": (.fail_stage // ""),
         "notes": ((.fail_msg // "") | tostring)
       }
-    ' "$rfile" >> "$TMP"
+    ' "$rfile" | jq -c '.' >> "$TMP"
   elif [ "$(yq '.scenario_id // ""' "$rfile")" != "" ]; then
     yq -o=json '
       {
@@ -72,46 +101,110 @@ for rfile in "$RUN_DIR"/agent-*/result.yaml; do
         "fail_stage": (.fail_stage // ""),
         "notes": ((.fail_msg // "") | tostring)
       }
-    ' "$rfile" >> "$TMP"
+    ' "$rfile" | jq -c '.' >> "$TMP"
   fi
 done
 
-# CSV
+# CSV — use Python csv module for proper round-trip of commas/newlines/quotes
+# (VAL-ENGINE-034: assertion notes with commas, newlines, and quotes must survive CSV round-trip)
 {
-  echo "scenario_id,status,agent,asserts_passed,asserts_total,fail_stage,notes"
-  # Emit one row per expected scenario; UNTESTED if no agent reported.
-  for sid in "${EXPECTED_IDS[@]}"; do
-    matches=$(jq -s --arg id "$sid" '[.[] | select(.scenario_id == $id)]' "$TMP")
-    if [ "$(echo "$matches" | jq 'length')" -eq 0 ]; then
-      echo "$sid,UNTESTED,,0,0,,no agent reported"
+  python3 -c '
+import csv, json, sys, os
+
+# Read snapshot for expected IDs (best-effort — may need PyYAML)
+expected_ids = []
+try:
+    with open("'"$SNAPSHOT"'") as f:
+        import yaml
+        snap = yaml.safe_load(f)
+        for s in snap.get("scenarios", []):
+            expected_ids.append(s["id"])
+except Exception:
+    pass
+
+# Read all agent results (one compact JSON object per line)
+all_results = []
+try:
+    with open("'"$TMP"'") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                all_results.append(json.loads(line))
+except Exception:
+    pass
+
+# Guard: always emit at least a CSV header (empty all_results is not an error)
+writer = csv.writer(sys.stdout)
+writer.writerow(["scenario_id","status","agent","asserts_passed","asserts_total","fail_stage","notes"])
+
+# Build lookup by scenario_id
+by_id = {}
+for r in all_results:
+    sid = r.get("scenario_id", "")
+    by_id.setdefault(sid, []).append(r)
+
+# Emit one row per expected scenario; UNTESTED if no agent reported.
+for sid in expected_ids:
+    matches = by_id.get(sid, [])
+    if not matches:
+        writer.writerow([sid, "UNTESTED", "", "0", "0", "", "no agent reported"])
+    else:
+        for m in matches:
+            notes = str(m.get("notes", ""))
+            writer.writerow([
+                m.get("scenario_id", ""),
+                m.get("status", ""),
+                m.get("agent", ""),
+                m.get("asserts_passed", "0"),
+                m.get("asserts_total", "0"),
+                m.get("fail_stage", ""),
+                notes
+            ])
+
+# Append any orphan results (scenario_id present but not in snapshot)
+expected_set = set(expected_ids)
+seen_orphans = set()
+for r in all_results:
+    sid = r.get("scenario_id", "")
+    if sid and sid not in expected_set and sid not in seen_orphans:
+        notes = str(r.get("notes", ""))
+        writer.writerow([
+            sid,
+            r.get("status", ""),
+            r.get("agent", ""),
+            r.get("asserts_passed", "0"),
+            r.get("asserts_total", "0"),
+            r.get("fail_stage", ""),
+            notes
+        ])
+        seen_orphans.add(sid)
+' 2>/dev/null || {
+    # Fallback: use jq @csv if python fails
+    echo "scenario_id,status,agent,asserts_passed,asserts_total,fail_stage,notes"
+    # Guard: only slurp TMP if it has content, otherwise jq produces no output
+    if [ -s "$TMP" ]; then
+      for sid in "${EXPECTED_IDS[@]+"${EXPECTED_IDS[@]}"}"; do
+        matches=$(jq -s --arg id "$sid" '[.[] | select(.scenario_id == $id)]' "$TMP")
+        if [ "$(echo "$matches" | jq 'length')" -eq 0 ]; then
+          echo "$sid,UNTESTED,,0,0,,no agent reported"
+        else
+          echo "$matches" | jq -r '.[] | [
+            .scenario_id, .status, .agent, .asserts_passed, .asserts_total,
+            .fail_stage, (.notes | gsub("[\r\n]+"; " ") | gsub("\""; "\"\""))
+          ] | @csv'
+        fi
+      done
     else
-      echo "$matches" | jq -r '.[] | [
-        .scenario_id, .status, .agent, .asserts_passed, .asserts_total,
-        .fail_stage, (.notes | gsub("[\r\n]+"; " ") | gsub("\""; "\"\""))
-      ] | @csv'
+      # No agent results at all — emit UNTESTED rows for expected scenarios
+      for sid in "${EXPECTED_IDS[@]+"${EXPECTED_IDS[@]}"}"; do
+        echo "$sid,UNTESTED,,0,0,,no agent reported"
+      done
     fi
-  done
-  # Append any orphan results (scenario_id present but not in snapshot)
-  for sid in "${EXPECTED_IDS[@]}"; do echo "$sid"; done > "$TMP.expected" || true
-  jq -r '.scenario_id' "$TMP" 2>/dev/null | sort -u > "$TMP.seen" || true
-  if [ -s "$TMP.expected" ] && [ -s "$TMP.seen" ]; then
-    comm -23 <(sort -u "$TMP.seen") <(sort -u "$TMP.expected") | while read -r orphan; do
-      [ -z "$orphan" ] && continue
-      jq -s --arg id "$orphan" '.[] | select(.scenario_id == $id) | [
-        .scenario_id, .status, .agent, .asserts_passed, .asserts_total,
-        .fail_stage, (.notes | gsub("[\r\n]+"; " ") | gsub("\""; "\"\""))
-      ] | @csv' "$TMP" -r
-    done
-  fi
-  rm -f "$TMP.expected" "$TMP.seen"
+  }
 } > "$CSV"
 
-# Status counts
-declare -A COUNTS
-while IFS=, read -r sid status _; do
-  [ "$sid" = "scenario_id" ] && continue
-  COUNTS[$status]=$(( ${COUNTS[$status]:-0} + 1 ))
-done < "$CSV"
+# Status counts — use sort+uniq for Bash 3.2 compatibility
+STATUS_COUNTS=$(awk -F, 'NR>1 && $2!="" {print $2}' "$CSV" | sort | uniq -c | awk '{print $2": "$1}' | sort)
 
 # lessons-learned.md
 {
@@ -119,9 +212,11 @@ done < "$CSV"
   echo ""
   echo "## Status counts"
   echo ""
-  for k in "${!COUNTS[@]}"; do
-    echo "- $k: ${COUNTS[$k]}"
-  done | sort
+  if [ -n "$STATUS_COUNTS" ]; then
+    echo "$STATUS_COUNTS" | while read -r line; do
+      [ -n "$line" ] && echo "- $line"
+    done
+  fi
   echo ""
 
   # Untested
@@ -138,7 +233,7 @@ done < "$CSV"
   if [ -n "$fails" ]; then
     echo "## Failures / partials"
     echo ""
-    echo "$fails" | while IFS=, read -r sid status agent ap at fs notes; do
+    echo "$fails" | while IFS=, read -r sid status agent ap at _fs notes; do
       printf -- "- **%s** (%s, agent %s, %s/%s asserts) — %s\n" \
         "$sid" "$status" "$agent" "$ap" "$at" "${notes//\"/}"
     done

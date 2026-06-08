@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — support matrix</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— Support Matrix</span></h1>
+    <p class="hint">Capability coverage across all catalog scenarios. Green = supported; red = gap to build next.</p>
+  </div>
+  {% include "_nav.html.j2" %}
+</header>
+
+<section class="support-matrix-summary">
+  <h2>Run summary</h2>
+  <p class="hint">Counts exclude authored-only (cloud) scenarios.</p>
+  <div class="counts">
+    <span class="badge status-pass">PASS · {{ global_counts.PASS }}</span>
+    <span class="badge status-fail">FAIL · {{ global_counts.FAIL }}</span>
+    <span class="count-label">Run: {{ global_counts.run }}</span>
+  </div>
+</section>
+
+<section class="support-matrix">
+  <h2>Capabilities</h2>
+  <p class="hint">One row per scenario. Cells link to the exact scenario YAML and applied overrides.
+  Authored-only entries are marked <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED</span> and excluded from run counts.</p>
+
+  {% for category, entries in matrix.items() %}
+  <div class="sm-category">
+    <h3>{{ category }}</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+        <tr class="sm-row{% if entry.is_authored_only %} authored-row{% endif %}" data-scenario-id="{{ entry.scenario_id }}" data-tier="{{ entry.tier or '' }}">
+          <th class="row-head">
+            <code>{{ entry.scenario_id }}</code>
+            {% if entry.name %}<div class="hint">{{ entry.name }}</div>{% endif %}
+            <div class="hint"><code>{{ entry.category }}/{{ entry.integration_key }}</code></div>
+          </th>
+          <td>
+            <code>{{ entry.tier or '—' }}</code>
+            {% if entry.is_authored_only %}
+              <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge {{ status_class(entry.display_status) }}">{{ entry.display_status }}</span>
+          </td>
+          <td>
+            {% if entry.scenario_href %}
+              <a href="{{ entry.scenario_href }}" data-artifact="scenario">scenario.yaml</a>
+            {% else %}
+              <span class="hint">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if entry.overrides_href %}
+              <a href="{{ entry.overrides_href }}" data-artifact="overrides">applied-overrides.yaml</a>
+            {% elif entry.is_authored_only %}
+              <span class="hint" title="{{ cloud_tooltip }}">not run</span>
+            {% else %}
+              <span class="hint">not yet run</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+
+  {% if not matrix %}
+  <p class="empty-state">0 scenarios in the catalog.</p>
+  {% endif %}
+</section>
+
+</body>
+</html>

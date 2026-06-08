@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — Versions</title>
+  <link rel="stylesheet" href="{{ base_path }}style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— Versions</span></h1>
+    <p class="hint">Kubernetes, CLI tools, and preinstall version configuration.</p>
+  </div>
+  {% include "_nav.html.j2" %}
+</header>
+
+<section class="versions-page">
+  <h2>Version Configuration</h2>
+  {% if has_project_overrides %}
+    <p class="hint">
+      <span class="badge-source project-override">project-override</span> values are set in
+      <code>chart-test/versions.yaml</code> and take precedence over engine defaults.
+      <span class="badge-source engine-default">engine-default</span> values come from
+      <code>engine/defaults/versions.yaml</code>.
+    </p>
+  {% else %}
+    <p class="hint">
+      All values are <span class="badge-source engine-default">engine-default</span> from
+      <code>engine/defaults/versions.yaml</code>. Create
+      <code>chart-test/versions.yaml</code> to override specific values.
+    </p>
+  {% endif %}
+
+  <!-- Edit instructions panel (shown after JS edit action) -->
+  <div id="edit-result-panel" class="edit-result-panel" style="display:none">
+    <div class="edit-result-inner">
+      <strong>✅ Version update saved</strong>
+      <p class="hint">The edit has been written to <code>chart-test/versions.yaml</code>.
+      Rebuild the dashboard to see the updated page:</p>
+      <code id="rebuild-cmd" class="edit-cmd"></code>
+      <button class="btn-copy" onclick="copyRebuildCmd()">Copy</button>
+    </div>
+  </div>
+
+  {% set section_labels = {
+    "kubernetes": "Kubernetes",
+    "cli_tools": "CLI Tools",
+    "preinstalls": "Preinstalls",
+    "product": "Product",
+    "cloud": "Cloud"
+  } %}
+
+  {% for section_key in ["kubernetes", "cli_tools", "preinstalls", "product", "cloud"] %}
+    {% if version_rows and version_rows.get(section_key) %}
+    <div class="versions-section">
+      <h3>{{ section_labels[section_key] }}</h3>
+      <table class="versions-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Version</th>
+            {% if section_key == "preinstalls" %}<th>Chart</th><th>Repository</th>{% endif %}
+            <th>Source</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in version_rows[section_key] %}
+          <tr class="version-row{% if row.source == 'project-override' %} version-row-override{% endif %}"
+              data-section="{{ row.section }}"
+              data-key="{{ row.key }}">
+            <td class="ver-name">
+              <code>{{ row.key }}</code>
+            </td>
+            <td class="ver-version">
+              <span class="ver-display{% if row.source == 'project-override' %} ver-override{% endif %}">{{ row.version }}</span>
+              <span class="ver-edit-form" style="display:none">
+                <input type="text"
+                       class="ver-input"
+                       value="{{ row.version }}"
+                       data-original="{{ row.version }}"
+                       data-section="{{ row.section }}"
+                       data-key="{{ row.key }}"
+                       aria-label="New version for {{ row.key }}"
+                />
+                <button class="btn-save-ver" onclick="saveVersionEdit(this)">Save</button>
+                <button class="btn-cancel-ver" onclick="cancelVersionEdit(this)">Cancel</button>
+              </span>
+            </td>
+            {% if section_key == "preinstalls" %}
+            <td class="ver-chart"><code>{{ row.extra.get('chart', '') }}</code></td>
+            <td class="ver-repo"><a href="{{ row.extra.get('repo', '#') }}" target="_blank" rel="noopener">{{ row.extra.get('repo', '') }}</a></td>
+            {% endif %}
+            <td class="ver-source">
+              <span class="badge-source {{ row.source }}">{{ row.source }}</span>
+            </td>
+            <td class="ver-actions">
+              <button class="btn-edit-ver" onclick="editVersionRow(this)">Edit</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  {% endfor %}
+
+  {% if not version_rows %}
+  <p class="hint">Version configuration not available. Run the dashboard build to populate this page.</p>
+  {% endif %}
+</section>
+
+<script>
+// ---------------------------------------------------------------------------
+// Inline edit helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Activate inline edit mode for the row containing *btn*.
+ */
+function editVersionRow(btn) {
+  var row = btn.closest('tr.version-row');
+  row.querySelector('.ver-display').style.display = 'none';
+  row.querySelector('.ver-edit-form').style.display = '';
+  row.querySelector('.ver-input').focus();
+  btn.style.display = 'none';
+}
+
+/**
+ * Cancel an in-progress edit and restore the original display value.
+ */
+function cancelVersionEdit(btn) {
+  var row = btn.closest('tr.version-row');
+  var input = row.querySelector('.ver-input');
+  input.value = input.dataset.original;
+  row.querySelector('.ver-display').style.display = '';
+  row.querySelector('.ver-edit-form').style.display = 'none';
+  row.querySelector('.btn-edit-ver').style.display = '';
+}
+
+/**
+ * Save a version edit.
+ * Posts to /api/version-edit when the dashboard is served via
+ * ``chart-test-swarm dashboard --serve``.
+ * Falls back to showing the equivalent CLI command when no server is running.
+ */
+function saveVersionEdit(btn) {
+  var row = btn.closest('tr.version-row');
+  var input = row.querySelector('.ver-input');
+  var section = input.dataset.section;
+  var key = input.dataset.key;
+  var newValue = input.value.trim();
+  var oldValue = input.dataset.original;
+
+  if (!newValue || newValue === oldValue) {
+    cancelVersionEdit(btn);
+    return;
+  }
+
+  // Try the server API first; fall back to CLI command display.
+  fetch('/api/version-edit', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({section: section, key: key, new_value: newValue})
+  })
+  .then(function(resp) {
+    if (resp.ok) {
+      return resp.json().then(function(data) {
+        showEditResult(section, key, newValue, data.rebuild_cmd || '');
+        // Update display in-place
+        var display = row.querySelector('.ver-display');
+        display.textContent = newValue;
+        input.dataset.original = newValue;
+        cancelVersionEdit(btn);
+      });
+    } else {
+      return resp.json().then(function(data) {
+        alert('Error: ' + (data.error || 'Unknown error'));
+      });
+    }
+  })
+  .catch(function() {
+    // No server running — show CLI command.
+    var cmd = 'chart-test-swarm version edit ' + section + '.' + key + ' "' + newValue + '"';
+    showEditResult(section, key, newValue, cmd);
+    var display = row.querySelector('.ver-display');
+    display.textContent = newValue;
+    input.dataset.original = newValue;
+    cancelVersionEdit(btn);
+  });
+}
+
+function showEditResult(section, key, newValue, rebuildCmd) {
+  var panel = document.getElementById('edit-result-panel');
+  var cmdEl = document.getElementById('rebuild-cmd');
+  if (!rebuildCmd) {
+    rebuildCmd = 'chart-test-swarm dashboard --build';
+  }
+  cmdEl.textContent = rebuildCmd;
+  panel.style.display = '';
+  panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function copyRebuildCmd() {
+  var cmd = document.getElementById('rebuild-cmd').textContent;
+  navigator.clipboard.writeText(cmd).then(function() {
+    var btn = document.querySelector('.btn-copy');
+    var orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = orig; }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>

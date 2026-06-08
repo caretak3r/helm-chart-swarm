@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — run history</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— Run History</span></h1>
+    <p class="hint">Scenario-based regression dashboard for product Helm charts.</p>
+  </div>
+  {% include "_nav.html.j2" %}
+</header>
+
+<section class="runs">
+  <h2>Runs</h2>
+  {% if runs %}
+  <table>
+    <thead>
+      <tr>
+        <th>Run</th>
+        <th>Time (UTC)</th>
+        <th>Project</th>
+        <th>Chart</th>
+        <th>Suite</th>
+        <th>Scenarios</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td><a href="{{ run.run_id }}/index.html"><code>{{ run.run_id }}</code></a></td>
+        <td>{{ run.timestamp_utc or '—' }}</td>
+        <td>{{ run.project_name or '—' }}</td>
+        <td><code>{{ run.chart_name or '—' }}{% if run.chart_version %}:{{ run.chart_version }}{% endif %}</code></td>
+        <td>{{ run.suite or '—' }}</td>
+        <td>{{ run.scenarios | length }}</td>
+        <td class="status-cell">
+          {% for s, n in run.status_counts.items() %}
+            <span class="badge {{ status_class(s) }}">{{ s }} · {{ n }}</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No runs found. Run <code>uv run testgrid build --run RUN_ID</code> to generate.</p>
+  {% endif %}
+</section>
+
+</body>
+</html>

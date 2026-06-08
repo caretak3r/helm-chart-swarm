@@ -1,0 +1,54 @@
+---
+id: gateway-api-envoy-gateway-httproute
+name: "Envoy Gateway HTTPRoute"
+description: "Installs Gateway API CRDs and envoy-gateway controller, creates GatewayClass+Gateway+HTTPRoute, and verifies HTTP routing through the Envoy proxy."
+labels: {customer: any, profile: gateway-api}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: oci://docker.io/envoyproxy/gateway-helm
+      version: v1.1.2
+      release: envoy-gateway
+      namespace: envoy-gateway-system
+      values:
+        config:
+          envoyGateway:
+            provider:
+              type: Kubernetes
+      wait: helm-deployed
+      wait_timeout: 5m
+    - kind: raw_manifest
+      path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "nginx"
+    image.tag: "1.27-alpine"
+    gatewayRoute.enabled: "true"
+    gatewayRoute.parentRef.name: "sample-gw"
+    gatewayRoute.parentRef.sectionName: "http"
+asserts:
+  - type: helm-status-deployed
+    release: envoy-gateway
+    namespace: envoy-gateway-system
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: envoy-gateway-system
+    selector: app.kubernetes.io/name=gateway-helm
+    timeout: 5m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/envoy-gateway-httproute.sh
+tags: [nightly]
+mechanisms: ['addon:envoy-gateway', 'gateway-api:envoy']
+category: gateway-api
+integration: envoy-gateway
+tier: live

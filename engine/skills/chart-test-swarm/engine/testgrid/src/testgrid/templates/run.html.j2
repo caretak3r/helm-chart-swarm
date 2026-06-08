@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -10,7 +10,7 @@
 <header class="run-header">
   <div class="brand">
     <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— {{ run.run_id }}</span></h1>
-    <a href="../index.html" class="up">← all runs</a>
+    {% include "_nav.html.j2" %}
   </div>
   <dl>
     <dt>Time (UTC)</dt><dd>{{ run.timestamp_utc or '—' }}</dd>
@@ -18,6 +18,19 @@
     <dt>Chart</dt><dd><code>{{ run.chart_name or '—' }}{% if run.chart_version %}:{{ run.chart_version }}{% endif %}</code></dd>
     <dt>Suite</dt><dd>{{ run.suite or '—' }}</dd>
     <dt>Cluster</dt><dd>{{ run.cluster_provider or '—' }}{% if run.k8s_version %} · k8s <code>{{ run.k8s_version }}</code>{% endif %}</dd>
+    {% if run_versions %}
+    <dt>K8s Server</dt><dd><code>{{ run_versions.k8s_server or '—' }}</code></dd>
+    {% if run_versions.preinstalls %}
+    <dt>Preinstalls</dt>
+    <dd>
+      <ul class="version-preinstalls">
+      {% for name, info in run_versions.preinstalls.items() %}
+        <li><code>{{ name }}</code> <code>{{ info.version }}</code> <span class="version-source">{{ info.source }}</span></li>
+      {% endfor %}
+      </ul>
+    </dd>
+    {% endif %}
+    {% endif %}
     <dt>Agents</dt><dd>{{ run.num_agents }}</dd>
   </dl>
   <div class="counts">
@@ -51,8 +64,11 @@
 
 <section class="matrix">
   <h2>Scenarios</h2>
-  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.</p>
-  <table>
+  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.
+  {% if variant_groups %}Groups with 3+ variants per integration are collapsed — click the header to expand.{% endif %}</p>
+
+  {% if standalone_scenarios %}
+  <table class="standalone-table">
     <thead>
       <tr>
         <th class="row-head">Scenario</th>
@@ -64,14 +80,17 @@
       </tr>
     </thead>
     <tbody>
-      {% for s in run.scenarios %}
-      <tr>
+      {% for s in standalone_scenarios %}
+      <tr{% if s.status == "UNTESTED" and not s.asserts_total %} class="untested-row"{% endif %}>
         <th class="row-head">
           <a href="#{{ s.id }}"><code>{{ s.id }}</code></a>
           {% if s.name %}<div class="hint">{{ s.name }}</div>{% endif %}
         </th>
         <td>
           <code>{{ s.cluster_provider or '—' }}</code>
+          {% if is_cloud_provider(s.cluster_provider) %}
+            <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED ONLY</span>
+          {% endif %}
           {% if s.cluster_addons %}<div class="hint">+ {{ s.cluster_addons | join(', ') }}</div>{% endif %}
         </td>
         <td>{% for t in s.tags %}<code class="mech-tag">{{ t }}</code>{% endfor %}</td>
@@ -82,20 +101,76 @@
       {% endfor %}
     </tbody>
   </table>
+  {% endif %}
+
+  {# Integration groups (3+ variants of the same integration) — each is a <details> block #}
+  {% for group in variant_groups %}
+  <details class="integration-group matrix-details" id="{{ group.anchor }}" open>
+    <summary class="integration-header">
+      <span class="badge {{ status_class(group.rolled_status) }}">{{ group.rolled_status }}</span>
+      <span class="variant-summary">{{ group.variant_count }} variants: {{ group.status_breakdown }}</span>
+      <span class="group-label"><code>{{ group.category }}/{{ group.integration }}</code></span>
+    </summary>
+    <table class="variant-sub-table">
+      <thead class="sr-only">
+        <tr>
+          <th class="row-head">Scenario</th>
+          <th>Cluster shape</th>
+          <th>Tags</th>
+          <th>Asserts</th>
+          <th>Status</th>
+          <th>Agent</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in group.scenarios %}
+        <tr class="variant-row">
+          <th class="row-head">
+            <a href="#{{ s.id }}"><code>{{ s.id }}</code></a>
+            {% if s.name %}<div class="hint">{{ s.name }}</div>{% endif %}
+          </th>
+          <td>
+            <code>{{ s.cluster_provider or '—' }}</code>
+            {% if is_cloud_provider(s.cluster_provider) %}
+              <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED ONLY</span>
+            {% endif %}
+            {% if s.cluster_addons %}<div class="hint">+ {{ s.cluster_addons | join(', ') }}</div>{% endif %}
+          </td>
+          <td>{% for t in s.tags %}<code class="mech-tag">{{ t }}</code>{% endfor %}</td>
+          <td class="cell {{ status_class(s.status) }}">{{ s.asserts_passed }}/{{ s.asserts_total }}</td>
+          <td><span class="badge {{ status_class(s.status) }}">{{ s.status }}</span></td>
+          <td>{{ s.agent if s.agent is not none else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endfor %}
+
+  {% if not standalone_scenarios and not variant_groups %}
+  <p class="empty-state">0 scenarios in this run</p>
+  {% endif %}
 </section>
 
 <section class="cap-details">
   <h2>Scenarios — details</h2>
   {% for s in run.scenarios %}
-  <details id="{{ s.id }}" class="cap">
+  <details id="{{ s.id }}" class="cap" data-status="{{ s.status }}" data-run-id="{{ run.run_id }}">
     <summary>
       <span class="cap-id"><code>{{ s.id }}</code></span>
       <span class="cap-name">{{ s.name }}</span>
+      {% if is_cloud_provider(s.cluster_provider) %}
+        <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED ONLY</span>
+      {% endif %}
       <span class="badge {{ status_class(s.status) }}">{{ s.status }}</span>
     </summary>
     <dl>
       {% if s.description %}<dt>Description</dt><dd>{{ s.description }}</dd>{% endif %}
-      <dt>Cluster</dt><dd><code>{{ s.cluster_provider or '—' }}</code></dd>
+      <dt>Cluster</dt><dd><code>{{ s.cluster_provider or '—' }}</code>
+      {% if is_cloud_provider(s.cluster_provider) %}
+        <span class="badge cloud" title="{{ cloud_tooltip }}" aria-label="{{ cloud_tooltip }}">☁ AUTHORED ONLY</span>
+      {% endif %}
+      </dd>
       {% if s.cluster_addons %}
       <dt>Preinstalled</dt><dd>{% for a in s.cluster_addons %}<code>{{ a }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</dd>
       {% endif %}
@@ -104,10 +179,59 @@
       {% if s.labels %}
       <dt>Labels</dt><dd>{% for k, v in s.labels.items() %}<code>{{ k }}={{ v }}</code> {% endfor %}</dd>
       {% endif %}
-      {% if s.fail_stage %}
-      <dt>Failed at</dt><dd class="pitfall">{{ s.fail_stage }}{% if s.fail_msg %} — {{ s.fail_msg }}{% endif %}</dd>
+      {% if s.status == "FAIL" %}
+      {% if s.fail_msg %}
+      <dt class="error-summary">Error</dt><dd class="error-summary pitfall">{{ s.fail_msg }}</dd>
+      {% endif %}
+      {% if s.log_dir %}
+      <dt class="error-log">Log</dt><dd class="error-log"><code>{{ s.log_dir }}</code></dd>
+      {% endif %}
+      {% if s.fail_stage and not s.fail_msg %}
+      <dt>Failed at</dt><dd class="pitfall">{{ s.fail_stage }}</dd>
+      {% endif %}
       {% endif %}
     </dl>
+    {% if s.artifact_links %}
+    <div class="artifact-links">
+      <h5>Artifacts</h5>
+      <ul>
+      {% if s.artifact_links.scenario %}
+        <li><a href="{{ s.artifact_links.scenario }}" data-artifact="scenario">Scenario YAML</a></li>
+      {% endif %}
+      {% if s.artifact_links.overrides %}
+        <li><a href="{{ s.artifact_links.overrides }}" data-artifact="overrides">Applied Overrides</a></li>
+      {% endif %}
+      {% if s.artifact_links.fixtures is defined %}
+        <li class="artifact-fixtures">
+          <span>Fixtures</span>
+          {% if s.artifact_links.fixtures %}
+          <ul>
+            {% for fx in s.artifact_links.fixtures %}
+            <li><a href="{{ fx }}" data-artifact="fixture">{{ fx | basename }}</a></li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <span class="empty">(no fixtures captured)</span>
+          {% endif %}
+        </li>
+      {% endif %}
+      {% if s.artifact_links.manifests is defined %}
+        <li class="artifact-manifests">
+          <span>Manifests</span>
+          {% if s.artifact_links.manifests %}
+          <ul>
+            {% for mf in s.artifact_links.manifests %}
+            <li><a href="{{ mf }}" data-artifact="manifest">{{ mf | basename }}</a></li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <span class="empty">(no manifests captured)</span>
+          {% endif %}
+        </li>
+      {% endif %}
+      </ul>
+    </div>
+    {% endif %}
     {% if s.asserts %}
     <div class="result">
       <h5>Assertions · agent {{ s.agent if s.agent is not none else '—' }}</h5>
@@ -123,7 +247,7 @@
       {% if s.log_dir %}<p class="log-path">Logs: <code>{{ s.log_dir }}</code></p>{% endif %}
     </div>
     {% else %}
-    <p class="no-results">⚠ no agent reported on this scenario — UNTESTED</p>
+    <p class="no-results">⚠ {% if s.status == 'AUTHORED' %}authored only — not run locally{% else %}no agent reported on this scenario — UNTESTED{% endif %}</p>
     {% endif %}
   </details>
   {% endfor %}

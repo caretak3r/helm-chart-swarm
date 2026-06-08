@@ -12,6 +12,7 @@ cluster:
   k8s_version: v1.30.0
   # config: chart-test/fixtures/kind-...yaml
   preinstall:
+    # Helm chart preinstall (kind: helm is the default when omitted):
     # - chart: jetstack/cert-manager
     #   version: v1.14.0
     #   release: cert-manager
@@ -19,6 +20,11 @@ cluster:
     #   repo: { name: jetstack, url: "https://charts.jetstack.io" }
     #   values: { installCRDs: true }
     #   wait: pods-ready
+
+    # Raw manifest preinstall:
+    # - kind: raw_manifest
+    #   path: chart-test/fixtures/gateway-api/crds.yaml     # file path (relative to project root)
+    #   # namespace: default                                 # optional namespace
 
 product:
   chart: ./chart

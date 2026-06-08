@@ -1,0 +1,79 @@
+---
+id: service-mesh-istio-sidecar-live
+name: "Istio Sidecar Mesh — Live mTLS Verification"
+description: >-
+  Installs istio/base + istio/istiod, pre-labels the product namespace
+  istio-injection=enabled via raw_manifest, deploys the chart with
+  mesh.inject=true, and proves: (1) istiod is Ready and the sidecar injector
+  webhook is present, (2) every product pod has exactly 2 containers including
+  istio-proxy, (3) in-mesh traffic to the product Service returns HTTP 200 and
+  the connection is mTLS — confirmed via istio-proxy stats reporting non-zero
+  inbound SSL handshakes. Emits a PASS artifact bundle with 2-container pod
+  manifest, applied-overrides recording inject: true, and versions.json.
+labels: {customer: any, profile: mesh}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: istio/base
+      version: 1.27.9
+      release: istio-base
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    - kind: helm
+      chart: istio/istiod
+      version: 1.27.9
+      release: istiod
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        pilot:
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "384Mi"
+        global:
+          proxy:
+            holdApplicationUntilProxyStarts: true
+      wait: pods-ready
+      wait_timeout: 5m
+    - kind: raw_manifest
+      path: chart-test/fixtures/service-mesh/istio-inject-namespace.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    mesh.inject: "true"
+asserts:
+  - type: helm-status-deployed
+    release: istio-base
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istiod
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: istio-system
+    selector: app=istiod
+    timeout: 5m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/istio-sidecar-live.sh
+tags: [nightly, curated-live]
+mechanisms: ['addon:istio', 'mesh:istio-sidecar']
+category: service-mesh
+integration: istio
+tier: live

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Getting Started — chart-test-swarm</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <h1>Getting Started</h1>
+    <p class="hint">Quick-start guide for testing your Helm chart.</p>
+  </div>
+  {% include "_nav.html.j2" %}
+</header>
+
+<!-- Prerequisites Section -->
+<section class="gs-section">
+  <h2>Prerequisites</h2>
+  <p class="hint">The following tools must be installed before you begin:</p>
+
+  <div class="prereq-list">
+    {% for prereq in prereqs %}
+    <div class="prereq-item {% if prereq.installed %}prereq-installed{% else %}prereq-missing{% endif %}">
+      <span class="prereq-status">
+        {% if prereq.installed %}
+          <span class="status-icon status-pass" title="Installed">✓</span>
+        {% else %}
+          <span class="status-icon status-fail" title="Not installed">✗</span>
+        {% endif %}
+      </span>
+      <span class="prereq-name">{{ prereq.display_name or prereq.name }}</span>
+      {% if not prereq.installed and prereq.install_hint %}
+        <code class="prereq-hint">{{ prereq.install_hint }}</code>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Cluster Status Section -->
+<section class="gs-section">
+  <h2>Cluster Status</h2>
+  <div class="cluster-status {% if cluster_running %}cluster-running{% else %}cluster-stopped{% endif %}">
+    <span class="status-badge">
+      {% if cluster_running %}
+        <span class="status-icon status-pass">●</span> Running
+      {% else %}
+        <span class="status-icon status-fail">●</span> Not running
+      {% endif %}
+    </span>
+    <p class="hint">
+      {% if cluster_running %}
+        A chart-test-swarm kind cluster is active. You can run scenarios now.
+      {% else %}
+        No chart-test-swarm kind cluster detected. Run Step 2 to create one.
+      {% endif %}
+    </p>
+  </div>
+</section>
+
+<!-- Fastest Path: One Command -->
+<section class="gs-section">
+  <h2>Fastest Path: One Command</h2>
+  <p class="hint">
+    Want to jump straight in? The <code>/helm-swarm-test</code> Droid skill wraps
+    <code>chart-test-swarm test</code> into a single command that verifies
+    prerequisites, spins up the cluster, runs the full support matrix, auto-fixes
+    failures, and updates the dashboard — all in one shot.
+  </p>
+  <div class="step-card">
+    <div class="step-content">
+      <p>Run the agentic full-matrix test loop:</p>
+      <div class="code-block">
+        <pre><code>chart-test-swarm test</code></pre>
+        <button class="btn-copy" onclick="copyToClipboard(this)" title="Copy to clipboard">Copy</button>
+      </div>
+      <p class="hint">
+        Use <code>/helm-swarm-test</code> for interactive mode or
+        <code>chart-test-swarm test</code> for headless/CI.  See
+        <code>chart-test-swarm test --help</code> for all options including
+        <code>--no-fix</code>, <code>--suite</code>, and <code>--keep-cluster</code>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Step-by-Step Workflow -->
+<section class="gs-section">
+  <h2>Workflow</h2>
+  <p class="hint">Follow these steps to test your Helm chart:</p>
+
+  <div class="step-list">
+
+    <!-- Step 1: Verify -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-number">1</span>
+        <span class="step-title">Verify Prerequisites</span>
+      </div>
+      <div class="step-content">
+        <p>Check that all required tools are installed and working.</p>
+        <div class="code-block">
+          <pre><code>make verify</code></pre>
+          <button class="btn-copy" onclick="copyToClipboard(this)" title="Copy to clipboard">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Create Cluster -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-number">2</span>
+        <span class="step-title">Create Cluster</span>
+      </div>
+      <div class="step-content">
+        <p>Spin up a local kind cluster with all dependencies.</p>
+        <div class="code-block">
+          <pre><code>make up</code></pre>
+          <button class="btn-copy" onclick="copyToClipboard(this)" title="Copy to clipboard">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Run Scenarios -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-number">3</span>
+        <span class="step-title">Run Scenarios</span>
+      </div>
+      <div class="step-content">
+        <p>Execute test scenarios against your chart.</p>
+        <div class="code-block">
+          <pre><code>chart-test-swarm run --suite curated-live</code></pre>
+          <button class="btn-copy" onclick="copyToClipboard(this)" title="Copy to clipboard">Copy</button>
+        </div>
+        <p class="hint">Or run all scenarios:</p>
+        <div class="code-block">
+          <pre><code>chart-test-swarm run --all</code></pre>
+          <button class="btn-copy" onclick="copyToClipboard(this)" title="Copy to clipboard">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: View Results -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-number">4</span>
+        <span class="step-title">View Results</span>
+      </div>
+      <div class="step-content">
+        <p>See the results of your test runs in the dashboard.</p>
+        <div class="step-link">
+          <a href="runs.html" class="nav-link">Open Runs Page →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Fix Failures -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-number">5</span>
+        <span class="step-title">Fix Failures</span>
+      </div>
+      <div class="step-content">
+        <p>Review recommendations and apply fixes to your chart.</p>
+        <div class="step-link">
+          <a href="recommendations.html" class="nav-link">Open Recommendations →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6: Tear Down -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-number">6</span>
+        <span class="step-title">Tear Down</span>
+      </div>
+      <div class="step-content">
+        <p>Clean up the cluster when you're done testing.</p>
+        <div class="code-block">
+          <pre><code>make down</code></pre>
+          <button class="btn-copy" onclick="copyToClipboard(this)" title="Copy to clipboard">Copy</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+function copyToClipboard(button) {
+  const codeBlock = button.previousElementSibling;
+  const code = codeBlock.querySelector('code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
+    button.classList.add('btn-copy-success');
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.classList.remove('btn-copy-success');
+    }, 1500);
+  }).catch(() => {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = code;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>

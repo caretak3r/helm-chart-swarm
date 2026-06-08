@@ -3,15 +3,87 @@
 # write per-agent briefs + run-meta.yaml + scenarios-snapshot.yaml.
 #
 # Usage:   dispatch-swarm.sh <project-dir> [suite] [num-agents] [run-id]
-# Env:     overrides PROJECT_DIR / SUITE / NUM_AGENTS / RUN_ID
+# Env:     overrides PROJECT_DIR / SUITE / NUM_AGENTS / RUN_ID / CLUSTER_NAME
 #          REPORTS_DIR  override reports root (default: $PROJECT_DIR/chart-test/reports
 #                       if chart-test/ exists, else $ROOT_DIR/reports)
 set -euo pipefail
 
+# ---- Usage banner (checked before bash version preflight so --help always works) ----
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") <project-dir> [suite] [num-agents] [run-id] [OPTIONS]
+
+Resolve a suite into a list of scenarios, round-robin them across N agents,
+write per-agent briefs + run-meta.yaml + scenarios-snapshot.yaml.
+When --run is specified, also execute each scenario sequentially on fresh
+kind clusters and write per-scenario result.yaml + artifacts/.
+
+Options:
+  --help     Show this usage banner and exit
+  --dry-run  Resolve scenarios only; print matched ids and exit 0
+             without creating run directories or dispatching agents
+  --run      Execute each matched scenario via run-scenario.sh after
+             creating the run directory structure. Scenarios are run
+             sequentially with KEEP_CLUSTER=0 / KEEP_ON_FAILURE=0 so
+             clusters are always torn down. A run-level result.yaml
+             summarizing all scenario outcomes is written on completion.
+
+Arguments:
+  project-dir  Path to the consumer chart project (containing chart-test-swarm.yaml)
+  suite        Suite name defined in chart-test-swarm.yaml, or "all" to
+               enumerate every scenario recursively across category subdirs
+               (VAL-CAT-002). Default: pr-subset
+  num-agents   Number of parallel agents (default: 2)
+  run-id       Run identifier (default: run-<timestamp>)
+
+Environment:
+  PROJECT_DIR   Override project directory
+  SUITE         Override suite name
+  NUM_AGENTS    Override number of agents
+  RUN_ID        Override run identifier
+  CLUSTER_NAME  Cluster name (must match ^chart-test-swarm-[a-z0-9-]+\$)
+  REPORTS_DIR   Override reports root directory
+  CTS_INCLUDE_CLOUD_NATIVE  Set to 1 to include authored-only cloud-native
+                            scenarios in dispatch (default: 0)
+  KEEP_CLUSTER     Default 1 (keep on success); forced to 0 when --run
+  KEEP_ON_FAILURE  Default 0 (tear down on failure); forced to 0 when --run
+EOF
+  exit 0
+}
+
+case "${1:-}" in
+  --help|-h) usage ;;
+esac
+
+# ---- Parse flags from any argument position ----
+_DRY_RUN=0
+_EXECUTE_RUN=0
+_args=()
+for _a in "$@"; do
+  case "$_a" in
+    --dry-run) _DRY_RUN=1 ;;
+    --run)     _EXECUTE_RUN=1 ;;
+    *)         _args+=("$_a") ;;
+  esac
+done
+set -- "${_args[@]}"
+
+# ---- Bash version preflight (VAL-ENGINE-039) ----
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+  echo "ERROR: bash >= 4 required (running ${BASH_VERSION:-unknown})." >&2
+  echo "       Install modern bash: brew install bash" >&2
+  echo "       Then re-run with: /opt/homebrew/bin/bash $0 $*" >&2
+  exit 1
+fi
+
 PROJECT_DIR="${PROJECT_DIR:-${1:?usage: dispatch-swarm.sh <project-dir> [suite] [num-agents] [run-id]}}"
 SUITE="${SUITE:-${2:-pr-subset}}"
 NUM_AGENTS="${NUM_AGENTS:-${3:-2}}"
-RUN_ID="${RUN_ID:-${4:-run-$(date +%Y%m%d-%H%M%S)}}"
+# Default RUN_ID includes PID ($$) for uniqueness across concurrent dispatches (VAL-CROSS-028)
+RUN_ID="${RUN_ID:-${4:-run-$(date +%Y%m%d-%H%M%S)-$$}}"
+
+# Default cluster name satisfies ^chart-test-swarm-[a-z0-9-]+$
+CLUSTER_NAME="${CLUSTER_NAME:-chart-test-swarm-default}"
 
 command -v yq >/dev/null 2>&1 || { echo "ERROR: yq required" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "ERROR: jq required" >&2; exit 1; }
@@ -20,6 +92,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ROOT_DIR="$(cd "$ENGINE_DIR/.." && pwd)"
 TEMPLATE="$ENGINE_DIR/templates/agent-brief.md.tmpl"
+
+# Source the shared prefix guard — exits 1 if CLUSTER_NAME doesn't match ^chart-test-swarm-[a-z0-9-]+$
+. "$SCRIPT_DIR/lib/prefix-check.sh"
+
+export CLUSTER_NAME
 
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 CONFIG="$PROJECT_DIR/chart-test-swarm.yaml"
@@ -31,29 +108,154 @@ SCEN_REL=$(yq    '.scenarios_dir // "chart-test/scenarios"' "$CONFIG")
 SCEN_DIR="$PROJECT_DIR/$SCEN_REL"
 [ -d "$SCEN_DIR" ] || { echo "ERROR: scenarios dir missing: $SCEN_DIR" >&2; exit 1; }
 
-# Tag filter for this suite (JSON array)
-TAG_FILTER=$(yq -o=json ".suites.\"$SUITE\".tag_filter // []" "$CONFIG")
-if [ "$(echo "$TAG_FILTER" | jq 'length')" -eq 0 ]; then
-  echo "ERROR: suite '$SUITE' not defined or has empty tag_filter in $CONFIG" >&2
-  exit 1
+# ---- Suite resolution ─────────────────────────────────────────────────────
+# Special suite name "all": enumerate every YAML file under the scenarios dir
+# recursively, bypassing tag filtering entirely.  This supports
+# `chart-test-swarm run --all` / `dispatch-swarm.sh <project> all` which
+# discovers scenarios across category subdirectories (VAL-CAT-002).
+#
+# Regular suites: read tag_filter from chart-test-swarm.yaml and match.
+#
+# CTS_SCENARIOS (from CLI wrapper) takes precedence over both paths:
+# newline-separated list of absolute scenario file paths.
+
+if [ -n "${CTS_SCENARIOS:-}" ]; then
+  # ── CTS_SCENARIOS provided (CLI --scenario / --integration / --all) ────
+  MATCHED=()
+  while IFS= read -r f; do
+    [ -n "$f" ] && MATCHED+=("$f")
+  done <<< "$CTS_SCENARIOS"
+  COUNT=${#MATCHED[@]}
+  if [ "$COUNT" -eq 0 ]; then
+    echo "ERROR: CTS_SCENARIOS was set but empty" >&2
+    exit 1
+  fi
+  echo "==> CLI provided $COUNT scenario(s); dispatching to $NUM_AGENTS agent(s)"
+elif [ "$SUITE" = "all" ]; then
+  # ── Suite "all": enumerate every YAML recursively (VAL-CAT-002) ────────
+  ALL_FILES=()
+  while IFS= read -r f; do
+    ALL_FILES+=("$f")
+  done < <(find "$SCEN_DIR" -type f \( -name "*.yaml" -o -name "*.yml" \) | sort)
+
+  # Filter by tier: skip authored-only cloud-native scenarios unless opted in.
+  # Local-backend scenarios of any tier (live, capability) are included.
+  _CLOUD_INCLUDE="${CTS_INCLUDE_CLOUD_NATIVE:-0}"
+
+  MATCHED=()
+  for f in "${ALL_FILES[@]}"; do
+    _tier=$(yq '.tier // ""' "$f")
+    _prov=$(yq '.cluster.provider // ""' "$f")
+    # Skip authored-only scenarios unless explicitly opted in
+    if [ "$_tier" = "authored-only" ] && [ "$_CLOUD_INCLUDE" != "1" ]; then
+      continue
+    fi
+    # Also skip cloud-provider scenarios (gke/eks/aks) unless opted in
+    if echo "$_prov" | grep -qE 'gke|eks|aks' && [ "$_CLOUD_INCLUDE" != "1" ]; then
+      continue
+    fi
+    MATCHED+=("$f")
+  done
+
+  COUNT=${#MATCHED[@]}
+  if [ "$COUNT" -eq 0 ]; then
+    echo "ERROR: no runnable scenarios found under $SCEN_DIR (after filtering authored-only)" >&2
+    exit 1
+  fi
+  echo "==> Suite 'all' matched $COUNT scenario(s) (recursive walk); dispatching to $NUM_AGENTS agent(s)"
+else
+  # ── Regular suite: tag-based filtering ─────────────────────────────────
+  TAG_FILTER=$(yq -o=json ".suites.\"$SUITE\".tag_filter // []" "$CONFIG")
+  if [ "$(echo "$TAG_FILTER" | jq 'length')" -eq 0 ]; then
+    echo "ERROR: suite '$SUITE' not defined or has empty tag_filter in $CONFIG" >&2
+    exit 1
+  fi
+
+  # Bash 3.2 compatible: avoid mapfile, use while-read loop
+  ALL_FILES=()
+  while IFS= read -r f; do
+    ALL_FILES+=("$f")
+  done < <(find "$SCEN_DIR" -type f \( -name "*.yaml" -o -name "*.yml" \) | sort)
+
+  MATCHED=()
+  for f in "${ALL_FILES[@]}"; do
+    s_tags=$(yq -o=json '.tags // []' "$f")
+    hit=$(jq -n --argjson a "$TAG_FILTER" --argjson b "$s_tags" \
+          '[ $a[] | select(. as $x | $b | index($x) != null) ] | length')
+    [ "$hit" -gt 0 ] && MATCHED+=("$f")
+  done
+
+  COUNT=${#MATCHED[@]}
+  if [ "$COUNT" -eq 0 ]; then
+    echo "ERROR: no scenarios matched suite '$SUITE' (tag_filter=$TAG_FILTER)" >&2
+    exit 1
+  fi
+  echo "==> Suite '$SUITE' matched $COUNT scenario(s); dispatching to $NUM_AGENTS agent(s)"
 fi
 
-# Collect matching scenarios (any tag overlap with filter)
-mapfile -t ALL_FILES < <(find "$SCEN_DIR" -type f \( -name "*.yaml" -o -name "*.yml" \) | sort)
-MATCHED=()
-for f in "${ALL_FILES[@]}"; do
-  s_tags=$(yq -o=json '.tags // []' "$f")
-  hit=$(jq -n --argjson a "$TAG_FILTER" --argjson b "$s_tags" \
-        '[ $a[] | select(. as $x | $b | index($x) != null) ] | length')
-  [ "$hit" -gt 0 ] && MATCHED+=("$f")
+# ---- Cloud-native authored-only guard (VAL-CLOUD-012) ----
+# Cloud-native scenarios (gke, eks, aks) are authored only — they must NOT
+# trigger any cluster operations, cloud CLI calls, or kubectl --context.
+# Filter them out unless CTS_INCLUDE_CLOUD_NATIVE=1 is set.
+CLOUD_PROVIDERS='gke|eks|aks'
+_LOCAL_ONLY=()
+_CLOUD_SKIPPED=()
+_CLOUD_INCLUDE="${CTS_INCLUDE_CLOUD_NATIVE:-0}"
+
+for f in "${MATCHED[@]}"; do
+  _prov=$(yq '.cluster.provider // ""' "$f")
+  if echo "$_prov" | grep -qE "$CLOUD_PROVIDERS"; then
+    if [ "$_CLOUD_INCLUDE" = "1" ]; then
+      _LOCAL_ONLY+=("$f")
+      echo "  (authored-only) $f" >&2
+    else
+      _CLOUD_SKIPPED+=("$f")
+    fi
+  else
+    _LOCAL_ONLY+=("$f")
+  fi
 done
 
-COUNT=${#MATCHED[@]}
-if [ "$COUNT" -eq 0 ]; then
-  echo "ERROR: no scenarios matched suite '$SUITE' (tag_filter=$TAG_FILTER)" >&2
-  exit 1
+# If ALL matched scenarios are cloud-native and not explicitly included,
+# emit the skip message and exit 0 — do not start any cluster ops.
+# Fix: check that _LOCAL_ONLY is empty (zero entries), not that it equals
+# the cloud-skipped count (which is wrong when counts happen to match).
+if [ "${#_LOCAL_ONLY[@]}" -eq 0 ] && [ "${#_CLOUD_SKIPPED[@]}" -gt 0 ]; then
+  echo "==> All ${#_CLOUD_SKIPPED[@]} matched scenario(s) are cloud-native — authored only; skipping cluster operations." >&2
+  echo "    Re-run with CTS_INCLUDE_CLOUD_NATIVE=1 to include them (note: they will still be" >&2
+  echo "    authored only — no real GKE/EKS/AKS cluster operations are invoked)." >&2
+  exit 0
 fi
-echo "==> Suite '$SUITE' matched $COUNT scenario(s); dispatching to $NUM_AGENTS agent(s)"
+
+# If some cloud-native scenarios were skipped, note it
+if [ "${#_CLOUD_SKIPPED[@]}" -gt 0 ]; then
+  echo "==> Skipped ${#_CLOUD_SKIPPED[@]} cloud-native scenario(s) (authored only)." >&2
+  echo "    Re-run with CTS_INCLUDE_CLOUD_NATIVE=1 to include them in the dispatch." >&2
+fi
+
+# Replace MATCHED with local-only scenarios (plus cloud-native if opted in)
+MATCHED=("${_LOCAL_ONLY[@]}")
+COUNT=${#MATCHED[@]}
+
+if [ "$COUNT" -eq 0 ]; then
+  echo "==> No local-backend scenarios to dispatch after filtering cloud-native." >&2
+  exit 0
+fi
+
+echo "==> $COUNT local-backend scenario(s) will be dispatched."
+
+# ---- Dry-run: print matched scenario ids and exit 0 ----
+# (VAL-CLOUDX-009) Under --dry-run, only the resolved scenario list is printed;
+# no run directories, briefs, or cluster operations are created.
+if [ "$_DRY_RUN" -eq 1 ]; then
+  echo "==> --dry-run: resolved $COUNT scenario(s):"
+  for f in "${MATCHED[@]}"; do
+    _sid=$(yq '.id' "$f")
+    echo "  $_sid  ($f)"
+  done
+  echo "==> --dry-run complete; no dispatch performed."
+  exit 0
+fi
 
 # Reports root: explicit env > project's chart-test/reports > engine root reports
 if [ -n "${REPORTS_DIR:-}" ]; then
@@ -64,9 +266,28 @@ else
   _REPORTS_ROOT="$ROOT_DIR/reports"
 fi
 RUN_DIR="$_REPORTS_ROOT/$RUN_ID"
-mkdir -p "$RUN_DIR"
 
-# run-meta.yaml
+# ---- RUN_ID collision detection (VAL-CROSS-028) ----
+# Ensure the parent reports directory exists
+mkdir -p "$_REPORTS_ROOT"
+
+# Use atomic mkdir (without -p) so we can detect collisions.
+# Default RUN_ID includes PID ($$) for per-process uniqueness; explicit
+# RUN_ID collisions are handled with a retry counter.
+_attempt=0
+_original_run_id="$RUN_ID"
+while ! mkdir "$RUN_DIR" 2>/dev/null; do
+  _attempt=$((_attempt + 1))
+  if [ "$_attempt" -gt 9 ]; then
+    echo "ERROR: could not create unique run directory after 10 attempts: $RUN_DIR" >&2
+    echo "       Use a different RUN_ID to avoid collisions." >&2
+    exit 1
+  fi
+  RUN_ID="${_original_run_id}-${_attempt}"
+  RUN_DIR="$_REPORTS_ROOT/$RUN_ID"
+done
+
+# run-meta.yaml — reflect actual mix of providers/k8s_versions (VAL-ENGINE-036)
 CHART_NAME=""
 CHART_VERSION=""
 # Best-effort: parse the first scenario's product.chart, then look for Chart.yaml.
@@ -80,13 +301,33 @@ if [ -f "$cabs/Chart.yaml" ]; then
   CHART_VERSION=$(yq '.version' "$cabs/Chart.yaml")
 fi
 
-cat > "$RUN_DIR/run-meta.yaml" <<META
+# Collect all unique providers and k8s_versions across matched scenarios
+ALL_PROVIDERS=()
+ALL_K8S_VERSIONS=()
+for f in "${MATCHED[@]}"; do
+  p=$(yq '.cluster.provider // "kind"' "$f")
+  k=$(yq '.cluster.k8s_version // ""' "$f")
+  ALL_PROVIDERS+=("$p")
+  ALL_K8S_VERSIONS+=("$k")
+done
+
+# Check for mixed providers and either list them or refuse
+UNIQUE_PROVIDERS=$(printf '%s\n' "${ALL_PROVIDERS[@]}" | sort -u)
+PROVIDER_COUNT=$(printf '%s\n' "${UNIQUE_PROVIDERS[@]}" | wc -l | tr -d ' ')
+
+if [ "$PROVIDER_COUNT" -gt 1 ]; then
+  # Record all providers as a YAML list
+  PROVIDER_YAML=$(printf '%s\n' "${UNIQUE_PROVIDERS[@]}" | sed 's/^/  - /')
+  K8S_YAML=$(printf '%s\n' "${ALL_K8S_VERSIONS[@]}" | sort -u | grep -v '^$' | sed 's/^/  - /')
+  cat > "$RUN_DIR/run-meta.yaml" <<META
 run_id: $RUN_ID
 timestamp_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 num_agents: $NUM_AGENTS
 suite: $SUITE
-cluster_provider: $(yq '.cluster.provider // "kind"' "${MATCHED[0]}")
-k8s_version: $(yq '.cluster.k8s_version // ""' "${MATCHED[0]}")
+cluster_provider:
+${PROVIDER_YAML}
+k8s_version:
+${K8S_YAML}
 project:
   name: $PROJECT_NAME
   dir: $PROJECT_DIR
@@ -94,8 +335,28 @@ chart:
   name: ${CHART_NAME:-unknown}
   version: ${CHART_VERSION:-unknown}
 META
+else
+  # Homogeneous — use scalar (backward compatible)
+  FIRST_PROVIDER=$(printf '%s\n' "${UNIQUE_PROVIDERS[@]}" | head -1)
+  FIRST_K8S=$(printf '%s\n' "${ALL_K8S_VERSIONS[@]}" | head -1)
+  cat > "$RUN_DIR/run-meta.yaml" <<META
+run_id: $RUN_ID
+timestamp_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+num_agents: $NUM_AGENTS
+suite: $SUITE
+cluster_provider: ${FIRST_PROVIDER}
+k8s_version: "${FIRST_K8S}"
+project:
+  name: $PROJECT_NAME
+  dir: $PROJECT_DIR
+chart:
+  name: ${CHART_NAME:-unknown}
+  version: ${CHART_VERSION:-unknown}
+META
+fi
 
 # scenarios-snapshot.yaml — frozen copy of each scenario's metadata
+# Includes product + asserts per scenario (VAL-ENGINE-031)
 {
   echo "scenarios:"
   for f in "${MATCHED[@]}"; do
@@ -105,19 +366,21 @@ META
       "description": .description // "",
       "labels": .labels // {},
       "cluster": .cluster,
+      "product": .product,
+      "asserts": .asserts,
       "tags": .tags // [],
       "mechanisms": .mechanisms // []
     }' "$f" | sed 's/^/  /' | sed '1s/^  /- /'
   done
 } > "$RUN_DIR/scenarios-snapshot.yaml"
 
-# Round-robin scenarios into N agent buckets
+# Round-robin scenarios into N agent buckets (Bash 3.2 compatible)
 declare -a BUCKETS
-for i in $(seq 1 "$NUM_AGENTS"); do BUCKETS[$i]=""; done
+for i in $(seq 1 "$NUM_AGENTS"); do BUCKETS[i]=""; done
 i=0
 for f in "${MATCHED[@]}"; do
   slot=$(( (i % NUM_AGENTS) + 1 ))
-  BUCKETS[$slot]="${BUCKETS[$slot]}${f}"$'\n'
+  BUCKETS[slot]="${BUCKETS[slot]}${f}"$'\n'
   i=$((i + 1))
 done
 
@@ -132,16 +395,23 @@ while IFS= read -r d; do
 done < <(find "$_REPORTS_ROOT" -mindepth 1 -maxdepth 1 -type d -name "run-*" 2>/dev/null | sort -r)
 
 # Per-agent brief generation
+# IMPORTANT (VAL-ENGINE-037): We use awk-based substitution instead of envsubst
+# or sed to prevent re-expansion of $VAR / ${VAR} in scenario name/description
+# fields AND to handle multi-line replacement strings correctly on both GNU
+# and BSD (macOS) platforms.
 for n in $(seq 1 "$NUM_AGENTS"); do
   agent_dir="$RUN_DIR/agent-$n"
   mkdir -p "$agent_dir"
   brief="$agent_dir/brief.md"
 
   # Build a markdown bullet list of this agent's scenarios
+  # Use single-quoted yq expressions and printf '%s' to prevent shell expansion
+  # of any $VAR in scenario name/description fields.
   assigned_md=""
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     sid=$(yq   '.id'                "$f")
+    # Use printf '%s' to avoid shell interpreting $ in names/descriptions
     snam=$(yq  '.name // ""'        "$f")
     sdesc=$(yq '.description // ""' "$f")
     assigned_md+="- **\`$sid\`** — $snam"$'\n'
@@ -156,15 +426,177 @@ for n in $(seq 1 "$NUM_AGENTS"); do
     pitfalls_md+=$'\n'
   fi
 
-  # Render template via simple substitution
-  AGENT_N="$n" \
-  NUM_AGENTS="$NUM_AGENTS" \
-  RUN_ID="$RUN_ID" \
-  PROJECT_DIR="$PROJECT_DIR" \
-  ASSIGNED_SCENARIOS="$assigned_md" \
-  PRIOR_PITFALLS="$pitfalls_md" \
-  envsubst < "$TEMPLATE" > "$brief"
+  # Render template via awk — NOT envsubst — to prevent
+  # re-expansion of $VAR / ${VAR} in scenario fields (VAL-ENGINE-037).
+  # Use ENVIRON instead of -v to pass multi-line replacement strings,
+  # which awk -v cannot handle. This works on both GNU and BSD awk.
+  export _AWK_AGENT_N="$n"
+  export _AWK_NUM_AGENTS="$NUM_AGENTS"
+  export _AWK_RUN_ID="$RUN_ID"
+  export _AWK_PROJECT_DIR="$PROJECT_DIR"
+  export _AWK_ASSIGNED_SCENARIOS="$assigned_md"
+  export _AWK_PRIOR_PITFALLS="$pitfalls_md"
+  awk '{
+        gsub(/\$\{AGENT_N\}/, ENVIRON["_AWK_AGENT_N"]);
+        gsub(/\$\{NUM_AGENTS\}/, ENVIRON["_AWK_NUM_AGENTS"]);
+        gsub(/\$\{RUN_ID\}/, ENVIRON["_AWK_RUN_ID"]);
+        gsub(/\$\{PROJECT_DIR\}/, ENVIRON["_AWK_PROJECT_DIR"]);
+        gsub(/\$\{ASSIGNED_SCENARIOS\}/, ENVIRON["_AWK_ASSIGNED_SCENARIOS"]);
+        gsub(/\$\{PRIOR_PITFALLS\}/, ENVIRON["_AWK_PRIOR_PITFALLS"]);
+        print;
+      }' "$TEMPLATE" > "$brief"
 done
 
 echo "==> Briefs ready under $RUN_DIR/agent-*/brief.md"
 echo "==> RUN_ID=$RUN_ID"
+
+# ---- Execution phase (--run) ──────────────────────────────────────────
+# When --run is specified, execute each matched scenario sequentially via
+# run-scenario.sh.  Each scenario gets its own fresh kind cluster which is
+# always torn down after the scenario completes (PASS or FAIL).
+#
+# VAL-E2E-002: each live/capability/gap-probe member produces a result.yaml
+# VAL-E2E-010: no orphan kind clusters after completion
+# VAL-E2E-011: no orphan docker containers after completion
+
+if [ "$_EXECUTE_RUN" -eq 1 ]; then
+  echo ""
+  echo "==> --run: executing $COUNT scenario(s) sequentially..."
+
+  # Save the run id before clearing RUN_ID for run-scenario.sh
+  _dispatch_run_id="$RUN_ID"
+
+  # Force cluster teardown on both success and failure paths
+  export KEEP_CLUSTER=0
+  export KEEP_ON_FAILURE=0
+  # Point reports root at the run directory so scenario results land inside it
+  export REPORTS_DIR="$RUN_DIR"
+  # Unset RUN_ID for run-scenario.sh — we already set REPORTS_DIR to the
+  # run directory so scenario results go directly there without needing
+  # a RUN_ID-based subdirectory lookup.
+  export RUN_ID=""
+
+  _RUN_PASS=0
+  _RUN_FAIL=0
+  _RUN_SKIP=0
+  _RUN_IDX=0
+  _SCENARIO_RESULTS=()  # id=status pairs for run-level result.yaml
+
+  # Trap for cleanup on interrupt during execution
+  _exec_interrupted=0
+  _exec_cleanup() {
+    echo "" >&2
+    echo "==> SIGINT/SIGTERM received during execution — cleaning up" >&2
+    _exec_interrupted=1
+    for leftover in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' || true); do
+      echo "==> Removing leftover cluster: $leftover" >&2
+      kind delete cluster --name "$leftover" 2>/dev/null || true
+    done
+    exit 1
+  }
+  trap _exec_cleanup INT TERM
+
+  for f in "${MATCHED[@]}"; do
+    _RUN_IDX=$((_RUN_IDX + 1))
+    _sid=$(yq '.id' "$f")
+    # Use index-based cluster name to stay well under the 64-char hostname limit.
+    # kind appends -control-plane to the cluster name for the node hostname.
+    _cluster_name="chart-test-swarm-run-${_RUN_IDX}"
+
+    echo ""
+    echo "============================================================"
+    echo "==> [$_RUN_IDX/$COUNT] Running: $_sid"
+    echo "==> Cluster: $_cluster_name"
+    echo "==> Scenario file: $f"
+    echo "============================================================"
+
+    # Run the scenario — capture exit code
+    # REPORTS_DIR points at the run dir so scenario results land inside it
+    _scen_exit=0
+    env CLUSTER_NAME="$_cluster_name" \
+        KEEP_CLUSTER=0 \
+        KEEP_ON_FAILURE=0 \
+        REPORTS_DIR="$RUN_DIR" \
+        PROJECT_DIR="$PROJECT_DIR" \
+        bash "$SCRIPT_DIR/run-scenario.sh" "$f" \
+      || _scen_exit=$?
+
+    # Determine the scenario status from result.yaml
+    _scen_status="FAIL"
+    # Find the scenario result directory (under the run dir)
+    _scen_result_dir=""
+    _scen_result_dir=$(find "$RUN_DIR" -maxdepth 2 -type d -name "scenario-${_sid}-*" 2>/dev/null | sort | tail -1)
+
+    if [ -n "$_scen_result_dir" ] && [ -f "$_scen_result_dir/result.yaml" ]; then
+      # Use grep for status extraction — some result.yaml have multi-line
+      # notes that confuse yq's YAML parser (VAL-ENGINE-034)
+      _scen_status=$(grep -E '^status:' "$_scen_result_dir/result.yaml" 2>/dev/null | head -1 | sed 's/^status:[[:space:]]*//' || echo "")
+      if [ -z "$_scen_status" ]; then
+        _scen_status="FAIL"
+      fi
+    elif [ "$_scen_exit" -eq 0 ]; then
+      _scen_status="PASS"
+    fi
+
+    echo "==> RESULT: $_sid → $_scen_status (exit=$_scen_exit)"
+
+    # Track results
+    case "$_scen_status" in
+      PASS)     _RUN_PASS=$((_RUN_PASS + 1)) ;;
+      FAIL)     _RUN_FAIL=$((_RUN_FAIL + 1)) ;;
+      SKIP|INTERRUPTED) _RUN_SKIP=$((_RUN_SKIP + 1)) ;;
+      *)        _RUN_FAIL=$((_RUN_FAIL + 1)) ;;
+    esac
+
+    _SCENARIO_RESULTS+=("${_sid}=${_scen_status}")
+
+    # Ensure cluster is torn down regardless of result
+    if kind get clusters 2>/dev/null | grep -qx "$_cluster_name"; then
+      echo "==> Ensuring cluster $_cluster_name is removed..."
+      PROVIDER=kind CLUSTER_NAME="$_cluster_name" bash "$SCRIPT_DIR/cluster-down.sh" 2>/dev/null || true
+      kind delete cluster --name "$_cluster_name" 2>/dev/null || true
+    fi
+
+    # Check for interruption
+    if [ "${_exec_interrupted:-0}" = "1" ]; then
+      break
+    fi
+  done
+
+  # ---- Write run-level result.yaml ──────────────────────────────────
+  # Summarize all scenario results at the run level.
+  {
+    echo "run_id: $_dispatch_run_id"
+    echo "suite: $SUITE"
+    echo "timestamp_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "total: $COUNT"
+    echo "pass: $_RUN_PASS"
+    echo "fail: $_RUN_FAIL"
+    echo "skip: $_RUN_SKIP"
+    echo "scenarios:"
+    for entry in "${_SCENARIO_RESULTS[@]}"; do
+      _e_id="${entry%%=*}"
+      _e_status="${entry#*=}"
+      echo "  - id: $_e_id"
+      echo "    status: $_e_status"
+    done
+  } > "$RUN_DIR/result.yaml"
+
+  echo ""
+  echo "============================================================"
+  echo "==> Suite execution complete: $COUNT scenario(s)"
+  echo "==>   PASS: $_RUN_PASS"
+  echo "==>   FAIL: $_RUN_FAIL"
+  echo "==>   SKIP: $_RUN_SKIP"
+  echo "==>   Run dir: $RUN_DIR"
+  echo "============================================================"
+
+  # ---- Final cleanup: ensure no orphan clusters/containers ──────────
+  for leftover in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' || true); do
+    echo "WARN: removing leftover cluster: $leftover" >&2
+    kind delete cluster --name "$leftover" 2>/dev/null || true
+  done
+
+  # Reset trap to default
+  trap - INT TERM
+fi

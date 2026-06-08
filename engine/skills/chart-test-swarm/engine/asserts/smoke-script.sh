@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Assert: invoke a consumer-owned script. Contract:
-#   - script receives RELEASE, NAMESPACE, KUBECONFIG, PROJECT_DIR via env
+#   - script receives RELEASE, NAMESPACE, KUBECONFIG, KUBE_CONTEXT, PROJECT_DIR via env
 #   - exit 0 = PASS, non-zero = FAIL
 #   - stdout+stderr captured by run-scenario.sh
 set -euo pipefail
