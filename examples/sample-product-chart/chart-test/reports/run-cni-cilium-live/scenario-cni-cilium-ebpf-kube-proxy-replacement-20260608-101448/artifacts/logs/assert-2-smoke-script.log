@@ -1,0 +1,18 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-ebpf.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Cilium daemonset rollout (5m max)
+daemon set "cilium" successfully rolled out
+PASS: Cilium daemonset rolled out
+==> Getting Cilium agent pod name
+Cilium pod: cilium-7m4f6
+==> Reading cilium status via kubectl exec
+==> Asserting KubeProxyReplacement: True
+KubeProxyReplacement line: KubeProxyReplacement:    True   [eth0    172.20.0.3 fc00:f853:ccd:e793::3 fe80::8cc6:feff:fead:fb78 (Direct Routing)]
+PASS: KubeProxyReplacement is True
+==> Asserting no kube-proxy daemonset in kube-system
+PASS: kube-proxy daemonset NOT found (fully replaced by Cilium eBPF)
+==> Getting product Service ClusterIP
+Product Service ClusterIP: 10.96.148.70:80
+==> Probing product ClusterIP from in-cluster curl pod (proves eBPF datapath)
+ClusterIP probe HTTP code: 200
+PASS: Product ClusterIP reachable through Cilium eBPF datapath
+PASS: Cilium eBPF kube-proxy replacement verified

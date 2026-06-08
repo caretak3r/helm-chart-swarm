@@ -1,0 +1,14 @@
+run_id: run-cni-cilium-live
+suite: all
+timestamp_utc: 2026-06-08T14:18:39Z
+total: 3
+pass: 3
+fail: 0
+skip: 0
+scenarios:
+  - id: cni-cilium-ebpf-kube-proxy-replacement
+    status: PASS
+  - id: cni-cilium-ingress
+    status: PASS
+  - id: cni-cilium-network-policy
+    status: PASS

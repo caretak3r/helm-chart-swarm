@@ -1,0 +1,12 @@
+run_id: run-cni-cilium-live
+timestamp_utc: 2026-06-08T14:14:48Z
+num_agents: 1
+suite: all
+cluster_provider: kind
+k8s_version: ""
+project:
+  name: sample-product-chart
+  dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+chart:
+  name: sample-product
+  version: 0.1.0
