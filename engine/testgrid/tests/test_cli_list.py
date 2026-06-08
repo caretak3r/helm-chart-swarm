@@ -158,17 +158,17 @@ class TestListIntegrations:
             assert lines[2] == "service-mesh\tlinkerd"
 
     # -----------------------------------------------------------------------
-    # VAL-CLI-024: Production tree emits exactly 6 categories
+    # VAL-CLI-024: Production tree emits exactly 7 categories
     # -----------------------------------------------------------------------
 
-    def test_production_tree_emits_six_categories(self) -> None:
-        """list integrations against production tree emits exactly 6 categories."""
+    def test_production_tree_emits_seven_categories(self) -> None:
+        """list integrations against production tree emits exactly 7 categories."""
         result = runner.invoke(app, ["list", "integrations"])
         assert result.exit_code == 0, f"exit_code={result.exit_code}, stderr={result.stderr}"
 
         output = result.stdout.strip()
         lines = output.split("\n")
-        assert len(lines) >= 6, f"Expected at least 6 lines, got {len(lines)}: {lines}"
+        assert len(lines) >= 7, f"Expected at least 7 lines, got {len(lines)}: {lines}"
 
         # Extract unique categories
         categories = set()
@@ -183,6 +183,7 @@ class TestListIntegrations:
             "gateway-api",
             "service-mesh",
             "policy",
+            "cni",
             "cloud-native",
         }
         assert categories == expected, (
@@ -214,6 +215,7 @@ class TestListIntegrations:
                 "gateway-api",
                 "service-mesh",
                 "policy",
+                "cni",
                 "cloud-native",
             }, f"Unexpected category: {cat}"
 

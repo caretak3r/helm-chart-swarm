@@ -152,11 +152,14 @@ case "$PROVIDER" in
         # Install Cilium as the CNI (must happen BEFORE node-ready wait)
         bash "$SCRIPT_DIR/lib/install-cilium.sh"
 
+        cilium_context="kind-${CLUSTER_NAME}"
+        kubectl config use-context "$cilium_context" >/dev/null
+
         # Wait for Cilium daemonset, then all nodes to become Ready
         echo "==> Waiting for Cilium daemonset rollout..."
-        kubectl --context "kind-${CLUSTER_NAME}" -n kube-system rollout status ds/cilium --timeout=5m
+        kubectl -n kube-system rollout status ds/cilium --timeout=5m
         echo "==> Waiting for all nodes to become Ready..."
-        kubectl --context "kind-${CLUSTER_NAME}" wait --for=condition=Ready nodes --all --timeout=5m
+        kubectl wait --for=condition=Ready nodes --all --timeout=5m
       fi
       CONTEXT="kind-${CLUSTER_NAME}"
       # Set context for the duration of this script's execution

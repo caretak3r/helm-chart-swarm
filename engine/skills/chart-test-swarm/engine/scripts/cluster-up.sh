@@ -42,10 +42,13 @@ case "$PROVIDER" in
         SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
         bash "$SCRIPT_DIR/lib/install-cilium.sh"
 
+        cilium_context="kind-${CLUSTER_NAME}"
+        kubectl config use-context "$cilium_context" >/dev/null
+
         echo "==> Waiting for Cilium daemonset rollout..."
-        kubectl --context "kind-${CLUSTER_NAME}" -n kube-system rollout status ds/cilium --timeout=5m
+        kubectl -n kube-system rollout status ds/cilium --timeout=5m
         echo "==> Waiting for all nodes to become Ready..."
-        kubectl --context "kind-${CLUSTER_NAME}" wait --for=condition=Ready nodes --all --timeout=5m
+        kubectl wait --for=condition=Ready nodes --all --timeout=5m
       fi
       CONTEXT="kind-${CLUSTER_NAME}"
       kubectl config use-context "$CONTEXT" >/dev/null
