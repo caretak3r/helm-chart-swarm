@@ -112,9 +112,66 @@ restore_context() {
 }
 trap 'restore_context' EXIT
 
+# ---- Cilium CNI fast-fail for non-kind providers ----
+if [ "${CTS_CNI:-}" = "cilium" ] && [ "$PROVIDER" != "kind" ]; then
+  echo "ERROR: Cilium-as-CNI is only supported on kind (provider='$PROVIDER' requested)." >&2
+  echo "       Cilium must be installed during cluster bring-up, BEFORE the node-ready wait," >&2
+  echo "       which is only implemented for kind in this engine." >&2
+  exit 1
+fi
+
 case "$PROVIDER" in
   kind)
     command -v kind >/dev/null 2>&1 || { echo "ERROR: kind not installed (brew install kind)" >&2; exit 1; }
+
+    # ---- Cilium CNI support ----
+    if [ "${CTS_CNI:-}" = "cilium" ]; then
+      if kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
+        echo "==> kind cluster '$CLUSTER_NAME' already exists (CNI: Cilium)"
+      else
+        # With disableDefaultCNI:true in the kind config, nodes never become
+        # Ready until a CNI is installed. Create WITHOUT --wait so kind does
+        # not block indefinitely.
+        echo "==> Creating kind cluster '$CLUSTER_NAME' (provider=$PROVIDER, CNI=cilium, no --wait)"
+        args=(--name "$CLUSTER_NAME")
+        [ -n "$KIND_CONFIG" ] && args+=(--config "$KIND_CONFIG")
+        [ -n "$K8S_VERSION" ] && args+=(--image "kindest/node:${K8S_VERSION}")
+        kind create cluster "${args[@]}"
+
+        # Resolve the control-plane IP on the kind docker network.
+        # Cilium kube-proxy replacement needs the real API server host, not 127.0.0.1.
+        _cp_ip=$(docker inspect -f '{{.NetworkSettings.Networks.kind.IPAddress}}' "${CLUSTER_NAME}-control-plane" 2>/dev/null || echo "")
+        if [ -z "$_cp_ip" ]; then
+          echo "ERROR: unable to resolve control-plane IP for cluster '$CLUSTER_NAME' via docker inspect." >&2
+          echo "       Is the cluster up? Try: docker inspect -f '{{.NetworkSettings.Networks.kind.IPAddress}}' ${CLUSTER_NAME}-control-plane" >&2
+          exit 1
+        fi
+        export K8S_SERVICE_HOST="$_cp_ip"
+        echo "==> Resolved control-plane IP for Cilium: $K8S_SERVICE_HOST"
+
+        # Install Cilium as the CNI (must happen BEFORE node-ready wait)
+        bash "$SCRIPT_DIR/lib/install-cilium.sh"
+
+        # Wait for Cilium daemonset, then all nodes to become Ready
+        echo "==> Waiting for Cilium daemonset rollout..."
+        kubectl --context "kind-${CLUSTER_NAME}" -n kube-system rollout status ds/cilium --timeout=5m
+        echo "==> Waiting for all nodes to become Ready..."
+        kubectl --context "kind-${CLUSTER_NAME}" wait --for=condition=Ready nodes --all --timeout=5m
+      fi
+      CONTEXT="kind-${CLUSTER_NAME}"
+      # Set context for the duration of this script's execution
+      kubectl config use-context "$CONTEXT" >/dev/null
+      echo "==> Cluster nodes:"
+      kubectl get nodes
+      echo "==> OK: $CONTEXT ready (CNI: Cilium)"
+      if [ "$CTS_NO_CONTEXT_RESTORE" = "1" ]; then
+        echo "==> Note: kubeconfig context set to '$CONTEXT' (context restore deferred to caller)."
+      else
+        echo "==> Note: kubeconfig context was temporarily switched to '$CONTEXT' and will be restored on exit."
+      fi
+      exit 0
+    fi
+    # ---- End Cilium CNI support ----
 
     if kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
       echo "==> kind cluster '$CLUSTER_NAME' already exists"

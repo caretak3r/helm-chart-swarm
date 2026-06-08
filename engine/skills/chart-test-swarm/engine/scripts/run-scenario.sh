@@ -46,6 +46,22 @@ PRODUCT_RELEASE=$(yq  '.product.release'   "$SCENARIO")
 PRODUCT_NS=$(yq       '.product.namespace' "$SCENARIO")
 PRODUCT_VALUES=$(yq   '.product.values // ""' "$SCENARIO")
 
+# ---- Cilium CNI config ----
+CNI_PROVIDER=$(yq      '.cluster.cni.provider // ""'               "$SCENARIO")
+CNI_VERSION=$(yq       '.cluster.cni.version // ""'                "$SCENARIO")
+CNI_VALUES=$(yq        '.cluster.cni.values // ""'                 "$SCENARIO")
+CNI_KPR=$(yq           '.cluster.cni.kube_proxy_replacement // ""' "$SCENARIO")
+CTS_CNI="${CNI_PROVIDER:-}"
+CTS_CNI_VERSION="${CNI_VERSION:-}"
+CTS_CNI_VALUES=""
+CTS_CNI_KPR="${CNI_KPR:-}"
+[ "$CNI_PROVIDER" != "null" ] && [ -n "$CNI_PROVIDER" ] && CTS_CNI="$CNI_PROVIDER" || CTS_CNI=""
+[ "$CNI_VERSION"  != "null" ] && [ -n "$CNI_VERSION" ]  && CTS_CNI_VERSION="$CNI_VERSION"   || CTS_CNI_VERSION=""
+[ -n "$CNI_VALUES" ] && [ "$CNI_VALUES" != "null" ] && [ -n "$CNI_VALUES" ] && CTS_CNI_VALUES="$(resolve_path "$CNI_VALUES")" || CTS_CNI_VALUES=""
+[ "$CNI_KPR"      != "null" ] && [ -n "$CNI_KPR" ]      && CTS_CNI_KPR="$CNI_KPR"           || CTS_CNI_KPR=""
+# Export Cilium CNI vars for cluster-up.sh
+export CTS_CNI CTS_CNI_VERSION CTS_CNI_VALUES CTS_CNI_KPR
+
 TS="$(date +%Y%m%d-%H%M%S)"
 # Reports root: explicit env > project's chart-test/reports > engine root reports
 if [ -n "${REPORTS_DIR:-}" ]; then

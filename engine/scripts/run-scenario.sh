@@ -119,6 +119,22 @@ PRODUCT_RELEASE=$(yq  '.product.release'   "$SCENARIO")
 PRODUCT_NS=$(yq       '.product.namespace' "$SCENARIO")
 PRODUCT_VALUES=$(yq   '.product.values // ""' "$SCENARIO")
 
+# ---- Cilium CNI config ----
+CNI_PROVIDER=$(yq      '.cluster.cni.provider // ""'               "$SCENARIO")
+CNI_VERSION=$(yq       '.cluster.cni.version // ""'                "$SCENARIO")
+CNI_VALUES=$(yq        '.cluster.cni.values // ""'                 "$SCENARIO")
+CNI_KPR=$(yq           '.cluster.cni.kube_proxy_replacement // ""' "$SCENARIO")
+CTS_CNI="${CNI_PROVIDER:-}"
+CTS_CNI_VERSION="${CNI_VERSION:-}"
+CTS_CNI_VALUES=""
+CTS_CNI_KPR="${CNI_KPR:-}"
+[ "$CNI_PROVIDER" != "null" ] && [ -n "$CNI_PROVIDER" ] && CTS_CNI="$CNI_PROVIDER" || CTS_CNI=""
+[ "$CNI_VERSION"  != "null" ] && [ -n "$CNI_VERSION" ]  && CTS_CNI_VERSION="$CNI_VERSION"   || CTS_CNI_VERSION=""
+[ -n "$CNI_VALUES" ] && [ "$CNI_VALUES" != "null" ] && [ -n "$CNI_VALUES" ] && CTS_CNI_VALUES="$(resolve_path "$CNI_VALUES")" || CTS_CNI_VALUES=""
+[ "$CNI_KPR"      != "null" ] && [ -n "$CNI_KPR" ]      && CTS_CNI_KPR="$CNI_KPR"           || CTS_CNI_KPR=""
+# Export Cilium CNI vars for cluster-up.sh
+export CTS_CNI CTS_CNI_VERSION CTS_CNI_VALUES CTS_CNI_KPR
+
 scenario_context() {
   case "$PROVIDER" in
     kind) echo "kind-${CLUSTER_NAME}" ;;
@@ -263,6 +279,11 @@ copy_fixtures_early() {
       cp -f "$cfg_resolved" "$ARTIFACTS_DIR/fixtures/$(basename "$cfg_resolved")"
     fi
   fi
+
+  # Copy CNI values file if specified
+  if [ -n "$CTS_CNI_VALUES" ] && [ -f "$CTS_CNI_VALUES" ]; then
+    cp -f "$CTS_CNI_VALUES" "$ARTIFACTS_DIR/fixtures/$(basename "$CTS_CNI_VALUES")"
+  fi
 }
 copy_fixtures_early
 
@@ -333,6 +354,13 @@ rewrite_scenario_for_bundle() {
         fi
       fi
     done
+  fi
+
+  # Rewrite CNI values path if set
+  if [ -n "$CTS_CNI_VALUES" ] && [ -f "$CTS_CNI_VALUES" ]; then
+    local cni_values_basename
+    cni_values_basename=$(basename "$CTS_CNI_VALUES")
+    yq -i ".cluster.cni.values = \"./fixtures/$cni_values_basename\"" "$bundle_scenario"
   fi
 }
 rewrite_scenario_for_bundle
@@ -769,6 +797,13 @@ validate_fixture_paths() {
       echo "       No cluster will be created. Fix the path and re-run." >&2
       exit 1
     fi
+  fi
+
+  # Validate CNI values file if specified
+  if [ -n "$CTS_CNI_VALUES" ] && [ ! -f "$CTS_CNI_VALUES" ]; then
+    echo "ERROR: scenario '$SCEN_ID' cluster.cni.values file not found: $CTS_CNI_VALUES" >&2
+    echo "       No cluster will be created. Fix the path and re-run." >&2
+    exit 1
   fi
 }
 validate_fixture_paths

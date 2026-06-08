@@ -1,0 +1,9 @@
+# Project-level version overrides for chart-test-swarm.
+# Values here take precedence over engine/defaults/versions.yaml.
+# Engine defaults fill gaps for any keys not specified here.
+
+cni:
+  cilium:
+    chart: "cilium"
+    version: "1.19.4"
+    repo: "https://helm.cilium.io"

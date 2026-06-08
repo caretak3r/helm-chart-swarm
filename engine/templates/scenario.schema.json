@@ -30,6 +30,17 @@
         "preinstall":   {
           "type": "array",
           "items": { "$ref": "#/$defs/preinstall_item" }
+        },
+        "cni": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["provider"],
+          "properties": {
+            "provider": { "enum": ["cilium"] },
+            "version":  { "type": "string", "description": "Cilium chart version; falls back to versions.yaml cni.cilium.version, then engine default." },
+            "values":   { "type": "string", "description": "Project-relative path to a Cilium helm values file (ingress controller, policy modes, etc.)." },
+            "kube_proxy_replacement": { "type": "boolean", "default": true, "description": "Install Cilium in full eBPF kube-proxy replacement mode." }
+          }
         }
       }
     },
