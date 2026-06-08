@@ -1,0 +1,33 @@
+---
+id: cni-cilium-ebpf-kube-proxy-replacement
+name: "Cilium eBPF kube-proxy replacement"
+description: "Proves full eBPF kube-proxy replacement on kind: Cilium replaces kube-proxy, product ClusterIP reachable through eBPF datapath."
+labels: {customer: any, profile: cni}
+cluster:
+  provider: kind
+  config: chart-test/fixtures/cni/kind-cilium.yaml
+  cni:
+    provider: cilium
+    kube_proxy_replacement: true
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    ingress.enabled: "false"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/cni/cilium-ebpf.sh
+tags: [nightly]
+mechanisms: ['addon:cilium']
+category: cni
+integration: cilium
+tier: live
