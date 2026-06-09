@@ -1,0 +1,29 @@
+---
+id: serviceaccount-annotations-off
+name: "Capability: ServiceAccount identity annotations absent when unset (OFF)"
+description: >-
+  Renders the product chart with serviceAccount.create=true and no annotation overrides, then asserts the ServiceAccount does NOT carry any cloud-identity annotation keys (IRSA, Azure WI, GKE WI). The sample chart does NOT include a serviceaccount.yaml template — no ServiceAccount is rendered at all. Since no ServiceAccount exists, the off-case is vacuously satisfied. This scenario is EXPECTED to PASS — confirming no cloud-identity annotation leakage (and no ServiceAccount) when the knob is off.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    serviceAccount.create: true
+asserts:
+  - type: serviceaccount-annotations
+    namespace: sample
+    source: rendered
+    expect_present: false
+    identity_keys:
+      - eks.amazonaws.com/role-arn
+      - azure.workload.identity/client-id
+      - iam.gke.io/gcp-service-account
+tags: [capability, compliance]
+category: capability
+capability: serviceaccount-identity
+tier: capability
+mechanisms: ["capability:serviceaccount-annotations"]

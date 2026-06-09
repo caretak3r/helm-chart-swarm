@@ -1,0 +1,12 @@
+run_id: run-bats-f17-3-single-30520
+timestamp_utc: 2026-06-05T14:00:45Z
+num_agents: 1
+suite: curated-live
+cluster_provider: kind
+k8s_version: "v1.30.0"
+project:
+  name: sample-product-chart
+  dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+chart:
+  name: sample-product
+  version: 0.1.0

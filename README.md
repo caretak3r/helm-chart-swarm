@@ -16,7 +16,7 @@ consumer chart repo                 chart-test-swarm engine
     ├── chart-test-swarm.yaml  ──▶      ├── scripts/    (cluster lifecycle, scenario runner, dispatch, dashboard, benchmark)
     ├── scenarios/*.yaml                ├── asserts/    (60+ assertion scripts)
     ├── fixtures/*.yaml                 ├── templates/  (scenario schema, agent-brief, CI)
-    └── assertions/*.sh                 ├── skills/     (integration primers)
+    └── assertions/*.sh                 ├── skills/     (integration primers + /helm-swarm-test)
                                          └── testgrid/   (dashboard, catalog, support matrix)
 ```
 
@@ -59,6 +59,7 @@ integration category:
 | Category | Assertions |
 |----------|-----------|
 | Certificates | cert-manager, manual-tls, mounted-tls |
+| CNI | cilium-ebpf, cilium-ingress, cilium-network-policy |
 | Ingress controllers | traefik, nginx-ingress, contour |
 | Gateway API | envoy-gateway, istio-gateway-api, contour-gateway-api |
 | Service mesh | istio-service-mesh, istio-ingress-gateway, linkerd |
@@ -135,6 +136,46 @@ from test runs and:
 6. Appends history to `history.json`
 7. Rebuilds the dashboard
 
+## Agentic Test Loop
+
+`chart-test-swarm test` runs the entire lifecycle against **any** chart
+as a single command, reusing the engine scripts, recommendations
+engine, fix workflow, and dashboard builder:
+
+1. `verify` preflight — aborts (non-zero, no cluster) if it fails
+2. `cluster-up` once with a validated `chart-test-swarm-*` cluster name
+3. Discover scenarios (filtered by `--suite`, or all)
+4. Run each scenario in catalog order; a FAIL never aborts the matrix
+5. For each FAIL (unless `--no-fix`): a bounded fix sub-loop
+   (`--max-fix-attempts`) drives `CTS_LLM_CMD` to apply a
+   chart-directory-only edit, then re-runs that scenario
+6. Progressive dashboard rebuilds every `--rebuild-interval` scenarios,
+   plus a final rebuild
+7. Prints a summary (total / pass / fail / fixed / open / dashboard path)
+8. Tears the cluster down in a `finally` block (unless `--keep-cluster`),
+   so it cleans up on success, error, or interruption
+
+`--no-fix` guarantees zero `CTS_LLM_CMD` invocations (report-only).
+
+### `/helm-swarm-test` skill
+
+`engine/skills/helm-swarm-test/` is a portable, LLM-agnostic skill
+(`SKILL.md` + `command.md`) that wraps `chart-test-swarm test` for any
+agentic harness (Droid, Claude Code, opencode, gemini). It is
+chart-agnostic — the target chart is resolved via `chart-test-swarm.yaml`
+/ `--project-dir` / `PROJECT_DIR` — and documents two modes:
+
+- **Interactive (agent-as-LLM):** run `chart-test-swarm test --no-fix
+  --keep-cluster`, then the agent reads each open chart-fix
+  recommendation, applies a chart-directory-only edit with its own file
+  tools, re-runs the scenario, and rebuilds the dashboard.
+- **Headless / CI:** set `CTS_LLM_CMD` to a non-interactive agent
+  invocation and run `chart-test-swarm test` so the CLI auto-fixes with
+  no human in the loop.
+
+`command.md` is self-contained and copyable into any tool's commands
+directory with no machine-specific paths.
+
 ## Version Management
 
 `engine/defaults/versions.yaml` + `engine/testgrid/src/testgrid/versions.py`:
@@ -161,7 +202,8 @@ truth for which scenarios exist and which integrations they exercise.
 | Command | Description |
 |---------|-------------|
 | `run` | Dispatch scenarios with `--scenario`, `--integration`, `--backend`, `--parallelism`, `--cluster-name`, `--reports-dir`, `--include-cloud-native` |
-| `dashboard` | Build and serve dashboard with `--reports-dir`, `--project-dir`, `--watch`, `--interval`, `--serve`, `--port`; pages: Home, Support Matrix, Run History, Run Detail, Recommendations, Versions |
+| `test` | Agentic full-matrix loop: verify → cluster-up → discover → run every scenario → auto-fix FAILs in-flight (bounded) → progressive dashboard rebuilds → summary → teardown. Flags: `--suite`, `--max-fix-attempts` (default 2), `--no-fix`, `--rebuild-interval` (default 5), `--parallelism` (default 1), `--cluster-name` (default `chart-test-swarm-default`), `--backend` (default `kind`), `--keep-cluster`, `--project-dir`, `--reports-dir` |
+| `dashboard` | Build and serve dashboard with `--reports-dir`, `--project-dir`, `--watch`, `--interval`, `--serve`, `--port`; pages: Home, Getting Started, Support Matrix, Run History, Run Detail, Recommendations, Versions |
 | `new <category>/<integration>` | Scaffold fixture + scenario + smoke script from templates |
 | `list integrations` | Discover available integration primers |
 | `list variants` | Discover available scenarios |
@@ -178,8 +220,8 @@ gateway route, mesh injection, and policy compliance labels. Used for
 framework dogfood and CI.
 
 `examples/sample-product-chart/chart-test/scenarios/` contains 90+
-scenario YAMLs across 8 category subdirectories: capability/,
-certificates/, cloud-native/, gateway-api/, networking/, policy/,
+scenario YAMLs across 9 category subdirectories: capability/,
+certificates/, cni/, cloud-native/, gateway-api/, networking/, policy/,
 service-mesh/, storage/. Cloud-native scenarios use tier=authored-only
 for EKS/AKS/GKE and appear as AUTHORED on the matrix (excluded from
 pass/fail totals; never applied to real cloud from this repo). All
@@ -194,6 +236,8 @@ reference documentation organized by category:
 references/integrations/
 ├── capability/
 ├── certificates/
+├── cni/
+│   └── cilium/
 ├── cloud-native/
 ├── gateway-api/
 ├── ingress-controllers/
@@ -235,6 +279,12 @@ chart-test-swarm run --integration <name>
 # Run all local scenarios on kind
 chart-test-swarm run --all --backend kind
 
+# Agentic full-matrix loop against any chart (verify → up → run → fix → dashboard → teardown)
+chart-test-swarm test --project-dir examples/sample-product-chart --suite pr-subset
+
+# Report-only matrix run, keep the cluster up for inspection
+chart-test-swarm test --no-fix --keep-cluster
+
 # Build and watch dashboard (rebuilds every 30s)
 chart-test-swarm dashboard --watch --interval 30
 
@@ -267,10 +317,10 @@ bats engine/scripts/tests engine/asserts/tests
 uv run --directory engine/testgrid pytest -n 2
 
 # Type checking
-uv run --directory engine/testgrid mypy src/testgrid
+uv run --directory engine/testgrid mypy src/testgrid src/chart_test_swarm
 
 # Python linting
-uv run --directory engine/testgrid ruff check src/testgrid
+uv run --directory engine/testgrid ruff check src/testgrid src/chart_test_swarm
 
 # Shell linting
 shellcheck engine/scripts/*.sh engine/asserts/*.sh
@@ -279,7 +329,7 @@ shellcheck engine/scripts/*.sh engine/asserts/*.sh
 helm lint examples/sample-product-chart/chart
 ```
 
-Test suite: ~342 bats tests, ~890+ pytest tests, mypy --strict, ruff,
+Test suite: ~390 bats tests, ~985 pytest tests, mypy --strict, ruff,
 shellcheck, yamllint, helm lint.
 
 ## Layout
@@ -289,7 +339,7 @@ shellcheck, yamllint, helm lint.
 | `engine/scripts/` | swarm engine (cluster lifecycle, scenario runner, dispatch, dashboard, benchmark) |
 | `engine/asserts/` | 60+ built-in assertion scripts by integration category |
 | `engine/templates/` | scenario JSON Schema, agent-brief template, CI workflow templates |
-| `engine/skills/` | integration primers and reference documentation |
+| `engine/skills/` | integration primers, reference docs, and the portable `/helm-swarm-test` skill |
 | `engine/testgrid/` | dashboard (Python + Jinja2 + Typer), catalog, support-matrix renderer |
 | `examples/sample-product-chart/` | working consumer chart used for framework dogfood + CI |
 | `docs/` | scenario authoring, CI integration, customer-scenario playbook |

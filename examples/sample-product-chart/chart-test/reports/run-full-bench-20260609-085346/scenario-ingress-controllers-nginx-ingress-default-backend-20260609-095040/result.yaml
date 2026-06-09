@@ -1,0 +1,54 @@
+scenario_id: ingress-controllers-nginx-ingress-default-backend
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/networking/ingress-controllers-nginx-ingress-default-backend.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:50:41Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-63 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-2t57d condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-2t57d   1/1     Running   0          1s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-63 -n ingress-nginx wait --for=condition=Ready pods --timeout=3m --all
+      pod/custom-default-backend-6f9895b6b7-9jczl condition met
+      pod/ingress-nginx-controller-765bc57f9-krqz2 condition met
+      PASS: pods Ready in ns/ingress-nginx
+      NAME                                       READY   STATUS    RESTARTS   AGE
+      custom-default-backend-6f9895b6b7-9jczl    1/1     Running   0          37s
+      ingress-nginx-controller-765bc57f9-krqz2   1/1     Running   0          27s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/nginx-default-backend.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for nginx controller pod Ready (3m max)
+      pod/ingress-nginx-controller-765bc57f9-krqz2 condition met
+      PASS: nginx controller pod Ready
+      ==> Waiting for product pod Ready (3m max)
+      pod/sample-69469cb4c6-2t57d condition met
+      PASS: product pods Ready
+      ==> Waiting for custom default backend pod Ready (2m max)
+      pod/custom-default-backend-6f9895b6b7-9jczl condition met
+      PASS: custom default backend pod Ready
+      ==> Getting nginx controller pod IP
+      NGINX pod IP: 10.244.0.7
+      ==> Probing HTTP without Host header (should hit custom default backend)
+      Response body: 'chart-test-swarm-default-backend'
+      PASS: custom default backend served distinctive body 'chart-test-swarm-default-backend'
+      ==> Verifying Host-matched request still reaches product Service
+      HTTP response (with Host): 200
+      PASS: HTTP 200 with matching Host header
+      PASS: NGINX Ingress default backend integration verified
+status: PASS
+finished_at: 2026-06-09T13:51:52Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-ingress-controllers-nginx-ingress-default-backend-20260609-095040/artifacts/logs

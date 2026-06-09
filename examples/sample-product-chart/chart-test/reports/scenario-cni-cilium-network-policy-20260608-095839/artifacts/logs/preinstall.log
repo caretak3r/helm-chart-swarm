@@ -1,0 +1,7 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 1 preinstall item(s)
+
+==> [1/1] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/cni/cilium-network-policy.yaml
+Error from server (NotFound): namespaces "sample" not found
+ERROR: kubectl apply failed for raw_manifest path=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/cni/cilium-network-policy.yaml

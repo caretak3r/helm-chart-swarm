@@ -1,0 +1,40 @@
+{
+  "run_id": "run-20260601-095025-12109",
+  "timestamp_utc": "2026-06-01 09:50:25+00:00",
+  "num_agents": 2,
+  "project_name": "sample-product-chart",
+  "chart_name": "sample-product",
+  "chart_version": "0.1.0",
+  "suite": "pr-subset",
+  "cluster_provider": "kind",
+  "k8s_version": "v1.30.0",
+  "scenarios": [
+    {
+      "id": "minimal",
+      "name": "Vanilla cluster \u2014 no preinstalled addons",
+      "description": "Baseline: chart installs and pods come up on a stock kind cluster.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:none"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {
+        "customer": "none",
+        "profile": "baseline"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    }
+  ]
+}

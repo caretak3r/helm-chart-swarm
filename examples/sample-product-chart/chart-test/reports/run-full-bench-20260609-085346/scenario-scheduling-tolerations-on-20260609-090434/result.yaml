@@ -1,0 +1,14 @@
+scenario_id: scheduling-tolerations-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/scheduling-tolerations-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:04:34Z
+provider: kind
+asserts:
+  - type: scheduling-present
+    status: FAIL
+    notes: |
+        Deployment/sample: missing tolerations on pod spec
+      FAIL: 1 scheduling check(s) failed across 1 workload(s)
+status: FAIL
+finished_at: 2026-06-09T13:05:03Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-scheduling-tolerations-on-20260609-090434/artifacts/logs

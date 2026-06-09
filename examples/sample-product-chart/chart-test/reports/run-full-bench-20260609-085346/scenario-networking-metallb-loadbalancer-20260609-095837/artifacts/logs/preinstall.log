@@ -1,0 +1,34 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: metallb (metallb/metallb @ 0.16.1) in ns/metallb
+    repo 'metallb' already exists with URL https://metallb.github.io/metallb (skipping add)
+Release "metallb" does not exist. Installing it now.
+NAME: metallb
+LAST DEPLOYED: Tue Jun  9 09:59:06 2026
+NAMESPACE: metallb
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+MetalLB is now running in the cluster.
+
+Now you can configure it via its CRs. Please refer to the metallb official docs
+on how to use the CRs.
+pod/metallb-controller-7b8b56ccdd-vdw7j condition met
+pod/metallb-frr-k8s-qgs69 condition met
+pod/metallb-frr-k8s-statuscleaner-67874f5d9f-p2mdc condition met
+pod/metallb-speaker-pxsmw condition met
+
+==> [2/2] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/networking/metallb-ip-pool.yaml in ns/metallb
+Warning: resource namespaces/metallb is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+namespace/metallb configured
+ipaddresspool.metallb.io/chart-test-pool serverside-applied
+l2advertisement.metallb.io/chart-test-l2 serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

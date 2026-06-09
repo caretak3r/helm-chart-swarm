@@ -1,0 +1,17 @@
+{
+  "helm": "v4.1.4+g05fa379",
+  "kubectl": "v1.36.1",
+  "kind": "0.31.0",
+  "minikube": "v1.38.1",
+  "k8s_server": "v1.30.0",
+  "preinstalls": {
+    "gatekeeper": {
+      "version": "3.17.1",
+      "source": "scenario"
+    },
+    "ingress-nginx": {
+      "version": "4.10.0",
+      "source": "scenario"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+apiVersion: v1
+items:
+- apiVersion: security.istio.io/v1
+  kind: AuthorizationPolicy
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"security.istio.io/v1beta1","kind":"AuthorizationPolicy","metadata":{"annotations":{},"name":"sample-require-jwt","namespace":"istio-system"},"spec":{"action":"ALLOW","rules":[{"from":[{"source":{"requestPrincipals":["*"]}}]}],"selector":{"matchLabels":{"istio":"ingressgateway"}}}}
+    creationTimestamp: "2026-06-09T14:20:03Z"
+    generation: 1
+    name: sample-require-jwt
+    namespace: istio-system
+    resourceVersion: "666"
+    uid: 756da237-6a37-430a-8240-e4c88c8374f3
+  spec:
+    action: ALLOW
+    rules:
+    - from:
+      - source:
+          requestPrincipals:
+          - '*'
+    selector:
+      matchLabels:
+        istio: ingressgateway
+kind: List
+metadata:
+  resourceVersion: ""

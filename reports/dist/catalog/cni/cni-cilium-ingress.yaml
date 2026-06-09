@@ -1,0 +1,36 @@
+---
+id: cni-cilium-ingress
+name: "Cilium ingress controller — dedicated loadbalancerMode"
+description: "Proves the Cilium ingress controller in dedicated loadbalancerMode on kind: per-Ingress Service routes HTTP with matching Host header to the product Service."
+labels: {customer: any, profile: cni}
+cluster:
+  provider: kind
+  config: chart-test/fixtures/cni/kind-cilium.yaml
+  cni:
+    provider: cilium
+    kube_proxy_replacement: true
+    values: chart-test/fixtures/cni/cilium-ingress-values.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    ingress.enabled: "true"
+    ingress.className: "cilium"
+    ingress.host: "sample.test.local"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/cni/cilium-ingress.sh
+tags: [nightly]
+mechanisms: ['addon:cilium']
+category: cni
+integration: cilium
+tier: live

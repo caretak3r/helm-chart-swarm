@@ -1,0 +1,112 @@
+---
+id: gateway-api-istio-egress
+name: "Istio Gateway API Egress"
+description: >-
+  Installs istio/base + istio/istiod with REGISTRY_ONLY outbound policy and an egress gateway, applies a ServiceEntry + istio egress Gateway + VirtualService (raw_manifest) for httpbin.org, deploys the chart with sidecar injection, and verifies the egress infrastructure. Gap-probe: the chart exposes no knob to route its workload egress through the egress Gateway (no Sidecar/VirtualService from chart), and end-to-end egress proof is unverifiable for the chart-owned path. The artifact bundle documents the gap.
+labels: {customer: any, profile: gateway-api}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    # Istio base CRDs
+    - kind: helm
+      chart: istio/base
+      version: 1.27.9
+      release: istio-base
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    # Istiod with REGISTRY_ONLY outbound policy
+    - kind: helm
+      chart: istio/istiod
+      version: 1.27.9
+      release: istiod
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        pilot:
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "384Mi"
+        meshConfig:
+          outboundTrafficPolicy:
+            mode: REGISTRY_ONLY
+      wait: pods-ready
+      wait_timeout: 5m
+    # Gateway API CRDs (for consistent istio gateway-api category membership)
+    - kind: raw_manifest
+      path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+    # Egress gateway deployment (istio/gateway chart with egressgateway label)
+    - kind: helm
+      chart: istio/gateway
+      version: 1.27.9
+      release: istio-egressgateway
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        service:
+          type: ClusterIP
+        labels:
+          istio: egressgateway
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+      wait: pods-ready
+      wait_timeout: 3m
+    # Istio egress Gateway resource (configures the egress gateway proxy)
+    - kind: raw_manifest
+      path: ./fixtures/istio-egress-gateway.yaml
+      namespace: istio-system
+    # ServiceEntry + VirtualService for httpbin.org (in product namespace)
+    - kind: raw_manifest
+      path: ./fixtures/istio-egress-service-entry.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "nginx"
+    image.tag: "1.27-alpine"
+    mesh.inject: "true"
+asserts:
+  - type: helm-status-deployed
+    release: istio-base
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istiod
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istio-egressgateway
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: istio-system
+    selector: app=istiod
+    timeout: 5m
+  - type: pods-ready
+    namespace: istio-system
+    selector: istio=egressgateway
+    timeout: 3m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/istio-gateway-api-egress.sh
+tags: [nightly]
+mechanisms: ['addon:istio', 'gateway-api:istio-egress']
+category: gateway-api
+integration: istio-egress
+tier: live

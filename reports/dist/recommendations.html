@@ -36,10 +36,10 @@ aria-current="page">Recommendations</a>
 <section class="recommendations">
 
 <div class="rec-summary-bar">
-  <span class="rec-summary-item rec-status-open">0 Open</span>
+  <span class="rec-summary-item rec-status-open">37 Open</span>
   <span class="rec-summary-item rec-status-in_progress">0 In Progress</span>
-  <span class="rec-summary-item rec-status-fixed">8 Fixed</span>
-  <span class="rec-summary-item rec-status-dismissed">1 Dismissed</span>
+  <span class="rec-summary-item rec-status-fixed">0 Fixed</span>
+  <span class="rec-summary-item rec-status-dismissed">0 Dismissed</span>
 </div>
 
 <div class="rec-tabs">
@@ -68,190 +68,1206 @@ aria-current="page">Recommendations</a>
   </select>
 </div>
 
-<div class="rec-card" data-category="infrastructure" data-severity="low" data-status="fixed">
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
   <div class="rec-card-header">
-    <span class="rec-badge rec-badge-fixed">fixed</span>
-    <span class="rec-tag rec-tag-category">infrastructure</span>
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
     <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
-    <span class="rec-title">Infrastructure preinstall missing for scenario &#39;customer-A-istio&#39;</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;c3fail-deliberate&#39;</span>
   </div>
   <details class="rec-detail-section">
     <summary class="rec-detail-toggle">Show details</summary>
     <div class="rec-detail-content">
-      <p><strong>Scenario:</strong> customer-A-istio</p>
+      <p><strong>Scenario:</strong> c3fail-deliberate</p>
       <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Failure message: sidecar injection enabled but pod stuck in PodInitializing.
-kubectl -n sample describe pod sample-... shows istio-init container
-waiting on CNI config — istio-cni-node not installed.
-Assert &#39;pods-ready&#39;: 0/1 pods Ready after 5m0s.
-sample-7d4f8c9b8-x7k2p: PodInitializing (istio-init waiting)
-REPRO: helm install sample ./chart -n sample --set podAnnotations.&#34;sidecar\.istio\.io/inject&#34;=true</pre>
-      <p><strong>Affected objects:</strong> Pod</p>
+      <pre class="rec-detail-text">Assert &#39;helm-status-deployed&#39;: jq: parse error: Invalid numeric literal at line 1, column 6</pre>
       <p><strong>Run history:</strong>
-        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+        <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
     </div>
   </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-f345a259b683')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-f345a259b683')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-f345a259b683" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-f345a259b683</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-f345a259b683')">Copy</button>
+    </div>
+  </div>
 </div>
-<div class="rec-card" data-category="chart-fix" data-severity="medium" data-status="fixed">
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
   <div class="rec-card-header">
-    <span class="rec-badge rec-badge-fixed">fixed</span>
-    <span class="rec-tag rec-tag-category">chart-fix</span>
-    <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
-    <span class="rec-title">Add example.com/owner annotation to Service, Deployment, Ingress</span>
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;c3sig-slow&#39;</span>
   </div>
   <details class="rec-detail-section">
     <summary class="rec-detail-toggle">Show details</summary>
     <div class="rec-detail-content">
-      <p><strong>Scenario:</strong> annotations-on</p>
+      <p><strong>Scenario:</strong> c3sig-slow</p>
       <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Deployment/sample missing annotation example.com/owner
-Service/sample missing annotation example.com/owner
-Ingress/sample missing annotation example.com/owner</pre>
-      <p><strong>Affected objects:</strong> Deployment, Service, Ingress</p>
+      <pre class="rec-detail-text">Failure message: see examples/sample-product-chart/chart-test/reports/scenario-c3sig-slow-20260529-150454/artifacts/logs/cluster-up.log</pre>
       <p><strong>Run history:</strong>
-        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>,         <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
+        <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
     </div>
   </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-9844d27b8bcc')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-9844d27b8bcc')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-9844d27b8bcc" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-9844d27b8bcc</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-9844d27b8bcc')">Copy</button>
+    </div>
+  </div>
 </div>
-<div class="rec-card" data-category="chart-fix" data-severity="medium" data-status="fixed">
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
   <div class="rec-card-header">
-    <span class="rec-badge rec-badge-fixed">fixed</span>
-    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;ingress-controllers-contour-rate-limit&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> ingress-controllers-contour-rate-limit</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Assert &#39;smoke-script&#39;: exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-rate-limit.sh (RELEASE=sample NAMESPACE=sample)
+==&gt; Waiting for envoy pod Ready (3m max)
+error: no matching resources found</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-7a114b2abd83')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-7a114b2abd83')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-7a114b2abd83" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-7a114b2abd83</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-7a114b2abd83')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-service-mesh-sidecar-injection&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-service-mesh-sidecar-injection</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Assert &#39;smoke-script&#39;: exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-sidecar-injection.sh (RELEASE=sample NAMESPACE=sample)
+==&gt; Labeling namespace sample for istio injection
+namespace/sample labeled
+==&gt; Restarting deployments to pick up sidecar injection
+  Restarting deployment/sample
+deployment.apps/sample restarted
+  Waiting for rollout of deployment/sample to complete (3m max)
+Waiting for deployment &#34;sample&#34; rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment &#34;sample&#34; rollout to finish: 1 old replicas are pending termination...
+deployment &#34;sample&#34; successfully rolled out
+PASS: all deployments rolled out
+==&gt; Waiting 5s for old pods to terminate
+==&gt; Verifying istio-proxy sidecar injected into every product pod
+  Pod sample-cff994cb6-tjl8j (deploy/sample) containers (2): app istio-proxy
+    ✓ istio-proxy sidecar present
+PASS: every Running product pod has exactly 2 containers including istio-proxy
+==&gt; Probing product Service over the mesh from an in-mesh pod
+HTTP response from in-mesh probe: 000
+FAIL: expected HTTP 200 from in-mesh probe, got 000</pre>
+      <p><strong>Affected objects:</strong> Pod, Service</p>
+      <p><strong>Run history:</strong>
+        <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-f67c9fb8c903')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-f67c9fb8c903')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-f67c9fb8c903" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-f67c9fb8c903</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-f67c9fb8c903')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="medium" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
     <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
-    <span class="rec-title">Add cost-center=42 label to Deployment, Service</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;labels-on&#39;</span>
   </div>
   <details class="rec-detail-section">
     <summary class="rec-detail-toggle">Show details</summary>
     <div class="rec-detail-content">
       <p><strong>Scenario:</strong> labels-on</p>
       <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Deployment/sample missing label cost-center=42
-Service/sample missing label cost-center=42</pre>
-      <p><strong>Affected objects:</strong> Deployment, Service</p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
       <p><strong>Run history:</strong>
-        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>,         <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
+        <a href="run-bats-f17-3-containers-28570/index.html" class="rec-run-link">run-bats-f17-3-containers-28570</a>,         <a href="run-bats-f17-3-containers-39280/index.html" class="rec-run-link">run-bats-f17-3-containers-39280</a>,         <a href="run-bats-f17-3-containers-48894/index.html" class="rec-run-link">run-bats-f17-3-containers-48894</a>,         <a href="run-bats-f17-3-containers-63056/index.html" class="rec-run-link">run-bats-f17-3-containers-63056</a>,         <a href="run-bats-f17-3-containers-70694/index.html" class="rec-run-link">run-bats-f17-3-containers-70694</a>,         <a href="run-bats-f17-3-containers-76410/index.html" class="rec-run-link">run-bats-f17-3-containers-76410</a>,         <a href="run-bats-f17-3-containers-86409/index.html" class="rec-run-link">run-bats-f17-3-containers-86409</a>,         <a href="run-bats-f17-3-containers-89387/index.html" class="rec-run-link">run-bats-f17-3-containers-89387</a>,         <a href="run-bats-f17-3-no-cloud-29822/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-29822</a>,         <a href="run-bats-f17-3-no-cloud-40481/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-40481</a>,         <a href="run-bats-f17-3-no-cloud-50116/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-50116</a>,         <a href="run-bats-f17-3-no-cloud-64268/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-64268</a>,         <a href="run-bats-f17-3-no-cloud-71767/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-71767</a>,         <a href="run-bats-f17-3-no-cloud-77550/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-77550</a>,         <a href="run-bats-f17-3-no-cloud-87604/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-87604</a>,         <a href="run-bats-f17-3-no-cloud-90669/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-90669</a>,         <a href="run-bats-f17-3-orphan-11291/index.html" class="rec-run-link">run-bats-f17-3-orphan-11291</a>,         <a href="run-bats-f17-3-orphan-23872/index.html" class="rec-run-link">run-bats-f17-3-orphan-23872</a>,         <a href="run-bats-f17-3-orphan-27289/index.html" class="rec-run-link">run-bats-f17-3-orphan-27289</a>,         <a href="run-bats-f17-3-orphan-27458/index.html" class="rec-run-link">run-bats-f17-3-orphan-27458</a>,         <a href="run-bats-f17-3-orphan-31674/index.html" class="rec-run-link">run-bats-f17-3-orphan-31674</a>,         <a href="run-bats-f17-3-orphan-33002/index.html" class="rec-run-link">run-bats-f17-3-orphan-33002</a>,         <a href="run-bats-f17-3-orphan-38073/index.html" class="rec-run-link">run-bats-f17-3-orphan-38073</a>,         <a href="run-bats-f17-3-orphan-47726/index.html" class="rec-run-link">run-bats-f17-3-orphan-47726</a>,         <a href="run-bats-f17-3-orphan-59988/index.html" class="rec-run-link">run-bats-f17-3-orphan-59988</a>,         <a href="run-bats-f17-3-orphan-61841/index.html" class="rec-run-link">run-bats-f17-3-orphan-61841</a>,         <a href="run-bats-f17-3-orphan-69493/index.html" class="rec-run-link">run-bats-f17-3-orphan-69493</a>,         <a href="run-bats-f17-3-orphan-75290/index.html" class="rec-run-link">run-bats-f17-3-orphan-75290</a>,         <a href="run-bats-f17-3-orphan-79673/index.html" class="rec-run-link">run-bats-f17-3-orphan-79673</a>,         <a href="run-bats-f17-3-orphan-85162/index.html" class="rec-run-link">run-bats-f17-3-orphan-85162</a>,         <a href="run-bats-f17-3-orphan-88098/index.html" class="rec-run-link">run-bats-f17-3-orphan-88098</a>,         <a href="run-bats-f17-3-orphan-96703/index.html" class="rec-run-link">run-bats-f17-3-orphan-96703</a>,         <a href="run-bats-f17-3-single-18643/index.html" class="rec-run-link">run-bats-f17-3-single-18643</a>,         <a href="run-bats-f17-3-single-20485/index.html" class="rec-run-link">run-bats-f17-3-single-20485</a>,         <a href="run-bats-f17-3-single-22557/index.html" class="rec-run-link">run-bats-f17-3-single-22557</a>,         <a href="run-bats-f17-3-single-25393/index.html" class="rec-run-link">run-bats-f17-3-single-25393</a>,         <a href="run-bats-f17-3-single-26192/index.html" class="rec-run-link">run-bats-f17-3-single-26192</a>,         <a href="run-bats-f17-3-single-26238/index.html" class="rec-run-link">run-bats-f17-3-single-26238</a>,         <a href="run-bats-f17-3-single-30520/index.html" class="rec-run-link">run-bats-f17-3-single-30520</a>,         <a href="run-bats-f17-3-single-35110/index.html" class="rec-run-link">run-bats-f17-3-single-35110</a>,         <a href="run-bats-f17-3-single-36641/index.html" class="rec-run-link">run-bats-f17-3-single-36641</a>,         <a href="run-bats-f17-3-single-36860/index.html" class="rec-run-link">run-bats-f17-3-single-36860</a>,         <a href="run-bats-f17-3-single-46428/index.html" class="rec-run-link">run-bats-f17-3-single-46428</a>,         <a href="run-bats-f17-3-single-58859/index.html" class="rec-run-link">run-bats-f17-3-single-58859</a>,         <a href="run-bats-f17-3-single-60618/index.html" class="rec-run-link">run-bats-f17-3-single-60618</a>,         <a href="run-bats-f17-3-single-68376/index.html" class="rec-run-link">run-bats-f17-3-single-68376</a>,         <a href="run-bats-f17-3-single-74132/index.html" class="rec-run-link">run-bats-f17-3-single-74132</a>,         <a href="run-bats-f17-3-single-7547/index.html" class="rec-run-link">run-bats-f17-3-single-7547</a>,         <a href="run-bats-f17-3-single-78617/index.html" class="rec-run-link">run-bats-f17-3-single-78617</a>,         <a href="run-bats-f17-3-single-82950/index.html" class="rec-run-link">run-bats-f17-3-single-82950</a>,         <a href="run-bats-f17-3-single-83983/index.html" class="rec-run-link">run-bats-f17-3-single-83983</a>,         <a href="run-bats-f17-3-single-86910/index.html" class="rec-run-link">run-bats-f17-3-single-86910</a>,         <a href="run-bats-f17-3-single-90889/index.html" class="rec-run-link">run-bats-f17-3-single-90889</a>,         <a href="run-bats-f17-3-single-95700/index.html" class="rec-run-link">run-bats-f17-3-single-95700</a>,         <a href="run-bats-f17-3-summary-31040/index.html" class="rec-run-link">run-bats-f17-3-summary-31040</a>,         <a href="run-bats-f17-3-summary-41668/index.html" class="rec-run-link">run-bats-f17-3-summary-41668</a>,         <a href="run-bats-f17-3-summary-51293/index.html" class="rec-run-link">run-bats-f17-3-summary-51293</a>,         <a href="run-bats-f17-3-summary-54940/index.html" class="rec-run-link">run-bats-f17-3-summary-54940</a>,         <a href="run-bats-f17-3-summary-65506/index.html" class="rec-run-link">run-bats-f17-3-summary-65506</a>,         <a href="run-bats-f17-3-summary-72969/index.html" class="rec-run-link">run-bats-f17-3-summary-72969</a>,         <a href="run-bats-f17-3-summary-78723/index.html" class="rec-run-link">run-bats-f17-3-summary-78723</a>,         <a href="run-bats-f17-3-summary-88873/index.html" class="rec-run-link">run-bats-f17-3-summary-88873</a>,         <a href="run-bats-f17-3-summary-91870/index.html" class="rec-run-link">run-bats-f17-3-summary-91870</a>,         <a href="run-curated-live-20260602-234624-95262/index.html" class="rec-run-link">run-curated-live-20260602-234624-95262</a>,         <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
     </div>
   </details>
-</div>
-<div class="rec-card" data-category="chart-fix" data-severity="high" data-status="fixed">
-  <div class="rec-card-header">
-    <span class="rec-badge rec-badge-fixed">fixed</span>
-    <span class="rec-tag rec-tag-category">chart-fix</span>
-    <span class="rec-tag rec-tag-severity rec-severity-high">high</span>
-    <span class="rec-title">Add RBAC ServiceAccount and RoleBinding to chart</span>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-2561b8d75211')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-2561b8d75211')">Dismiss</button>
   </div>
-  <details class="rec-detail-section">
-    <summary class="rec-detail-toggle">Show details</summary>
-    <div class="rec-detail-content">
-      <p><strong>Scenario:</strong> rbac-on</p>
-      <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Missing ServiceAccount resource in chart templates
-Missing RoleBinding resource in chart templates</pre>
-      <p><strong>Affected objects:</strong> ServiceAccount, RoleBinding</p>
-      <p><strong>Run history:</strong>
-        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+  <div id="fix-result-rec-2561b8d75211" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-2561b8d75211</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-2561b8d75211')">Copy</button>
     </div>
-  </details>
-</div>
-<div class="rec-card" data-category="chart-fix" data-severity="high" data-status="fixed">
-  <div class="rec-card-header">
-    <span class="rec-badge rec-badge-fixed">fixed</span>
-    <span class="rec-tag rec-tag-category">chart-fix</span>
-    <span class="rec-tag rec-tag-severity rec-severity-high">high</span>
-    <span class="rec-title">Enforce HTTPS-only scheme on Ingress resource</span>
   </div>
-  <details class="rec-detail-section">
-    <summary class="rec-detail-toggle">Show details</summary>
-    <div class="rec-detail-content">
-      <p><strong>Scenario:</strong> scheme-https-only</p>
-      <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Ingress/sample allows HTTP scheme — should enforce HTTPS-only
-nginx.ingress.kubernetes.io/force-ssl-redirect annotation missing</pre>
-      <p><strong>Affected objects:</strong> Ingress</p>
-      <p><strong>Run history:</strong>
-        <a href="run-20260519-090000/index.html" class="rec-run-link">run-20260519-090000</a>,         <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
-    </div>
-  </details>
 </div>
-<div class="rec-card" data-category="gap-probe" data-severity="low" data-status="dismissed">
+<div class="rec-card" data-category="schema-missing" data-severity="medium" data-status="open">
   <div class="rec-card-header">
-    <span class="rec-badge rec-badge-dismissed">dismissed</span>
-    <span class="rec-tag rec-tag-category">gap-probe</span>
-    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
-    <span class="rec-title">Chart does not support Contour HTTPProxy integration</span>
-  </div>
-  <details class="rec-detail-section">
-    <summary class="rec-detail-toggle">Show details</summary>
-    <div class="rec-detail-content">
-      <p><strong>Scenario:</strong> contour-basic-httpproxy</p>
-      <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Contour HTTPProxy CRD not rendered by chart templates
-This is a gap-probe: the chart currently does not support Contour as an ingress type</pre>
-      <p><strong>Affected objects:</strong> HTTPProxy</p>
-      <p><strong>Run history:</strong>
-        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
-      <p><strong>Dismissed reason:</strong> Contour not in product roadmap</p>
-    </div>
-  </details>
-</div>
-<div class="rec-card" data-category="gap-probe" data-severity="low" data-status="fixed">
-  <div class="rec-card-header">
-    <span class="rec-badge rec-badge-fixed">fixed</span>
-    <span class="rec-tag rec-tag-category">gap-probe</span>
-    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
-    <span class="rec-title">Chart does not include Gatekeeper required-labels constraint</span>
-  </div>
-  <details class="rec-detail-section">
-    <summary class="rec-detail-toggle">Show details</summary>
-    <div class="rec-detail-content">
-      <p><strong>Scenario:</strong> gatekeeper-required-labels</p>
-      <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Gatekeeper ConstraintTemplate and Constraint for required-labels not included in chart
-This is a gap-probe: chart does not currently support OPA Gatekeeper policy enforcement</pre>
-      <p><strong>Affected objects:</strong> ConstraintTemplate, Constraint</p>
-      <p><strong>Run history:</strong>
-        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
-    </div>
-  </details>
-</div>
-<div class="rec-card" data-category="schema-missing" data-severity="medium" data-status="fixed">
-  <div class="rec-card-header">
-    <span class="rec-badge rec-badge-fixed">fixed</span>
+    <span class="rec-badge rec-badge-open">open</span>
     <span class="rec-tag rec-tag-category">schema-missing</span>
     <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
-    <span class="rec-title">Missing value in values.yaml for unknown-assert-type scenario</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;labels-on&#39;</span>
   </div>
   <details class="rec-detail-section">
     <summary class="rec-detail-toggle">Show details</summary>
     <div class="rec-detail-content">
-      <p><strong>Scenario:</strong> unknown-assert-type</p>
+      <p><strong>Scenario:</strong> labels-on</p>
       <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Unclassifiable FAIL: assertion type &#39;custom-check&#39; not recognized
-Missing value in values.yaml</pre>
-      <p><strong>Affected objects:</strong> ConfigMap</p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-bats-f17-3-containers-34814/scenario-labels-on-20260603-011404/artifacts/logs/product-install.log</pre>
       <p><strong>Run history:</strong>
-        <a href="run-20260531-230537/index.html" class="rec-run-link">run-20260531-230537</a>      </p>
+        <a href="run-bats-f17-3-containers-34814/index.html" class="rec-run-link">run-bats-f17-3-containers-34814</a>,         <a href="run-bats-f17-3-single-7254/index.html" class="rec-run-link">run-bats-f17-3-single-7254</a>      </p>
     </div>
   </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-65c6d6a35e23')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-65c6d6a35e23')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-65c6d6a35e23" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-65c6d6a35e23</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-65c6d6a35e23')">Copy</button>
+    </div>
+  </div>
 </div>
-<div class="rec-card" data-category="chart-fix" data-severity="medium" data-status="fixed">
+<div class="rec-card" data-category="schema-missing" data-severity="medium" data-status="open">
   <div class="rec-card-header">
-    <span class="rec-badge rec-badge-fixed">fixed</span>
-    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
     <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
-    <span class="rec-title">Add cost-center annotation to Service (TEST)</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;labels-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> labels-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-bats-f17-3-no-cloud-48006/scenario-labels-on-20260603-011932/artifacts/logs/cluster-up.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-bats-f17-3-no-cloud-48006/index.html" class="rec-run-link">run-bats-f17-3-no-cloud-48006</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-f2d4f9885aae')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-f2d4f9885aae')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-f2d4f9885aae" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-f2d4f9885aae</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-f2d4f9885aae')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="medium" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;annotations-on&#39;</span>
   </div>
   <details class="rec-detail-section">
     <summary class="rec-detail-toggle">Show details</summary>
     <div class="rec-detail-content">
       <p><strong>Scenario:</strong> annotations-on</p>
       <p><strong>Detail:</strong></p>
-      <pre class="rec-detail-text">Test recommendation for VAL-FIX-005 validation</pre>
-      <p><strong>Affected objects:</strong> Service</p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
       <p><strong>Run history:</strong>
-        <a href="run-20260520-101500/index.html" class="rec-run-link">run-20260520-101500</a>      </p>
+        <a href="run-curated-live-20260602-234624-95262/index.html" class="rec-run-link">run-curated-live-20260602-234624-95262</a>,         <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
     </div>
   </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-a126a56713fb')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-a126a56713fb')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-a126a56713fb" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-a126a56713fb</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-a126a56713fb')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="chart-fix" data-severity="high" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-tag rec-tag-severity rec-severity-high">high</span>
+    <span class="rec-title">Add RBAC objects (ServiceAccount / Role / RoleBinding) for scenario &#39;rbac-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> rbac-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Assert &#39;rbac-objects&#39;: FAIL: expected RBAC objects but found 0</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-curated-live-20260602-234624-95262/index.html" class="rec-run-link">run-curated-live-20260602-234624-95262</a>,         <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-0ae9539f4461')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-0ae9539f4461')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-0ae9539f4461" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-0ae9539f4461</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-0ae9539f4461')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="high" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-high">high</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;scheme-https-only&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> scheme-https-only</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-curated-live-20260602-234624-95262/index.html" class="rec-run-link">run-curated-live-20260602-234624-95262</a>,         <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-e63adff8ecbf')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-e63adff8ecbf')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-e63adff8ecbf" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-e63adff8ecbf</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-e63adff8ecbf')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="gap-probe" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">gap-probe</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Honest gap: chart does not natively support scenario &#39;ingress-controllers-contour-basic-httpproxy&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> ingress-controllers-contour-basic-httpproxy</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Assert &#39;smoke-script&#39;: exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-basic.sh (RELEASE=sample NAMESPACE=sample)
+==&gt; Waiting for envoy pod Ready (3m max)
+pod/contour-envoy-vxvcj condition met
+PASS: envoy pod Ready
+==&gt; Waiting for contour controller pod Ready (3m max)
+pod/contour-contour-5847f7c7f9-vxwnb condition met
+PASS: contour controller pod Ready
+==&gt; Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-wr6ns condition met
+PASS: product pods Ready
+==&gt; Getting envoy pod IP (probe via pod IP)
+envoy pod IP: 10.244.0.7
+==&gt; Verifying HTTPProxy exists and status is valid
+HTTPProxy status: valid
+PASS: HTTPProxy status is valid
+==&gt; Probing HTTP with Host header (expect 200) on envoy container port 8080
+HTTP response (with Host): 200
+PASS: HTTP 200 with Host header
+==&gt; Probing HTTP without Host header (expect 404) on envoy container port 8080
+HTTP response (without Host): 404
+PASS: HTTP 404 without Host header (envoy default)
+PASS: Contour basic HTTPProxy integration verified
+==&gt; GAP-PROBE: Checking if chart natively emits an HTTPProxy CRD
+GAP-PROBE: No HTTPProxy emitted by the chart template found
+  The HTTPProxy &#39;sample-basic&#39; was created by the raw_manifest fixture,
+  not by a Helm-managed chart template. The chart has no contour
+  HTTPProxy template — this is an honest gap (red cell).
+FAIL: Chart does not natively emit Contour HTTPProxy CRD — honest gap</pre>
+      <p><strong>Affected objects:</strong> HTTPProxy</p>
+      <p><strong>Run history:</strong>
+        <a href="run-curated-live-20260602-234624-95262/index.html" class="rec-run-link">run-curated-live-20260602-234624-95262</a>,         <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-8b99add371a8')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-8b99add371a8')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-8b99add371a8" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-8b99add371a8</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-8b99add371a8')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="gap-probe" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">gap-probe</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Honest gap: chart does not natively support scenario &#39;policy-opa-gatekeeper-required-labels&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> policy-opa-gatekeeper-required-labels</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Assert &#39;smoke-script&#39;: PASS: compliant Deployment accepted
+==&gt; Phase 3a: Non-compliant Ingress (missing app.kubernetes.io/name)
+Error from server (Forbidden): error when creating &#34;/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-ingress-noncompliant.yaml&#34;: admission webhook &#34;validation.gatekeeper.sh&#34; denied the request: [require-app-name-label] Missing required label(s): {&#34;app.kubernetes.io/name&#34;}
+PASS: non-compliant Ingress rejected (missing required label)
+==&gt; Phase 3b: Compliant Ingress (has app.kubernetes.io/name)
+ingress.networking.k8s.io/test-compliant-ingress created
+PASS: compliant Ingress applied
+NOTE: compliant Ingress may not yet have address (NGINX controller processes async)
+==&gt; Phase 4: Webhook failure mode — verify Fail policy + outage behavior
+PASS: webhook gatekeeper-validating-webhook-configuration failurePolicy=Fail
+Scaling gatekeeper-controller-manager to 0 in gatekeeper-system (original replicas: 3)...
+deployment.apps/gatekeeper-controller-manager scaled
+pod/gatekeeper-controller-manager-64bbbfbdbb-bqbvq condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-fjpnx condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-xn75d condition met
+PASS: gatekeeper controller scaled to 0
+Attempting kubectl apply with webhook unavailable...
+Error from server (InternalError): error when creating &#34;/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-compliant.yaml&#34;: Internal error occurred: failed calling webhook &#34;validation.gatekeeper.sh&#34;: failed to call webhook: Post &#34;https://gatekeeper-webhook-service.gatekeeper-system.svc:443/v1/admit?timeout=3s&#34;: dial tcp 10.96.91.237:443: connect: connection refused
+PASS: admission correctly blocked during webhook outage (Fail policy)
+Restoring gatekeeper-controller-manager to 3 in gatekeeper-system...
+deployment.apps/gatekeeper-controller-manager scaled
+Waiting for gatekeeper controller pods to be Ready again...
+pod/gatekeeper-controller-manager-64bbbfbdbb-cbpzc condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-g6j4d condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-ttx4k condition met
+PASS: gatekeeper controller pods Ready
+Waiting for admission webhook to accept requests (180s max, may be slow on resource-constrained clusters)...
+deployment.apps/test-compliant created (server dry run)
+PASS: admission restored after webhook recovery (attempt 1)
+PASS: OPA Gatekeeper required-labels + nginx-ingress cross-feature compose verified
+==&gt; Phase 5: GAP-PROBE — Does the chart&#39;s own Ingress pass the required-labels constraint?
+Rendering chart Ingress with ingress.enabled=true for gap-probe dry-run...
+GAP-PROBE: Chart Ingress does NOT have app.kubernetes.io/name label
+  The chart&#39;s Ingress template uses selectorLabels (just &#39;app: &lt;release&gt;&#39;)
+  instead of the full common labels (which include &#39;app.kubernetes.io/name&#39;).
+  This is an honest gap — the Ingress would be denied in a cluster with
+  the K8sRequiredLabels constraint active before chart installation.
+Error from server (Forbidden): error when creating &#34;STDIN&#34;: admission webhook &#34;validation.gatekeeper.sh&#34; denied the request: [require-app-name-label] Missing required label(s): {&#34;app.kubernetes.io/name&#34;}
+GAP-PROBE confirmed: Chart Ingress denied by required-labels constraint (honest gap, red cell)
+FAIL: Chart Ingress does not carry app.kubernetes.io/name label — honest gap (red cell)</pre>
+      <p><strong>Affected objects:</strong> Deployment, Ingress</p>
+      <p><strong>Run history:</strong>
+        <a href="run-curated-live-20260602-234624-95262/index.html" class="rec-run-link">run-curated-live-20260602-234624-95262</a>,         <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-4fc14fbb402c')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-4fc14fbb402c')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-4fc14fbb402c" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-4fc14fbb402c</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-4fc14fbb402c')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-linkerd-live&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-linkerd-live</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-curated-live-20260602-234624-95262/index.html" class="rec-run-link">run-curated-live-20260602-234624-95262</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-4cf76f257e28')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-4cf76f257e28')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-4cf76f257e28" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-4cf76f257e28</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-4cf76f257e28')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;imagepullsecrets-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> imagepullsecrets-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-924739bf3439')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-924739bf3439')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-924739bf3439" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-924739bf3439</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-924739bf3439')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="chart-fix" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Add NetworkPolicy templates to chart for scenario &#39;network-policy-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> network-policy-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Assert &#39;network-policy&#39;: FAIL: expected NetworkPolicy but found 0</pre>
+      <p><strong>Affected objects:</strong> NetworkPolicy</p>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-d50a24c38af3')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-d50a24c38af3')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-d50a24c38af3" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-d50a24c38af3</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-d50a24c38af3')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;priority-class-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> priority-class-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-d71d7c5bdcb3')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-d71d7c5bdcb3')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-d71d7c5bdcb3" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-d71d7c5bdcb3</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-d71d7c5bdcb3')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;resources-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> resources-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-44e55fcc1316')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-44e55fcc1316')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-44e55fcc1316" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-44e55fcc1316</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-44e55fcc1316')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;scheduling-affinity-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> scheduling-affinity-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-ae768e99c4cf')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-ae768e99c4cf')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-ae768e99c4cf" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-ae768e99c4cf</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-ae768e99c4cf')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;scheduling-nodeselector-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> scheduling-nodeselector-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-2e80b1ad279a')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-2e80b1ad279a')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-2e80b1ad279a" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-2e80b1ad279a</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-2e80b1ad279a')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;scheduling-tolerations-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> scheduling-tolerations-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-79e3aa1d6741')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-79e3aa1d6741')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-79e3aa1d6741" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-79e3aa1d6741</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-79e3aa1d6741')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;scheduling-topology-spread-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> scheduling-topology-spread-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-9af66c57d299')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-9af66c57d299')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-9af66c57d299" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-9af66c57d299</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-9af66c57d299')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="high" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-high">high</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;security-context-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> security-context-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: result.yaml had parse errors; status from aggregate</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-a66e265e1f8e')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-a66e265e1f8e')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-a66e265e1f8e" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-a66e265e1f8e</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-a66e265e1f8e')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="chart-fix" data-severity="medium" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">chart-fix</span>
+    <span class="rec-tag rec-tag-severity rec-severity-medium">medium</span>
+    <span class="rec-title">Fix chart capability gap: serviceaccount-annotations in scenario &#39;serviceaccount-annotations-on&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> serviceaccount-annotations-on</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Assert &#39;serviceaccount-annotations&#39;: FAIL: no ServiceAccount found in rendered output — chart lacks ServiceAccount template (documented gap)</pre>
+      <p><strong>Affected objects:</strong> Service, ServiceAccount</p>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-d1fcd7593113')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-d1fcd7593113')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-d1fcd7593113" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-d1fcd7593113</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-d1fcd7593113')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-ingress-gateway-multi-host&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-ingress-gateway-multi-host</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-ingress-gateway-multi-host-20260609-102026/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-8eb14df67e98')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-8eb14df67e98')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-8eb14df67e98" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-8eb14df67e98</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-8eb14df67e98')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-ingress-gateway-request-authentication&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-ingress-gateway-request-authentication</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-ingress-gateway-request-authentication-20260609-102606/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-0b4506b2012c')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-0b4506b2012c')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-0b4506b2012c" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-0b4506b2012c</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-0b4506b2012c')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-service-mesh-cert-manager-tls&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-service-mesh-cert-manager-tls</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-cert-manager-tls-20260609-103144/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-6e2be3d49446')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-6e2be3d49446')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-6e2be3d49446" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-6e2be3d49446</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-6e2be3d49446')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-service-mesh-peer-authentication&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-service-mesh-peer-authentication</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-peer-authentication-20260609-103742/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-426c0fb62960')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-426c0fb62960')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-426c0fb62960" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-426c0fb62960</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-426c0fb62960')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-service-mesh-sidecar-injection&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-service-mesh-sidecar-injection</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-sidecar-injection-20260609-104316/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-39d68f581b9c')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-39d68f581b9c')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-39d68f581b9c" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-39d68f581b9c</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-39d68f581b9c')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-service-mesh-strict-mtls&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-service-mesh-strict-mtls</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-strict-mtls-20260609-104851/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-c8b02e60d19c')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-c8b02e60d19c')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-c8b02e60d19c" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-c8b02e60d19c</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-c8b02e60d19c')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-service-mesh-telemetry-v2&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-service-mesh-telemetry-v2</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-telemetry-v2-20260609-105426/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-ffeb0caf5765')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-ffeb0caf5765')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-ffeb0caf5765" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-ffeb0caf5765</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-ffeb0caf5765')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-istio-sidecar-live&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-istio-sidecar-live</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-sidecar-live-20260609-110001/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-a72a382f74de')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-a72a382f74de')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-a72a382f74de" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-a72a382f74de</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-a72a382f74de')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-linkerd-basic-mesh&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-linkerd-basic-mesh</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-basic-mesh-20260609-110535/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-33fef05e513c')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-33fef05e513c')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-33fef05e513c" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-33fef05e513c</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-33fef05e513c')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-linkerd-live&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-linkerd-live</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-live-20260609-111107/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-71d1b26cc1d1')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-71d1b26cc1d1')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-71d1b26cc1d1" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-71d1b26cc1d1</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-71d1b26cc1d1')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-linkerd-mtls-rotation&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-linkerd-mtls-rotation</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-mtls-rotation-20260609-111638/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-fbe8143b50f9')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-fbe8143b50f9')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-fbe8143b50f9" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-fbe8143b50f9</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-fbe8143b50f9')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-linkerd-multi-cluster-preview&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-linkerd-multi-cluster-preview</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-multi-cluster-preview-20260609-112208/artifacts/logs/preinstall.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-d6d8e49fd879')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-d6d8e49fd879')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-d6d8e49fd879" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-d6d8e49fd879</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-d6d8e49fd879')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;service-mesh-linkerd-service-profile&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> service-mesh-linkerd-service-profile</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-service-profile-20260609-112237/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-8b6665986455')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-8b6665986455')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-8b6665986455" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-8b6665986455</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-8b6665986455')">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="rec-card" data-category="schema-missing" data-severity="low" data-status="open">
+  <div class="rec-card-header">
+    <span class="rec-badge rec-badge-open">open</span>
+    <span class="rec-tag rec-tag-category">schema-missing</span>
+    <span class="rec-tag rec-tag-severity rec-severity-low">low</span>
+    <span class="rec-title">Schema or values configuration missing for scenario &#39;subchart-postgres-internal&#39;</span>
+  </div>
+  <details class="rec-detail-section">
+    <summary class="rec-detail-toggle">Show details</summary>
+    <div class="rec-detail-content">
+      <p><strong>Scenario:</strong> subchart-postgres-internal</p>
+      <p><strong>Detail:</strong></p>
+      <pre class="rec-detail-text">Failure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-subchart-postgres-internal-20260609-112806/artifacts/logs/product-install.log</pre>
+      <p><strong>Run history:</strong>
+        <a href="run-full-bench-20260609-085346/index.html" class="rec-run-link">run-full-bench-20260609-085346</a>      </p>
+    </div>
+  </details>
+  <div class="rec-actions">
+    <button class="rec-btn rec-btn-fix" onclick="handleFix('rec-0c6f803ed607')">FIX</button>
+    <button class="rec-btn rec-btn-dismiss" onclick="handleDismiss('rec-0c6f803ed607')">Dismiss</button>
+  </div>
+  <div id="fix-result-rec-0c6f803ed607" class="fix-result-panel" style="display:none">
+    <div class="fix-result-inner">
+      <strong>✅ Fix prompt written</strong>
+      <p class="hint">Run the following command to apply the fix:</p>
+      <code class="fix-cmd">chart-test-swarm fix rec-0c6f803ed607</code>
+      <button class="btn-copy" onclick="copyFixCmd('rec-0c6f803ed607')">Copy</button>
+    </div>
+  </div>
 </div>
 
 <script>

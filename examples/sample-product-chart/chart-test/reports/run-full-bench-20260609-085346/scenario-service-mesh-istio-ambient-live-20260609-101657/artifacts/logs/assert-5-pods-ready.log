@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-run-83 -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=ztunnel
+pod/ztunnel-k6gc2 condition met
+PASS: pods Ready in ns/istio-system (selector=app=ztunnel)
+NAME            READY   STATUS    RESTARTS   AGE
+ztunnel-k6gc2   1/1     Running   0          7s

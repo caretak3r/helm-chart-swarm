@@ -1,0 +1,81 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-canary
+  namespace: sample
+  labels:
+    app: sample-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-canary
+  template:
+    metadata:
+      labels:
+        app: sample-canary
+    spec:
+      containers:
+        - name: canary-backend
+          image: public.ecr.aws/nginx/nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: canary-config
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: canary-config
+          configMap:
+            name: canary-backend-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-backend-config
+  namespace: sample
+data:
+  default.conf: |
+    server {
+      listen 80;
+      server_name _;
+      location / {
+        add_header X-Backend canary;
+        return 200 'canary-response';
+        add_header Content-Type text/plain;
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-canary
+  namespace: sample
+spec:
+  selector:
+    app: sample-canary
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sample-canary
+  namespace: sample
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "20"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: sample.test.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sample-canary
+                port:
+                  number: 80

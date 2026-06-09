@@ -1,0 +1,22 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sample-snippet
+  namespace: sample
+  annotations:
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Test "chart-test-swarm";
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: sample.test.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sample
+                port:
+                  number: 80

@@ -17,7 +17,7 @@
       "fix_prompt": "# Fix Recommendation: customer-A-istio\n\n**Scenario:** `customer-A-istio`\n**Category:** infrastructure\n**Failure type:** pods-ready\n**Affected objects:** Pod\n\n## Failure Detail\n\nFailure message: sidecar injection enabled but pod stuck in PodInitializing.\nkubectl -n sample describe pod sample-... shows istio-init container\nwaiting on CNI config — istio-cni-node not installed.\nAssert 'pods-ready': 0/1 pods Ready after 5m0s.\nsample-7d4f8c9b8-x7k2p: PodInitializing (istio-init waiting)\nREPRO: helm install sample ./chart -n sample --set podAnnotations.\"sidecar\\.istio\\.io/inject\"=true\n\n## Suggested Fix\n\nThe scenario requires an infrastructure preinstall (CNI, proxy, or network plugin). Add the required preinstall to the scenario YAML under `cluster.preinstall`, or ensure the cluster has the required networking plugin installed before running the scenario.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-03T22:31:11.319490+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     },
     {
       "id": "rec-0907a60ac8c3",
@@ -39,7 +39,7 @@
       "fix_prompt": "# Fix Recommendation: annotations-on\n\n**Scenario:** `annotations-on`\n**Category:** chart-fix\n**Failure type:** annotations-present\n**Affected objects:** Deployment, Service, Ingress\n\n## Failure Detail\n\nDeployment/sample missing annotation example.com/owner\nService/sample missing annotation example.com/owner\nIngress/sample missing annotation example.com/owner\n\n## Suggested Fix\n\nAdd the `example.com/owner` annotation to all template resources.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-03T22:31:11.319490+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     },
     {
       "id": "rec-0ae9539f4461",
@@ -60,7 +60,7 @@
       "fix_prompt": "# Fix Recommendation: labels-on\n\n**Scenario:** `labels-on`\n**Category:** chart-fix\n**Failure type:** labels-present\n**Affected objects:** Deployment, Service\n\n## Failure Detail\n\nDeployment/sample missing label cost-center=42\nService/sample missing label cost-center=42\n\n## Suggested Fix\n\nAdd the `cost-center=42` label to all template resources.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-03T22:31:11.319490+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     },
     {
       "id": "rec-2bcd472481de",
@@ -80,7 +80,7 @@
       "fix_prompt": "# Fix Recommendation: rbac-on\n\n**Scenario:** `rbac-on`\n**Category:** chart-fix\n**Failure type:** rbac-objects\n**Affected objects:** ServiceAccount, RoleBinding\n\n## Failure Detail\n\nMissing ServiceAccount resource in chart templates\nMissing RoleBinding resource in chart templates\n\n## Suggested Fix\n\nAdd ServiceAccount and RoleBinding templates to the chart.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-03T22:31:11.319490+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     },
     {
       "id": "rec-9dedbffecb04",
@@ -100,7 +100,7 @@
       "fix_prompt": "# Fix Recommendation: scheme-https-only\n\n**Scenario:** `scheme-https-only`\n**Category:** chart-fix\n**Failure type:** scheme-enforced\n**Affected objects:** Ingress\n\n## Suggested Fix\n\nAdd nginx.ingress.kubernetes.io/force-ssl-redirect: \"true\" annotation.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-03T22:31:11.319490+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     },
     {
       "id": "rec-ca6ae83a6fe3",
@@ -119,7 +119,7 @@
       "fix_prompt": "# Fix Recommendation: contour-basic-httpproxy\n\n**Scenario:** `contour-basic-httpproxy`\n**Category:** gap-probe\n\nThis is an honest integration gap — the chart does not support Contour HTTPProxy.",
       "dismissed_reason": "Contour not in product roadmap",
       "created_at": "2026-06-03T22:31:11.319490+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     },
     {
       "id": "rec-d87e2a5ac9f0",
@@ -139,7 +139,7 @@
       "fix_prompt": "# Fix Recommendation: gatekeeper-required-labels\n\n**Scenario:** `gatekeeper-required-labels`\n**Category:** gap-probe\n\nThis is an honest integration gap — the chart does not include Gatekeeper constraints.",
       "dismissed_reason": "",
       "created_at": "2026-06-03T22:31:11.319490+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     },
     {
       "id": "rec-schema001abcde",
@@ -158,7 +158,7 @@
       "fix_prompt": "# Fix Recommendation: unknown-assert-type\n\n**Scenario:** `unknown-assert-type`\n**Category:** schema-missing\n\nAdd the missing value to values.yaml.",
       "dismissed_reason": "",
       "created_at": "2026-06-03T22:31:11.319490+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     },
     {
       "id": "rec-testvalfix005",
@@ -177,7 +177,7 @@
       "fix_prompt": "Add cost-center=42 annotation to Service template",
       "dismissed_reason": "",
       "created_at": "2026-06-04T18:41:28.234570+00:00",
-      "updated_at": "2026-06-04T20:10:54.617649+00:00"
+      "updated_at": "2026-06-08T14:18:57.395842+00:00"
     }
   ]
 }

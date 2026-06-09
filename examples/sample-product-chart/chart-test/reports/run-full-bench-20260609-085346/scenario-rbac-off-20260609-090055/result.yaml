@@ -1,0 +1,13 @@
+scenario_id: rbac-off
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/rbac-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:00:55Z
+provider: kind
+asserts:
+  - type: rbac-objects
+    status: PASS
+    notes: |
+      PASS: no RBAC objects found (as expected)
+status: PASS
+finished_at: 2026-06-09T13:01:25Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-rbac-off-20260609-090055/artifacts/logs

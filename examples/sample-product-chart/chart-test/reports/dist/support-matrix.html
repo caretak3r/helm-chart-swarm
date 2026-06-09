@@ -12,18 +12,34 @@
     <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— Support Matrix</span></h1>
     <p class="hint">Capability coverage across all catalog scenarios. Green = supported; red = gap to build next.</p>
   </div>
-  <nav>
-    <a href="index.html" class="up">← all runs</a>
-  </nav>
-</header>
+<nav class="top-nav" aria-label="Main navigation">
+  <a href="home.html"
+     class="nav-item"
+>Home</a>
+  <a href="getting-started.html"
+     class="nav-item"
+>Getting Started</a>
+  <a href="support-matrix.html"
+     class="nav-item nav-active"
+aria-current="page">Matrix</a>
+  <a href="runs.html"
+     class="nav-item"
+>Runs</a>
+  <a href="recommendations.html"
+     class="nav-item"
+>Recommendations</a>
+  <a href="versions.html"
+     class="nav-item"
+>Versions</a>
+</nav></header>
 
 <section class="support-matrix-summary">
   <h2>Run summary</h2>
   <p class="hint">Counts exclude authored-only (cloud) scenarios.</p>
   <div class="counts">
-    <span class="badge status-pass">PASS · 13</span>
+    <span class="badge status-pass">PASS · 16</span>
     <span class="badge status-fail">FAIL · 7</span>
-    <span class="count-label">Run: 20</span>
+    <span class="count-label">Run: 23</span>
   </div>
 </section>
 
@@ -1041,6 +1057,76 @@
           </td>
           <td>
               <span class="hint" title="authored, not run locally">not run</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm-category">
+    <h3>cni</h3>
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th class="row-head">Capability / Scenario</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Scenario YAML</th>
+          <th>Applied Overrides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sm-row" data-scenario-id="cni-cilium-ebpf-kube-proxy-replacement" data-tier="live">
+          <th class="row-head">
+            <code>cni-cilium-ebpf-kube-proxy-replacement</code>
+<div class="hint">Cilium eBPF kube-proxy replacement</div>            <div class="hint"><code>cni/cilium</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/cni/cni-cilium-ebpf-kube-proxy-replacement.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="cni-cilium-ingress" data-tier="live">
+          <th class="row-head">
+            <code>cni-cilium-ingress</code>
+<div class="hint">Cilium ingress controller — dedicated loadbalancerMode</div>            <div class="hint"><code>cni/cilium</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/cni/cni-cilium-ingress.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
+          </td>
+        </tr>
+        <tr class="sm-row" data-scenario-id="cni-cilium-network-policy" data-tier="live">
+          <th class="row-head">
+            <code>cni-cilium-network-policy</code>
+<div class="hint">CiliumNetworkPolicy enforcement — default-deny + allow-by-label</div>            <div class="hint"><code>cni/cilium</code></div>
+          </th>
+          <td>
+            <code>live</code>
+          </td>
+          <td>
+            <span class="badge status-pass">PASS</span>
+          </td>
+          <td>
+              <a href="catalog/cni/cni-cilium-network-policy.yaml" data-artifact="scenario">scenario.yaml</a>
+          </td>
+          <td>
+              <span class="hint">not yet run</span>
           </td>
         </tr>
       </tbody>

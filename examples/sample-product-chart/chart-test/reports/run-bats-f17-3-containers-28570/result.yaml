@@ -1,0 +1,10 @@
+run_id: run-bats-f17-3-containers-28570
+suite: curated-live
+timestamp_utc: 2026-06-08T14:52:15Z
+total: 1
+pass: 0
+fail: 1
+skip: 0
+scenarios:
+  - id: labels-on
+    status: FAIL

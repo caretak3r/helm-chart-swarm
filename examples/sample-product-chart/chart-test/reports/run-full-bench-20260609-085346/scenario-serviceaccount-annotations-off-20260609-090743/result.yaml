@@ -1,0 +1,13 @@
+scenario_id: serviceaccount-annotations-off
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/serviceaccount-annotations-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:07:43Z
+provider: kind
+asserts:
+  - type: serviceaccount-annotations
+    status: PASS
+    notes: |
+      PASS: no ServiceAccount rendered (vacuously satisfies absence of identity annotations)
+status: PASS
+finished_at: 2026-06-09T13:08:13Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-serviceaccount-annotations-off-20260609-090743/artifacts/logs

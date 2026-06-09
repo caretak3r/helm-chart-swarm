@@ -1,0 +1,35 @@
+scenario_id: cni-cilium-network-policy
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/cni/cni-cilium-network-policy.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:21:47Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-44 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7955bb5b9-hdjd7 condition met
+      PASS: pods Ready in ns/sample
+      NAME                     READY   STATUS    RESTARTS   AGE
+      sample-7955bb5b9-hdjd7   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-network-policy.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Getting product Service ClusterIP
+      Product Service ClusterIP: 10.96.55.216:80
+      ==> Testing ALLOWED client (label access=allowed)
+      ALLOWED client HTTP code: 200
+      PASS: Allowed client reached the product Service
+      ==> Testing DENIED client (no access label)
+      DENIED client HTTP code: 000
+      PASS: Denied client was blocked (no reachable product Service)
+      PASS: CiliumNetworkPolicy enforcement verified (allowed=reachable, denied=blocked)
+status: PASS
+finished_at: 2026-06-09T13:22:58Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-cni-cilium-network-policy-20260609-092147/artifacts/logs

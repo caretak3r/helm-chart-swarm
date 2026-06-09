@@ -1,0 +1,31 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/envoy-gateway-cert-manager-tls.sh (RELEASE=sample NAMESPACE=sample)
+==> Applying cert-manager Certificate for Gateway TLS
+certificate.cert-manager.io/gateway-tls created
+==> Waiting for cert-manager Certificate 'gateway-tls' Ready (3m max)
+certificate.cert-manager.io/gateway-tls condition met
+PASS: Certificate Ready=True
+==> Verifying TLS Secret 'gateway-tls' keys
+OK: tls.crt, tls.key, ca.crt all present in TLS Secret
+==> Applying GatewayClass + Gateway (HTTPS listener) + HTTPRoute
+gatewayclass.gateway.networking.k8s.io/envoy created
+gateway.gateway.networking.k8s.io/sample-gw created
+httproute.gateway.networking.k8s.io/sample-route created
+==> Waiting for GatewayClass envoy Accepted=True (3m max)
+PASS: GatewayClass envoy Accepted=True
+==> Waiting for Gateway listener https Programmed=True (5m max)
+PASS: Gateway listener https Programmed=True
+==> Verifying gateway listener https is Programmed
+PASS: Listener https Programmed=True
+==> Verifying HTTPRoute sample-route Accepted=True
+PASS: HTTPRoute sample-route Accepted=True
+==> Getting envoy data-plane Service ClusterIP
+Gateway Service IP: 10.96.194.254
+==> Probing HTTPS backend via gateway (retry up to 2m)
+HTTPS response: 200 (attempt 2)
+HTTPS response: 200
+PASS: HTTPS 200 through Envoy Gateway with cert-manager TLS
+==> Verifying peer certificate matches cert-manager issued cert
+SAN: X509v3 Subject Alternative Name: 
+    DNS:sample.sample.svc.cluster.local
+PASS: cert SAN includes sample.sample.svc.cluster.local
+PASS: envoy-gateway + cert-manager TLS compose verified

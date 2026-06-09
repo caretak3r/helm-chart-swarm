@@ -1,0 +1,14 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-wildcard.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Certificate 'sample-wildcard-tls' Ready (3m max)
+certificate.cert-manager.io/sample-wildcard-tls condition met
+PASS: Certificate Ready=True
+==> Verifying TLS Secret 'sample-wildcard-tls' keys
+Secret keys: ca.crt
+tls.crt
+tls.key
+OK: tls.crt, tls.key, ca.crt all present
+==> Verifying wildcard certificate SANs
+SAN: X509v3 Subject Alternative Name: 
+    DNS:*.test.local, DNS:test.local
+PASS: cert SAN includes DNS:*.test.local and DNS:test.local
+PASS: cert-manager wildcard certificate integration verified

@@ -1,0 +1,14 @@
+scenario_id: scheduling-affinity-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/scheduling-affinity-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:03:01Z
+provider: kind
+asserts:
+  - type: scheduling-present
+    status: FAIL
+    notes: |
+        Deployment/sample: missing affinity on pod spec
+      FAIL: 1 scheduling check(s) failed across 1 workload(s)
+status: FAIL
+finished_at: 2026-06-09T13:03:32Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-scheduling-affinity-on-20260609-090301/artifacts/logs

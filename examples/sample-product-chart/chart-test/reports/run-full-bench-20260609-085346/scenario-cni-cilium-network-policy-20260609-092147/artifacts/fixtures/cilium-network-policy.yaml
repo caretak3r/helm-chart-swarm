@@ -1,0 +1,23 @@
+---
+# CiliumNetworkPolicy fixture for cni-cilium-network-policy scenario.
+# Enforces:
+#   - Default-deny ingress to the product Service (drop all unmatched traffic)
+#   - Allow ingress only from pods carrying label access=allowed
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: cncp-sample
+  namespace: sample
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/instance: sample
+  ingress:
+    # Allow from pods with label access=allowed (same namespace)
+    - fromEndpoints:
+        - matchLabels:
+            access: allowed
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP

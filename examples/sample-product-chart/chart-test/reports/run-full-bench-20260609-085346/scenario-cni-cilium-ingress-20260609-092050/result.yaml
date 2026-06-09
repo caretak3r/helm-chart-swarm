@@ -1,0 +1,34 @@
+scenario_id: cni-cilium-ingress
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/cni/cni-cilium-ingress.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:20:50Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-43 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7955bb5b9-n5vqk condition met
+      PASS: pods Ready in ns/sample
+      NAME                     READY   STATUS    RESTARTS   AGE
+      sample-7955bb5b9-n5vqk   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-ingress.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Locating Cilium per-Ingress Service (dedicated mode)
+      Cilium per-Ingress Service: service/cilium-ingress-sample
+      ==> Getting per-Ingress Service ClusterIP (no LB on kind)
+      Per-Ingress Service ClusterIP: 10.96.87.173:80
+      ==> Probing per-Ingress Service with Host: sample.test.local (in-cluster)
+      HTTP response (Host: sample.test.local): 200
+      PASS: Cilium ingress routes HTTP through dedicated per-Ingress Service
+      PASS: Cilium ingress controller verified
+status: PASS
+finished_at: 2026-06-09T13:21:46Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-cni-cilium-ingress-20260609-092050/artifacts/logs

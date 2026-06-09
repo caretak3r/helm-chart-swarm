@@ -1,0 +1,28 @@
+==> Creating kind cluster 'chart-test-swarm-run-48' (provider=kind)
+Creating cluster "chart-test-swarm-run-48" ...
+ • Ensuring node image (kindest/node:v1.30.0) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.30.0) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Waiting ≤ 1m0s for control-plane = Ready ⏳  ...
+ ✓ Waiting ≤ 1m0s for control-plane = Ready ⏳
+ • Ready after 17s 💚
+Set kubectl context to "kind-chart-test-swarm-run-48"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-chart-test-swarm-run-48
+
+Thanks for using kind! 😊
+==> Cluster nodes:
+NAME                                    STATUS   ROLES           AGE   VERSION
+chart-test-swarm-run-48-control-plane   Ready    control-plane   20s   v1.30.0
+==> OK: kind-chart-test-swarm-run-48 ready
+==> Note: kubeconfig context set to 'kind-chart-test-swarm-run-48' (context restore deferred to caller).

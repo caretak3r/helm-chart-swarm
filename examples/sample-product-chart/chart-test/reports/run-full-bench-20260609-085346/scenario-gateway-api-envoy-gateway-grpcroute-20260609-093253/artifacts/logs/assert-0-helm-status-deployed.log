@@ -1,0 +1,2 @@
+helm status: deployed
+PASS: release envoy-gateway in ns/envoy-gateway-system is deployed

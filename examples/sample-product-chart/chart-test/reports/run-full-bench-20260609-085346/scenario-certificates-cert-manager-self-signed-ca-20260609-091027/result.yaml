@@ -1,0 +1,45 @@
+scenario_id: certificates-cert-manager-self-signed-ca
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/certificates/certificates-cert-manager-self-signed-ca.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:10:28Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-29 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7d59fd54fc-7dtms condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7d59fd54fc-7dtms   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-self-signed.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Waiting for Certificate 'sample-tls' Ready (3m max)
+      certificate.cert-manager.io/sample-tls condition met
+      PASS: Certificate Ready=True
+      ==> Verifying TLS Secret 'sample-tls' keys
+      Secret keys: ca.crt
+      tls.crt
+      tls.key
+      OK: tls.crt, tls.key, ca.crt all present
+      ==> Waiting for pod Ready (3m max)
+      pod/sample-7d59fd54fc-7dtms condition met
+      PASS: chart pods Ready
+      ==> Verifying HTTPS reachable from in-cluster curl
+      HTTPS response: 200
+      PASS: HTTPS 200 with --cacert verification
+      ==> Verifying peer certificate SAN
+      SAN: X509v3 Subject Alternative Name: 
+          DNS:sample.sample.svc, DNS:sample.sample.svc.cluster.local
+      PASS: cert SAN includes configured host
+      PASS: cert-manager self-signed CA integration verified
+status: PASS
+finished_at: 2026-06-09T13:11:19Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-certificates-cert-manager-self-signed-ca-20260609-091027/artifacts/logs

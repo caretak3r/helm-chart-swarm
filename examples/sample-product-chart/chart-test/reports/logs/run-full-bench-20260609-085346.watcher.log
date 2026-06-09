@@ -1,0 +1,753 @@
+==> watcher start 2026-06-09T12:55:08Z
+--- rebuild 2026-06-09T12:55:08Z ---
+   Building testgrid @ file:///Users/rohit/Documents/chart-test-swarm/engine/skills/chart-test-swarm/engine/testgrid
+Downloading mypy (13.0MiB)
+Downloading ruff (9.9MiB)
+      Built testgrid @ file:///Users/rohit/Documents/chart-test-swarm/engine/skills/chart-test-swarm/engine/testgrid
+ Downloaded ruff
+ Downloaded mypy
+Uninstalled 1 package in 1ms
+Installed 36 packages in 90ms
+  run-full-bench-20260609-085346  0/99 scenarios PASS  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/run-full-bench-20260609-085346/index.html
+  index                           (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/index.html
+  runs                            (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/runs.html
+  recommendations.json            (13 rec(s), 13 open)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/recommendations.json
+  home                            →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/home.html
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/getting-started.html
+--- rebuild 2026-06-09T12:56:11Z ---
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+  run-full-bench-20260609-085346  1/99 scenarios PASS  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/run-full-bench-20260609-085346/index.html
+  index                           (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/index.html
+  runs                            (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/runs.html
+  recommendations.json            (13 rec(s), 13 open)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/recommendations.json
+  home                            →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/home.html
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/getting-started.html
+--- rebuild 2026-06-09T12:57:12Z ---
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 11, column 7
+  run-full-bench-20260609-085346  2/99 scenarios PASS  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/run-full-bench-20260609-085346/index.html
+  index                           (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/index.html
+  runs                            (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/runs.html
+  recommendations.json            (13 rec(s), 13 open)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/recommendations.json
+  home                            →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/home.html
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/getting-started.html
+--- rebuild 2026-06-09T12:58:13Z ---
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 11, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 11, column 7
+  run-full-bench-20260609-085346  3/99 scenarios PASS  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/run-full-bench-20260609-085346/index.html
+  index                           (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/index.html
+  runs                            (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/runs.html
+  recommendations.json            (13 rec(s), 13 open)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/recommendations.json
+  home                            →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/home.html
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/getting-started.html
+--- rebuild 2026-06-09T12:59:14Z ---
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 11, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml", line 16, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 11, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml", line 16, column 7
+  run-full-bench-20260609-085346  4/99 scenarios PASS  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/run-full-bench-20260609-085346/index.html
+  index                           (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/index.html
+  runs                            (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/runs.html
+  recommendations.json            (13 rec(s), 13 open)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/recommendations.json
+  home                            →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/home.html
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:00:15Z ---
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 11, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml", line 16, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/result.yaml", line 13, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-imagepullsecrets-on-20260609-085642/result.yaml", line 11, column 7
+warn: skipping malformed /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml: while parsing a block mapping
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml", line 7, column 5
+expected <block end>, but found '<block mapping start>'
+  in "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-labels-on-20260609-085744/result.yaml", line 16, column 7
+  run-full-bench-20260609-085346  5/99 scenarios PASS  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/run-full-bench-20260609-085346/index.html
+  index                           (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/index.html
+  runs                            (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/runs.html
+  recommendations.json            (14 rec(s), 14 open)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/recommendations.json
+  home                            →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/home.html
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/dist/getting-started.html
+==> watcher restart 2026-06-09T13:01:25Z
+--- rebuild 2026-06-09T13:01:25Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, stopped)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:02:26Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:03:27Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:04:28Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:05:29Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:06:31Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:07:32Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:08:33Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:09:34Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:10:35Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:11:36Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:12:37Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:13:38Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:14:39Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:15:40Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:16:41Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:17:42Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, stopped)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:18:43Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:19:45Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:20:46Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:21:47Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, stopped)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:22:48Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:23:49Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:24:50Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:25:51Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:26:53Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:27:54Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:28:55Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:29:56Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:30:57Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:31:58Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:32:59Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:34:00Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:35:02Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:36:03Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:37:04Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:38:05Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:39:07Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:40:08Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:41:09Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:42:10Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:43:11Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:44:13Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:45:14Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:46:15Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:47:16Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:48:18Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:49:19Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:50:20Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:51:21Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:52:23Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:53:24Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:54:25Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:55:27Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:56:28Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:57:29Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:58:30Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T13:59:32Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:00:33Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:01:35Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:02:36Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:03:37Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:04:39Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:05:40Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:06:41Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:07:42Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:08:44Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:09:45Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:10:46Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:11:47Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:12:49Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:13:50Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:14:51Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:15:53Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:16:54Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:17:55Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:18:57Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:19:58Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:20:59Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:22:01Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:23:02Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:24:03Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:25:05Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:26:06Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:27:07Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:28:09Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:29:10Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:30:11Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:31:13Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:32:14Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:33:16Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:34:17Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:35:18Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:36:20Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:37:21Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:38:22Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:39:24Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:40:25Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:41:26Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:42:28Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:43:29Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:44:30Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:45:32Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:46:33Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:47:34Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:48:36Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:49:37Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:50:38Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:51:40Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:52:41Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:53:42Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:54:44Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:55:45Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:56:46Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:57:48Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:58:49Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T14:59:50Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:00:52Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:01:53Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:02:54Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:03:56Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:04:57Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:05:58Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:07:00Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:08:01Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:09:02Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:10:03Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:11:05Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:12:06Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:13:07Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:14:09Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:15:10Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:16:11Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:17:13Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:18:14Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:19:15Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:20:16Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:21:18Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:22:19Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:23:20Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:24:22Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:25:23Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:26:24Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:27:26Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:28:27Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:29:29Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:30:30Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:31:31Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:32:32Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, running)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+--- rebuild 2026-06-09T15:33:34Z ---
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, stopped)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html
+==> run pid 36446 gone; final dashboard build
+  run-full-bench-20260609-085346  69/99 scenarios PASS  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/run-full-bench-20260609-085346/index.html
+  index                           (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/reports/dist/index.html
+  runs                            (91 run(s))             →  /Users/rohit/Documents/chart-test-swarm/reports/dist/runs.html
+  recommendations.json            (37 rec(s), 37 open)  →  /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/recommendations.json
+  home                            →  /Users/rohit/Documents/chart-test-swarm/reports/dist/home.html
+  recommendations                 →  /Users/rohit/Documents/chart-test-swarm/reports/dist/recommendations.html
+  versions                        →  /Users/rohit/Documents/chart-test-swarm/reports/dist/versions.html
+  getting-started                 (6/7 tools, stopped)  →  /Users/rohit/Documents/chart-test-swarm/reports/dist/getting-started.html

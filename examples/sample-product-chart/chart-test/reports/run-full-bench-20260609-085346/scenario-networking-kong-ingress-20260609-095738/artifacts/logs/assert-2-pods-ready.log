@@ -1,0 +1,7 @@
+kubectl --context kind-chart-test-swarm-run-70 -n kong wait --for=condition=Ready pods --timeout=5m --all
+pod/kong-controller-84db4dc787-zrp2w condition met
+pod/kong-gateway-86698f6995-shd24 condition met
+PASS: pods Ready in ns/kong
+NAME                               READY   STATUS    RESTARTS   AGE
+kong-controller-84db4dc787-zrp2w   1/1     Running   0          24s
+kong-gateway-86698f6995-shd24      1/1     Running   0          24s

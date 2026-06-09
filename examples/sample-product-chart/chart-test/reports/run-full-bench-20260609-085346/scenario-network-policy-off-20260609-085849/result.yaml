@@ -1,0 +1,13 @@
+scenario_id: network-policy-off
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/network-policy-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T12:58:49Z
+provider: kind
+asserts:
+  - type: network-policy
+    status: PASS
+    notes: |
+      PASS: no NetworkPolicy objects found (as expected)
+status: PASS
+finished_at: 2026-06-09T12:59:19Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-network-policy-off-20260609-085849/artifacts/logs

@@ -1,0 +1,59 @@
+scenario_id: networking-metallb-loadbalancer
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/networking/networking-metallb-loadbalancer.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:58:38Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-71 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-69469cb4c6-8hhnf condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-69469cb4c6-8hhnf   1/1     Running   0          4s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-71 -n metallb wait --for=condition=Ready pods --timeout=5m --all
+      pod/metallb-controller-7b8b56ccdd-vdw7j condition met
+      pod/metallb-frr-k8s-qgs69 condition met
+      pod/metallb-frr-k8s-statuscleaner-67874f5d9f-p2mdc condition met
+      pod/metallb-speaker-pxsmw condition met
+      PASS: pods Ready in ns/metallb
+      NAME                                             READY   STATUS    RESTARTS   AGE
+      metallb-controller-7b8b56ccdd-vdw7j              1/1     Running   0          35s
+      metallb-frr-k8s-qgs69                            5/5     Running   0          35s
+      metallb-frr-k8s-statuscleaner-67874f5d9f-p2mdc   1/1     Running   0          35s
+      metallb-speaker-pxsmw                            1/1     Running   0          35s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      pod/metallb-speaker-pxsmw condition met
+      PASS: MetalLB speaker pods Ready
+      ==> Verifying IPAddressPool exists
+      PASS: IPAddressPool chart-test-pool found
+      ==> Verifying L2Advertisement exists
+      PASS: L2Advertisement chart-test-l2 found
+      ==> Waiting for product pod Ready (5m max)
+      pod/sample-69469cb4c6-8hhnf condition met
+      PASS: product pods Ready
+      ==> Verifying Service has spec.type=LoadBalancer
+      PASS: Service type=LoadBalancer
+      ==> Waiting for MetalLB to assign external IP (60s max)
+      MetalLB assigned external IP: 172.20.255.200
+      PASS: MetalLB assigned external IP 172.20.255.200
+      ==> Verifying assigned IP is within the configured pool
+      PASS: Assigned IP 172.20.255.200 is within pool range 172.20.255.200-172.20.255.250
+      ==> Probing LB endpoint via in-cluster curl (expect 200)
+      HTTP response from LB IP: 200
+      PASS: HTTP 200 from LB endpoint 172.20.255.200
+      PASS: MetalLB LoadBalancer integration verified end-to-end
+status: PASS
+finished_at: 2026-06-09T13:59:47Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-networking-metallb-loadbalancer-20260609-095837/artifacts/logs

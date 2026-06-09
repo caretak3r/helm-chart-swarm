@@ -1,0 +1,67 @@
+---
+id: networking-kong-ingress
+name: "Kong Ingress (className=kong)"
+description: >-
+  Installs Kong Ingress Controller, deploys the product chart with ingress.enabled=true and ingress.className=kong, and verifies end-to-end routing through the Kong proxy data path via the chart's built-in Ingress resource. Also includes a KongPlugin gap-probe documenting that the sample chart exposes no konghq.com/plugins annotation or KongPlugin CRD knob, which is an honest gap (red cell) — do NOT over-engineer the chart.
+labels: {customer: any, profile: ingress}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: kong/ingress
+      version: 0.24.0
+      release: kong
+      namespace: kong
+      repo:
+        name: kong
+        url: "https://charts.konghq.com"
+      values:
+        ingressController:
+          enabled: true
+          ingressClass: kong
+          installCRDs: true
+        proxy:
+          type: NodePort
+          http:
+            enabled: true
+            nodePort: 30080
+          tls:
+            enabled: true
+            nodePort: 30443
+        env:
+          database: "off"
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+      wait: pods-ready
+      wait_timeout: 5m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    ingress.enabled: "true"
+    ingress.className: "kong"
+    ingress.host: "sample.test.local"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: pods-ready
+    namespace: kong
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/kong-ingress.sh
+tags: [nightly, curated-live]
+mechanisms: ['addon:kong']
+category: networking
+integration: kong
+tier: live

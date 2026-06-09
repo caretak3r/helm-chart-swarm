@@ -1,0 +1,19 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/traefik-ingressroute-crd.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for Traefik pod Ready (3m max)
+pod/traefik-77657478fd-hwjqf condition met
+PASS: Traefik pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-qpdsd condition met
+PASS: product pods Ready
+==> Verifying IngressRoute CRD is used (not classic Ingress)
+IngressRoute count: 1
+PASS: IngressRoute.traefik.io/v1alpha1 resources present
+==> Verifying no classic Ingress resources exist
+Classic Ingress count: 0
+PASS: no classic Ingress resources (CRD-only routing)
+==> Getting Traefik pod IP
+Traefik pod IP: 10.244.0.5
+==> Probing HTTP with Host header (expect 200)
+HTTP response: 200
+PASS: HTTP 200 through IngressRoute CRD
+PASS: Traefik IngressRoute CRD integration verified

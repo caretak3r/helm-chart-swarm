@@ -1,0 +1,26 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 2 preinstall item(s)
+
+==> [1/2] kind=helm
+    helm: gatekeeper (gatekeeper/gatekeeper @ 3.17.1) in ns/gatekeeper-system
+    repo 'gatekeeper' already exists with URL https://open-policy-agent.github.io/gatekeeper/charts (skipping add)
+Release "gatekeeper" does not exist. Installing it now.
+NAME: gatekeeper
+LAST DEPLOYED: Tue Jun  9 10:14:33 2026
+NAMESPACE: gatekeeper-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+pod/gatekeeper-audit-65579cd9f9-bjpft condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-68frj condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-nn72s condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-wvggv condition met
+
+==> [2/2] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/policy/k8scontainerlimits-template.yaml
+constrainttemplate.templates.gatekeeper.sh/k8scontainerlimits serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

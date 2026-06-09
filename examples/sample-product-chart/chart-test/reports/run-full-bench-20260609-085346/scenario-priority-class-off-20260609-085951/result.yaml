@@ -1,0 +1,13 @@
+scenario_id: priority-class-off
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/priority-class-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T12:59:52Z
+provider: kind
+asserts:
+  - type: priority-class-present
+    status: PASS
+    notes: |
+      PASS: no priorityClassName on 1 workload(s)
+status: PASS
+finished_at: 2026-06-09T13:00:22Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-priority-class-off-20260609-085951/artifacts/logs

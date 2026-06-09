@@ -1,0 +1,9 @@
+kubectl --context kind-chart-test-swarm-run-65 -n cert-manager wait --for=condition=Ready pods --timeout=3m --all
+pod/cert-manager-c69c859c4-57gdp condition met
+pod/cert-manager-cainjector-d6d64f75f-t2qrw condition met
+pod/cert-manager-webhook-566849c7fc-lz4g2 condition met
+PASS: pods Ready in ns/cert-manager
+NAME                                      READY   STATUS    RESTARTS   AGE
+cert-manager-c69c859c4-57gdp              1/1     Running   0          57s
+cert-manager-cainjector-d6d64f75f-t2qrw   1/1     Running   0          57s
+cert-manager-webhook-566849c7fc-lz4g2     1/1     Running   0          57s

@@ -1,0 +1,78 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2026-06-08T13:11:11Z"
+    labels:
+      cilium.io/ingress: "true"
+    name: cilium-ingress-sample
+    namespace: sample
+    ownerReferences:
+    - apiVersion: networking.k8s.io/v1
+      controller: true
+      kind: Ingress
+      name: sample
+      uid: 94d02843-9209-4f87-ae2e-9d5fea6cf19e
+    resourceVersion: "748"
+    uid: 22e759c3-b9f5-46dd-9baf-5cfa0f237869
+  spec:
+    allocateLoadBalancerNodePorts: true
+    clusterIP: 10.96.244.113
+    clusterIPs:
+    - 10.96.244.113
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: PreferDualStack
+    ports:
+    - name: http
+      nodePort: 31642
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    - name: https
+      nodePort: 31341
+      port: 443
+      protocol: TCP
+      targetPort: 443
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-06-08T13:11:11Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "730"
+    uid: a44064c4-c50d-4df6-bcdd-0f5236f2dce6
+  spec:
+    clusterIP: 10.96.82.182
+    clusterIPs:
+    - 10.96.82.182
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

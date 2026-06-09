@@ -1,0 +1,11 @@
+scenario_id: service-mesh-istio-service-mesh-sidecar-injection
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/service-mesh/service-mesh-istio-service-mesh-sidecar-injection.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T14:43:17Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-sidecar-injection-20260609-104316/artifacts/logs/product-install.log
+finished_at: 2026-06-09T14:48:51Z

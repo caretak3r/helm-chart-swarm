@@ -1,0 +1,35 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: populate-mounted-tls-pvc
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: populate
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              base64 -d /certs-in/tls.crt.b64 > /certs-out/tls.crt
+              base64 -d /certs-in/tls.key.b64 > /certs-out/tls.key
+              chmod 644 /certs-out/tls.crt /certs-out/tls.key
+              echo "TLS certs written to PVC"
+              ls -la /certs-out/
+              [ -f /certs-out/tls.crt ] && [ -s /certs-out/tls.crt ] && echo "tls.crt OK" || { echo "FAIL: tls.crt missing or empty"; exit 1; }
+              [ -f /certs-out/tls.key ] && [ -s /certs-out/tls.key ] && echo "tls.key OK" || { echo "FAIL: tls.key missing or empty"; exit 1; }
+          volumeMounts:
+            - name: certs-in
+              mountPath: /certs-in
+            - name: certs-out
+              mountPath: /certs-out
+      volumes:
+        - name: certs-in
+          configMap:
+            name: mounted-tls-pvc-certs
+        - name: certs-out
+          persistentVolumeClaim:
+            claimName: mounted-tls-pvc

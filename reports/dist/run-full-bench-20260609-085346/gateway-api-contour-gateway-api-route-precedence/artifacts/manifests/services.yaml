@@ -1,0 +1,101 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2026-06-09T13:26:05Z"
+    labels:
+      gateway.networking.k8s.io/gateway-name: sample-gw
+      projectcontour.io/owning-gateway-name: sample-gw
+    name: contour-sample-gw
+    namespace: sample
+    resourceVersion: "648"
+    uid: bbfbbe0b-cecc-4c9d-ae62-33a8964fbfb2
+  spec:
+    clusterIP: 10.96.94.157
+    clusterIPs:
+    - 10.96.94.157
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: xds
+      port: 8001
+      protocol: TCP
+      targetPort: 8001
+    selector:
+      app: contour-sample-gw
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2026-06-09T13:26:05Z"
+    labels:
+      gateway.networking.k8s.io/gateway-name: sample-gw
+      projectcontour.io/owning-gateway-name: sample-gw
+    name: envoy-sample-gw
+    namespace: sample
+    resourceVersion: "654"
+    uid: da73a792-680e-4651-8e72-a63dd50445e2
+  spec:
+    allocateLoadBalancerNodePorts: true
+    clusterIP: 10.96.16.121
+    clusterIPs:
+    - 10.96.16.121
+    externalTrafficPolicy: Local
+    healthCheckNodePort: 30161
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http-80
+      nodePort: 32332
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: envoy-sample-gw
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-06-09T13:25:58Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "552"
+    uid: 97bf237e-58d6-4906-886b-daabdaeceb71
+  spec:
+    clusterIP: 10.96.195.188
+    clusterIPs:
+    - 10.96.195.188
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

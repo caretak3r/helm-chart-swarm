@@ -1,0 +1,45 @@
+scenario_id: certificates-manual-tls-secret-basic
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/certificates/certificates-manual-tls-secret-basic.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:12:10Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-31 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-5bff6cf44d-zxwkj condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-5bff6cf44d-zxwkj   1/1     Running   0          5s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      ==> Verifying TLS Secret 'manual-tls-basic' type
+      Secret type: kubernetes.io/tls
+      PASS: Secret type is kubernetes.io/tls
+      ==> Verifying TLS Secret 'manual-tls-basic' data keys
+      Secret keys: tls.crt
+      tls.key
+      OK: tls.crt, tls.key both present
+      ==> Verifying tls.crt is valid PEM
+      subject=C=US, ST=CA, O=Chart Test Swarm, CN=sample.sample.svc
+      PASS: tls.crt is a valid certificate
+      ==> Verifying tls.key is valid PEM
+      RSA key ok
+      PASS: tls.key is a valid private key
+      ==> Waiting for pod Ready (3m max)
+      pod/sample-5bff6cf44d-zxwkj condition met
+      PASS: chart pods Ready
+      ==> Verifying HTTPS reachable from in-cluster curl
+      HTTPS response: 200
+      PASS: HTTPS 200
+      PASS: manual-tls-secret basic scenario verified
+status: PASS
+finished_at: 2026-06-09T13:12:45Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-certificates-manual-tls-secret-basic-20260609-091210/artifacts/logs

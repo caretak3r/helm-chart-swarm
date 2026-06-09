@@ -1,0 +1,183 @@
+{
+  "run_id": "run-cni-cilium-live",
+  "timestamp_utc": "2026-06-08 14:14:48+00:00",
+  "num_agents": 1,
+  "project_name": "sample-product-chart",
+  "chart_name": "sample-product",
+  "chart_version": "0.1.0",
+  "suite": "all",
+  "cluster_provider": "kind",
+  "k8s_version": "",
+  "scenarios": [
+    {
+      "id": "cni-cilium-ebpf-kube-proxy-replacement",
+      "name": "Cilium eBPF kube-proxy replacement",
+      "description": "Proves full eBPF kube-proxy replacement on kind: Cilium replaces kube-proxy, product ClusterIP reachable through eBPF datapath.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:cilium"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "cni"
+      },
+      "status": "PASS",
+      "asserts": [
+        {
+          "type": "helm-status-deployed",
+          "status": "PASS",
+          "notes": "helm status: deployed\nPASS: release sample in ns/sample is deployed"
+        },
+        {
+          "type": "pods-ready",
+          "status": "PASS",
+          "notes": "kubectl --context kind-chart-test-swarm-run-1 -n sample wait --for=condition=Ready pods --timeout=5m --all\npod/sample-7955bb5b9-tpd75 condition met\nPASS: pods Ready in ns/sample\nNAME                     READY   STATUS    RESTARTS   AGE\nsample-7955bb5b9-tpd75   1/1     Running   0          3s"
+        },
+        {
+          "type": "smoke-script",
+          "status": "PASS",
+          "notes": "exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-ebpf.sh (RELEASE=sample NAMESPACE=sample)\n==> Waiting for Cilium daemonset rollout (5m max)\ndaemon set \"cilium\" successfully rolled out\nPASS: Cilium daemonset rolled out\n==> Getting Cilium agent pod name\nCilium pod: cilium-7m4f6\n==> Reading cilium status via kubectl exec\n==> Asserting KubeProxyReplacement: True\nKubeProxyReplacement line: KubeProxyReplacement:    True   [eth0    172.20.0.3 fc00:f853:ccd:e793::3 fe80::8cc6:feff:fead:fb78 (Direct Routing)]\nPASS: KubeProxyReplacement is True\n==> Asserting no kube-proxy daemonset in kube-system\nPASS: kube-proxy daemonset NOT found (fully replaced by Cilium eBPF)\n==> Getting product Service ClusterIP\nProduct Service ClusterIP: 10.96.148.70:80\n==> Probing product ClusterIP from in-cluster curl pod (proves eBPF datapath)\nClusterIP probe HTTP code: 200\nPASS: Product ClusterIP reachable through Cilium eBPF datapath\nPASS: Cilium eBPF kube-proxy replacement verified"
+        }
+      ],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-ebpf-kube-proxy-replacement-20260608-101448/artifacts/logs",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {
+        "scenario": "cni-cilium-ebpf-kube-proxy-replacement/artifacts/scenario.yaml",
+        "overrides": "cni-cilium-ebpf-kube-proxy-replacement/artifacts/applied-overrides.yaml",
+        "fixtures": [
+          "cni-cilium-ebpf-kube-proxy-replacement/artifacts/fixtures/kind-cilium.yaml"
+        ],
+        "manifests": [
+          "cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/configmaps.yaml",
+          "cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/deployments.yaml",
+          "cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/helm-releases.yaml",
+          "cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/ingress.yaml",
+          "cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/secrets.yaml",
+          "cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/services.yaml"
+        ]
+      },
+      "artifact_dir": "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-ebpf-kube-proxy-replacement-20260608-101448/artifacts"
+    },
+    {
+      "id": "cni-cilium-ingress",
+      "name": "Cilium ingress controller \u2014 dedicated loadbalancerMode",
+      "description": "Proves the Cilium ingress controller in dedicated loadbalancerMode on kind: per-Ingress Service routes HTTP with matching Host header to the product Service.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:cilium"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "cni"
+      },
+      "status": "PASS",
+      "asserts": [
+        {
+          "type": "helm-status-deployed",
+          "status": "PASS",
+          "notes": "helm status: deployed\nPASS: release sample in ns/sample is deployed"
+        },
+        {
+          "type": "pods-ready",
+          "status": "PASS",
+          "notes": "kubectl --context kind-chart-test-swarm-run-2 -n sample wait --for=condition=Ready pods --timeout=5m --all\npod/sample-7955bb5b9-z5zp5 condition met\nPASS: pods Ready in ns/sample\nNAME                     READY   STATUS    RESTARTS   AGE\nsample-7955bb5b9-z5zp5   1/1     Running   0          4s"
+        },
+        {
+          "type": "smoke-script",
+          "status": "PASS",
+          "notes": "exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-ingress.sh (RELEASE=sample NAMESPACE=sample)\n==> Locating Cilium per-Ingress Service (dedicated mode)\nCilium per-Ingress Service: service/cilium-ingress-sample\n==> Getting per-Ingress Service ClusterIP (no LB on kind)\nPer-Ingress Service ClusterIP: 10.96.79.246:80\n==> Probing per-Ingress Service with Host: sample.test.local (in-cluster)\nHTTP response (Host: sample.test.local): 200\nPASS: Cilium ingress routes HTTP through dedicated per-Ingress Service\nPASS: Cilium ingress controller verified"
+        }
+      ],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-ingress-20260608-101550/artifacts/logs",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {
+        "scenario": "cni-cilium-ingress/artifacts/scenario.yaml",
+        "overrides": "cni-cilium-ingress/artifacts/applied-overrides.yaml",
+        "fixtures": [
+          "cni-cilium-ingress/artifacts/fixtures/cilium-ingress-values.yaml",
+          "cni-cilium-ingress/artifacts/fixtures/kind-cilium.yaml"
+        ],
+        "manifests": [
+          "cni-cilium-ingress/artifacts/manifests/configmaps.yaml",
+          "cni-cilium-ingress/artifacts/manifests/deployments.yaml",
+          "cni-cilium-ingress/artifacts/manifests/helm-releases.yaml",
+          "cni-cilium-ingress/artifacts/manifests/ingress.yaml",
+          "cni-cilium-ingress/artifacts/manifests/secrets.yaml",
+          "cni-cilium-ingress/artifacts/manifests/services.yaml"
+        ]
+      },
+      "artifact_dir": "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-ingress-20260608-101550/artifacts"
+    },
+    {
+      "id": "cni-cilium-network-policy",
+      "name": "CiliumNetworkPolicy enforcement \u2014 default-deny + allow-by-label",
+      "description": "Proves CiliumNetworkPolicy (CNP) enforcement on kind: default-deny + allow-by-label. Blocks unlabeled traffic; allows labeled clients. CNP applied as raw_manifest preinstall.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:cilium"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "cni"
+      },
+      "status": "PASS",
+      "asserts": [
+        {
+          "type": "helm-status-deployed",
+          "status": "PASS",
+          "notes": "helm status: deployed\nPASS: release sample in ns/sample is deployed"
+        },
+        {
+          "type": "pods-ready",
+          "status": "PASS",
+          "notes": "kubectl --context kind-chart-test-swarm-run-3 -n sample wait --for=condition=Ready pods --timeout=5m --all\npod/sample-7955bb5b9-r55ft condition met\nPASS: pods Ready in ns/sample\nNAME                     READY   STATUS    RESTARTS   AGE\nsample-7955bb5b9-r55ft   1/1     Running   0          3s"
+        },
+        {
+          "type": "smoke-script",
+          "status": "PASS",
+          "notes": "exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-network-policy.sh (RELEASE=sample NAMESPACE=sample)\n==> Getting product Service ClusterIP\nProduct Service ClusterIP: 10.96.111.153:80\n==> Testing ALLOWED client (label access=allowed)\nALLOWED client HTTP code: 200\nPASS: Allowed client reached the product Service\n==> Testing DENIED client (no access label)\nDENIED client HTTP code: 000\nPASS: Denied client was blocked (no reachable product Service)\nPASS: CiliumNetworkPolicy enforcement verified (allowed=reachable, denied=blocked)"
+        }
+      ],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-network-policy-20260608-101721/artifacts/logs",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {
+        "scenario": "cni-cilium-network-policy/artifacts/scenario.yaml",
+        "overrides": "cni-cilium-network-policy/artifacts/applied-overrides.yaml",
+        "fixtures": [
+          "cni-cilium-network-policy/artifacts/fixtures/cilium-network-policy.yaml",
+          "cni-cilium-network-policy/artifacts/fixtures/kind-cilium.yaml"
+        ],
+        "manifests": [
+          "cni-cilium-network-policy/artifacts/manifests/configmaps.yaml",
+          "cni-cilium-network-policy/artifacts/manifests/deployments.yaml",
+          "cni-cilium-network-policy/artifacts/manifests/helm-releases.yaml",
+          "cni-cilium-network-policy/artifacts/manifests/ingress.yaml",
+          "cni-cilium-network-policy/artifacts/manifests/secrets.yaml",
+          "cni-cilium-network-policy/artifacts/manifests/services.yaml"
+        ]
+      },
+      "artifact_dir": "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-network-policy-20260608-101721/artifacts"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cert-manager-letsencrypt-staging.sh (RELEASE=sample NAMESPACE=sample)
+==> Verifying Let's Encrypt staging ClusterIssuer status
+INFO: LE staging ClusterIssuer not Ready (reason: ErrRegisterACMEAccount)
+INFO: ACME registration may require network access to Let's Encrypt staging endpoint
+PASS: LE staging ClusterIssuer exists (ACME challenge stubbed for offline compatibility)
+==> Verifying self-signed ClusterIssuer is Ready
+clusterissuer.cert-manager.io/chart-test-swarm-selfsigned condition met
+PASS: self-signed ClusterIssuer Ready=True
+==> Waiting for Certificate 'sample-tls' Ready (3m max)
+certificate.cert-manager.io/sample-tls condition met
+PASS: Certificate Ready=True
+==> Verifying TLS Secret 'sample-tls' keys
+Secret keys: ca.crt
+tls.crt
+tls.key
+OK: tls.crt + tls.key present
+==> Waiting for pod Ready (3m max)
+pod/sample-7d59fd54fc-pb6hw condition met
+PASS: chart pods Ready
+PASS: cert-manager Let's Encrypt staging integration verified

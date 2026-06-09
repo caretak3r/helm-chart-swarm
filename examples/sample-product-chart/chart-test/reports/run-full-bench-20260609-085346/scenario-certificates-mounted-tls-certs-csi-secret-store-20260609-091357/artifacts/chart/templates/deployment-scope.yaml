@@ -1,0 +1,39 @@
+{{- if .Values.scope.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-scope
+  labels:
+    {{- include "sample-product.labels" . | nindent 4 }}
+    {{- include "sample-product.scopeSelectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: scope
+spec:
+  replicas: {{ .Values.scope.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sample-product.scopeSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sample-product.scopePodLabels" . | nindent 8 }}
+      annotations:
+        {{- include "sample-product.meshAnnotations" . | nindent 8 }}
+    spec:
+      containers:
+        - name: scope
+          image: "{{ .Values.scope.image.repository }}:{{ .Values.scope.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.scope.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.scope.service.port }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.scope.service.port }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}

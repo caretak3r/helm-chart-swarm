@@ -1,0 +1,16 @@
+scenario_id: annotations-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/annotations-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T12:55:42Z
+provider: kind
+asserts:
+  - type: annotations-present
+    status: FAIL
+    notes: |
+        missing annotation 'example.com/owner=team-x' on Service/sample (metadata=)
+        missing annotation 'example.com/owner=team-x' on Deployment/sample (metadata=)
+        missing annotation 'example.com/owner=team-x' on Ingress/sample (metadata=)
+      FAIL: 3 annotation check(s) failed across 3 rendered objects
+status: FAIL
+finished_at: 2026-06-09T12:56:11Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-on-20260609-085542/artifacts/logs

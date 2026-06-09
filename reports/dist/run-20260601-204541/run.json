@@ -1,0 +1,1710 @@
+{
+  "run_id": "run-20260601-204541",
+  "timestamp_utc": "2026-06-02 00:45:43+00:00",
+  "num_agents": 4,
+  "project_name": "sample-product-chart",
+  "chart_name": "sample-product",
+  "chart_version": "0.1.0",
+  "suite": "nightly-full",
+  "cluster_provider": "kind",
+  "k8s_version": "v1.30.0",
+  "scenarios": [
+    {
+      "id": "certificates-cert-manager-jks-pkcs12",
+      "name": "cert-manager JKS/PKCS12 keystore bundle",
+      "description": "Installs cert-manager with a self-signed ClusterIssuer, issues a Certificate, wraps tls.crt+tls.key into a PKCS12 bundle, and stores as a new Secret alongside the TLS material.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager"
+      ],
+      "mechanisms": [
+        "addon:cert-manager"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-cert-manager-lets-encrypt-staging",
+      "name": "cert-manager Let's Encrypt staging issuer",
+      "description": "Installs cert-manager with Let's Encrypt staging ACME issuer. Verifies ClusterIssuer Ready=True and uses self-signed fallback Certificate to confirm chart pods serve TLS.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager"
+      ],
+      "mechanisms": [
+        "addon:cert-manager"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-cert-manager-self-signed-ca",
+      "name": "cert-manager self-signed CA issuer",
+      "description": "Installs cert-manager, creates a self-signed ClusterIssuer, issues a Certificate for the product Service FQDN, and verifies HTTPS serving with --cacert.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager"
+      ],
+      "mechanisms": [
+        "addon:cert-manager"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-cert-manager-wildcard",
+      "name": "cert-manager wildcard certificate",
+      "description": "Installs cert-manager with a self-signed ClusterIssuer, issues a wildcard Certificate with SAN DNS:*.test.local + test.local, and verifies both SANs are present.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager"
+      ],
+      "mechanisms": [
+        "addon:cert-manager"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-manual-tls-secret-basic",
+      "name": "manual-tls-secret basic",
+      "description": "Delivers a pre-provisioned TLS Secret (RSA 2048) via raw_manifest preinstall and verifies the chart serves HTTPS with it. No cert-manager dependency.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:manual-tls-secret"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-manual-tls-secret-ecdsa",
+      "name": "manual-tls-secret ECDSA key",
+      "description": "Delivers a pre-provisioned TLS Secret with ECDSA P-256 key via raw_manifest. Verifies cert has id-ecPublicKey algorithm and pods serve HTTPS with the ECDSA key.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:manual-tls-secret"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-manual-tls-secret-multiple-sans",
+      "name": "manual-tls-secret multiple SANs",
+      "description": "Delivers a pre-provisioned TLS Secret with 3 DNS SANs (sample.sample.svc, api.sample.sample.svc, admin.sample.sample.svc) via raw_manifest and verifies the cert has >=2 SAN entries.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:manual-tls-secret"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-mounted-tls-certs-csi-secret-store",
+      "name": "mounted-tls-certs csi-secret-store",
+      "description": "Installs the secrets-store-csi-driver helm chart and a stub SecretProviderClass, then installs the chart with a TLS secret volume. Verifies CSI driver presence, SecretProviderClass resource, and that the product pod serves HTTPS. Full CSI volume mount verification requires a real CSI provider plugin (e.g. AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, or HashiCorp Vault) which is not available on kind; the scenario validates CSI infrastructure deployment and documents the mount verification as a SKIP on kind.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "csi-secrets-store"
+      ],
+      "mechanisms": [
+        "addon:mounted-tls-certs"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-mounted-tls-certs-projected-volume",
+      "name": "mounted-tls-certs projected-volume",
+      "description": "Creates a TLS Secret, then installs the chart using a projected volume that projects the Secret into the pod. Verifies projected volume source and HTTPS serving.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:mounted-tls-certs"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "certificates-mounted-tls-certs-pvc-mount",
+      "name": "mounted-tls-certs pvc-mount",
+      "description": "Creates a PVC, populates it with TLS certs via a Job, then installs the chart with a persistentVolumeClaim-backed TLS volume. Verifies the pod mount and HTTPS serving.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:mounted-tls-certs"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "customer-a-istio",
+      "name": "Customer A \u2014 Istio mesh + cert-manager",
+      "description": "Customer A's profile: istio sidecar injection, istio-ingress, cert-manager.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager",
+        "istio-base",
+        "istiod"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "addon:cert-manager",
+        "mesh:istio",
+        "customer:A"
+      ],
+      "tags": [
+        "nightly",
+        "customer-replica"
+      ],
+      "labels": {
+        "customer": "A",
+        "mesh": "istio",
+        "ingress": "istio-gw"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "customer-b-gatekeeper",
+      "name": "Customer B \u2014 OPA Gatekeeper admission policies",
+      "description": "Customer B runs Gatekeeper with strict admission policies. Chart must satisfy required-labels + no-privileged constraints.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "gatekeeper"
+      ],
+      "mechanisms": [
+        "addon:gatekeeper",
+        "customer:B"
+      ],
+      "tags": [
+        "nightly",
+        "customer-replica"
+      ],
+      "labels": {
+        "customer": "B",
+        "policy": "gatekeeper"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "envoy-gateway",
+      "name": "Envoy Gateway (Gateway API)",
+      "description": "Installs Envoy Gateway controller via OCI helm chart (CRDs are bundled in the chart's crds/ directory and installed automatically by Helm before templates). Verifies chart coexists with a running gateway controller.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "envoy-gateway"
+      ],
+      "mechanisms": [
+        "addon:envoy-gateway",
+        "gateway-api:envoy"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "none",
+        "profile": "gateway-api"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-contour-gateway-api-basic",
+      "name": "Contour Gateway API Basic",
+      "description": "Installs Gateway API CRDs and Contour Gateway Provisioner, creates GatewayClass contour + Gateway + HTTPRoute, and verifies HTTP routing through the auto-provisioned Envoy proxy.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:contour",
+        "gateway-api:contour"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-contour-gateway-api-response-header-modifier",
+      "name": "Contour Gateway API Response Header Modifier",
+      "description": "Installs Gateway API CRDs + Contour Gateway Provisioner, creates GatewayClass contour + Gateway + HTTPRoute with ResponseHeaderModifier filter, verifies X-Powered-By header.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:contour",
+        "gateway-api:contour"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-contour-gateway-api-route-precedence",
+      "name": "Contour Gateway API Route Precedence",
+      "description": "Installs Gateway API CRDs + Contour Gateway Provisioner, creates GatewayClass contour + Gateway + two HTTPRoutes with overlapping prefixes, verifies more specific route wins.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:contour",
+        "gateway-api:contour"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-envoy-gateway-cert-manager-tls",
+      "name": "Envoy Gateway + cert-manager TLS",
+      "description": "Installs cert-manager and envoy-gateway, issues a TLS certificate, creates Gateway with HTTPS listener using cert-manager Secret, and verifies HTTPS serving with expected cert.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "envoy-gateway",
+        "cert-manager"
+      ],
+      "mechanisms": [
+        "addon:envoy-gateway",
+        "addon:cert-manager",
+        "gateway-api:envoy"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api-tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-envoy-gateway-grpcroute",
+      "name": "Envoy Gateway GRPCRoute",
+      "description": "Installs Gateway API CRDs and envoy-gateway controller, deploys a gRPC backend, creates GRPCRoute, and verifies gRPC reflection through the Envoy proxy.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "envoy-gateway"
+      ],
+      "mechanisms": [
+        "addon:envoy-gateway",
+        "gateway-api:envoy"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-envoy-gateway-httproute",
+      "name": "Envoy Gateway HTTPRoute",
+      "description": "Installs Gateway API CRDs and envoy-gateway controller, creates GatewayClass+Gateway+HTTPRoute, and verifies HTTP routing through the Envoy proxy.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "envoy-gateway"
+      ],
+      "mechanisms": [
+        "addon:envoy-gateway",
+        "gateway-api:envoy"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-envoy-gateway-security-policy-attach",
+      "name": "Envoy Gateway SecurityPolicy (CORS)",
+      "description": "Installs Gateway API CRDs and envoy-gateway controller, creates HTTPRoute with SecurityPolicy (CORS) attaching to the route, and verifies CORS header on preflight.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "envoy-gateway"
+      ],
+      "mechanisms": [
+        "addon:envoy-gateway",
+        "gateway-api:envoy"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-istio-gateway-api-backend-tls-policy",
+      "name": "Istio Gateway API BackendTLSPolicy",
+      "description": "Installs istio/base + istio/istiod and Gateway API CRDs, generates self-signed TLS certs at runtime, creates BackendTLSPolicy targeting the Service, and verifies Policy acceptance and gateway routing.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "gateway-api:istio"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api-backendtls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-istio-gateway-api-basic",
+      "name": "Istio Gateway API Basic",
+      "description": "Installs istio/base + istio/istiod and Gateway API CRDs, creates GatewayClass istio + Gateway + HTTPRoute, and verifies HTTP routing through auto-provisioned Istio data-plane.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "gateway-api:istio"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "gateway-api-istio-gateway-api-multi-listener",
+      "name": "Istio Gateway API Multi-Listener",
+      "description": "Installs istio/base + istio/istiod and Gateway API CRDs, creates Gateway with HTTP:80 + HTTPS:443 listeners, and verifies both protocols with TLS certificate.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "gateway-api:istio"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "gateway-api-multilistener"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-contour-basic-httpproxy",
+      "name": "Contour basic HTTPProxy",
+      "description": "Installs Contour, creates an HTTPProxy for the product Service, and verifies HTTP routing through the envoy pod IP with Host header matching and HTTPProxy status valid.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "contour"
+      ],
+      "mechanisms": [
+        "addon:contour"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-contour-rate-limit",
+      "name": "Contour rate limit",
+      "description": "Installs Contour, creates an HTTPProxy with local rateLimitPolicy (5 req/min), and verifies that exceeding the limit produces 429 responses while requests within the limit succeed.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "contour"
+      ],
+      "mechanisms": [
+        "addon:contour"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-contour-tls-delegation",
+      "name": "Contour TLS delegation",
+      "description": "Installs Contour, deploys TLS Secret in tls-secrets NS, grants cross-namespace access via TLSCertificateDelegation, creates HTTPProxy with delegated Secret, verifies HTTPS 200.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "contour"
+      ],
+      "mechanisms": [
+        "addon:contour"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-nginx-ingress-basic",
+      "name": "NGINX Ingress basic routing",
+      "description": "Installs NGINX Ingress controller, creates an Ingress with ingressClassName: nginx, and verifies Host-header routing returns HTTP 200.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "ingress-nginx"
+      ],
+      "mechanisms": [
+        "addon:nginx-ingress"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-nginx-ingress-canary",
+      "name": "NGINX Ingress canary traffic splitting",
+      "description": "Installs NGINX Ingress controller with stable+canary Ingresses (canary-weight=20), deploys a canary backend with distinctive response, verifies ~20% of 100 probes hit canary.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "ingress-nginx"
+      ],
+      "mechanisms": [
+        "addon:nginx-ingress"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-nginx-ingress-default-backend",
+      "name": "NGINX Ingress custom default backend",
+      "description": "Installs NGINX Ingress with custom default backend Deployment+Service, verifies requests without matching Host return the custom backend's distinctive body instead of stock 404.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "ingress-nginx"
+      ],
+      "mechanisms": [
+        "addon:nginx-ingress"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-nginx-ingress-snippet-annotations",
+      "name": "NGINX Ingress snippet annotations",
+      "description": "Installs NGINX Ingress with allowSnippetAnnotations=true, creates an Ingress with configuration-snippet annotation injecting add_header X-Test, verifies the header appears.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "ingress-nginx"
+      ],
+      "mechanisms": [
+        "addon:nginx-ingress"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-nginx-ingress-tls-cert-manager",
+      "name": "NGINX Ingress TLS with cert-manager",
+      "description": "Installs cert-manager + NGINX Ingress, creates self-signed ClusterIssuer+Certificate, verifies HTTPS routing through nginx with TLS terminated by cert-manager-issued cert chain.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager",
+        "ingress-nginx"
+      ],
+      "mechanisms": [
+        "addon:cert-manager",
+        "addon:nginx-ingress"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-traefik-basic",
+      "name": "Traefik basic IngressRoute",
+      "description": "Installs Traefik, creates an IngressRoute for the product Service, and verifies HTTP routing through the Traefik pod IP with Host header matching.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "traefik"
+      ],
+      "mechanisms": [
+        "addon:traefik"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-traefik-ingressroute-crd",
+      "name": "Traefik IngressRoute CRD",
+      "description": "Installs Traefik, uses IngressRoute CRD exclusively for routing (no classic Ingress), and verifies HTTP traffic reaches the backend.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "traefik"
+      ],
+      "mechanisms": [
+        "addon:traefik"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-traefik-middleware-chain",
+      "name": "Traefik middleware chain",
+      "description": "Installs Traefik, creates a Middleware CR that injects custom headers, references it from an IngressRoute, and verifies the middleware effect is observable.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "traefik"
+      ],
+      "mechanisms": [
+        "addon:traefik"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "ingress"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "ingress-controllers-traefik-tls-passthrough",
+      "name": "Traefik TLS passthrough",
+      "description": "Installs Traefik, configures IngressRouteTCP with tls.passthrough=true, and verifies the backend's TLS certificate is served untouched through the proxy.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "traefik"
+      ],
+      "mechanisms": [
+        "addon:traefik"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "minimal",
+      "name": "Vanilla cluster \u2014 no preinstalled addons",
+      "description": "Baseline: chart installs and pods come up on a stock kind cluster.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:none"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {
+        "customer": "none",
+        "profile": "baseline"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "policy-kyverno-generate",
+      "name": "Kyverno generate: ConfigMap in labeled namespaces",
+      "description": "Installs Kyverno, creates a ClusterPolicy that generates a ConfigMap in any namespace labeled kyverno.io/generate=true. Verifies that creating a fresh namespace with the trigger label causes Kyverno to generate the ConfigMap within 10s. Webhook failure mode: Fail.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "kyverno"
+      ],
+      "mechanisms": [
+        "addon:kyverno"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "policy"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "policy-kyverno-image-verify",
+      "name": "Kyverno image-verify: only approved registries",
+      "description": "Installs Kyverno, creates a ClusterPolicy that only allows images from public.ecr.aws/* or nginx* registries. Verifies a Pod referencing docker.io/library/redis:7-alpine is denied (stderr names rule), while a Pod with an approved image is accepted. Webhook failure mode: Fail.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "kyverno"
+      ],
+      "mechanisms": [
+        "addon:kyverno"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "policy"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "policy-kyverno-mutate",
+      "name": "Kyverno mutate: auto-add annotation to Pods",
+      "description": "Installs Kyverno, creates a ClusterPolicy that adds the annotation kyverno.io/managed-by: chart-test-swarm to Pods. Verifies a Pod manifest lacking the annotation gets it auto-added after the mutating webhook fires. Webhook failure mode: Fail.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "kyverno"
+      ],
+      "mechanisms": [
+        "addon:kyverno"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "policy"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "policy-kyverno-validate",
+      "name": "Kyverno validate: require labels on Deployments",
+      "description": "Installs Kyverno, creates a ClusterPolicy that requires app.kubernetes.io/name label on Deployments. Verifies non-compliant Deployment denied (stderr names validate.kyverno.svc-fail and policy name), compliant Deployment accepted. Webhook failure mode: Fail.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "kyverno"
+      ],
+      "mechanisms": [
+        "addon:kyverno"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "policy"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "policy-opa-gatekeeper-image-allowlist",
+      "name": "OPA Gatekeeper image allowlist enforcement",
+      "description": "Installs OPA Gatekeeper, creates k8sallowedrepos ConstraintTemplate + Constraint allowing only nginx + public.ecr.aws images. Verifies non-allowlisted image denied, allowlisted image accepted.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "gatekeeper"
+      ],
+      "mechanisms": [
+        "addon:opa-gatekeeper"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "policy"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "policy-opa-gatekeeper-required-labels",
+      "name": "OPA Gatekeeper required labels enforcement",
+      "description": "Installs OPA Gatekeeper + NGINX Ingress, creates k8srequiredlabels ConstraintTemplate + Constraint targeting Deployments and Ingress. Verifies non-compliant resources denied, compliant accepted. Cross-feature compose with M4 nginx-ingress.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "gatekeeper",
+        "ingress-nginx"
+      ],
+      "mechanisms": [
+        "addon:opa-gatekeeper",
+        "addon:nginx-ingress"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "policy"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "policy-opa-gatekeeper-resource-limits",
+      "name": "OPA Gatekeeper resource limits enforcement",
+      "description": "Installs OPA Gatekeeper, creates k8scontainerlimits ConstraintTemplate + Constraint requiring CPU and memory limits on all containers. Verifies Deployment without limits denied, compliant Deployment accepted.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "gatekeeper"
+      ],
+      "mechanisms": [
+        "addon:opa-gatekeeper"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "policy"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "policy-opa-gatekeeper-sync-config",
+      "name": "OPA Gatekeeper sync configuration",
+      "description": "Installs OPA Gatekeeper, applies Gatekeeper Config with sync.syncOnly listing Namespace, Pod, and Ingress kinds for OPA cache sync. Verifies Config exists with non-empty syncOnly, controller Ready.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "gatekeeper"
+      ],
+      "mechanisms": [
+        "addon:opa-gatekeeper"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "policy"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-ingress-gateway-basic",
+      "name": "Istio Ingress Gateway \u2014 Basic",
+      "description": "Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with ingress disabled, creates an Istio Gateway + VirtualService to route external traffic through the ingressgateway pod, and verifies HTTP 200 via the gateway with a Host header.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod",
+        "istio-ingressgateway"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "mesh:istio-ingress-gateway"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-ingress-gateway-jwt",
+      "name": "Istio Ingress Gateway \u2014 JWT Authentication",
+      "description": "Installs istio/base + istio/istiod + istio/gateway, deploys the product chart, creates an Istio Gateway + VirtualService, applies a RequestAuthentication + AuthorizationPolicy requiring a valid JWT, and verifies: (a) requests without a Bearer token are rejected with 401/403, (b) requests with a valid JWT signed by the test issuer key from fixtures/service-mesh/jwt/ return HTTP 200.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod",
+        "istio-ingressgateway"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "mesh:istio-ingress-gateway"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-ingress-gateway-multi-host",
+      "name": "Istio Ingress Gateway \u2014 Multi-Host",
+      "description": "Installs istio/base + istio/istiod + istio/gateway, deploys the product chart with scope.enabled=true, creates an Istio Gateway with two server blocks for different hosts, and a VirtualService that routes each host to a different backend (skywatcher vs scope). Verifies both hosts return HTTP 200 through the ingressgateway.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod",
+        "istio-ingressgateway"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "mesh:istio-ingress-gateway"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-ingress-gateway-request-authentication",
+      "name": "Istio Ingress Gateway \u2014 RequestAuthentication (No Deny)",
+      "description": "Installs istio/base + istio/istiod + istio/gateway, deploys the product chart, creates an Istio Gateway + VirtualService, applies a RequestAuthentication that validates JWTs from the test issuer but does NOT require them (no AuthorizationPolicy). Verifies: (a) requests without a token still pass through (HTTP 200), (b) requests with a valid JWT also return 200, and (c) requests with an invalid JWT (wrong issuer) are rejected with 401 by RequestAuthentication validation alone.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod",
+        "istio-ingressgateway"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "mesh:istio-ingress-gateway"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-service-mesh-cert-manager-tls",
+      "name": "Istio Service Mesh + cert-manager TLS Gateway",
+      "description": "Cross-feature compose: installs cert-manager + istio (base + istiod + gateway), creates a cert-manager self-signed ClusterIssuer and Certificate that issues a TLS Secret, then creates an Istio Gateway with a TLS listener referencing that Secret via credentialName. Verifies: istioctl analyze clean, HTTPS through gateway returns 200 with the cert-manager-issued certificate.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager",
+        "istio-base",
+        "istiod",
+        "istio-ingressgateway"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "addon:cert-manager",
+        "mesh:istio-service-mesh"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh-tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-service-mesh-peer-authentication",
+      "name": "Istio Service Mesh \u2014 PeerAuthentication lifecycle",
+      "description": "Installs istio/base + istio/istiod, deploys the product chart with mesh.inject=true, and exercises the PeerAuthentication lifecycle: PERMISSIVE mode allows both mesh and non-mesh traffic; switching to STRICT mode blocks non-mesh traffic while mesh traffic continues via auto-upgraded mTLS.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "mesh:istio-service-mesh"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-service-mesh-sidecar-injection",
+      "name": "Istio Service Mesh \u2014 Sidecar Injection",
+      "description": "Installs istio/base + istio/istiod, enables mesh injection on the product namespace, deploys the product chart with mesh.inject=true and scope.enabled=true, and verifies every product pod has exactly 2 containers including istio-proxy and in-mesh HTTP reaches the product Service with 200.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "mesh:istio-service-mesh"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-service-mesh-strict-mtls",
+      "name": "Istio Service Mesh \u2014 strict mTLS",
+      "description": "Installs istio/base + istio/istiod, enables mesh injection, deploys the product chart with scope.enabled=true, creates a PeerAuthentication with mode=STRICT in the product namespace, and verifies: (a) plain HTTP from a non-mesh pod is rejected, (b) in-mesh probe pod still reaches the product Service with 200 via auto-upgraded mTLS.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "mesh:istio-service-mesh"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-istio-service-mesh-telemetry-v2",
+      "name": "Istio Service Mesh \u2014 Telemetry v2",
+      "description": "Installs istio/base + istio/istiod, deploys the product chart with mesh.inject=true, applies a Telemetry resource in the product namespace to configure Envoy access logging and metrics, and verifies proxy stats are accessible and telemetry configuration is active.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "istio-base",
+        "istiod"
+      ],
+      "mechanisms": [
+        "addon:istio",
+        "mesh:istio-service-mesh"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-linkerd-basic-mesh",
+      "name": "Linkerd \u2014 Basic Mesh (Sidecar Injection)",
+      "description": "Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace with linkerd.io/inject=enabled, deploys the product chart with scope.enabled=true, and verifies every product pod has a linkerd-proxy sidecar alongside the app container (2-container pods), with linkerd check --proxy returning healthy.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "linkerd-crds",
+        "linkerd-control-plane"
+      ],
+      "mechanisms": [
+        "addon:linkerd",
+        "mesh:linkerd"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-linkerd-mtls-rotation",
+      "name": "Linkerd \u2014 mTLS Identity Rotation",
+      "description": "Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace for injection, deploys the product chart, and verifies that mTLS identities are issued and valid by running linkerd check --proxy and inspecting the identity issuer certificate. Documents the mTLS rotation window and trust-anchor expiry.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "linkerd-crds",
+        "linkerd-control-plane"
+      ],
+      "mechanisms": [
+        "addon:linkerd",
+        "mesh:linkerd"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-linkerd-multi-cluster-preview",
+      "name": "Linkerd \u2014 Multi-Cluster Preview",
+      "description": "Installs linkerd-crds + linkerd-control-plane + linkerd-multicluster extension via Helm, verifies the multicluster Link and ServiceMirror CRDs are established, and authors a preview Link resource targeting a logical target cluster. No real cross-cluster traffic \u2014 this variant validates that the multicluster extension installs cleanly and that the CRD scaffolding is functional.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "linkerd-crds",
+        "linkerd-control-plane",
+        "linkerd-multicluster"
+      ],
+      "mechanisms": [
+        "addon:linkerd",
+        "mesh:linkerd-multicluster"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "service-mesh-linkerd-service-profile",
+      "name": "Linkerd \u2014 ServiceProfile (Per-Route Observability)",
+      "description": "Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace for injection, deploys the product chart, creates a ServiceProfile CRD for the sample Service defining routes with timeout and retry policies, and verifies the ServiceProfile is recognized.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "linkerd-crds",
+        "linkerd-control-plane"
+      ],
+      "mechanisms": [
+        "addon:linkerd",
+        "mesh:linkerd"
+      ],
+      "tags": [
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "mesh"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "subchart-postgres-internal",
+      "name": "Internal postgres subchart enabled",
+      "description": "Product chart bundles postgres via subchart; verify both come up together.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "subchart:postgres-internal"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {
+        "profile": "full-stack"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    },
+    {
+      "id": "with-cert-manager",
+      "name": "Customer ships cert-manager preinstalled",
+      "description": "Validates chart coexists with cert-manager and its CRDs.",
+      "cluster_provider": "kind",
+      "cluster_addons": [
+        "cert-manager"
+      ],
+      "mechanisms": [
+        "addon:cert-manager"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {
+        "customer": "any",
+        "profile": "tls"
+      },
+      "status": "UNTESTED",
+      "asserts": [],
+      "duration_s": 0.0,
+      "agent": null,
+      "log_dir": "",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {},
+      "artifact_dir": null
+    }
+  ]
+}

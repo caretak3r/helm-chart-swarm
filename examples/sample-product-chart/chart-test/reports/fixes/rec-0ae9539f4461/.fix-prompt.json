@@ -1,0 +1,7 @@
+{
+  "recommendation_id": "rec-0ae9539f4461",
+  "fix_prompt": "# Fix Recommendation: rbac-on\n\n**Scenario:** `rbac-on`\n**Category:** chart-fix\n**Failure type:** rbac-objects\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nAssert 'rbac-objects': FAIL: expected RBAC objects but found 0\n\n## Suggested Fix\n\nAdd RBAC templates to `examples/sample-product-chart/chart/templates/`: `serviceaccount.yaml`, `role.yaml` (or `clusterrole.yaml`), and `rolebinding.yaml` (or `clusterrolebinding.yaml`). Gate them behind `rbac.create` and `serviceAccount.create` values in `examples/sample-product-chart/chart/values.yaml`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
+  "scenario_path": "rbac-on",
+  "chart_path": "chart",
+  "created_at": "2026-06-09T15:36:55.890336+00:00"
+}

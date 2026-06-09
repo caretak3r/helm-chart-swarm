@@ -1,0 +1,10 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-network-policy.sh (RELEASE=sample NAMESPACE=sample)
+==> Getting product Service ClusterIP
+Product Service ClusterIP: 10.96.202.99:80
+==> Testing ALLOWED client (label access=allowed)
+ALLOWED client HTTP code: 200
+PASS: Allowed client reached the product Service
+==> Testing DENIED client (no access label)
+DENIED client HTTP code: 000
+PASS: Denied client was blocked (no reachable product Service)
+PASS: CiliumNetworkPolicy enforcement verified (allowed=reachable, denied=blocked)

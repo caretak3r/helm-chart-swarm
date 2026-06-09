@@ -1,0 +1,48 @@
+---
+id: ingress-controllers-contour-basic-httpproxy
+name: "Contour basic HTTPProxy (gap-probe)"
+description: >-
+  Installs Contour, creates an HTTPProxy for the product Service via fixture, and verifies HTTP routing through the envoy pod IP with Host header matching and HTTPProxy status valid. Then runs a gap-probe: the chart does NOT natively emit a Contour HTTPProxy CRD — the HTTPProxy was created by the fixture, not by a chart template. This is an honest gap (red cell); do NOT over-engineer the chart.
+labels: {customer: any, profile: ingress}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: projectcontour/contour
+      version: "0.6.0"
+      release: contour
+      namespace: projectcontour
+      repo:
+        name: projectcontour
+        url: "https://projectcontour.github.io/helm-charts"
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: raw_manifest
+      path: ./fixtures/contour-basic-httpproxy.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    ingress.enabled: "false"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: pods-ready
+    namespace: projectcontour
+    timeout: 3m
+  - type: smoke-script
+    path: chart-test/assertions/contour-basic.sh
+tags: [nightly, curated-live]
+mechanisms: ['addon:contour']
+category: networking
+integration: contour
+tier: live

@@ -1,0 +1,3 @@
+  Deployment/sample: missing pod-level securityContext
+  Deployment/sample container/app: missing container-level securityContext
+FAIL: 2 securityContext check(s) failed across 1 workload(s)

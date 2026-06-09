@@ -1,0 +1,115 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 5 preinstall item(s)
+
+==> [1/5] kind=helm
+    helm: cert-manager (jetstack/cert-manager @ v1.14.0) in ns/cert-manager
+    repo 'jetstack' already exists with URL https://charts.jetstack.io (skipping add)
+Release "cert-manager" does not exist. Installing it now.
+NAME: cert-manager
+LAST DEPLOYED: Tue Jun  9 10:32:12 2026
+NAMESPACE: cert-manager
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+cert-manager v1.14.0 has been deployed successfully!
+
+In order to begin issuing certificates, you will need to set up a ClusterIssuer
+or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
+
+More information on the different types of issuers and how to configure them
+can be found in our documentation:
+
+https://cert-manager.io/docs/configuration/
+
+For information on how to configure cert-manager to automatically provision
+Certificates for Ingress resources, take a look at the `ingress-shim`
+documentation:
+
+https://cert-manager.io/docs/usage/ingress/
+pod/cert-manager-c69c859c4-xlsdj condition met
+pod/cert-manager-cainjector-d6d64f75f-52sn8 condition met
+pod/cert-manager-webhook-566849c7fc-vwd52 condition met
+
+==> [2/5] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/selfsigned-clusterissuer.yaml
+clusterissuer.cert-manager.io/chart-test-swarm-selfsigned serverside-applied
+
+==> [3/5] kind=helm
+    helm: istio-base (istio/base @ 1.27.9) in ns/istio-system
+    repo 'istio' already exists with URL https://istio-release.storage.googleapis.com/charts (skipping add)
+Release "istio-base" does not exist. Installing it now.
+NAME: istio-base
+LAST DEPLOYED: Tue Jun  9 10:32:30 2026
+NAMESPACE: istio-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+Istio base successfully installed!
+
+To learn more about the release, try:
+  $ helm status istio-base -n istio-system
+  $ helm get all istio-base -n istio-system
+
+==> [4/5] kind=helm
+    helm: istiod (istio/istiod @ 1.27.9) in ns/istio-system
+    repo 'istio' already exists with URL https://istio-release.storage.googleapis.com/charts (skipping add)
+Release "istiod" does not exist. Installing it now.
+NAME: istiod
+LAST DEPLOYED: Tue Jun  9 10:32:31 2026
+NAMESPACE: istio-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+"istiod" successfully installed!
+
+To learn more about the release, try:
+  $ helm status istiod -n istio-system
+  $ helm get all istiod -n istio-system
+
+Next steps:
+  * Deploy a Gateway: https://istio.io/latest/docs/setup/additional-setup/gateway/
+  * Try out our tasks to get started on common configurations:
+    * https://istio.io/latest/docs/tasks/traffic-management
+    * https://istio.io/latest/docs/tasks/security/
+    * https://istio.io/latest/docs/tasks/policy-enforcement/
+  * Review the list of actively supported releases, CVE publications and our hardening guide:
+    * https://istio.io/latest/docs/releases/supported-releases/
+    * https://istio.io/latest/news/security/
+    * https://istio.io/latest/docs/ops/best-practices/security/
+
+For further documentation see https://istio.io website
+pod/istiod-54b585df85-2jff7 condition met
+
+==> [5/5] kind=helm
+    helm: istio-ingressgateway (istio/gateway @ 1.27.9) in ns/istio-system
+    repo 'istio' already exists with URL https://istio-release.storage.googleapis.com/charts (skipping add)
+Release "istio-ingressgateway" does not exist. Installing it now.
+NAME: istio-ingressgateway
+LAST DEPLOYED: Tue Jun  9 10:32:37 2026
+NAMESPACE: istio-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+"istio-ingressgateway" successfully installed!
+
+To learn more about the release, try:
+  $ helm status istio-ingressgateway -n istio-system
+  $ helm get all istio-ingressgateway -n istio-system
+
+Next steps:
+  * Deploy an HTTP Gateway: https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/
+  * Deploy an HTTPS Gateway: https://istio.io/latest/docs/tasks/traffic-management/ingress/secure-ingress/
+pod/istio-ingressgateway-8584b67974-74psx condition met
+pod/istiod-54b585df85-2jff7 condition met
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

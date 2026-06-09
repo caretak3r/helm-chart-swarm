@@ -1,0 +1,48 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/kyverno-validate.sh (RELEASE=sample NAMESPACE=sample)
+=== Kyverno: Validate (require-app-label) ===
+==> Phase 0: Wait for kyverno admission controller pods Ready
+pod/kyverno-admission-controller-6c47f7875-kmqpl condition met
+pod/kyverno-background-controller-546f9479c7-srqhz condition met
+pod/kyverno-cleanup-controller-5787967fcd-vs2jl condition met
+pod/kyverno-reports-controller-669cbff555-wtgbg condition met
+PASS: kyverno controller pods Ready
+pod/sample-69469cb4c6-8zhgz condition met
+PASS: product pods Ready
+==> Phase 1: Verify ClusterPolicy applied
+Waiting for ClusterPolicy require-app-label to be ready (30s max)...
+clusterpolicy.kyverno.io/require-app-label condition met
+PASS: ClusterPolicy require-app-label Ready=True
+==> Wait for webhook sync (8s)
+==> Phase 2a: Non-compliant Deployment (missing app.kubernetes.io/name label)
+Error from server: error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-noncompliant-kyverno.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Deployment/default/test-noncompliant-kyverno was blocked due to the following policies 
+
+require-app-label:
+  require-app-kubernetes-io-name: 'validation error: Deployments must have the ''app.kubernetes.io/name''
+    label. rule require-app-kubernetes-io-name failed at path /metadata/labels/app.kubernetes.io/name/'
+PASS: non-compliant Deployment rejected (admission webhook denied)
+==> Phase 2b: Compliant Deployment (has app.kubernetes.io/name label)
+deployment.apps/test-compliant-kyverno created (server dry run)
+PASS: compliant Deployment accepted
+==> Phase 3: Webhook failure mode — verify Fail policy + outage behavior
+PASS: webhook kyverno-resource-validating-webhook-cfg failurePolicy=Fail
+Scaling kyverno-admission-controller to 0 in kyverno (original replicas: 1)...
+deployment.apps/kyverno-admission-controller scaled
+pod/kyverno-admission-controller-6c47f7875-kmqpl condition met
+PASS: kyverno admission controller scaled to 0
+Attempting kubectl apply with webhook unavailable...
+NOTE: webhook config kyverno-resource-validating-webhook-cfg removed by Kyverno dynamic GC (ownerReferences cleanup)
+NOTE: Kyverno dynamically manages webhooks; webhook removal during controller outage
+NOTE: means admission is bypassed despite failurePolicy=Fail on the original config.
+deployment.apps/test-compliant-kyverno created (server dry run)
+PASS: admission bypassed (webhook config removed — expected Kyverno dynamic GC behavior)
+Restoring kyverno-admission-controller to 1 in kyverno...
+deployment.apps/kyverno-admission-controller scaled
+Waiting for kyverno admission controller to be Ready again...
+pod/kyverno-admission-controller-6c47f7875-k5h6s condition met
+PASS: kyverno admission controller restored
+Waiting for admission webhook to accept requests (90s max)...
+deployment.apps/test-compliant-kyverno created (server dry run)
+PASS: admission restored after webhook recovery (attempt 1)
+PASS: Kyverno validate variant verified

@@ -3,7 +3,7 @@ items:
 - apiVersion: v1
   kind: Pod
   metadata:
-    creationTimestamp: "2026-06-03T03:58:05Z"
+    creationTimestamp: "2026-06-09T14:17:40Z"
     generateName: sample-7dcd986bd4-
     labels:
       app: sample
@@ -14,7 +14,7 @@ items:
       app.kubernetes.io/version: 1.0.0
       helm.sh/chart: sample-product-0.1.0
       pod-template-hash: 7dcd986bd4
-    name: sample-7dcd986bd4-2q7bc
+    name: sample-7dcd986bd4-thtg2
     namespace: sample
     ownerReferences:
     - apiVersion: apps/v1
@@ -22,9 +22,9 @@ items:
       controller: true
       kind: ReplicaSet
       name: sample-7dcd986bd4
-      uid: 53d846c9-655b-444d-92dc-5a439ad9e2e9
-    resourceVersion: "672"
-    uid: b8eb8f10-24ac-43e2-ab0d-77701bc79d02
+      uid: 18d9fabe-0d05-4f5b-b58b-774633cf390f
+    resourceVersion: "677"
+    uid: 747728c1-8e65-43be-92e1-a41ad574c719
   spec:
     containers:
     - image: nginx:1.27-alpine
@@ -56,11 +56,11 @@ items:
       terminationMessagePolicy: File
       volumeMounts:
       - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-        name: kube-api-access-g8t4s
+        name: kube-api-access-q4zfw
         readOnly: true
     dnsPolicy: ClusterFirst
     enableServiceLinks: true
-    nodeName: chart-test-swarm-run-14-control-plane
+    nodeName: chart-test-swarm-run-83-control-plane
     preemptionPolicy: PreemptLowerPriority
     priority: 0
     restartPolicy: Always
@@ -79,7 +79,7 @@ items:
       operator: Exists
       tolerationSeconds: 300
     volumes:
-    - name: kube-api-access-g8t4s
+    - name: kube-api-access-q4zfw
       projected:
         defaultMode: 420
         sources:
@@ -100,27 +100,27 @@ items:
   status:
     conditions:
     - lastProbeTime: null
-      lastTransitionTime: "2026-06-03T03:58:08Z"
+      lastTransitionTime: "2026-06-09T14:17:42Z"
       status: "True"
       type: PodReadyToStartContainers
     - lastProbeTime: null
-      lastTransitionTime: "2026-06-03T03:58:05Z"
+      lastTransitionTime: "2026-06-09T14:17:40Z"
       status: "True"
       type: Initialized
     - lastProbeTime: null
-      lastTransitionTime: "2026-06-03T03:58:08Z"
+      lastTransitionTime: "2026-06-09T14:17:42Z"
       status: "True"
       type: Ready
     - lastProbeTime: null
-      lastTransitionTime: "2026-06-03T03:58:08Z"
+      lastTransitionTime: "2026-06-09T14:17:42Z"
       status: "True"
       type: ContainersReady
     - lastProbeTime: null
-      lastTransitionTime: "2026-06-03T03:58:05Z"
+      lastTransitionTime: "2026-06-09T14:17:40Z"
       status: "True"
       type: PodScheduled
     containerStatuses:
-    - containerID: containerd://3a049c82dab4a53d6700bfabe3a4af71125d94c18ad6bb01c3b4274ccf24eeba
+    - containerID: containerd://e19f03d2e5e3540318ff3725d761a0e7d76b495a622d6d1baceb205ff19fe3e8
       image: docker.io/library/nginx:1.27-alpine
       imageID: docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
       lastState: {}
@@ -130,16 +130,16 @@ items:
       started: true
       state:
         running:
-          startedAt: "2026-06-03T03:58:07Z"
-    hostIP: 172.20.0.3
+          startedAt: "2026-06-09T14:17:42Z"
+    hostIP: 172.20.0.2
     hostIPs:
-    - ip: 172.20.0.3
+    - ip: 172.20.0.2
     phase: Running
     podIP: 10.244.0.8
     podIPs:
     - ip: 10.244.0.8
     qosClass: BestEffort
-    startTime: "2026-06-03T03:58:05Z"
+    startTime: "2026-06-09T14:17:40Z"
 kind: List
 metadata:
   resourceVersion: ""

@@ -1,0 +1,80 @@
+---
+id: ingress-controllers-nginx-ingress-tls-cert-manager
+name: "NGINX Ingress TLS with cert-manager"
+description: "Installs cert-manager + NGINX Ingress, creates self-signed ClusterIssuer+Certificate, verifies HTTPS routing through nginx with TLS terminated by cert-manager-issued cert chain."
+labels: {customer: any, profile: tls}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: jetstack/cert-manager
+      version: v1.14.0
+      release: cert-manager
+      namespace: cert-manager
+      repo:
+        name: jetstack
+        url: "https://charts.jetstack.io"
+      values:
+        installCRDs: true
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: raw_manifest
+      path: ./fixtures/selfsigned-clusterissuer.yaml
+    - kind: raw_manifest
+      path: ./fixtures/ingress-tls-certificate.yaml
+      namespace: sample
+    - kind: helm
+      chart: ingress-nginx/ingress-nginx
+      version: "4.10.0"
+      release: ingress-nginx
+      namespace: ingress-nginx
+      repo:
+        name: ingress-nginx
+        url: "https://kubernetes.github.io/ingress-nginx"
+      values:
+        controller:
+          service:
+            type: NodePort
+          allowSnippetAnnotations: true
+          ingressClassResource:
+            name: nginx
+            enabled: true
+            default: false
+            controllerValue: "k8s.io/ingress-nginx"
+          watchIngressWithoutClass: true
+        admissionWebhooks:
+          enabled: false
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: raw_manifest
+      path: ./fixtures/nginx-tls-ingress.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    ingress.enabled: "false"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: pods-ready
+    namespace: cert-manager
+    timeout: 3m
+  - type: pods-ready
+    namespace: ingress-nginx
+    timeout: 3m
+  - type: smoke-script
+    path: chart-test/assertions/nginx-tls-cert-manager.sh
+tags: [nightly]
+mechanisms: ['addon:cert-manager', 'addon:nginx-ingress']
+category: networking
+integration: nginx-ingress
+tier: live

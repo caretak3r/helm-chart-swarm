@@ -1,0 +1,7 @@
+{
+  "recommendation_id": "rec-33fef05e513c",
+  "fix_prompt": "# Fix Recommendation: service-mesh-linkerd-basic-mesh\n\n**Scenario:** `service-mesh-linkerd-basic-mesh`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-basic-mesh-20260609-110535/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-linkerd-basic-mesh`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
+  "scenario_path": "service-mesh-linkerd-basic-mesh",
+  "chart_path": "chart",
+  "created_at": "2026-06-09T15:36:55.890336+00:00"
+}

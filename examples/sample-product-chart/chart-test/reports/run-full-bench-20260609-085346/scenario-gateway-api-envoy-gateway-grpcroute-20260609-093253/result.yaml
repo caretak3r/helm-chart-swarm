@@ -1,0 +1,60 @@
+scenario_id: gateway-api-envoy-gateway-grpcroute
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/gateway-api/gateway-api-envoy-gateway-grpcroute.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:32:54Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release envoy-gateway in ns/envoy-gateway-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-50 -n envoy-gateway-system wait --for=condition=Ready pods --timeout=5m -l app.kubernetes.io/name=gateway-helm
+      pod/envoy-gateway-56b969757f-ch6kt condition met
+      PASS: pods Ready in ns/envoy-gateway-system (selector=app.kubernetes.io/name=gateway-helm)
+      NAME                             READY   STATUS    RESTARTS   AGE
+      envoy-gateway-56b969757f-ch6kt   1/1     Running   0          15s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-50 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/grpc-backend-775f8dc876-bhm6z condition met
+      pod/sample-7dcd986bd4-rqnf6 condition met
+      PASS: pods Ready in ns/sample
+      NAME                            READY   STATUS    RESTARTS   AGE
+      grpc-backend-775f8dc876-bhm6z   1/1     Running   0          5s
+      sample-7dcd986bd4-rqnf6         1/1     Running   0          5s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: GatewayClass envoy Accepted=True
+      ==> Waiting for Gateway listener http Programmed=True (5m max)
+      PASS: Gateway listener http Programmed=True
+      ==> Verifying GRPCRoute sample-grpc-route Accepted=True
+      PASS: GRPCRoute sample-grpc-route Accepted=True
+      ==> Getting envoy data-plane Service ClusterIP
+      Gateway Service IP: 10.96.10.230
+      ==> Probing gRPC backend via gateway (grpcurl reflection)
+      grpcurl output: addsvc.Add
+      grpc.gateway.examples.examplepb.ABitOfEverythingService
+      grpc.reflection.v1alpha.ServerReflection
+      grpcbin.GRPCBin
+      hello.HelloService (attempt 2)
+      grpcurl output: addsvc.Add
+      grpc.gateway.examples.examplepb.ABitOfEverythingService
+      grpc.reflection.v1alpha.ServerReflection
+      grpcbin.GRPCBin
+      hello.HelloService
+      PASS: grpcurl reflection listed 5 service(s)
+      PASS: envoy-gateway GRPCRoute integration verified
+status: PASS
+finished_at: 2026-06-09T13:34:05Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-gateway-api-envoy-gateway-grpcroute-20260609-093253/artifacts/logs

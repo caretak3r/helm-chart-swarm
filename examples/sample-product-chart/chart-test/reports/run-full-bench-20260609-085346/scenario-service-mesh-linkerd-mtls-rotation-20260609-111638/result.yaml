@@ -1,0 +1,11 @@
+scenario_id: service-mesh-linkerd-mtls-rotation
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/service-mesh/service-mesh-linkerd-mtls-rotation.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T15:16:38Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: product-install
+fail_msg: |
+  helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-mtls-rotation-20260609-111638/artifacts/logs/product-install.log
+finished_at: 2026-06-09T15:22:07Z

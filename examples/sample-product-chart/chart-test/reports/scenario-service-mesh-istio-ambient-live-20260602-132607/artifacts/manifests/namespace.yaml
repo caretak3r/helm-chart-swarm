@@ -3,13 +3,13 @@ kind: Namespace
 metadata:
   annotations:
     istio.io/dataplane-mode: ambient
-  creationTimestamp: "2026-06-03T03:58:05Z"
+  creationTimestamp: "2026-06-09T14:17:39Z"
   labels:
     kubernetes.io/metadata.name: sample
     name: sample
   name: sample
-  resourceVersion: "643"
-  uid: 60829dd1-387f-48e1-99b5-6448da788afd
+  resourceVersion: "646"
+  uid: eabd751e-1573-44d9-9f14-f3c9bf1af9b8
 spec:
   finalizers:
   - kubernetes

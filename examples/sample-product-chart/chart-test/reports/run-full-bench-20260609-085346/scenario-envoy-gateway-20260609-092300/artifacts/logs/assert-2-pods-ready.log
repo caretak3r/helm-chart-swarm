@@ -1,0 +1,5 @@
+kubectl --context kind-chart-test-swarm-run-45 -n envoy-gateway-system wait --for=condition=Ready pods --timeout=5m -l app.kubernetes.io/name=gateway-helm
+pod/envoy-gateway-56b969757f-wzbv2 condition met
+PASS: pods Ready in ns/envoy-gateway-system (selector=app.kubernetes.io/name=gateway-helm)
+NAME                             READY   STATUS    RESTARTS   AGE
+envoy-gateway-56b969757f-wzbv2   1/1     Running   0          13s

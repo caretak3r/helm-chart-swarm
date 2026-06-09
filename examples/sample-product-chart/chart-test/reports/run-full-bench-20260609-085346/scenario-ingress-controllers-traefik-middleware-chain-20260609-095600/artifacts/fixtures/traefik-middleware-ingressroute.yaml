@@ -1,0 +1,18 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sample-middleware
+  namespace: sample
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`sample.test.local`)
+      kind: Rule
+      middlewares:
+        - name: add-test-header
+          namespace: sample
+      services:
+        - name: sample
+          port: 80

@@ -1,0 +1,121 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"sample-route-api","namespace":"sample"},"spec":{"hostnames":["sample.test.local"],"parentRefs":[{"name":"sample-gw","sectionName":"http"}],"rules":[{"backendRefs":[{"name":"sample","port":80}],"filters":[{"responseHeaderModifier":{"set":[{"name":"X-Route","value":"v1"}]},"type":"ResponseHeaderModifier"}],"matches":[{"path":{"type":"PathPrefix","value":"/api"}}]}]}}
+    creationTimestamp: "2026-06-09T13:26:03Z"
+    generation: 1
+    name: sample-route-api
+    namespace: sample
+    resourceVersion: "673"
+    uid: b0cb973b-27b4-4c78-a544-b65d59855dc9
+  spec:
+    hostnames:
+    - sample.test.local
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      filters:
+      - responseHeaderModifier:
+          set:
+          - name: X-Route
+            value: v1
+        type: ResponseHeaderModifier
+      matches:
+      - path:
+          type: PathPrefix
+          value: /api
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-06-09T13:26:05Z"
+        message: References resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      - lastTransitionTime: "2026-06-09T13:26:05Z"
+        message: Accepted HTTPRoute
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      controllerName: projectcontour.io/gateway-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"sample-route-api-v2","namespace":"sample"},"spec":{"hostnames":["sample.test.local"],"parentRefs":[{"name":"sample-gw","sectionName":"http"}],"rules":[{"backendRefs":[{"name":"sample","port":80}],"filters":[{"responseHeaderModifier":{"set":[{"name":"X-Route","value":"v2"}]},"type":"ResponseHeaderModifier"}],"matches":[{"path":{"type":"PathPrefix","value":"/api/v2"}}]}]}}
+    creationTimestamp: "2026-06-09T13:26:03Z"
+    generation: 1
+    name: sample-route-api-v2
+    namespace: sample
+    resourceVersion: "674"
+    uid: 960819e5-a4d6-4166-9607-a30cab13f5a2
+  spec:
+    hostnames:
+    - sample.test.local
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: http
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      filters:
+      - responseHeaderModifier:
+          set:
+          - name: X-Route
+            value: v2
+        type: ResponseHeaderModifier
+      matches:
+      - path:
+          type: PathPrefix
+          value: /api/v2
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-06-09T13:26:05Z"
+        message: References resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      - lastTransitionTime: "2026-06-09T13:26:05Z"
+        message: Accepted HTTPRoute
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      controllerName: projectcontour.io/gateway-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: http
+kind: List
+metadata:
+  resourceVersion: ""

@@ -1,0 +1,14 @@
+scenario_id: annotations-off
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/annotations-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T12:55:09Z
+provider: kind
+asserts:
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/annotations-absent.sh (RELEASE=sample NAMESPACE=sample)
+      PASS: all 3 rendered objects are free of the configured custom annotation key
+status: PASS
+finished_at: 2026-06-09T12:55:41Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-annotations-off-20260609-085508/artifacts/logs

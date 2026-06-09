@@ -1,0 +1,7 @@
+{
+  "recommendation_id": "rec-4cf76f257e28",
+  "fix_prompt": "# Fix Recommendation: service-mesh-linkerd-live\n\n**Scenario:** `service-mesh-linkerd-live`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-linkerd-live`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
+  "scenario_path": "service-mesh-linkerd-live",
+  "chart_path": "chart",
+  "created_at": "2026-06-09T15:36:55.890336+00:00"
+}

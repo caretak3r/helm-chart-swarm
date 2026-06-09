@@ -1,0 +1,13 @@
+scenario_id: resources-off
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/resources-off.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:01:59Z
+provider: kind
+asserts:
+  - type: resources-present
+    status: PASS
+    notes: |
+      PASS: no populated resources blocks on 1 workload(s)
+status: PASS
+finished_at: 2026-06-09T13:02:30Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-resources-off-20260609-090158/artifacts/logs

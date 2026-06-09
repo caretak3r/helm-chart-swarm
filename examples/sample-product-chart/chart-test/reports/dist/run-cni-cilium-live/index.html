@@ -1,0 +1,350 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — run-cni-cilium-live</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="run-header">
+  <div class="brand">
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— run-cni-cilium-live</span></h1>
+<nav class="top-nav" aria-label="Main navigation">
+  <a href="../home.html"
+     class="nav-item"
+>Home</a>
+  <a href="../getting-started.html"
+     class="nav-item"
+>Getting Started</a>
+  <a href="../support-matrix.html"
+     class="nav-item"
+>Matrix</a>
+  <a href="../runs.html"
+     class="nav-item nav-active"
+aria-current="page">Runs</a>
+  <a href="../recommendations.html"
+     class="nav-item"
+>Recommendations</a>
+  <a href="../versions.html"
+     class="nav-item"
+>Versions</a>
+</nav>  </div>
+  <dl>
+    <dt>Time (UTC)</dt><dd>2026-06-08 14:14:48+00:00</dd>
+    <dt>Project</dt><dd>sample-product-chart</dd>
+    <dt>Chart</dt><dd><code>sample-product:0.1.0</code></dd>
+    <dt>Suite</dt><dd>all</dd>
+    <dt>Cluster</dt><dd>kind</dd>
+    <dt>K8s Server</dt><dd><code>v1.31.0</code></dd>
+    <dt>Agents</dt><dd>1</dd>
+  </dl>
+  <div class="counts">
+      <span class="badge status-pass">PASS · 3</span>
+  </div>
+</header>
+
+<section class="mechanism-rollup">
+  <h2>Mechanism coverage</h2>
+  <p class="hint">Worst status across all scenarios that exercise each mechanism. Covers: addons (cert-manager, istio, gatekeeper, …), subchart variants, customer profiles.</p>
+    <div class="mech-group">
+      <h3>addon</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>addon:cilium</code></span>
+            <span class="mech-status status-pass">PASS</span>
+            <span class="mech-caps">
+<a href="#cni-cilium-ebpf-kube-proxy-replacement">cni-cilium-ebpf-kube-proxy-replacement</a> · <a href="#cni-cilium-ingress">cni-cilium-ingress</a> · <a href="#cni-cilium-network-policy">cni-cilium-network-policy</a>            </span>
+          </li>
+      </ul>
+    </div>
+</section>
+
+<section class="matrix">
+  <h2>Scenarios</h2>
+  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.
+Groups with 3+ variants per integration are collapsed — click the header to expand.</p>
+
+
+  <details class="integration-group matrix-details" id="group--addon--cilium" open>
+    <summary class="integration-header">
+      <span class="badge status-pass">PASS</span>
+      <span class="variant-summary">3 variants: 3 PASS</span>
+      <span class="group-label"><code>addon/cilium</code></span>
+    </summary>
+    <table class="variant-sub-table">
+      <thead class="sr-only">
+        <tr>
+          <th class="row-head">Scenario</th>
+          <th>Cluster shape</th>
+          <th>Tags</th>
+          <th>Asserts</th>
+          <th>Status</th>
+          <th>Agent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="variant-row">
+          <th class="row-head">
+            <a href="#cni-cilium-ebpf-kube-proxy-replacement"><code>cni-cilium-ebpf-kube-proxy-replacement</code></a>
+<div class="hint">Cilium eBPF kube-proxy replacement</div>          </th>
+          <td>
+            <code>kind</code>
+          </td>
+          <td><code class="mech-tag">nightly</code></td>
+          <td class="cell status-pass">3/3</td>
+          <td><span class="badge status-pass">PASS</span></td>
+          <td>—</td>
+        </tr>
+        <tr class="variant-row">
+          <th class="row-head">
+            <a href="#cni-cilium-ingress"><code>cni-cilium-ingress</code></a>
+<div class="hint">Cilium ingress controller — dedicated loadbalancerMode</div>          </th>
+          <td>
+            <code>kind</code>
+          </td>
+          <td><code class="mech-tag">nightly</code></td>
+          <td class="cell status-pass">3/3</td>
+          <td><span class="badge status-pass">PASS</span></td>
+          <td>—</td>
+        </tr>
+        <tr class="variant-row">
+          <th class="row-head">
+            <a href="#cni-cilium-network-policy"><code>cni-cilium-network-policy</code></a>
+<div class="hint">CiliumNetworkPolicy enforcement — default-deny + allow-by-label</div>          </th>
+          <td>
+            <code>kind</code>
+          </td>
+          <td><code class="mech-tag">nightly</code></td>
+          <td class="cell status-pass">3/3</td>
+          <td><span class="badge status-pass">PASS</span></td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </details>
+
+</section>
+
+<section class="cap-details">
+  <h2>Scenarios — details</h2>
+  <details id="cni-cilium-ebpf-kube-proxy-replacement" class="cap" data-status="PASS" data-run-id="run-cni-cilium-live">
+    <summary>
+      <span class="cap-id"><code>cni-cilium-ebpf-kube-proxy-replacement</code></span>
+      <span class="cap-name">Cilium eBPF kube-proxy replacement</span>
+      <span class="badge status-pass">PASS</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Proves full eBPF kube-proxy replacement on kind: Cilium replaces kube-proxy, product ClusterIP reachable through eBPF datapath.</dd>      <dt>Cluster</dt><dd><code>kind</code>
+      </dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:cilium</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">nightly</code></dd>
+      <dt>Labels</dt><dd><code>customer=any</code> <code>profile=cni</code> </dd>
+    </dl>
+    <div class="artifact-links">
+      <h5>Artifacts</h5>
+      <ul>
+        <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/scenario.yaml" data-artifact="scenario">Scenario YAML</a></li>
+        <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/applied-overrides.yaml" data-artifact="overrides">Applied Overrides</a></li>
+        <li class="artifact-fixtures">
+          <span>Fixtures</span>
+          <ul>
+            <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/fixtures/kind-cilium.yaml" data-artifact="fixture">kind-cilium.yaml</a></li>
+          </ul>
+        </li>
+        <li class="artifact-manifests">
+          <span>Manifests</span>
+          <ul>
+            <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/configmaps.yaml" data-artifact="manifest">configmaps.yaml</a></li>
+            <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/deployments.yaml" data-artifact="manifest">deployments.yaml</a></li>
+            <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/helm-releases.yaml" data-artifact="manifest">helm-releases.yaml</a></li>
+            <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/ingress.yaml" data-artifact="manifest">ingress.yaml</a></li>
+            <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/secrets.yaml" data-artifact="manifest">secrets.yaml</a></li>
+            <li><a href="cni-cilium-ebpf-kube-proxy-replacement/artifacts/manifests/services.yaml" data-artifact="manifest">services.yaml</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="result">
+      <h5>Assertions · agent —</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>helm-status-deployed</code>
+<details class="notes"><summary>notes</summary><pre>helm status: deployed
+PASS: release sample in ns/sample is deployed</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>kubectl --context kind-chart-test-swarm-run-1 -n sample wait --for=condition=Ready pods --timeout=5m --all
+pod/sample-7955bb5b9-tpd75 condition met
+PASS: pods Ready in ns/sample
+NAME                     READY   STATUS    RESTARTS   AGE
+sample-7955bb5b9-tpd75   1/1     Running   0          3s</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>smoke-script</code>
+<details class="notes"><summary>notes</summary><pre>exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-ebpf.sh (RELEASE=sample NAMESPACE=sample)
+==&gt; Waiting for Cilium daemonset rollout (5m max)
+daemon set &#34;cilium&#34; successfully rolled out
+PASS: Cilium daemonset rolled out
+==&gt; Getting Cilium agent pod name
+Cilium pod: cilium-7m4f6
+==&gt; Reading cilium status via kubectl exec
+==&gt; Asserting KubeProxyReplacement: True
+KubeProxyReplacement line: KubeProxyReplacement:    True   [eth0    172.20.0.3 fc00:f853:ccd:e793::3 fe80::8cc6:feff:fead:fb78 (Direct Routing)]
+PASS: KubeProxyReplacement is True
+==&gt; Asserting no kube-proxy daemonset in kube-system
+PASS: kube-proxy daemonset NOT found (fully replaced by Cilium eBPF)
+==&gt; Getting product Service ClusterIP
+Product Service ClusterIP: 10.96.148.70:80
+==&gt; Probing product ClusterIP from in-cluster curl pod (proves eBPF datapath)
+ClusterIP probe HTTP code: 200
+PASS: Product ClusterIP reachable through Cilium eBPF datapath
+PASS: Cilium eBPF kube-proxy replacement verified</pre></details>        </li>
+      </ul>
+<p class="log-path">Logs: <code>/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-ebpf-kube-proxy-replacement-20260608-101448/artifacts/logs</code></p>    </div>
+  </details>
+  <details id="cni-cilium-ingress" class="cap" data-status="PASS" data-run-id="run-cni-cilium-live">
+    <summary>
+      <span class="cap-id"><code>cni-cilium-ingress</code></span>
+      <span class="cap-name">Cilium ingress controller — dedicated loadbalancerMode</span>
+      <span class="badge status-pass">PASS</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Proves the Cilium ingress controller in dedicated loadbalancerMode on kind: per-Ingress Service routes HTTP with matching Host header to the product Service.</dd>      <dt>Cluster</dt><dd><code>kind</code>
+      </dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:cilium</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">nightly</code></dd>
+      <dt>Labels</dt><dd><code>customer=any</code> <code>profile=cni</code> </dd>
+    </dl>
+    <div class="artifact-links">
+      <h5>Artifacts</h5>
+      <ul>
+        <li><a href="cni-cilium-ingress/artifacts/scenario.yaml" data-artifact="scenario">Scenario YAML</a></li>
+        <li><a href="cni-cilium-ingress/artifacts/applied-overrides.yaml" data-artifact="overrides">Applied Overrides</a></li>
+        <li class="artifact-fixtures">
+          <span>Fixtures</span>
+          <ul>
+            <li><a href="cni-cilium-ingress/artifacts/fixtures/cilium-ingress-values.yaml" data-artifact="fixture">cilium-ingress-values.yaml</a></li>
+            <li><a href="cni-cilium-ingress/artifacts/fixtures/kind-cilium.yaml" data-artifact="fixture">kind-cilium.yaml</a></li>
+          </ul>
+        </li>
+        <li class="artifact-manifests">
+          <span>Manifests</span>
+          <ul>
+            <li><a href="cni-cilium-ingress/artifacts/manifests/configmaps.yaml" data-artifact="manifest">configmaps.yaml</a></li>
+            <li><a href="cni-cilium-ingress/artifacts/manifests/deployments.yaml" data-artifact="manifest">deployments.yaml</a></li>
+            <li><a href="cni-cilium-ingress/artifacts/manifests/helm-releases.yaml" data-artifact="manifest">helm-releases.yaml</a></li>
+            <li><a href="cni-cilium-ingress/artifacts/manifests/ingress.yaml" data-artifact="manifest">ingress.yaml</a></li>
+            <li><a href="cni-cilium-ingress/artifacts/manifests/secrets.yaml" data-artifact="manifest">secrets.yaml</a></li>
+            <li><a href="cni-cilium-ingress/artifacts/manifests/services.yaml" data-artifact="manifest">services.yaml</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="result">
+      <h5>Assertions · agent —</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>helm-status-deployed</code>
+<details class="notes"><summary>notes</summary><pre>helm status: deployed
+PASS: release sample in ns/sample is deployed</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>kubectl --context kind-chart-test-swarm-run-2 -n sample wait --for=condition=Ready pods --timeout=5m --all
+pod/sample-7955bb5b9-z5zp5 condition met
+PASS: pods Ready in ns/sample
+NAME                     READY   STATUS    RESTARTS   AGE
+sample-7955bb5b9-z5zp5   1/1     Running   0          4s</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>smoke-script</code>
+<details class="notes"><summary>notes</summary><pre>exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-ingress.sh (RELEASE=sample NAMESPACE=sample)
+==&gt; Locating Cilium per-Ingress Service (dedicated mode)
+Cilium per-Ingress Service: service/cilium-ingress-sample
+==&gt; Getting per-Ingress Service ClusterIP (no LB on kind)
+Per-Ingress Service ClusterIP: 10.96.79.246:80
+==&gt; Probing per-Ingress Service with Host: sample.test.local (in-cluster)
+HTTP response (Host: sample.test.local): 200
+PASS: Cilium ingress routes HTTP through dedicated per-Ingress Service
+PASS: Cilium ingress controller verified</pre></details>        </li>
+      </ul>
+<p class="log-path">Logs: <code>/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-ingress-20260608-101550/artifacts/logs</code></p>    </div>
+  </details>
+  <details id="cni-cilium-network-policy" class="cap" data-status="PASS" data-run-id="run-cni-cilium-live">
+    <summary>
+      <span class="cap-id"><code>cni-cilium-network-policy</code></span>
+      <span class="cap-name">CiliumNetworkPolicy enforcement — default-deny + allow-by-label</span>
+      <span class="badge status-pass">PASS</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Proves CiliumNetworkPolicy (CNP) enforcement on kind: default-deny + allow-by-label. Blocks unlabeled traffic; allows labeled clients. CNP applied as raw_manifest preinstall.</dd>      <dt>Cluster</dt><dd><code>kind</code>
+      </dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">addon:cilium</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">nightly</code></dd>
+      <dt>Labels</dt><dd><code>customer=any</code> <code>profile=cni</code> </dd>
+    </dl>
+    <div class="artifact-links">
+      <h5>Artifacts</h5>
+      <ul>
+        <li><a href="cni-cilium-network-policy/artifacts/scenario.yaml" data-artifact="scenario">Scenario YAML</a></li>
+        <li><a href="cni-cilium-network-policy/artifacts/applied-overrides.yaml" data-artifact="overrides">Applied Overrides</a></li>
+        <li class="artifact-fixtures">
+          <span>Fixtures</span>
+          <ul>
+            <li><a href="cni-cilium-network-policy/artifacts/fixtures/cilium-network-policy.yaml" data-artifact="fixture">cilium-network-policy.yaml</a></li>
+            <li><a href="cni-cilium-network-policy/artifacts/fixtures/kind-cilium.yaml" data-artifact="fixture">kind-cilium.yaml</a></li>
+          </ul>
+        </li>
+        <li class="artifact-manifests">
+          <span>Manifests</span>
+          <ul>
+            <li><a href="cni-cilium-network-policy/artifacts/manifests/configmaps.yaml" data-artifact="manifest">configmaps.yaml</a></li>
+            <li><a href="cni-cilium-network-policy/artifacts/manifests/deployments.yaml" data-artifact="manifest">deployments.yaml</a></li>
+            <li><a href="cni-cilium-network-policy/artifacts/manifests/helm-releases.yaml" data-artifact="manifest">helm-releases.yaml</a></li>
+            <li><a href="cni-cilium-network-policy/artifacts/manifests/ingress.yaml" data-artifact="manifest">ingress.yaml</a></li>
+            <li><a href="cni-cilium-network-policy/artifacts/manifests/secrets.yaml" data-artifact="manifest">secrets.yaml</a></li>
+            <li><a href="cni-cilium-network-policy/artifacts/manifests/services.yaml" data-artifact="manifest">services.yaml</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="result">
+      <h5>Assertions · agent —</h5>
+      <ul class="asserts">
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>helm-status-deployed</code>
+<details class="notes"><summary>notes</summary><pre>helm status: deployed
+PASS: release sample in ns/sample is deployed</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>pods-ready</code>
+<details class="notes"><summary>notes</summary><pre>kubectl --context kind-chart-test-swarm-run-3 -n sample wait --for=condition=Ready pods --timeout=5m --all
+pod/sample-7955bb5b9-r55ft condition met
+PASS: pods Ready in ns/sample
+NAME                     READY   STATUS    RESTARTS   AGE
+sample-7955bb5b9-r55ft   1/1     Running   0          3s</pre></details>        </li>
+        <li class="status-pass">
+          <span class="badge status-pass">PASS</span>
+          <code>smoke-script</code>
+<details class="notes"><summary>notes</summary><pre>exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/cni/cilium-network-policy.sh (RELEASE=sample NAMESPACE=sample)
+==&gt; Getting product Service ClusterIP
+Product Service ClusterIP: 10.96.111.153:80
+==&gt; Testing ALLOWED client (label access=allowed)
+ALLOWED client HTTP code: 200
+PASS: Allowed client reached the product Service
+==&gt; Testing DENIED client (no access label)
+DENIED client HTTP code: 000
+PASS: Denied client was blocked (no reachable product Service)
+PASS: CiliumNetworkPolicy enforcement verified (allowed=reachable, denied=blocked)</pre></details>        </li>
+      </ul>
+<p class="log-path">Logs: <code>/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-cni-cilium-live/scenario-cni-cilium-network-policy-20260608-101721/artifacts/logs</code></p>    </div>
+  </details>
+</section>
+
+</body>
+</html>

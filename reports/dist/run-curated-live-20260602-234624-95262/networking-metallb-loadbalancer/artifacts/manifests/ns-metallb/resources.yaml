@@ -1,0 +1,2233 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generateName: metallb-controller-7b8b56ccdd-
+    labels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/name: metallb
+      pod-template-hash: 7b8b56ccdd
+    name: metallb-controller-7b8b56ccdd-pp5ht
+    namespace: metallb
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: metallb-controller-7b8b56ccdd
+      uid: 90b9e9ee-8d68-4ac3-a341-95b49eb6bbcb
+    resourceVersion: "670"
+    uid: ccb86fe8-239c-4fa4-85c6-4f28f545f22c
+  spec:
+    containers:
+    - args:
+      - --port=9120
+      - --log-level=info
+      - --webhook-mode=enabled
+      env:
+      - name: METALLB_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: METALLB_ML_SECRET_NAME
+        value: metallb-memberlist
+      - name: METALLB_DEPLOYMENT
+        value: metallb-controller
+      - name: METALLB_BGP_TYPE
+        value: frr-k8s
+      image: quay.io/metallb/controller:v0.16.1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 17472
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: controller
+      ports:
+      - containerPort: 9120
+        name: metricshttps
+        protocol: TCP
+      - containerPort: 9443
+        name: webhook-server
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: 17472
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /tmp/k8s-webhook-server/serving-certs
+        name: cert
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-bh6sg
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: chart-test-swarm-run-11-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 65534
+      runAsNonRoot: true
+      runAsUser: 65534
+    serviceAccount: metallb-controller
+    serviceAccountName: metallb-controller
+    terminationGracePeriodSeconds: 0
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: cert
+      secret:
+        defaultMode: 420
+        secretName: metallb-webhook-cert
+    - name: kube-api-access-bh6sg
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:19Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:11Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:31Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:31Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:11Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://da3eeb1c1adee9a512c1e1877f39652032e6abaac098606a709f4438c2e0bd6a
+      image: quay.io/metallb/controller:v0.16.1
+      imageID: quay.io/metallb/controller@sha256:f51ab515de9ccd20dc3dccb093e48df8adddac019326c456f449e55ba91b6420
+      lastState: {}
+      name: controller
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:54:18Z"
+    hostIP: 172.20.0.3
+    hostIPs:
+    - ip: 172.20.0.3
+    phase: Running
+    podIP: 10.244.0.5
+    podIPs:
+    - ip: 10.244.0.5
+    qosClass: Burstable
+    startTime: "2026-06-03T03:54:11Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generateName: metallb-frr-k8s-
+    labels:
+      app: frr-k8s
+      app.kubernetes.io/component: frr-k8s
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/name: frr-k8s
+      controller-revision-hash: bff4c679c
+      pod-template-generation: "1"
+    name: metallb-frr-k8s-5czl4
+    namespace: metallb
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DaemonSet
+      name: metallb-frr-k8s
+      uid: 3c32f11a-0db8-40d2-949e-5b6cf45f26f2
+    resourceVersion: "668"
+    uid: 35d86fd3-d2e8-4369-9520-b98f05cc52a3
+  spec:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchFields:
+            - key: metadata.name
+              operator: In
+              values:
+              - chart-test-swarm-run-11-control-plane
+    containers:
+    - args:
+      - --node-name=$(NODE_NAME)
+      - --namespace=$(NAMESPACE)
+      - --metrics-bind-address=0.0.0.0:9140
+      - --log-level=info
+      command:
+      - /frr-k8s
+      env:
+      - name: FRR_CONFIG_FILE
+        value: /etc/frr_reloader/frr.conf
+      - name: FRR_RELOADER_PID_FILE
+        value: /etc/frr_reloader/reloader.pid
+      - name: NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 7572
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: controller
+      ports:
+      - containerPort: 9140
+        hostPort: 9140
+        name: metricshttps
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          host: 127.0.0.1
+          path: /readyz
+          port: 7572
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          add:
+          - NET_RAW
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/frr_reloader
+        name: reloader
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    - command:
+      - /bin/sh
+      - -c
+      - /sbin/tini -- /usr/lib/frr/docker-start
+      env:
+      - name: TINI_SUBREAPER
+        value: "true"
+      image: quay.io/frrouting/frr:10.4.3
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /livez
+          port: 9141
+          scheme: HTTPS
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: frr
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          add:
+          - NET_ADMIN
+          - NET_RAW
+          - SYS_ADMIN
+          - NET_BIND_SERVICE
+        readOnlyRootFilesystem: true
+      startupProbe:
+        failureThreshold: 30
+        httpGet:
+          path: /livez
+          port: 9141
+          scheme: HTTPS
+        periodSeconds: 5
+        successThreshold: 1
+        timeoutSeconds: 1
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/frr
+        name: frr-sockets
+      - mountPath: /etc/frr
+        name: frr-conf
+      - mountPath: /var/lib/frr
+        name: frr-lib
+      - mountPath: /var/tmp/frr
+        name: frr-tmp
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    - command:
+      - /etc/frr_reloader/frr-reloader.sh
+      image: quay.io/frrouting/frr:10.4.3
+      imagePullPolicy: IfNotPresent
+      name: reloader
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/frr
+        name: frr-sockets
+      - mountPath: /etc/frr
+        name: frr-conf
+      - mountPath: /etc/frr_reloader
+        name: reloader
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    - args:
+      - --metrics-port=9141
+      - --metrics-bind-address=0.0.0.0
+      command:
+      - /etc/frr_metrics/frr-metrics
+      image: quay.io/frrouting/frr:10.4.3
+      imagePullPolicy: IfNotPresent
+      name: frr-metrics
+      ports:
+      - containerPort: 9141
+        hostPort: 9141
+        name: frrmetricshttps
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/frr
+        name: frr-sockets
+      - mountPath: /etc/frr
+        name: frr-conf
+      - mountPath: /etc/frr_metrics
+        name: metrics
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    - args:
+      - --node-name=$(NODE_NAME)
+      - --namespace=$(NAMESPACE)
+      - --pod-name=$(POD_NAME)
+      - --log-level=info
+      - --poll-interval=2m
+      command:
+      - /etc/frr_status/frr-status
+      env:
+      - name: NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      image: quay.io/frrouting/frr:10.4.3
+      imagePullPolicy: IfNotPresent
+      name: frr-status
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/frr
+        name: frr-sockets
+      - mountPath: /etc/frr
+        name: frr-conf
+      - mountPath: /etc/frr_status
+        name: frr-status
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    hostNetwork: true
+    initContainers:
+    - command:
+      - /bin/sh
+      - -c
+      - cp -rLf /tmp/frr/* /etc/frr/
+      image: quay.io/frrouting/frr:10.4.3
+      imagePullPolicy: IfNotPresent
+      name: cp-frr-files
+      resources: {}
+      securityContext:
+        runAsGroup: 101
+        runAsUser: 100
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /tmp/frr
+        name: frr-startup
+      - mountPath: /etc/frr
+        name: frr-conf
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    - command:
+      - /bin/sh
+      - -c
+      - cp -f /frr-reloader.sh /etc/frr_reloader/
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imagePullPolicy: IfNotPresent
+      name: cp-reloader
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/frr_reloader
+        name: reloader
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    - command:
+      - /bin/sh
+      - -c
+      - cp -f /frr-metrics /etc/frr_metrics/
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imagePullPolicy: IfNotPresent
+      name: cp-metrics
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/frr_metrics
+        name: metrics
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    - command:
+      - /bin/sh
+      - -c
+      - cp -f /frr-status /etc/frr_status/
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imagePullPolicy: IfNotPresent
+      name: cp-frr-status
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/frr_status
+        name: frr-status
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-znrkz
+        readOnly: true
+    nodeName: chart-test-swarm-run-11-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: metallb-frr-k8s-controller
+    serviceAccountName: metallb-frr-k8s-controller
+    shareProcessNamespace: true
+    terminationGracePeriodSeconds: 0
+    tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+      operator: Exists
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/control-plane
+      operator: Exists
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/disk-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/memory-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/pid-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/unschedulable
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/network-unavailable
+      operator: Exists
+    volumes:
+    - emptyDir: {}
+      name: frr-sockets
+    - configMap:
+        defaultMode: 420
+        name: metallb-frr-k8s-frr-startup
+      name: frr-startup
+    - emptyDir: {}
+      name: frr-conf
+    - emptyDir: {}
+      name: reloader
+    - emptyDir: {}
+      name: metrics
+    - emptyDir: {}
+      name: frr-status
+    - emptyDir: {}
+      name: frr-lib
+    - emptyDir: {}
+      name: frr-tmp
+    - name: kube-api-access-znrkz
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:14Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:21Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:31Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:31Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:11Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://6b437c7fe66e3b14a3a5619f565e4c6467e7223c313a5eac884762e3a621ed8d
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imageID: quay.io/metallb/frr-k8s@sha256:1cb06fb2d5538c9f9b20d3adf00da8d1e6cb0166bc15df8add0d9efe578641a4
+      lastState: {}
+      name: controller
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:54:21Z"
+    - containerID: containerd://ae9d92fe48e7dd1772cb871b8c4e8008a39af0ffc3d290608e9c9386aad622a7
+      image: quay.io/frrouting/frr:10.4.3
+      imageID: quay.io/frrouting/frr@sha256:8745af1f9bbbc26ab11d99ccdf35e07aa3427a199749bef0cd6bb5132bb130df
+      lastState: {}
+      name: frr
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:54:21Z"
+    - containerID: containerd://97be0c0cac4c877ed0222c75896f6d6ce3a9f70c9640af748769077d376a1c0d
+      image: quay.io/frrouting/frr:10.4.3
+      imageID: quay.io/frrouting/frr@sha256:8745af1f9bbbc26ab11d99ccdf35e07aa3427a199749bef0cd6bb5132bb130df
+      lastState: {}
+      name: frr-metrics
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:54:21Z"
+    - containerID: containerd://5e63f3679767087ba0ca5a678c40f6a222f196a251fafd2c299dc841234f03b9
+      image: quay.io/frrouting/frr:10.4.3
+      imageID: quay.io/frrouting/frr@sha256:8745af1f9bbbc26ab11d99ccdf35e07aa3427a199749bef0cd6bb5132bb130df
+      lastState: {}
+      name: frr-status
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:54:21Z"
+    - containerID: containerd://d97e45b647609f5839d50d822660ec219505e33476510ccbc0fe7e4442989fed
+      image: quay.io/frrouting/frr:10.4.3
+      imageID: quay.io/frrouting/frr@sha256:8745af1f9bbbc26ab11d99ccdf35e07aa3427a199749bef0cd6bb5132bb130df
+      lastState: {}
+      name: reloader
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:54:21Z"
+    hostIP: 172.20.0.3
+    hostIPs:
+    - ip: 172.20.0.3
+    initContainerStatuses:
+    - containerID: containerd://c747bc9238a37bb2c6f107ea54e12dbd3eb14f71e6046483c6eef6160c2f544b
+      image: quay.io/frrouting/frr:10.4.3
+      imageID: quay.io/frrouting/frr@sha256:8745af1f9bbbc26ab11d99ccdf35e07aa3427a199749bef0cd6bb5132bb130df
+      lastState: {}
+      name: cp-frr-files
+      ready: true
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: containerd://c747bc9238a37bb2c6f107ea54e12dbd3eb14f71e6046483c6eef6160c2f544b
+          exitCode: 0
+          finishedAt: "2026-06-03T03:54:14Z"
+          reason: Completed
+          startedAt: "2026-06-03T03:54:14Z"
+    - containerID: containerd://531c6f6594812bcb519952a9526b53075f63fad7e0a0121d26cac4b94cc8ec48
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imageID: quay.io/metallb/frr-k8s@sha256:1cb06fb2d5538c9f9b20d3adf00da8d1e6cb0166bc15df8add0d9efe578641a4
+      lastState: {}
+      name: cp-reloader
+      ready: true
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: containerd://531c6f6594812bcb519952a9526b53075f63fad7e0a0121d26cac4b94cc8ec48
+          exitCode: 0
+          finishedAt: "2026-06-03T03:54:18Z"
+          reason: Completed
+          startedAt: "2026-06-03T03:54:18Z"
+    - containerID: containerd://a99dd7868cf44a3ab3bf2b0d9a4011b10d114f6c0dd812422d44c7fcdb3ee375
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imageID: quay.io/metallb/frr-k8s@sha256:1cb06fb2d5538c9f9b20d3adf00da8d1e6cb0166bc15df8add0d9efe578641a4
+      lastState: {}
+      name: cp-metrics
+      ready: true
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: containerd://a99dd7868cf44a3ab3bf2b0d9a4011b10d114f6c0dd812422d44c7fcdb3ee375
+          exitCode: 0
+          finishedAt: "2026-06-03T03:54:19Z"
+          reason: Completed
+          startedAt: "2026-06-03T03:54:19Z"
+    - containerID: containerd://01eaa7e0050421dbe4ce10e8f613d53038599b305178239b53a824e11b464a87
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imageID: quay.io/metallb/frr-k8s@sha256:1cb06fb2d5538c9f9b20d3adf00da8d1e6cb0166bc15df8add0d9efe578641a4
+      lastState: {}
+      name: cp-frr-status
+      ready: true
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: containerd://01eaa7e0050421dbe4ce10e8f613d53038599b305178239b53a824e11b464a87
+          exitCode: 0
+          finishedAt: "2026-06-03T03:54:20Z"
+          reason: Completed
+          startedAt: "2026-06-03T03:54:20Z"
+    phase: Running
+    podIP: 172.20.0.3
+    podIPs:
+    - ip: 172.20.0.3
+    qosClass: BestEffort
+    startTime: "2026-06-03T03:54:11Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/default-container: frr-k8s-statuscleaner
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generateName: metallb-frr-k8s-statuscleaner-67874f5d9f-
+    labels:
+      app.kubernetes.io/component: statuscleaner
+      pod-template-hash: 67874f5d9f
+    name: metallb-frr-k8s-statuscleaner-67874f5d9f-xdbf9
+    namespace: metallb
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: metallb-frr-k8s-statuscleaner-67874f5d9f
+      uid: c11f5006-e3aa-4825-a975-96abb574297e
+    resourceVersion: "674"
+    uid: f0e7b8ba-47ba-4875-bf1b-7918374ca483
+  spec:
+    containers:
+    - args:
+      - --webhook-port=19443
+      - --log-level=info
+      - --namespace=$(NAMESPACE)
+      command:
+      - /statuscleaner
+      env:
+      - name: NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: webhook
+          scheme: HTTPS
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: frr-k8s-statuscleaner
+      ports:
+      - containerPort: 19443
+        hostPort: 19443
+        name: webhook
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: webhook
+          scheme: HTTPS
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /tmp/k8s-webhook-server/serving-certs
+        name: cert
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-mbq54
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    hostNetwork: true
+    nodeName: chart-test-swarm-run-11-control-plane
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: metallb-frr-k8s-controller
+    serviceAccountName: metallb-frr-k8s-controller
+    terminationGracePeriodSeconds: 10
+    tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+      operator: Exists
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/control-plane
+      operator: Exists
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: cert
+      secret:
+        defaultMode: 420
+        secretName: frr-k8s-webhook-server-cert
+    - name: kube-api-access-mbq54
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:17Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:11Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:31Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:31Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:11Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://774bb8de1919001859218cb3a8f16d1ed054005ea7c4621c24653d3bfe75ba70
+      image: quay.io/metallb/frr-k8s:v0.0.25
+      imageID: quay.io/metallb/frr-k8s@sha256:1cb06fb2d5538c9f9b20d3adf00da8d1e6cb0166bc15df8add0d9efe578641a4
+      lastState: {}
+      name: frr-k8s-statuscleaner
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:54:16Z"
+    hostIP: 172.20.0.3
+    hostIPs:
+    - ip: 172.20.0.3
+    phase: Running
+    podIP: 172.20.0.3
+    podIPs:
+    - ip: 172.20.0.3
+    qosClass: BestEffort
+    startTime: "2026-06-03T03:54:11Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generateName: metallb-speaker-
+    labels:
+      app.kubernetes.io/component: speaker
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/name: metallb
+      controller-revision-hash: 78bd86984c
+      pod-template-generation: "1"
+    name: metallb-speaker-dblpw
+    namespace: metallb
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DaemonSet
+      name: metallb-speaker
+      uid: 40b4d625-2fd4-42a1-8251-37a0e9dccecd
+    resourceVersion: "691"
+    uid: 7e7f03e4-8f31-4cfb-a4ce-d653bc3b9030
+  spec:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchFields:
+            - key: metadata.name
+              operator: In
+              values:
+              - chart-test-swarm-run-11-control-plane
+    containers:
+    - args:
+      - --port=9120
+      - --log-level=info
+      env:
+      - name: METALLB_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: METALLB_HOST
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: status.hostIP
+      - name: METALLB_ML_BIND_ADDR
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: status.podIP
+      - name: METALLB_ML_LABELS
+        value: app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker
+      - name: METALLB_ML_BIND_PORT
+        value: "7946"
+      - name: METALLB_ML_SECRET_KEY_PATH
+        value: /etc/ml_secret_key
+      - name: METALLB_BGP_TYPE
+        value: frr-k8s
+      - name: METALLB_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      image: quay.io/metallb/speaker:v0.16.1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 17472
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: speaker
+      ports:
+      - containerPort: 9120
+        hostPort: 9120
+        name: metricshttps
+        protocol: TCP
+      - containerPort: 7946
+        hostPort: 7946
+        name: memberlist-tcp
+        protocol: TCP
+      - containerPort: 7946
+        hostPort: 7946
+        name: memberlist-udp
+        protocol: UDP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          host: 127.0.0.1
+          path: /readyz
+          port: 17472
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          add:
+          - NET_RAW
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/metallb/memberlist
+        name: memberlist-config
+        readOnly: true
+      - mountPath: /etc/ml_secret_key
+        name: memberlist
+      - mountPath: /etc/metallb
+        name: metallb-excludel2
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-9l57x
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    hostNetwork: true
+    nodeName: chart-test-swarm-run-11-control-plane
+    nodeSelector:
+      kubernetes.io/os: linux
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: metallb-speaker
+    serviceAccountName: metallb-speaker
+    terminationGracePeriodSeconds: 0
+    tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+      operator: Exists
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/control-plane
+      operator: Exists
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/disk-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/memory-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/pid-pressure
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/unschedulable
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubernetes.io/network-unavailable
+      operator: Exists
+    volumes:
+    - name: memberlist
+      secret:
+        defaultMode: 420
+        secretName: metallb-memberlist
+    - configMap:
+        defaultMode: 256
+        name: metallb-excludel2
+      name: metallb-excludel2
+    - configMap:
+        defaultMode: 420
+        name: metallb-memberlist-config
+        optional: true
+      name: memberlist-config
+    - name: kube-api-access-9l57x
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:21Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:11Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:39Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:39Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-03T03:54:11Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://2b413d1bfdf66678689a95625ea02d3e0f0d0891f4c72089c617475421f851e4
+      image: quay.io/metallb/speaker:v0.16.1
+      imageID: quay.io/metallb/speaker@sha256:16561e96531e1852d5c229ad7fae6e994dcfa983ff7f4de6b6208b34a4e2ddbc
+      lastState: {}
+      name: speaker
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-03T03:54:21Z"
+    hostIP: 172.20.0.3
+    hostIPs:
+    - ip: 172.20.0.3
+    phase: Running
+    podIP: 172.20.0.3
+    podIPs:
+    - ip: 172.20.0.3
+    qosClass: Burstable
+    startTime: "2026-06-03T03:54:11Z"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: metallb
+      meta.helm.sh/release-namespace: metallb
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: frr-k8s-webhook-service
+    namespace: metallb
+    resourceVersion: "511"
+    uid: b6a45d13-9f98-4f3c-8235-ab61dc39299a
+  spec:
+    clusterIP: 10.96.253.4
+    clusterIPs:
+    - 10.96.253.4
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - port: 443
+      protocol: TCP
+      targetPort: webhook
+    selector:
+      app.kubernetes.io/component: statuscleaner
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: metallb
+      meta.helm.sh/release-namespace: metallb
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    labels:
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: metallb
+      app.kubernetes.io/version: v0.16.1
+      helm.sh/chart: metallb-0.16.1
+    name: metallb-webhook-service
+    namespace: metallb
+    resourceVersion: "508"
+    uid: af3d07f8-9c95-4c91-9566-17c3ae53c87f
+  spec:
+    clusterIP: 10.96.9.186
+    clusterIPs:
+    - 10.96.9.186
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - port: 443
+      protocol: TCP
+      targetPort: 9443
+    selector:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/name: metallb
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: DaemonSet
+  metadata:
+    annotations:
+      deprecated.daemonset.template.generation: "1"
+      meta.helm.sh/release-name: metallb
+      meta.helm.sh/release-namespace: metallb
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generation: 1
+    labels:
+      app: frr-k8s
+      app.kubernetes.io/component: frr-k8s
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: frr-k8s
+      app.kubernetes.io/version: v0.0.25
+      helm.sh/chart: frr-k8s-0.0.25
+    name: metallb-frr-k8s
+    namespace: metallb
+    resourceVersion: "669"
+    uid: 3c32f11a-0db8-40d2-949e-5b6cf45f26f2
+  spec:
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: frr-k8s
+        app.kubernetes.io/instance: metallb
+        app.kubernetes.io/name: frr-k8s
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: frr-k8s
+          app.kubernetes.io/component: frr-k8s
+          app.kubernetes.io/instance: metallb
+          app.kubernetes.io/name: frr-k8s
+      spec:
+        containers:
+        - args:
+          - --node-name=$(NODE_NAME)
+          - --namespace=$(NAMESPACE)
+          - --metrics-bind-address=0.0.0.0:9140
+          - --log-level=info
+          command:
+          - /frr-k8s
+          env:
+          - name: FRR_CONFIG_FILE
+            value: /etc/frr_reloader/frr.conf
+          - name: FRR_RELOADER_PID_FILE
+            value: /etc/frr_reloader/reloader.pid
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/metallb/frr-k8s:v0.0.25
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              host: 127.0.0.1
+              path: /healthz
+              port: 7572
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: controller
+          ports:
+          - containerPort: 9140
+            name: metricshttps
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              host: 127.0.0.1
+              path: /readyz
+              port: 7572
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+              - NET_RAW
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/frr_reloader
+            name: reloader
+        - command:
+          - /bin/sh
+          - -c
+          - /sbin/tini -- /usr/lib/frr/docker-start
+          env:
+          - name: TINI_SUBREAPER
+            value: "true"
+          image: quay.io/frrouting/frr:10.4.3
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /livez
+              port: 9141
+              scheme: HTTPS
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: frr
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+              - NET_ADMIN
+              - NET_RAW
+              - SYS_ADMIN
+              - NET_BIND_SERVICE
+            readOnlyRootFilesystem: true
+          startupProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /livez
+              port: 9141
+              scheme: HTTPS
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/frr
+            name: frr-sockets
+          - mountPath: /etc/frr
+            name: frr-conf
+          - mountPath: /var/lib/frr
+            name: frr-lib
+          - mountPath: /var/tmp/frr
+            name: frr-tmp
+        - command:
+          - /etc/frr_reloader/frr-reloader.sh
+          image: quay.io/frrouting/frr:10.4.3
+          imagePullPolicy: IfNotPresent
+          name: reloader
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/frr
+            name: frr-sockets
+          - mountPath: /etc/frr
+            name: frr-conf
+          - mountPath: /etc/frr_reloader
+            name: reloader
+        - args:
+          - --metrics-port=9141
+          - --metrics-bind-address=0.0.0.0
+          command:
+          - /etc/frr_metrics/frr-metrics
+          image: quay.io/frrouting/frr:10.4.3
+          imagePullPolicy: IfNotPresent
+          name: frr-metrics
+          ports:
+          - containerPort: 9141
+            name: frrmetricshttps
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/frr
+            name: frr-sockets
+          - mountPath: /etc/frr
+            name: frr-conf
+          - mountPath: /etc/frr_metrics
+            name: metrics
+        - args:
+          - --node-name=$(NODE_NAME)
+          - --namespace=$(NAMESPACE)
+          - --pod-name=$(POD_NAME)
+          - --log-level=info
+          - --poll-interval=2m
+          command:
+          - /etc/frr_status/frr-status
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          image: quay.io/frrouting/frr:10.4.3
+          imagePullPolicy: IfNotPresent
+          name: frr-status
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/run/frr
+            name: frr-sockets
+          - mountPath: /etc/frr
+            name: frr-conf
+          - mountPath: /etc/frr_status
+            name: frr-status
+        dnsPolicy: ClusterFirst
+        hostNetwork: true
+        initContainers:
+        - command:
+          - /bin/sh
+          - -c
+          - cp -rLf /tmp/frr/* /etc/frr/
+          image: quay.io/frrouting/frr:10.4.3
+          imagePullPolicy: IfNotPresent
+          name: cp-frr-files
+          resources: {}
+          securityContext:
+            runAsGroup: 101
+            runAsUser: 100
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp/frr
+            name: frr-startup
+          - mountPath: /etc/frr
+            name: frr-conf
+        - command:
+          - /bin/sh
+          - -c
+          - cp -f /frr-reloader.sh /etc/frr_reloader/
+          image: quay.io/metallb/frr-k8s:v0.0.25
+          imagePullPolicy: IfNotPresent
+          name: cp-reloader
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/frr_reloader
+            name: reloader
+        - command:
+          - /bin/sh
+          - -c
+          - cp -f /frr-metrics /etc/frr_metrics/
+          image: quay.io/metallb/frr-k8s:v0.0.25
+          imagePullPolicy: IfNotPresent
+          name: cp-metrics
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/frr_metrics
+            name: metrics
+        - command:
+          - /bin/sh
+          - -c
+          - cp -f /frr-status /etc/frr_status/
+          image: quay.io/metallb/frr-k8s:v0.0.25
+          imagePullPolicy: IfNotPresent
+          name: cp-frr-status
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/frr_status
+            name: frr-status
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: metallb-frr-k8s-controller
+        serviceAccountName: metallb-frr-k8s-controller
+        shareProcessNamespace: true
+        terminationGracePeriodSeconds: 0
+        tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        volumes:
+        - emptyDir: {}
+          name: frr-sockets
+        - configMap:
+            defaultMode: 420
+            name: metallb-frr-k8s-frr-startup
+          name: frr-startup
+        - emptyDir: {}
+          name: frr-conf
+        - emptyDir: {}
+          name: reloader
+        - emptyDir: {}
+          name: metrics
+        - emptyDir: {}
+          name: frr-status
+        - emptyDir: {}
+          name: frr-lib
+        - emptyDir: {}
+          name: frr-tmp
+    updateStrategy:
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 1
+      type: RollingUpdate
+  status:
+    currentNumberScheduled: 1
+    desiredNumberScheduled: 1
+    numberAvailable: 1
+    numberMisscheduled: 0
+    numberReady: 1
+    observedGeneration: 1
+    updatedNumberScheduled: 1
+- apiVersion: apps/v1
+  kind: DaemonSet
+  metadata:
+    annotations:
+      deprecated.daemonset.template.generation: "1"
+      meta.helm.sh/release-name: metallb
+      meta.helm.sh/release-namespace: metallb
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: speaker
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: metallb
+      app.kubernetes.io/version: v0.16.1
+      helm.sh/chart: metallb-0.16.1
+    name: metallb-speaker
+    namespace: metallb
+    resourceVersion: "692"
+    uid: 40b4d625-2fd4-42a1-8251-37a0e9dccecd
+  spec:
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: speaker
+        app.kubernetes.io/instance: metallb
+        app.kubernetes.io/name: metallb
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: speaker
+          app.kubernetes.io/instance: metallb
+          app.kubernetes.io/name: metallb
+      spec:
+        containers:
+        - args:
+          - --port=9120
+          - --log-level=info
+          env:
+          - name: METALLB_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: METALLB_HOST
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.hostIP
+          - name: METALLB_ML_BIND_ADDR
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: METALLB_ML_LABELS
+            value: app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker
+          - name: METALLB_ML_BIND_PORT
+            value: "7946"
+          - name: METALLB_ML_SECRET_KEY_PATH
+            value: /etc/ml_secret_key
+          - name: METALLB_BGP_TYPE
+            value: frr-k8s
+          - name: METALLB_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          image: quay.io/metallb/speaker:v0.16.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              host: 127.0.0.1
+              path: /healthz
+              port: 17472
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: speaker
+          ports:
+          - containerPort: 9120
+            name: metricshttps
+            protocol: TCP
+          - containerPort: 7946
+            name: memberlist-tcp
+            protocol: TCP
+          - containerPort: 7946
+            name: memberlist-udp
+            protocol: UDP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              host: 127.0.0.1
+              path: /readyz
+              port: 17472
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+              - NET_RAW
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/metallb/memberlist
+            name: memberlist-config
+            readOnly: true
+          - mountPath: /etc/ml_secret_key
+            name: memberlist
+          - mountPath: /etc/metallb
+            name: metallb-excludel2
+        dnsPolicy: ClusterFirst
+        hostNetwork: true
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: metallb-speaker
+        serviceAccountName: metallb-speaker
+        terminationGracePeriodSeconds: 0
+        tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        volumes:
+        - name: memberlist
+          secret:
+            defaultMode: 420
+            secretName: metallb-memberlist
+        - configMap:
+            defaultMode: 256
+            name: metallb-excludel2
+          name: metallb-excludel2
+        - configMap:
+            defaultMode: 420
+            name: metallb-memberlist-config
+            optional: true
+          name: memberlist-config
+    updateStrategy:
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 1
+      type: RollingUpdate
+  status:
+    currentNumberScheduled: 1
+    desiredNumberScheduled: 1
+    numberAvailable: 1
+    numberMisscheduled: 0
+    numberReady: 1
+    observedGeneration: 1
+    updatedNumberScheduled: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: metallb
+      meta.helm.sh/release-namespace: metallb
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: metallb
+      app.kubernetes.io/version: v0.16.1
+      helm.sh/chart: metallb-0.16.1
+    name: metallb-controller
+    namespace: metallb
+    resourceVersion: "677"
+    uid: 26d59d94-fe3d-4fa5-8f48-b3169c4469b4
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/instance: metallb
+        app.kubernetes.io/name: metallb
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: controller
+          app.kubernetes.io/instance: metallb
+          app.kubernetes.io/name: metallb
+      spec:
+        containers:
+        - args:
+          - --port=9120
+          - --log-level=info
+          - --webhook-mode=enabled
+          env:
+          - name: METALLB_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: METALLB_ML_SECRET_NAME
+            value: metallb-memberlist
+          - name: METALLB_DEPLOYMENT
+            value: metallb-controller
+          - name: METALLB_BGP_TYPE
+            value: frr-k8s
+          image: quay.io/metallb/controller:v0.16.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 17472
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: controller
+          ports:
+          - containerPort: 9120
+            name: metricshttps
+            protocol: TCP
+          - containerPort: 9443
+            name: webhook-server
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 17472
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp/k8s-webhook-server/serving-certs
+            name: cert
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 65534
+          runAsNonRoot: true
+          runAsUser: 65534
+        serviceAccount: metallb-controller
+        serviceAccountName: metallb-controller
+        terminationGracePeriodSeconds: 0
+        volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: metallb-webhook-cert
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-03T03:54:31Z"
+      lastUpdateTime: "2026-06-03T03:54:31Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-03T03:54:11Z"
+      lastUpdateTime: "2026-06-03T03:54:31Z"
+      message: ReplicaSet "metallb-controller-7b8b56ccdd" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: metallb
+      meta.helm.sh/release-namespace: metallb
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generation: 1
+    labels:
+      app: frr-k8s
+      app.kubernetes.io/component: statuscleaner
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: frr-k8s
+      app.kubernetes.io/version: v0.0.25
+      helm.sh/chart: frr-k8s-0.0.25
+    name: metallb-frr-k8s-statuscleaner
+    namespace: metallb
+    resourceVersion: "679"
+    uid: 643f4110-6f42-4d0a-9dd9-73a16c2233db
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: statuscleaner
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          kubectl.kubernetes.io/default-container: frr-k8s-statuscleaner
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: statuscleaner
+      spec:
+        containers:
+        - args:
+          - --webhook-port=19443
+          - --log-level=info
+          - --namespace=$(NAMESPACE)
+          command:
+          - /statuscleaner
+          env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/metallb/frr-k8s:v0.0.25
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: webhook
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: frr-k8s-statuscleaner
+          ports:
+          - containerPort: 19443
+            name: webhook
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: webhook
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp/k8s-webhook-server/serving-certs
+            name: cert
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        hostNetwork: true
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: metallb-frr-k8s-controller
+        serviceAccountName: metallb-frr-k8s-controller
+        terminationGracePeriodSeconds: 10
+        tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: frr-k8s-webhook-server-cert
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-06-03T03:54:31Z"
+      lastUpdateTime: "2026-06-03T03:54:31Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-06-03T03:54:11Z"
+      lastUpdateTime: "2026-06-03T03:54:31Z"
+      message: ReplicaSet "metallb-frr-k8s-statuscleaner-67874f5d9f" has successfully
+        progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: metallb
+      meta.helm.sh/release-namespace: metallb
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: metallb
+      app.kubernetes.io/name: metallb
+      pod-template-hash: 7b8b56ccdd
+    name: metallb-controller-7b8b56ccdd
+    namespace: metallb
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: metallb-controller
+      uid: 26d59d94-fe3d-4fa5-8f48-b3169c4469b4
+    resourceVersion: "673"
+    uid: 90b9e9ee-8d68-4ac3-a341-95b49eb6bbcb
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/instance: metallb
+        app.kubernetes.io/name: metallb
+        pod-template-hash: 7b8b56ccdd
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: controller
+          app.kubernetes.io/instance: metallb
+          app.kubernetes.io/name: metallb
+          pod-template-hash: 7b8b56ccdd
+      spec:
+        containers:
+        - args:
+          - --port=9120
+          - --log-level=info
+          - --webhook-mode=enabled
+          env:
+          - name: METALLB_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: METALLB_ML_SECRET_NAME
+            value: metallb-memberlist
+          - name: METALLB_DEPLOYMENT
+            value: metallb-controller
+          - name: METALLB_BGP_TYPE
+            value: frr-k8s
+          image: quay.io/metallb/controller:v0.16.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 17472
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: controller
+          ports:
+          - containerPort: 9120
+            name: metricshttps
+            protocol: TCP
+          - containerPort: 9443
+            name: webhook-server
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 17472
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp/k8s-webhook-server/serving-certs
+            name: cert
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 65534
+          runAsNonRoot: true
+          runAsUser: 65534
+        serviceAccount: metallb-controller
+        serviceAccountName: metallb-controller
+        terminationGracePeriodSeconds: 0
+        volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: metallb-webhook-cert
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: metallb
+      meta.helm.sh/release-namespace: metallb
+    creationTimestamp: "2026-06-03T03:54:11Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: statuscleaner
+      pod-template-hash: 67874f5d9f
+    name: metallb-frr-k8s-statuscleaner-67874f5d9f
+    namespace: metallb
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: metallb-frr-k8s-statuscleaner
+      uid: 643f4110-6f42-4d0a-9dd9-73a16c2233db
+    resourceVersion: "678"
+    uid: c11f5006-e3aa-4825-a975-96abb574297e
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: statuscleaner
+        pod-template-hash: 67874f5d9f
+    template:
+      metadata:
+        annotations:
+          kubectl.kubernetes.io/default-container: frr-k8s-statuscleaner
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/component: statuscleaner
+          pod-template-hash: 67874f5d9f
+      spec:
+        containers:
+        - args:
+          - --webhook-port=19443
+          - --log-level=info
+          - --namespace=$(NAMESPACE)
+          command:
+          - /statuscleaner
+          env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/metallb/frr-k8s:v0.0.25
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: webhook
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: frr-k8s-statuscleaner
+          ports:
+          - containerPort: 19443
+            name: webhook
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: webhook
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp/k8s-webhook-server/serving-certs
+            name: cert
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        hostNetwork: true
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: metallb-frr-k8s-controller
+        serviceAccountName: metallb-frr-k8s-controller
+        terminationGracePeriodSeconds: 10
+        tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: frr-k8s-webhook-server-cert
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+kind: List
+metadata:
+  resourceVersion: ""

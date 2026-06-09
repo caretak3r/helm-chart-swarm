@@ -1,0 +1,14 @@
+scenario_id: resources-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/resources-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:02:31Z
+provider: kind
+asserts:
+  - type: resources-present
+    status: FAIL
+    notes: |
+        Deployment/sample container/app: missing resources block
+      FAIL: 1 resources check(s) failed across 1 workload(s)
+status: FAIL
+finished_at: 2026-06-09T13:03:00Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-resources-on-20260609-090230/artifacts/logs

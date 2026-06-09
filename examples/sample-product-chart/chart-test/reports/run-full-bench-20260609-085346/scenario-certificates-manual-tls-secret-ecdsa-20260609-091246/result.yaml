@@ -1,0 +1,41 @@
+scenario_id: certificates-manual-tls-secret-ecdsa
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/certificates/certificates-manual-tls-secret-ecdsa.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:12:46Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-32 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-d44d844db-79xzg condition met
+      PASS: pods Ready in ns/sample
+      NAME                     READY   STATUS    RESTARTS   AGE
+      sample-d44d844db-79xzg   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/manual-tls-ecdsa.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Verifying TLS Secret 'manual-tls-ecdsa' exists
+      PASS: Secret exists
+      ==> Verifying certificate public-key algorithm is ECDSA
+      Public Key Algorithm: Public Key Algorithm: id-ecPublicKey
+      PASS: certificate uses ECDSA public key
+      ==> Verifying ECDSA curve (P-256 or P-384)
+      Curve info: ASN1 OID: prime256v1
+      PASS: ECDSA curve is in {P-256, P-384}
+      ==> Waiting for pod Ready (3m max)
+      pod/sample-d44d844db-79xzg condition met
+      PASS: chart pods Ready
+      ==> Verifying HTTPS reachable from in-cluster curl
+      HTTPS response: 200
+      PASS: HTTPS 200
+      PASS: manual-tls-secret ECDSA scenario verified
+status: PASS
+finished_at: 2026-06-09T13:13:21Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-certificates-manual-tls-secret-ecdsa-20260609-091246/artifacts/logs

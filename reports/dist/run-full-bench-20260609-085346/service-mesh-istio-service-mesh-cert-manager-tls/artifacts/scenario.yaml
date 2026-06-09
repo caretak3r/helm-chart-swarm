@@ -1,0 +1,112 @@
+---
+id: service-mesh-istio-service-mesh-cert-manager-tls
+name: "Istio Service Mesh + cert-manager TLS Gateway"
+description: >-
+  Cross-feature compose: installs cert-manager + istio (base + istiod + gateway), creates a cert-manager self-signed ClusterIssuer and Certificate that issues a TLS Secret, then creates an Istio Gateway with a TLS listener referencing that Secret via credentialName. Verifies: istioctl analyze clean, HTTPS through gateway returns 200 with the cert-manager-issued certificate.
+labels: {customer: any, profile: mesh-tls}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: jetstack/cert-manager
+      version: v1.14.0
+      release: cert-manager
+      namespace: cert-manager
+      repo:
+        name: jetstack
+        url: "https://charts.jetstack.io"
+      values:
+        installCRDs: true
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: raw_manifest
+      path: ./fixtures/selfsigned-clusterissuer.yaml
+    - kind: helm
+      chart: istio/base
+      version: 1.27.9
+      release: istio-base
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    - kind: helm
+      chart: istio/istiod
+      version: 1.27.9
+      release: istiod
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        pilot:
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "384Mi"
+      wait: pods-ready
+      wait_timeout: 5m
+    - kind: helm
+      chart: istio/gateway
+      version: 1.27.9
+      release: istio-ingressgateway
+      namespace: istio-system
+      repo:
+        name: istio
+        url: "https://istio-release.storage.googleapis.com/charts"
+      values:
+        service:
+          type: ClusterIP
+          ports:
+            - name: status-port
+              port: 15021
+              targetPort: 15021
+            - name: http2
+              port: 80
+              targetPort: 80
+            - name: https
+              port: 443
+              targetPort: 443
+      wait: pods-ready
+      wait_timeout: 3m
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    mesh.inject: "true"
+asserts:
+  - type: helm-status-deployed
+    release: cert-manager
+    namespace: cert-manager
+  - type: helm-status-deployed
+    release: istio-base
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istiod
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: istio-ingressgateway
+    namespace: istio-system
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: cert-manager
+    timeout: 5m
+  - type: pods-ready
+    namespace: istio-system
+    timeout: 5m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/istio-cert-manager-tls.sh
+tags: [nightly]
+mechanisms: ['addon:istio', 'addon:cert-manager', 'mesh:istio-service-mesh']
+category: service-mesh
+integration: istio
+tier: live

@@ -1,0 +1,112 @@
+{
+  "run_id": "run-f11-2-real-20260601-222435",
+  "timestamp_utc": "2026-06-02 02:24:35+00:00",
+  "num_agents": 2,
+  "project_name": "sample-product-chart",
+  "chart_name": "sample-product",
+  "chart_version": "0.1.0",
+  "suite": "pr-subset",
+  "cluster_provider": "kind",
+  "k8s_version": "v1.30.0",
+  "scenarios": [
+    {
+      "id": "minimal",
+      "name": "Vanilla cluster \u2014 no preinstalled addons",
+      "description": "Baseline: chart installs and pods come up on a stock kind cluster.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "addon:none"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {
+        "customer": "none",
+        "profile": "baseline"
+      },
+      "status": "PASS",
+      "asserts": [
+        {
+          "type": "helm-status-deployed",
+          "status": "PASS",
+          "notes": "helm status: deployed\nPASS: release sample in ns/sample is deployed"
+        },
+        {
+          "type": "pods-ready",
+          "status": "PASS",
+          "notes": "kubectl --context kind-chart-test-swarm-f11-2-a1 -n sample wait --for=condition=Ready pods --timeout=3m --all\npod/sample-7dcd986bd4-54d4r condition met\nPASS: pods Ready in ns/sample\nNAME                      READY   STATUS    RESTARTS   AGE\nsample-7dcd986bd4-54d4r   1/1     Running   0          4s"
+        }
+      ],
+      "duration_s": 0.0,
+      "agent": 1,
+      "log_dir": "/tmp/cts-f11-2-agent1/scenario-minimal-20260601-222650/artifacts/logs",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {
+        "scenario": "minimal/artifacts/scenario.yaml",
+        "overrides": "minimal/artifacts/applied-overrides.yaml",
+        "fixtures": [],
+        "manifests": [
+          "minimal/artifacts/manifests/configmaps.yaml",
+          "minimal/artifacts/manifests/deployments.yaml",
+          "minimal/artifacts/manifests/helm-releases.yaml",
+          "minimal/artifacts/manifests/ingress.yaml",
+          "minimal/artifacts/manifests/secrets.yaml",
+          "minimal/artifacts/manifests/services.yaml"
+        ]
+      },
+      "artifact_dir": "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-f11-2-real-20260601-222435/agent-1/artifacts"
+    },
+    {
+      "id": "subchart-postgres-internal",
+      "name": "Internal postgres subchart enabled",
+      "description": "Product chart bundles postgres via subchart; verify both come up together.",
+      "cluster_provider": "kind",
+      "cluster_addons": [],
+      "mechanisms": [
+        "subchart:postgres-internal"
+      ],
+      "tags": [
+        "pr-subset",
+        "nightly"
+      ],
+      "labels": {
+        "profile": "full-stack"
+      },
+      "status": "PASS",
+      "asserts": [
+        {
+          "type": "helm-status-deployed",
+          "status": "PASS",
+          "notes": "helm status: deployed\nPASS: release sample in ns/sample is deployed"
+        },
+        {
+          "type": "pods-ready",
+          "status": "PASS",
+          "notes": "kubectl --context kind-chart-test-swarm-f11-2-a2 -n sample wait --for=condition=Ready pods --timeout=4m --all\npod/sample-7dcd986bd4-qnsh2 condition met\nPASS: pods Ready in ns/sample\nNAME                      READY   STATUS    RESTARTS   AGE\nsample-7dcd986bd4-qnsh2   1/1     Running   0          4s"
+        }
+      ],
+      "duration_s": 0.0,
+      "agent": 2,
+      "log_dir": "/tmp/cts-f11-2-agent2/scenario-subchart-postgres-internal-20260601-222814/artifacts/logs",
+      "fail_stage": "",
+      "fail_msg": "",
+      "artifact_links": {
+        "scenario": "subchart-postgres-internal/artifacts/scenario.yaml",
+        "overrides": "subchart-postgres-internal/artifacts/applied-overrides.yaml",
+        "fixtures": [],
+        "manifests": [
+          "subchart-postgres-internal/artifacts/manifests/configmaps.yaml",
+          "subchart-postgres-internal/artifacts/manifests/deployments.yaml",
+          "subchart-postgres-internal/artifacts/manifests/helm-releases.yaml",
+          "subchart-postgres-internal/artifacts/manifests/ingress.yaml",
+          "subchart-postgres-internal/artifacts/manifests/secrets.yaml",
+          "subchart-postgres-internal/artifacts/manifests/services.yaml"
+        ]
+      },
+      "artifact_dir": "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-f11-2-real-20260601-222435/agent-2/artifacts"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+---
+id: priority-class-off
+name: "Capability: no priorityClassName when unset (OFF)"
+description: >-
+  Renders the product chart with default values (no priorityClassName override) and asserts that no workload pod spec carries a priorityClassName field. Since the chart has no priorityClassName template and no value is set, none should appear. This scenario is EXPECTED to PASS — confirming no priorityClassName leakage when unset.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+asserts:
+  - type: priority-class-present
+    namespace: sample
+    source: rendered
+    expect_present: false
+tags: [capability, compliance]
+category: capability
+capability: priority-class-name
+tier: capability
+mechanisms: ["capability:priority"]

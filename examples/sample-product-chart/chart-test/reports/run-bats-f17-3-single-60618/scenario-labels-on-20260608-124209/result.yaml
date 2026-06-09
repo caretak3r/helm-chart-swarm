@@ -1,0 +1,19 @@
+scenario_id: labels-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/labels-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-08T16:42:09Z
+provider: kind
+asserts:
+  - type: labels-present
+    status: FAIL
+    notes: |
+        missing label 'cost-center=42' on Service/sample (metadata=)
+        missing label 'team=platform' on Service/sample (metadata=)
+        missing label 'cost-center=42' on Deployment/sample (metadata=)
+        missing label 'team=platform' on Deployment/sample (metadata=)
+        missing label 'cost-center=42' on Ingress/sample (metadata=)
+        missing label 'team=platform' on Ingress/sample (metadata=)
+      FAIL: 6 label check(s) failed across 3 rendered objects
+status: FAIL
+finished_at: 2026-06-08T16:42:38Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-bats-f17-3-single-60618/scenario-labels-on-20260608-124209/artifacts/logs

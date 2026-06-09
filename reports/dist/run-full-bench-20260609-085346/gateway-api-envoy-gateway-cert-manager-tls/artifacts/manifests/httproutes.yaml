@@ -1,0 +1,110 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: "2026-06-09T13:32:30Z"
+    generation: 1
+    labels:
+      app: sample
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: "904"
+    uid: 2e551a9b-8164-4966-b39d-c3cc0274a4f4
+  spec:
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: https
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-06-09T13:32:34Z"
+        message: Route is accepted
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-06-09T13:32:34Z"
+        message: Resolved all the Object references for the Route
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: gateway.envoyproxy.io/gatewayclass-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: https
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"sample-route","namespace":"sample"},"spec":{"hostnames":["sample.sample.svc.cluster.local"],"parentRefs":[{"name":"sample-gw","sectionName":"https"}],"rules":[{"backendRefs":[{"name":"sample","port":80}],"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]}}
+    creationTimestamp: "2026-06-09T13:32:34Z"
+    generation: 1
+    name: sample-route
+    namespace: sample
+    resourceVersion: "906"
+    uid: eabb32d3-6925-460d-a454-930a0fb30501
+  spec:
+    hostnames:
+    - sample.sample.svc.cluster.local
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: sample-gw
+      sectionName: https
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: sample
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-06-09T13:32:34Z"
+        message: Route is accepted
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-06-09T13:32:34Z"
+        message: Resolved all the Object references for the Route
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: gateway.envoyproxy.io/gatewayclass-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: sample-gw
+        sectionName: https
+kind: List
+metadata:
+  resourceVersion: ""

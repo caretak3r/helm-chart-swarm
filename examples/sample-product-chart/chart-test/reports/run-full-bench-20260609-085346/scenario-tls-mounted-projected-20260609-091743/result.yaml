@@ -1,0 +1,45 @@
+scenario_id: tls-mounted-projected
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/certificates/tls-mounted-projected.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:17:43Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-39 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-55776c48fb-sv9fq condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-55776c48fb-sv9fq   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: projected volume sources include secret 'mounted-tls-projected'
+      ==> Verifying mountPath matches tls.mountPath
+      PASS: mountPath=/etc/tls
+      ==> Waiting for pod Ready (3m max)
+      pod/sample-55776c48fb-sv9fq condition met
+      PASS: chart pods Ready
+      ==> Exec stat /etc/tls/tls.crt in pod
+      Defaulted container "app" out of: app, wait-for-tls (init)
+        File: '/etc/tls/tls.crt' -> '..data/tls.crt'
+        Size: 14        Blocks: 0          IO Block: 4096   symbolic link
+      Device: e4h/228dInode: 7           Links: 1
+      Access: (0777/lrwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)
+      Access: 2026-06-09 13:18:11.087088008 +0000
+      Modify: 2026-06-09 13:18:09.253088007 +0000
+      Change: 2026-06-09 13:18:09.253088007 +0000
+      PASS: tls.crt accessible at /etc/tls
+      ==> Verifying HTTPS reachable from in-cluster curl
+      HTTPS response: 200
+      PASS: HTTPS 200
+      PASS: mounted-tls-certs projected-volume scenario verified
+status: PASS
+finished_at: 2026-06-09T13:18:17Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-tls-mounted-projected-20260609-091743/artifacts/logs

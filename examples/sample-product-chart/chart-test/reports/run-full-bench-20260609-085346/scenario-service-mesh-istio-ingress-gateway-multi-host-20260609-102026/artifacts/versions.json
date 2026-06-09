@@ -1,0 +1,21 @@
+{
+  "helm": "v4.1.4+g05fa379",
+  "kubectl": "v1.36.1",
+  "kind": "0.31.0",
+  "minikube": "v1.38.1",
+  "k8s_server": "v1.30.0",
+  "preinstalls": {
+    "istiod": {
+      "version": "1.27.9",
+      "source": "scenario"
+    },
+    "istio-base": {
+      "version": "1.27.9",
+      "source": "scenario"
+    },
+    "istio-ingressgateway": {
+      "version": "1.27.9",
+      "source": "scenario"
+    }
+  }
+}

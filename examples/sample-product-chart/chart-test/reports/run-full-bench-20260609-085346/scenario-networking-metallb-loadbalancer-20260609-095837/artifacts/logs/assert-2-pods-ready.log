@@ -1,0 +1,11 @@
+kubectl --context kind-chart-test-swarm-run-71 -n metallb wait --for=condition=Ready pods --timeout=5m --all
+pod/metallb-controller-7b8b56ccdd-vdw7j condition met
+pod/metallb-frr-k8s-qgs69 condition met
+pod/metallb-frr-k8s-statuscleaner-67874f5d9f-p2mdc condition met
+pod/metallb-speaker-pxsmw condition met
+PASS: pods Ready in ns/metallb
+NAME                                             READY   STATUS    RESTARTS   AGE
+metallb-controller-7b8b56ccdd-vdw7j              1/1     Running   0          35s
+metallb-frr-k8s-qgs69                            5/5     Running   0          35s
+metallb-frr-k8s-statuscleaner-67874f5d9f-p2mdc   1/1     Running   0          35s
+metallb-speaker-pxsmw                            1/1     Running   0          35s

@@ -1,0 +1,37 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-rate-limit.sh (RELEASE=sample NAMESPACE=sample)
+==> Waiting for envoy pod Ready (3m max)
+pod/contour-envoy-b5crt condition met
+PASS: envoy pod Ready
+==> Waiting for contour controller pod Ready (3m max)
+pod/contour-contour-5847f7c7f9-q8bhh condition met
+PASS: contour controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-f5cc2 condition met
+PASS: product pods Ready
+==> Verifying HTTPProxy rateLimitPolicy exists
+RateLimitPolicy: {"requests":5,"unit":"minute"}
+PASS: HTTPProxy has rateLimitPolicy.local configured
+==> Getting envoy pod IP
+envoy pod IP: 10.244.0.6
+==> Sending 5 requests at ≤limit rate (expect all 200)
+  req 1: HTTP 200
+  req 2: HTTP 200
+  req 3: HTTP 200
+  req 4: HTTP 200
+  req 5: HTTP 200
+PASS: all 5 requests at/below limit returned 200
+==> Sending 15 requests above limit rate (expect at least one 429)
+  req 1: HTTP 429 (rate limited)
+  req 3: HTTP 429 (rate limited)
+  req 4: HTTP 429 (rate limited)
+  req 5: HTTP 429 (rate limited)
+  req 6: HTTP 429 (rate limited)
+  req 7: HTTP 429 (rate limited)
+  req 9: HTTP 429 (rate limited)
+  req 10: HTTP 429 (rate limited)
+  req 11: HTTP 429 (rate limited)
+  req 12: HTTP 429 (rate limited)
+  req 13: HTTP 429 (rate limited)
+  req 15: HTTP 429 (rate limited)
+PASS: at least one 429 Too Many Requests returned
+PASS: Contour rate limit integration verified

@@ -1,0 +1,11 @@
+scenario_id: cni-cilium-network-policy
+scenario_path: examples/sample-product-chart/chart-test/scenarios/cni/cni-cilium-network-policy.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-08T13:58:39Z
+provider: kind
+asserts:
+status: FAIL
+fail_stage: preinstall
+fail_msg: |
+  see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/scenario-cni-cilium-network-policy-20260608-095839/artifacts/logs/preinstall.log
+finished_at: 2026-06-08T13:59:34Z

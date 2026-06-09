@@ -1,0 +1,63 @@
+scenario_id: gateway-api-istio-gateway-api-multi-listener
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/gateway-api/gateway-api-istio-gateway-api-multi-listener.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:39:12Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istio-base in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release istiod in ns/istio-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-56 -n istio-system wait --for=condition=Ready pods --timeout=5m -l app=istiod
+      pod/istiod-54b585df85-rs86r condition met
+      PASS: pods Ready in ns/istio-system (selector=app=istiod)
+      NAME                      READY   STATUS    RESTARTS   AGE
+      istiod-54b585df85-rs86r   1/1     Running   0          8s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-56 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-5rnjs condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-5rnjs   1/1     Running   0          3s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      PASS: GatewayClass istio Accepted=True
+      ==> Verifying Gateway has >= 2 listeners
+      PASS: Gateway has 2 listeners: http https
+      ==> Waiting for Gateway listener http Programmed=True (5m max)
+      PASS: Gateway listener http Programmed=True
+      ==> Waiting for Gateway listener https Programmed=True (5m max)
+      PASS: Gateway listener https Programmed=True
+      ==> Verifying HTTPRoute sample-route Accepted=True
+      PASS: HTTPRoute sample-route Accepted=True
+      ==> Getting Istio data-plane Service ClusterIP
+      Gateway Service IP: 10.96.86.127
+      ==> Probing HTTP backend via gateway (retry up to 2m)
+      HTTP response: 200 (attempt 2)
+      HTTP response: 200
+      PASS: HTTP 200 on port 80
+      ==> Probing HTTPS backend via gateway (retry up to 2m)
+      HTTPS response: 200 (attempt 1)
+      HTTPS response: 200
+      PASS: HTTPS 200 on port 443
+      PASS: istio-gateway-api multi-listener integration verified
+status: PASS
+finished_at: 2026-06-09T13:40:06Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-gateway-api-istio-gateway-api-multi-listener-20260609-093912/artifacts/logs

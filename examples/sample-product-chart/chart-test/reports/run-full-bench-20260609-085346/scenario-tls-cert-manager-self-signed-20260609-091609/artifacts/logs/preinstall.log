@@ -1,0 +1,57 @@
+==> PROJECT_DIR=/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+==> Applying 5 preinstall item(s)
+
+==> [1/5] kind=helm
+    helm: cert-manager (jetstack/cert-manager @ v1.14.0) in ns/cert-manager
+    repo 'jetstack' already exists with URL https://charts.jetstack.io (skipping add)
+Release "cert-manager" does not exist. Installing it now.
+NAME: cert-manager
+LAST DEPLOYED: Tue Jun  9 09:16:38 2026
+NAMESPACE: cert-manager
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+cert-manager v1.14.0 has been deployed successfully!
+
+In order to begin issuing certificates, you will need to set up a ClusterIssuer
+or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
+
+More information on the different types of issuers and how to configure them
+can be found in our documentation:
+
+https://cert-manager.io/docs/configuration/
+
+For information on how to configure cert-manager to automatically provision
+Certificates for Ingress resources, take a look at the `ingress-shim`
+documentation:
+
+https://cert-manager.io/docs/usage/ingress/
+pod/cert-manager-c69c859c4-6rj9x condition met
+pod/cert-manager-cainjector-d6d64f75f-2nwp6 condition met
+pod/cert-manager-webhook-566849c7fc-fdzgk condition met
+
+==> [2/5] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/selfsigned-issuer.yaml in ns/sample
+namespace/sample created
+issuer.cert-manager.io/chart-test-swarm-selfsigned-issuer serverside-applied
+
+==> [3/5] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/ca-certificate.yaml in ns/sample
+namespace/sample unchanged
+certificate.cert-manager.io/chart-test-swarm-ca serverside-applied
+
+==> [4/5] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/ca-issuer.yaml in ns/sample
+namespace/sample unchanged
+issuer.cert-manager.io/chart-test-swarm-ca-issuer serverside-applied
+
+==> [5/5] kind=raw_manifest
+    raw_manifest: chart-test/fixtures/certificates/leaf-certificate.yaml in ns/sample
+namespace/sample unchanged
+certificate.cert-manager.io/sample-tls serverside-applied
+
+==> OK: preinstall complete
+
+==> Skipping product chart install (--preinstall-only)

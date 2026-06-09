@@ -1,0 +1,74 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"Gateway","metadata":{"annotations":{},"name":"sample-gw","namespace":"sample"},"spec":{"gatewayClassName":"envoy","listeners":[{"allowedRoutes":{"namespaces":{"from":"Same"}},"hostname":"sample.sample.svc.cluster.local","name":"https","port":443,"protocol":"HTTPS","tls":{"certificateRefs":[{"name":"gateway-tls"}],"mode":"Terminate"}}]}}
+    creationTimestamp: "2026-06-09T13:32:34Z"
+    generation: 1
+    name: sample-gw
+    namespace: sample
+    resourceVersion: "909"
+    uid: 2d646699-5f33-4038-8c63-4a53c4780636
+  spec:
+    gatewayClassName: envoy
+    listeners:
+    - allowedRoutes:
+        namespaces:
+          from: Same
+      hostname: sample.sample.svc.cluster.local
+      name: https
+      port: 443
+      protocol: HTTPS
+      tls:
+        certificateRefs:
+        - group: ""
+          kind: Secret
+          name: gateway-tls
+        mode: Terminate
+  status:
+    conditions:
+    - lastTransitionTime: "2026-06-09T13:32:34Z"
+      message: The Gateway has been scheduled by Envoy Gateway
+      observedGeneration: 1
+      reason: Accepted
+      status: "True"
+      type: Accepted
+    - lastTransitionTime: "2026-06-09T13:32:34Z"
+      message: No addresses have been assigned to the Gateway
+      observedGeneration: 1
+      reason: AddressNotAssigned
+      status: "False"
+      type: Programmed
+    listeners:
+    - attachedRoutes: 2
+      conditions:
+      - lastTransitionTime: "2026-06-09T13:32:34Z"
+        message: Sending translated listener configuration to the data plane
+        observedGeneration: 1
+        reason: Programmed
+        status: "True"
+        type: Programmed
+      - lastTransitionTime: "2026-06-09T13:32:34Z"
+        message: Listener has been successfully translated
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-06-09T13:32:34Z"
+        message: Listener references have been resolved
+        observedGeneration: 1
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      name: https
+      supportedKinds:
+      - group: gateway.networking.k8s.io
+        kind: HTTPRoute
+      - group: gateway.networking.k8s.io
+        kind: GRPCRoute
+kind: List
+metadata:
+  resourceVersion: ""

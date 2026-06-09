@@ -1,0 +1,31 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-tls-delegation.sh (RELEASE=sample NAMESPACE=sample)
+==> Generating test TLS cert and creating Secret
+secret/sample-tls created
+PASS: TLS secret sample-tls created
+==> Waiting for envoy pod Ready (3m max)
+pod/contour-envoy-hscvw condition met
+PASS: envoy pod Ready
+==> Waiting for contour controller pod Ready (3m max)
+pod/contour-contour-5847f7c7f9-p752t condition met
+PASS: contour controller pod Ready
+==> Waiting for product pod Ready (3m max)
+pod/sample-69469cb4c6-7rzsj condition met
+PASS: product pods Ready
+==> Verifying TLSCertificateDelegation exists
+tlscertificatedelegation.projectcontour.io/sample-tls-delegation
+PASS: TLSCertificateDelegation sample-tls-delegation exists
+==> Verifying TLS secret exists in tls-secrets namespace
+secret/sample-tls
+PASS: TLS secret sample-tls exists
+==> Verifying HTTPProxy status is valid
+HTTPProxy status: valid
+PASS: HTTPProxy status is valid
+==> Getting envoy pod IP
+envoy pod IP: 10.244.0.6
+==> Probing HTTPS (expect 200) on envoy container port 8443
+HTTPS response: 200
+PASS: HTTPS 200 with delegated TLS cert
+==> Verifying cert subject (expect CN=sample.test.local)
+Certificate subject: subject=CN=sample.test.local
+PASS: certificate CN matches sample.test.local
+PASS: Contour TLS delegation integration verified

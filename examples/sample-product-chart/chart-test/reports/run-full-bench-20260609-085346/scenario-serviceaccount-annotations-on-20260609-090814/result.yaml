@@ -1,0 +1,13 @@
+scenario_id: serviceaccount-annotations-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/serviceaccount-annotations-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:08:14Z
+provider: kind
+asserts:
+  - type: serviceaccount-annotations
+    status: FAIL
+    notes: |
+      FAIL: no ServiceAccount found in rendered output — chart lacks ServiceAccount template (documented gap)
+status: FAIL
+finished_at: 2026-06-09T13:08:44Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-serviceaccount-annotations-on-20260609-090814/artifacts/logs

@@ -1,0 +1,70 @@
+---
+id: service-mesh-linkerd-live
+name: "Linkerd — Live mTLS Sidecar Mesh"
+description: >-
+  Installs linkerd-crds + linkerd-control-plane (with a preinstalled trust anchor / issuer cert via raw_manifest), annotates the product namespace with linkerd.io/inject=enabled, deploys the chart, and proves: (1) linkerd control-plane pods Ready and proxy-injector webhook present, (2) every product pod has a linkerd-proxy container alongside the app container, (3) linkerd check --proxy -n sample exits 0 confirming the data plane is healthy. Emits a PASS artifact bundle with a 2-container pod manifest, linkerd.io/inject-annotated namespace, and versions.json.
+labels: {customer: any, profile: mesh}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    # Step 1: Install Linkerd CRDs (required before control-plane)
+    - kind: helm
+      chart: linkerd/linkerd-crds
+      version: 1.8.0
+      release: linkerd-crds
+      namespace: linkerd
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values: {}
+      wait: helm-deployed
+      wait_timeout: 2m
+    # Step 2: Pre-create linkerd namespace + identity issuer Secret (trust anchor via raw_manifest)
+    - kind: raw_manifest
+      path: ./fixtures/linkerd-identity-secret.yaml
+    # Step 3: Install Linkerd control plane with REPLACE_AT_RUNTIME cert placeholders.
+    # linkerd-live.sh generates real ephemeral certs and upgrades the release before
+    # any other checks run, so the initial install uses wait:none (pods won't be Ready
+    # with placeholder certs).
+    - kind: helm
+      chart: linkerd/linkerd-control-plane
+      version: 1.16.11
+      release: linkerd-control-plane
+      namespace: linkerd
+      repo:
+        name: linkerd
+        url: "https://helm.linkerd.io/stable"
+      values: ./fixtures/linkerd-live-values.yaml
+      wait: none
+    # Step 4: Annotate the product namespace for linkerd injection (before product chart install)
+    - kind: raw_manifest
+      path: ./fixtures/linkerd-inject-namespace.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set: {}
+asserts:
+  - type: helm-status-deployed
+    release: linkerd-crds
+    namespace: linkerd
+  - type: helm-status-deployed
+    release: linkerd-control-plane
+    namespace: linkerd
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: smoke-script
+    path: chart-test/assertions/linkerd-live.sh
+  - type: pods-ready
+    namespace: linkerd
+    timeout: 10m
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+tags: [nightly, curated-live]
+mechanisms: ['addon:linkerd', 'mesh:linkerd']
+category: service-mesh
+integration: linkerd
+tier: live

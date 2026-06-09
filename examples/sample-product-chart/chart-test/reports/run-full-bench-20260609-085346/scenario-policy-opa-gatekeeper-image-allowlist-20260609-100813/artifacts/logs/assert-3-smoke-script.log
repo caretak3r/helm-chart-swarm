@@ -1,0 +1,25 @@
+exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/opa-gatekeeper-image-allowlist.sh (RELEASE=sample NAMESPACE=sample)
+=== OPA Gatekeeper: Image Allowlist ===
+==> Phase 0: Wait for gatekeeper controller pods Ready
+pod/gatekeeper-controller-manager-64bbbfbdbb-ddfgw condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-dvmvs condition met
+pod/gatekeeper-controller-manager-64bbbfbdbb-k28cb condition met
+PASS: gatekeeper controller Ready
+pod/sample-69469cb4c6-cfrbx condition met
+PASS: product pod Ready
+==> Phase 1: Verify ConstraintTemplate applied
+Waiting for ConstraintTemplate k8sallowedrepos to reconcile (60s max)...
+PASS: observedGeneration (1) >= generation (1) at attempt 1
+==> Wait for CRD Established (90s max)
+customresourcedefinition.apiextensions.k8s.io/k8sallowedrepos.constraints.gatekeeper.sh condition met
+PASS: CRD k8sallowedrepos.constraints.gatekeeper.sh Established=True
+==> Apply Constraint
+k8sallowedrepos.constraints.gatekeeper.sh/require-approved-registry created
+PASS: K8sAllowedRepos constraint applied
+==> Phase 2a: Non-allowlisted image Deployment (docker.io/library/redis)
+Error from server (Forbidden): error when creating "/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-noncompliant-image.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [require-approved-registry] Container 'app' uses disallowed registry: 'docker.io/library/redis:7-alpine'
+PASS: non-allowlisted image Deployment rejected (disallowed registry)
+==> Phase 2b: Allowlisted image Deployment (nginx)
+deployment.apps/test-allowlisted-image created (server dry run)
+PASS: allowlisted image Deployment accepted
+PASS: OPA Gatekeeper image-allowlist integration verified

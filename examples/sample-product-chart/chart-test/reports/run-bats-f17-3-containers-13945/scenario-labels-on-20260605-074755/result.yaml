@@ -1,0 +1,11 @@
+scenario_id: labels-on
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/capability/labels-on.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-05T11:47:55Z
+provider: kind
+asserts:
+status: INTERRUPTED
+fail_stage: signal
+fail_msg: |
+  Interrupted by signal (SIGINT or SIGTERM)
+finished_at: 2026-06-05T11:48:01Z

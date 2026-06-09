@@ -1,0 +1,69 @@
+---
+id: ingress-controllers-traefik-ingressroute-crd
+name: "Traefik IngressRoute CRD"
+description: "Installs Traefik, uses IngressRoute CRD exclusively for routing (no classic Ingress), and verifies HTTP traffic reaches the backend."
+labels: {customer: any, profile: ingress}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+  preinstall:
+    - kind: helm
+      chart: traefik/traefik
+      version: v28.3.0
+      release: traefik
+      namespace: traefik
+      repo:
+        name: traefik
+        url: "https://traefik.github.io/charts"
+      values:
+        image:
+          registry: ghcr.io
+          repository: traefik/traefik
+        ingressClass:
+          enabled: true
+          isDefaultClass: false
+        ingressRoute:
+          dashboard:
+            enabled: false
+        ports:
+          web:
+            exposedPort: 80
+          websecure:
+            exposedPort: 443
+        service:
+          type: NodePort
+        providers:
+          kubernetesIngress:
+            enabled: true
+          kubernetesCRD:
+            enabled: true
+      wait: pods-ready
+      wait_timeout: 3m
+    - kind: raw_manifest
+      path: ./fixtures/traefik-ingressroute-crd.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    ingress.enabled: "false"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: pods-ready
+    namespace: traefik
+    timeout: 3m
+  - type: smoke-script
+    path: chart-test/assertions/traefik-ingressroute-crd.sh
+tags: [nightly]
+mechanisms: ['addon:traefik']
+category: networking
+integration: traefik
+tier: live

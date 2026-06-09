@@ -1,0 +1,206 @@
+run_id: run-full-bench-20260609-085346
+suite: all
+timestamp_utc: 2026-06-09T15:33:35Z
+total: 99
+pass: 69
+fail: 30
+skip: 0
+scenarios:
+  - id: annotations-off
+    status: PASS
+  - id: annotations-on
+    status: FAIL
+  - id: imagepullsecrets-off
+    status: PASS
+  - id: imagepullsecrets-on
+    status: FAIL
+  - id: labels-off
+    status: PASS
+  - id: labels-on
+    status: FAIL
+  - id: minimal
+    status: PASS
+  - id: network-policy-off
+    status: PASS
+  - id: network-policy-on
+    status: FAIL
+  - id: priority-class-off
+    status: PASS
+  - id: priority-class-on
+    status: FAIL
+  - id: rbac-off
+    status: PASS
+  - id: rbac-on
+    status: FAIL
+  - id: resources-off
+    status: PASS
+  - id: resources-on
+    status: FAIL
+  - id: scheduling-affinity-on
+    status: FAIL
+  - id: scheduling-nodeselector-on
+    status: FAIL
+  - id: scheduling-off
+    status: PASS
+  - id: scheduling-tolerations-on
+    status: FAIL
+  - id: scheduling-topology-spread-on
+    status: FAIL
+  - id: scheme-allow-http
+    status: PASS
+  - id: scheme-https-only
+    status: FAIL
+  - id: security-context-off
+    status: PASS
+  - id: security-context-on
+    status: FAIL
+  - id: serviceaccount-annotations-off
+    status: PASS
+  - id: serviceaccount-annotations-on
+    status: FAIL
+  - id: certificates-cert-manager-jks-pkcs12
+    status: PASS
+  - id: certificates-cert-manager-lets-encrypt-staging
+    status: PASS
+  - id: certificates-cert-manager-self-signed-ca
+    status: PASS
+  - id: certificates-cert-manager-wildcard
+    status: PASS
+  - id: certificates-manual-tls-secret-basic
+    status: PASS
+  - id: certificates-manual-tls-secret-ecdsa
+    status: PASS
+  - id: certificates-manual-tls-secret-multiple-sans
+    status: PASS
+  - id: certificates-mounted-tls-certs-csi-secret-store
+    status: PASS
+  - id: certificates-mounted-tls-certs-projected-volume
+    status: PASS
+  - id: certificates-mounted-tls-certs-pvc-mount
+    status: PASS
+  - id: tls-cert-manager-self-signed
+    status: PASS
+  - id: tls-manual-secret
+    status: PASS
+  - id: tls-mounted-projected
+    status: PASS
+  - id: tls-mounted-pvc
+    status: PASS
+  - id: with-cert-manager
+    status: PASS
+  - id: cni-cilium-ebpf-kube-proxy-replacement
+    status: PASS
+  - id: cni-cilium-ingress
+    status: PASS
+  - id: cni-cilium-network-policy
+    status: PASS
+  - id: envoy-gateway
+    status: PASS
+  - id: gateway-api-contour-gateway-api-basic
+    status: PASS
+  - id: gateway-api-contour-gateway-api-response-header-modifier
+    status: PASS
+  - id: gateway-api-contour-gateway-api-route-precedence
+    status: PASS
+  - id: gateway-api-envoy-gateway-cert-manager-tls
+    status: PASS
+  - id: gateway-api-envoy-gateway-grpcroute
+    status: PASS
+  - id: gateway-api-envoy-gateway-httproute
+    status: PASS
+  - id: gateway-api-envoy-gateway-security-policy-attach
+    status: PASS
+  - id: gateway-api-istio-egress
+    status: PASS
+  - id: gateway-api-istio-gateway-api-backend-tls-policy
+    status: PASS
+  - id: gateway-api-istio-gateway-api-basic
+    status: PASS
+  - id: gateway-api-istio-gateway-api-multi-listener
+    status: PASS
+  - id: gateway-api-istio-ingress
+    status: PASS
+  - id: ingress-controllers-contour-basic-httpproxy
+    status: FAIL
+  - id: ingress-controllers-contour-rate-limit
+    status: PASS
+  - id: ingress-controllers-contour-tls-delegation
+    status: PASS
+  - id: ingress-controllers-nginx-ingress-basic
+    status: PASS
+  - id: ingress-controllers-nginx-ingress-canary
+    status: PASS
+  - id: ingress-controllers-nginx-ingress-default-backend
+    status: PASS
+  - id: ingress-controllers-nginx-ingress-snippet-annotations
+    status: PASS
+  - id: ingress-controllers-nginx-ingress-tls-cert-manager
+    status: PASS
+  - id: ingress-controllers-traefik-basic
+    status: PASS
+  - id: ingress-controllers-traefik-ingressroute-crd
+    status: PASS
+  - id: ingress-controllers-traefik-middleware-chain
+    status: PASS
+  - id: ingress-controllers-traefik-tls-passthrough
+    status: PASS
+  - id: networking-kong-ingress
+    status: PASS
+  - id: networking-metallb-loadbalancer
+    status: PASS
+  - id: networking-traefik-ingress
+    status: PASS
+  - id: customer-b-gatekeeper
+    status: PASS
+  - id: policy-kyverno-generate
+    status: PASS
+  - id: policy-kyverno-image-verify
+    status: PASS
+  - id: policy-kyverno-mutate
+    status: PASS
+  - id: policy-kyverno-validate
+    status: PASS
+  - id: policy-opa-gatekeeper-image-allowlist
+    status: PASS
+  - id: policy-opa-gatekeeper-required-labels
+    status: FAIL
+  - id: policy-opa-gatekeeper-resource-limits
+    status: PASS
+  - id: policy-opa-gatekeeper-sync-config
+    status: PASS
+  - id: customer-a-istio
+    status: PASS
+  - id: service-mesh-istio-ambient-live
+    status: PASS
+  - id: service-mesh-istio-ingress-gateway-basic
+    status: PASS
+  - id: service-mesh-istio-ingress-gateway-jwt
+    status: PASS
+  - id: service-mesh-istio-ingress-gateway-multi-host
+    status: FAIL
+  - id: service-mesh-istio-ingress-gateway-request-authentication
+    status: FAIL
+  - id: service-mesh-istio-service-mesh-cert-manager-tls
+    status: FAIL
+  - id: service-mesh-istio-service-mesh-peer-authentication
+    status: FAIL
+  - id: service-mesh-istio-service-mesh-sidecar-injection
+    status: FAIL
+  - id: service-mesh-istio-service-mesh-strict-mtls
+    status: FAIL
+  - id: service-mesh-istio-service-mesh-telemetry-v2
+    status: FAIL
+  - id: service-mesh-istio-sidecar-live
+    status: FAIL
+  - id: service-mesh-linkerd-basic-mesh
+    status: FAIL
+  - id: service-mesh-linkerd-live
+    status: FAIL
+  - id: service-mesh-linkerd-mtls-rotation
+    status: FAIL
+  - id: service-mesh-linkerd-multi-cluster-preview
+    status: FAIL
+  - id: service-mesh-linkerd-service-profile
+    status: FAIL
+  - id: subchart-postgres-internal
+    status: FAIL

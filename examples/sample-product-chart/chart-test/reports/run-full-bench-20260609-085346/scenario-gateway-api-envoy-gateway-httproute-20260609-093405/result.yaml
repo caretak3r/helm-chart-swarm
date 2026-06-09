@@ -1,0 +1,56 @@
+scenario_id: gateway-api-envoy-gateway-httproute
+scenario_path: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/scenarios/gateway-api/gateway-api-envoy-gateway-httproute.yaml
+project_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart
+started_at: 2026-06-09T13:34:06Z
+provider: kind
+asserts:
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release envoy-gateway in ns/envoy-gateway-system is deployed
+  - type: helm-status-deployed
+    status: PASS
+    notes: |
+      helm status: deployed
+      PASS: release sample in ns/sample is deployed
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-51 -n envoy-gateway-system wait --for=condition=Ready pods --timeout=5m -l app.kubernetes.io/name=gateway-helm
+      pod/envoy-gateway-56b969757f-65kf2 condition met
+      PASS: pods Ready in ns/envoy-gateway-system (selector=app.kubernetes.io/name=gateway-helm)
+      NAME                             READY   STATUS    RESTARTS   AGE
+      envoy-gateway-56b969757f-65kf2   1/1     Running   0          16s
+  - type: pods-ready
+    status: PASS
+    notes: |
+      kubectl --context kind-chart-test-swarm-run-51 -n sample wait --for=condition=Ready pods --timeout=5m --all
+      pod/sample-7dcd986bd4-p48tn condition met
+      PASS: pods Ready in ns/sample
+      NAME                      READY   STATUS    RESTARTS   AGE
+      sample-7dcd986bd4-p48tn   1/1     Running   0          4s
+  - type: smoke-script
+    status: PASS
+    notes: |
+      exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/envoy-gateway-httproute.sh (RELEASE=sample NAMESPACE=sample)
+      ==> Applying GatewayClass + Gateway + HTTPRoute
+      gatewayclass.gateway.networking.k8s.io/envoy created
+      gateway.gateway.networking.k8s.io/sample-gw created
+      httproute.gateway.networking.k8s.io/sample-route created
+      ==> Waiting for GatewayClass envoy Accepted=True (3m max)
+      PASS: GatewayClass envoy Accepted=True
+      ==> Waiting for Gateway listener http Programmed=True (5m max)
+      PASS: Gateway listener http Programmed=True
+      ==> Verifying HTTPRoute sample-route Accepted=True
+      PASS: HTTPRoute sample-route Accepted=True
+      ==> Getting envoy data-plane Service ClusterIP
+      Gateway Service: envoy-sample-sample-gw-038a7a21 IP: 10.96.182.97
+      ==> Probing backend via gateway (retry up to 2m for data-plane ready)
+      HTTP response: 200 (attempt 2)
+      HTTP response: 200
+      PASS: HTTP 200 through Envoy Gateway
+      PASS: envoy-gateway HTTPRoute integration verified
+status: PASS
+finished_at: 2026-06-09T13:35:15Z
+log_dir: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-gateway-api-envoy-gateway-httproute-20260609-093405/artifacts/logs
