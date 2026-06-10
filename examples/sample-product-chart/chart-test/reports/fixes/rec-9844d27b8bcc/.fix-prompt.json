@@ -3,5 +3,5 @@
   "fix_prompt": "# Fix Recommendation: c3sig-slow\n\n**Scenario:** `c3sig-slow`\n**Category:** schema-missing\n**Failure type:** cluster-up\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: see examples/sample-product-chart/chart-test/reports/scenario-c3sig-slow-20260529-150454/artifacts/logs/cluster-up.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `c3sig-slow`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
   "scenario_path": "c3sig-slow",
   "chart_path": "chart",
-  "created_at": "2026-06-09T15:36:55.890336+00:00"
+  "created_at": "2026-06-10T11:40:01.265561+00:00"
 }

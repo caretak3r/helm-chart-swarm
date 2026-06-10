@@ -1,4 +1,24 @@
-  <!DOCTYPE html>
+{% macro codeblock(cb, kind="artifact", error=false, open=false) %}
+<details class="codeblock-details{% if error %} codeblock-error{% endif %}"{% if open %} open{% endif %}>
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">{{ cb.basename }}</span>
+    <span class="codeblock-meta">{{ cb.bytes }} B · {{ cb.total_lines }} ln</span>
+    {% if cb.label %}<span class="codeblock-tag">{{ cb.label }}</span>{% endif %}
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+      {% if cb.href and error %}<a class="codeblock-full" href="{{ cb.href }}" data-log="full">View full log</a>{% endif %}
+      {% if cb.href and not error %}<a class="codeblock-full" href="{{ cb.href }}" data-artifact="{{ kind }}">View full file</a>{% endif %}
+    </div>
+    <pre class="codeblock-pre"><code>{{ cb.content }}</code></pre>
+    {% if cb.truncated %}
+    <div class="codeblock-trunc">Truncated — {{ cb.shown_lines }} of {{ cb.total_lines }} lines.{% if cb.href %} <a href="{{ cb.href }}"{% if not error %} data-artifact="{{ kind }}"{% endif %}>View full {{ 'log' if error else 'file' }}</a>{% endif %}</div>
+    {% endif %}
+  </div>
+</details>
+{% endmacro %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -155,6 +175,7 @@
 <section class="cap-details">
   <h2>Scenarios — details</h2>
   {% for s in run.scenarios %}
+  {% set sb = scenario_blocks[s.id] %}
   <details id="{{ s.id }}" class="cap" data-status="{{ s.status }}" data-run-id="{{ run.run_id }}">
     <summary>
       <span class="cap-id"><code>{{ s.id }}</code></span>
@@ -180,56 +201,59 @@
       <dt>Labels</dt><dd>{% for k, v in s.labels.items() %}<code>{{ k }}={{ v }}</code> {% endfor %}</dd>
       {% endif %}
       {% if s.status == "FAIL" %}
-      {% if s.fail_msg %}
-      <dt class="error-summary">Error</dt><dd class="error-summary pitfall">{{ s.fail_msg }}</dd>
+      {% set eb = sb.error %}
+      {% if eb and eb.error_content %}
+      <dt class="error-summary">Error</dt>
+      <dd class="error-summary pitfall">{{ codeblock(eb.error_content, "error", error=true, open=true) }}</dd>
+      {% endif %}
+      {% if eb and eb.log_snippet %}
+      <dt class="error-snippet-label">Log snippet</dt>
+      <dd class="error-snippet">{{ codeblock(eb.log_snippet, "log", error=true, open=true) }}</dd>
       {% endif %}
       {% if s.log_dir %}
-      <dt class="error-log">Log</dt><dd class="error-log"><code>{{ s.log_dir }}</code></dd>
+      <dt class="error-log">Log</dt><dd class="error-log"><code>{{ s.log_dir }}</code>{% if eb and eb.log_snippet and eb.log_snippet.href %} <a href="{{ eb.log_snippet.href }}" data-log="full">View full log</a>{% endif %}</dd>
       {% endif %}
-      {% if s.fail_stage and not s.fail_msg %}
+      {% if s.fail_stage and not (eb and eb.error_content) %}
       <dt>Failed at</dt><dd class="pitfall">{{ s.fail_stage }}</dd>
       {% endif %}
       {% endif %}
     </dl>
-    {% if s.artifact_links %}
+    {% if sb.artifacts %}
+    {% set ab = sb.artifacts %}
     <div class="artifact-links">
       <h5>Artifacts</h5>
-      <ul>
-      {% if s.artifact_links.scenario %}
-        <li><a href="{{ s.artifact_links.scenario }}" data-artifact="scenario">Scenario YAML</a></li>
+      {% if ab.scenario %}
+      <div class="artifact-group">
+        <span class="artifact-group-label">Scenario YAML</span>
+        {{ codeblock(ab.scenario, "scenario") }}
+      </div>
       {% endif %}
-      {% if s.artifact_links.overrides %}
-        <li><a href="{{ s.artifact_links.overrides }}" data-artifact="overrides">Applied Overrides</a></li>
+      {% if ab.overrides %}
+      <div class="artifact-group">
+        <span class="artifact-group-label">Applied Overrides</span>
+        {{ codeblock(ab.overrides, "overrides") }}
+      </div>
       {% endif %}
-      {% if s.artifact_links.fixtures is defined %}
-        <li class="artifact-fixtures">
-          <span>Fixtures</span>
-          {% if s.artifact_links.fixtures %}
-          <ul>
-            {% for fx in s.artifact_links.fixtures %}
-            <li><a href="{{ fx }}" data-artifact="fixture">{{ fx | basename }}</a></li>
-            {% endfor %}
-          </ul>
-          {% else %}
+      {% if ab.has_fixtures %}
+      <div class="artifact-group artifact-fixtures">
+        <span class="artifact-group-label">Fixtures</span>
+        {% if ab.fixtures %}
+          {% for fx in ab.fixtures %}{{ codeblock(fx, "fixture") }}{% endfor %}
+        {% else %}
           <span class="empty">(no fixtures captured)</span>
-          {% endif %}
-        </li>
+        {% endif %}
+      </div>
       {% endif %}
-      {% if s.artifact_links.manifests is defined %}
-        <li class="artifact-manifests">
-          <span>Manifests</span>
-          {% if s.artifact_links.manifests %}
-          <ul>
-            {% for mf in s.artifact_links.manifests %}
-            <li><a href="{{ mf }}" data-artifact="manifest">{{ mf | basename }}</a></li>
-            {% endfor %}
-          </ul>
-          {% else %}
+      {% if ab.has_manifests %}
+      <div class="artifact-group artifact-manifests">
+        <span class="artifact-group-label">Manifests</span>
+        {% if ab.manifests %}
+          {% for mf in ab.manifests %}{{ codeblock(mf, "manifest") }}{% endfor %}
+        {% else %}
           <span class="empty">(no manifests captured)</span>
-          {% endif %}
-        </li>
+        {% endif %}
+      </div>
       {% endif %}
-      </ul>
     </div>
     {% endif %}
     {% if s.asserts %}
@@ -252,6 +276,49 @@
   </details>
   {% endfor %}
 </section>
+
+<script>
+(function () {
+  function flash(btn) {
+    var orig = btn.textContent;
+    btn.textContent = "Copied!";
+    btn.classList.add("copy-btn-success");
+    setTimeout(function () {
+      btn.textContent = orig;
+      btn.classList.remove("copy-btn-success");
+    }, 1200);
+  }
+  function fallbackCopy(text, btn) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "absolute";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      flash(btn);
+    } catch (e) { /* clipboard unavailable */ }
+  }
+  document.querySelectorAll(".codeblock .copy-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var block = btn.closest(".codeblock");
+      var code = block ? block.querySelector("pre code") : null;
+      var text = code ? code.textContent : "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { flash(btn); },
+          function () { fallbackCopy(text, btn); }
+        );
+      } else {
+        fallbackCopy(text, btn);
+      }
+    });
+  });
+})();
+</script>
 
 </body>
 </html>

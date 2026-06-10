@@ -531,67 +531,52 @@ _read_cni_version
 }
 
 # ---------------------------------------------------------------------------
-# Group 6: Bundled skill engine sync (VAL-CILIUM-011)
+# Group 6: Bundled skill engine sync — byte-level parity (VAL-CILIUM-011)
 # ---------------------------------------------------------------------------
+# These tests assert that the three key Cilium scripts and defaults/versions.yaml
+# are byte-identical between canonical and bundled engine copies, replacing the
+# previous keyword-only grep checks with diff-based parity assertions.
 
-@test "bundled cluster-up.sh has Cilium changes mirrored" {
-  grep -q 'CTS_CNI' "$BUNDLED_CLUSTER_UP" || {
-    echo "ERROR: bundled cluster-up.sh missing CTS_CNI check" >&2; false
-  }
-  grep -q 'lib/install-cilium.sh' "$BUNDLED_CLUSTER_UP" || {
-    echo "ERROR: bundled cluster-up.sh missing install-cilium.sh invocation" >&2; false
-  }
-  grep -q 'rollout status ds/cilium' "$BUNDLED_CLUSTER_UP" || {
-    echo "ERROR: bundled cluster-up.sh missing ds/cilium rollout wait" >&2; false
-  }
-  grep -q 'Cilium-as-CNI is only supported on kind' "$BUNDLED_CLUSTER_UP" || {
-    echo "ERROR: bundled cluster-up.sh missing non-kind fast-fail" >&2; false
+@test "bundled run-scenario.sh is byte-identical to canonical" {
+  [ -f "$BUNDLED_RUN_SCENARIO" ] || { echo "ERROR: bundled run-scenario.sh missing" >&2; false; }
+  diff "$CANONICAL_RUN_SCENARIO" "$BUNDLED_RUN_SCENARIO" || {
+    echo "ERROR: bundled run-scenario.sh has diverged from canonical!" >&2
+    echo "  To fix: run engine/skills/chart-test-swarm/scripts/sync-engine.sh" >&2
+    false
   }
 }
 
-@test "bundled run-scenario.sh has Cilium changes mirrored" {
-  grep -q 'cluster.cni.provider' "$BUNDLED_RUN_SCENARIO" || {
-    echo "ERROR: bundled run-scenario.sh missing cluster.cni read" >&2; false
-  }
-  grep -q 'export CTS_CNI CTS_CNI_VERSION CTS_CNI_VALUES CTS_CNI_KPR' "$BUNDLED_RUN_SCENARIO" || {
-    echo "ERROR: bundled run-scenario.sh missing CNI exports" >&2; false
-  }
-}
-
-@test "bundled install-cilium.sh exists and mirrors canonical" {
-  [ -f "$BUNDLED_INSTALL_CILIUM" ] || {
-    echo "ERROR: bundled install-cilium.sh missing" >&2; false
-  }
-  # Compare key Cilium-specific lines
-  grep -q '_read_cni_version()' "$BUNDLED_INSTALL_CILIUM" || {
-    echo "ERROR: bundled install-cilium.sh missing _read_cni_version" >&2; false
-  }
-  grep -q 'FALLBACK_CILIUM_VERSION="1.19.4"' "$BUNDLED_INSTALL_CILIUM" || {
-    echo "ERROR: bundled install-cilium.sh missing fallback version" >&2; false
+@test "bundled cluster-up.sh is byte-identical to canonical" {
+  [ -f "$BUNDLED_CLUSTER_UP" ] || { echo "ERROR: bundled cluster-up.sh missing" >&2; false; }
+  diff "$CANONICAL_CLUSTER_UP" "$BUNDLED_CLUSTER_UP" || {
+    echo "ERROR: bundled cluster-up.sh has diverged from canonical!" >&2
+    echo "  To fix: run engine/skills/chart-test-swarm/scripts/sync-engine.sh" >&2
+    false
   }
 }
 
-@test "cilium logic does not diverge between canonical and bundled cluster-up.sh" {
-  # Extract Cilium-specific lines from both files and compare
-  local canonical_cilium bundled_cilium
-  canonical_cilium=$(sed -n '/# ---- Cilium CNI fast-fail/,/# ---- End Cilium CNI support ----/p' "$CANONICAL_CLUSTER_UP" | grep -v '^\s*$' | grep -v '^#' | grep -v 'echo.*==> ')
-  bundled_cilium=$(sed -n '/# ---- Cilium CNI fast-fail/,/# ---- End Cilium CNI support ----/p' "$BUNDLED_CLUSTER_UP" | grep -v '^\s*$' | grep -v '^#' | grep -v 'echo.*==> ')
-
-  # Both should reference the key Cilium operations
-  for keyword in "CTS_CNI" "docker inspect" "install-cilium.sh" "rollout status ds/cilium" "kubectl.*wait.*Ready.*nodes"; do
-    echo "$canonical_cilium" | grep -qE "$keyword" || { echo "ERROR: canonical missing: $keyword" >&2; false; }
-    echo "$bundled_cilium" | grep -qE "$keyword" || { echo "ERROR: bundled missing: $keyword" >&2; false; }
-  done
-  true
+@test "bundled lib/install-cilium.sh is byte-identical to canonical" {
+  [ -f "$BUNDLED_INSTALL_CILIUM" ] || { echo "ERROR: bundled install-cilium.sh missing" >&2; false; }
+  diff "$CANONICAL_INSTALL_CILIUM" "$BUNDLED_INSTALL_CILIUM" || {
+    echo "ERROR: bundled install-cilium.sh has diverged from canonical!" >&2
+    echo "  To fix: run engine/skills/chart-test-swarm/scripts/sync-engine.sh" >&2
+    false
+  }
 }
 
-@test "cilium logic does not diverge between canonical and bundled install-cilium.sh" {
-  # Compare key structural elements
-  for keyword in "_read_cni_version" "FALLBACK_CILIUM_VERSION" "kubeProxyReplacement" "k8sServiceHost" "k8sServicePort=6443" "operator.replicas=1" "ipam.mode=kubernetes" "CTS_CNI_VALUES" "K8S_SERVICE_HOST"; do
-    grep -q "$keyword" "$CANONICAL_INSTALL_CILIUM" || { echo "ERROR: canonical install-cilium.sh missing: $keyword" >&2; false; }
-    grep -q "$keyword" "$BUNDLED_INSTALL_CILIUM" || { echo "ERROR: bundled install-cilium.sh missing: $keyword" >&2; false; }
-  done
-  true
+@test "bundled defaults/versions.yaml exists and is byte-identical to canonical" {
+  local canonical_defaults="$ENGINE_DIR/defaults/versions.yaml"
+  local bundled_defaults="$BUNDLED_ENGINE/defaults/versions.yaml"
+  [ -f "$bundled_defaults" ] || {
+    echo "ERROR: bundled defaults/versions.yaml does not exist" >&2
+    echo "  To fix: run engine/skills/chart-test-swarm/scripts/sync-engine.sh" >&2
+    false
+  }
+  diff "$canonical_defaults" "$bundled_defaults" || {
+    echo "ERROR: bundled defaults/versions.yaml has diverged from canonical!" >&2
+    echo "  To fix: run engine/skills/chart-test-swarm/scripts/sync-engine.sh" >&2
+    false
+  }
 }
 
 @test "bundled scenario schema is identical to canonical (byte-level)" {
@@ -605,6 +590,55 @@ _read_cni_version
     echo "  To fix: cp $CANONICAL_SCHEMA $BUNDLED_SCHEMA" >&2
     false
   }
+}
+
+# ---------------------------------------------------------------------------
+# Group 6b: Full bundled engine script parity (catches any future drift)
+# ---------------------------------------------------------------------------
+# This test asserts that ALL .sh scripts under the bundled engine/scripts/
+# directory are byte-identical to their canonical counterparts. This catches
+# future drift on ANY script, not just Cilium-specific ones.
+
+@test "ALL bundled engine scripts match canonical counterparts" {
+  local canonical_scripts_dir="$SCRIPT_DIR"
+  local bundled_scripts_dir="$BUNDLED_ENGINE/scripts"
+  local failures=0
+  local checked=0
+
+  while IFS= read -r -d '' canonical_file; do
+    local rel_path="${canonical_file#$canonical_scripts_dir/}"
+    local bundled_file="$bundled_scripts_dir/$rel_path"
+
+    if [ ! -f "$bundled_file" ]; then
+      echo "MISSING in bundled: $rel_path" >&2
+      failures=$((failures + 1))
+      continue
+    fi
+
+    if ! diff -q "$canonical_file" "$bundled_file" >/dev/null 2>&1; then
+      echo "DIVERGED: $rel_path" >&2
+      failures=$((failures + 1))
+    fi
+    checked=$((checked + 1))
+  done < <(find "$canonical_scripts_dir" -name '*.sh' -print0 | sort -z)
+
+  # Also check that bundled doesn't have extra scripts not in canonical
+  while IFS= read -r -d '' bundled_file; do
+    local rel_path="${bundled_file#$bundled_scripts_dir/}"
+    local canonical_file="$canonical_scripts_dir/$rel_path"
+    if [ ! -f "$canonical_file" ]; then
+      echo "EXTRA in bundled (not in canonical): $rel_path" >&2
+      failures=$((failures + 1))
+    fi
+  done < <(find "$bundled_scripts_dir" -name '*.sh' -print0 2>/dev/null | sort -z)
+
+  [ "$failures" -eq 0 ] || {
+    echo "ERROR: $failures script(s) have drifted between canonical and bundled engine!" >&2
+    echo "  Checked $checked scripts." >&2
+    echo "  To fix: run engine/skills/chart-test-swarm/scripts/sync-engine.sh" >&2
+    false
+  }
+  echo "Checked $checked scripts — all identical."
 }
 
 @test "all existing scenarios validate against bundled schema (no regressions)" {

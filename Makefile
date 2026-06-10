@@ -22,8 +22,13 @@ CLUSTER_NAME  ?= chart-test-swarm
 
 REQUIRED_SCRIPTS := verify.sh cluster-up.sh cluster-down.sh
 
+# Canonical source for the published GitHub Pages dashboard.
+PUBLISH_REPORTS   := $(ROOT)/examples/sample-product-chart/chart-test/reports
+PUBLISH_SCENARIOS := $(ROOT)/examples/sample-product-chart/chart-test/scenarios
+PUBLISH_OUT       := $(REPORTS)/dist
+
 .PHONY: help verify up down scenario swarm aggregate \
-        dashboard dashboard-open swarm-status clean
+        dashboard dashboard-open publish-dashboard swarm-status clean
 
 help:
 	@echo "chart-test-swarm — top-level Makefile"
@@ -49,6 +54,7 @@ help:
 	@echo ""
 	@echo "  Dashboard (Phase 4 — not wired yet)"
 	@echo "    make dashboard / dashboard-open"
+	@echo "    make publish-dashboard     build reports/dist from canonical examples (CI parity)"
 	@echo ""
 	@echo "  Other"
 	@echo "    make swarm-status          list runs + PASS/FAIL counts"
@@ -88,6 +94,14 @@ aggregate:
 	bash $(SCRIPTS)/aggregate.sh $(RUN)
 
 dashboard:
+	bash $(SCRIPTS)/build-dashboard.sh
+
+# Build the publishable dashboard (what GitHub Pages uploads) from the canonical
+# examples reports/scenarios into top-level reports/dist. Mirrors the CI build.
+publish-dashboard:
+	REPORTS_DIR=$(PUBLISH_REPORTS) \
+	SCENARIOS_DIR=$(PUBLISH_SCENARIOS) \
+	DASHBOARD_OUT=$(PUBLISH_OUT) \
 	bash $(SCRIPTS)/build-dashboard.sh
 
 dashboard-open:

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>chart-test-swarm — run-bats-f17-3-summary-91870</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="run-header">
+  <div class="brand">
+    <h1>chart-test-swarm <span style="color:var(--text-muted);font-weight:400">— run-bats-f17-3-summary-91870</span></h1>
+<nav class="top-nav" aria-label="Main navigation">
+  <a href="../home.html"
+     class="nav-item"
+>Home</a>
+  <a href="../getting-started.html"
+     class="nav-item"
+>Getting Started</a>
+  <a href="../support-matrix.html"
+     class="nav-item"
+>Matrix</a>
+  <a href="../runs.html"
+     class="nav-item nav-active"
+aria-current="page">Runs</a>
+  <a href="../recommendations.html"
+     class="nav-item"
+>Recommendations</a>
+  <a href="../versions.html"
+     class="nav-item"
+>Versions</a>
+</nav>  </div>
+  <dl>
+    <dt>Time (UTC)</dt><dd>2026-06-08 15:08:07+00:00</dd>
+    <dt>Project</dt><dd>sample-product-chart</dd>
+    <dt>Chart</dt><dd><code>sample-product:0.1.0</code></dd>
+    <dt>Suite</dt><dd>curated-live</dd>
+    <dt>Cluster</dt><dd>kind · k8s <code>v1.30.0</code></dd>
+    <dt>K8s Server</dt><dd><code>v1.30.0</code></dd>
+    <dt>Agents</dt><dd>1</dd>
+  </dl>
+  <div class="counts">
+      <span class="badge status-fail">FAIL · 1</span>
+  </div>
+</header>
+
+<section class="mechanism-rollup">
+  <h2>Mechanism coverage</h2>
+  <p class="hint">Worst status across all scenarios that exercise each mechanism. Covers: addons (cert-manager, istio, gatekeeper, …), subchart variants, customer profiles.</p>
+    <div class="mech-group">
+      <h3>other</h3>
+      <ul>
+          <li>
+            <span class="mech-name"><code>capability:labels</code></span>
+            <span class="mech-status status-fail">FAIL</span>
+            <span class="mech-caps">
+<a href="#labels-on">labels-on</a>            </span>
+          </li>
+      </ul>
+    </div>
+</section>
+
+<section class="matrix">
+  <h2>Scenarios</h2>
+  <p class="hint">One row per scenario. Cell value: <code>passed / total</code> asserts.
+</p>
+
+  <table class="standalone-table">
+    <thead>
+      <tr>
+        <th class="row-head">Scenario</th>
+        <th>Cluster shape</th>
+        <th>Tags</th>
+        <th>Asserts</th>
+        <th>Status</th>
+        <th>Agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th class="row-head">
+          <a href="#labels-on"><code>labels-on</code></a>
+<div class="hint">Capability: extra labels stamped on every object (ON)</div>        </th>
+        <td>
+          <code>kind</code>
+        </td>
+        <td><code class="mech-tag">capability</code><code class="mech-tag">compliance</code><code class="mech-tag">curated-live</code></td>
+        <td class="cell status-fail">0/0</td>
+        <td><span class="badge status-fail">FAIL</span></td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+</section>
+
+<section class="cap-details">
+  <h2>Scenarios — details</h2>
+  <details id="labels-on" class="cap" data-status="FAIL" data-run-id="run-bats-f17-3-summary-91870">
+    <summary>
+      <span class="cap-id"><code>labels-on</code></span>
+      <span class="cap-name">Capability: extra labels stamped on every object (ON)</span>
+      <span class="badge status-fail">FAIL</span>
+    </summary>
+    <dl>
+<dt>Description</dt><dd>Renders the product chart with a global extra-label knob set (extraLabels.team=platform, extraLabels.cost-center=42) and asserts every rendered object (all kinds, not just pod templates) carries the configured labels at .metadata.labels. The sample chart does NOT expose an extraLabels/commonLabels knob — this scenario is EXPECTED to FAIL (honest red gap) documenting that the chart lacks global label propagation.</dd>      <dt>Cluster</dt><dd><code>kind</code>
+      </dd>
+      <dt>Mechanisms</dt><dd><code class="mech-tag">capability:labels</code></dd>
+      <dt>Tags</dt><dd><code class="mech-tag">capability</code><code class="mech-tag">compliance</code><code class="mech-tag">curated-live</code></dd>
+      <dt>Labels</dt><dd><code>customer=enterprise</code> <code>profile=compliance</code> </dd>
+      <dt class="error-summary">Error</dt>
+      <dd class="error-summary pitfall"><details class="codeblock-details codeblock-error" open>
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">error</span>
+    <span class="codeblock-meta">51 B · 1 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+    </div>
+    <pre class="codeblock-pre"><code>result.yaml had parse errors; status from aggregate</code></pre>
+  </div>
+</details>
+</dd>
+      <dt class="error-snippet-label">Log snippet</dt>
+      <dd class="error-snippet"><details class="codeblock-details codeblock-error" open>
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">assert-0-labels-present.log</span>
+    <span class="codeblock-meta">437 B · 7 ln</span>
+<span class="codeblock-tag">log snippet</span>  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/logs/assert-0-labels-present.log" data-log="full">View full log</a>    </div>
+    <pre class="codeblock-pre"><code>  missing label &#39;cost-center=42&#39; on Service/sample (metadata=)
+  missing label &#39;team=platform&#39; on Service/sample (metadata=)
+  missing label &#39;cost-center=42&#39; on Deployment/sample (metadata=)
+  missing label &#39;team=platform&#39; on Deployment/sample (metadata=)
+  missing label &#39;cost-center=42&#39; on Ingress/sample (metadata=)
+  missing label &#39;team=platform&#39; on Ingress/sample (metadata=)
+FAIL: 6 label check(s) failed across 3 rendered objects</code></pre>
+  </div>
+</details>
+</dd>
+    </dl>
+    <div class="artifact-links">
+      <h5>Artifacts</h5>
+      <div class="artifact-group">
+        <span class="artifact-group-label">Scenario YAML</span>
+        <details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">scenario.yaml</span>
+    <span class="codeblock-meta">1060 B · 29 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/scenario.yaml" data-artifact="scenario">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>---
+id: labels-on
+name: &#34;Capability: extra labels stamped on every object (ON)&#34;
+description: &gt;-
+  Renders the product chart with a global extra-label knob set (extraLabels.team=platform, extraLabels.cost-center=42) and asserts every rendered object (all kinds, not just pod templates) carries the configured labels at .metadata.labels. The sample chart does NOT expose an extraLabels/commonLabels knob — this scenario is EXPECTED to FAIL (honest red gap) documenting that the chart lacks global label propagation.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    ingress.enabled: true
+    extraLabels.team: platform
+    extraLabels.cost-center: &#34;42&#34;
+asserts:
+  - type: labels-present
+    namespace: sample
+    source: rendered
+    labels:
+      team: platform
+      cost-center: &#34;42&#34;
+tags: [capability, compliance, curated-live]
+category: capability
+capability: label-all-objects
+tier: capability
+mechanisms: [&#34;capability:labels&#34;]
+</code></pre>
+  </div>
+</details>
+
+      </div>
+      <div class="artifact-group">
+        <span class="artifact-group-label">Applied Overrides</span>
+        <details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">applied-overrides.yaml</span>
+    <span class="codeblock-meta">1825 B · 26 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/applied-overrides.yaml" data-artifact="overrides">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>helm_values:
+  {replicaCount: 1, image: {repository: nginx, tag: &#34;1.27-alpine&#34;}, service: {type: ClusterIP, port: 80}, tls: {enabled: false, secretName: &#34;&#34;, servicePort: 443,
+      # -- Filesystem path where TLS cert+key are mounted. Defaults to /etc/tls.
+      mountPath: &#34;&#34;,
+      # -- Volume type for the TLS material. Supported: secret (default), persistentVolumeClaim, projected, csi.
+      volumeType: &#34;secret&#34;,
+      # -- PVC claim name (required when volumeType is persistentVolumeClaim).
+      pvcClaimName: &#34;&#34;,
+      # -- SecretProviderClass name (required when volumeType is csi).
+      secretProviderClass: &#34;&#34;,
+      # -- Whether to run the wait-for-tls initContainer that polls for cert files. Disable for CSI volumes that are populated asynchronously.
+      waitForCerts: true},
+    # -- Scope component (API server). Creates a separate Deployment + Service on port 8080.
+    scope: {enabled: false, replicaCount: 1, image: {repository: nginx, tag: &#34;1.27-alpine&#34;}, service: {port: 8080}},
+    # -- Darkroom component (async processor). Creates a separate Deployment with optional PVC mount.
+    darkroom: {enabled: false, replicaCount: 1, image: {repository: nginx, tag: &#34;1.27-alpine&#34;}, pvc: {enabled: false, claimName: &#34;&#34;, mountPath: /data}},
+    # -- Ingress resource for skywatcher Service.
+    ingress: {enabled: false, className: &#34;nginx&#34;, host: &#34;&#34;, path: /, pathType: Prefix},
+    # -- HTTPRoute resource for Gateway API integration.
+    gatewayRoute: {enabled: false, parentRef: {name: envoy, namespace: &#34;&#34;, sectionName: &#34;&#34;}, hostname: &#34;&#34;},
+    # -- Service mesh integration.
+    mesh: {inject: false},
+    # -- Policy compliance labels applied to pod templates.
+    policy: {complianceLabels: {}}, ingress.enabled: true, extraLabels.team: platform, extraLabels.cost-center: &#34;42&#34;}
+raw_manifest_refs:
+  []
+</code></pre>
+  </div>
+</details>
+
+      </div>
+      <div class="artifact-group artifact-fixtures">
+        <span class="artifact-group-label">Fixtures</span>
+          <span class="empty">(no fixtures captured)</span>
+      </div>
+      <div class="artifact-group artifact-manifests">
+        <span class="artifact-group-label">Manifests</span>
+<details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">configmaps.yaml</span>
+    <span class="codeblock-meta">1827 B · 39 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/manifests/configmaps.yaml" data-artifact="manifest">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIILHDF74C7gugwDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA2MDgxNTAzMDlaFw0zNjA2MDUxNTA4MDlaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDPVYvaAAWDHxR0a4AYZrlSpvh0nn0pcvxZiR0iVt6OyS7VOV2cQ1GzDWoh
+      0OLPuGbUcDrPTVYsEgljEI9ZjcXEgXKkmDULXqLYYG9rlXcy44ySeAzXoLbtEVgf
+      wBDO4vfk5aCJ8KF6I4qQZ9OG+WmaW9APhvz7QjgoG7dsTTpOvqNPCH94ELSND6ms
+      nvOQ/PPJ5+ffR767siuwPTMi610yyAN5AXeVsJaUypyK5/hE0m1fzunqENvg24x2
+      ZHi+LG9VZ9q3y8oZNaX3pI7zRKbelRKm+mpQn76Pw6BWGlK6UKjMjxzk6LS8N/2Z
+      GoghJc+ahjfZyAUFWmjoVh/FtGuPAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBSfX7+zyRwDcvAB2DepM/BA79e8GzAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQAMznO2p58a
+      9Tjb3OtMbSfoLr/VrLsasPg/BH9GYAzTWoZtkRfVv/wWiXBKdNomtTZF03uwg8wP
+      9GvI9tljY+grSfK6j68LB9GlT32Qpx0iNb6R6qPvhnTYzUIxjCOmaJrcqF8Dwmlc
+      uZ3hyafIupd5H6P8PVqcE9qalwE+kEA2YOXbvjE3nMImKCUrZ/fdzlHYC7QbzaC/
+      52MHa1UBTKIQaqa31OO5IWMp+BsjT1oidx+jriYYIWbh0WXHh9x+vmefE+4S7Q9b
+      1djy+W67BsLM4a1GA/JYDYULWfELScHRyJzkoBMP0siSPW00ViBWcA6a8R8bZsun
+      AcqmjUqSLsgn
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    creationTimestamp: &#34;2026-06-08T15:08:34Z&#34;
+    name: kube-root-ca.crt
+    namespace: sample
+    resourceVersion: &#34;455&#34;
+    uid: fc8bdabb-4b4c-409e-98f5-a03e0db813f6
+kind: List
+metadata:
+  resourceVersion: &#34;&#34;
+</code></pre>
+  </div>
+</details>
+<details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">deployments.yaml</span>
+    <span class="codeblock-meta">2947 B · 102 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/manifests/deployments.yaml" data-artifact="manifest">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: &#34;1&#34;
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: &#34;2026-06-08T15:08:35Z&#34;
+    generation: 1
+    labels:
+      app: sample
+      app.kubernetes.io/component: skywatcher
+      app.kubernetes.io/instance: sample
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: sample-product
+      app.kubernetes.io/version: 1.0.0
+      helm.sh/chart: sample-product-0.1.0
+    name: sample
+    namespace: sample
+    resourceVersion: &#34;516&#34;
+    uid: 4f28e255-0726-4481-a0ba-b829a4f5b6e1
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: sample
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: sample
+          app.kubernetes.io/component: skywatcher
+          app.kubernetes.io/instance: sample
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: sample-product
+          app.kubernetes.io/version: 1.0.0
+          helm.sh/chart: sample-product-0.1.0
+      spec:
+        containers:
+        - image: nginx:1.27-alpine
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 80
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: app
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 80
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: &#34;2026-06-08T15:08:37Z&#34;
+      lastUpdateTime: &#34;2026-06-08T15:08:37Z&#34;
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: &#34;True&#34;
+      type: Available
+    - lastTransitionTime: &#34;2026-06-08T15:08:35Z&#34;
+      lastUpdateTime: &#34;2026-06-08T15:08:37Z&#34;
+      message: ReplicaSet &#34;sample-7dcd986bd4&#34; has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: &#34;True&#34;
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+kind: List
+metadata:
+  resourceVersion: &#34;&#34;
+</code></pre>
+  </div>
+</details>
+<details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">helm-releases.yaml</span>
+    <span class="codeblock-meta">169 B · 7 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/manifests/helm-releases.yaml" data-artifact="manifest">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>- app_version: 1.0.0
+  chart: sample-product-0.1.0
+  name: sample
+  namespace: sample
+  revision: &#34;1&#34;
+  status: deployed
+  updated: 2026-06-08 11:08:34.885211 -0400 EDT
+</code></pre>
+  </div>
+</details>
+<details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">ingress.yaml</span>
+    <span class="codeblock-meta">741 B · 34 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/manifests/ingress.yaml" data-artifact="manifest">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: &#34;2026-06-08T15:08:35Z&#34;
+    generation: 1
+    labels:
+      app: sample
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: &#34;472&#34;
+    uid: e06fa6b8-3850-43cb-97c8-cc11aef91c3c
+  spec:
+    ingressClassName: nginx
+    rules:
+    - http:
+        paths:
+        - backend:
+            service:
+              name: sample
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: &#34;&#34;
+</code></pre>
+  </div>
+</details>
+<details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">secrets.yaml</span>
+    <span class="codeblock-meta">10728 B · 22 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/manifests/secrets.yaml" data-artifact="manifest">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    release: SDRzSUFBQUFBQUFDLytSOGJYT3F5cGIvVjdINHYvd25PVHhJb2xiZEYySzJnREZtcTVHbjJWTzNvQ0dBZGdOWFFNVlQrN3RQZFFNS2lzYnNjKzdNcnBuVVBuVVU2TzdWYS8zV2M4dWZWR0FpaCtwUnNZa2k2RkIzbEI5OGhGVHZUK3JEWDhmSlAyMG5nbUhtMkZTUFltbjI4WjUrdktjNzd3elRvenM5cnYzUTZmQXN3OXpUN1I1TlUzY1VOTDg4eEhaaXNQYWp4QThEcWtmSlFaeVlFTFpBaUtsSk1EMXhZaVpwVFBXb3c3dy83eWpnbWVzRVU0bWN4TFROeE1TZmF6dTVqOWFobllLRXVxTTJ6anJPcDZjZm1JZnpSVi85d0VjbWJNV0pHZGozZnRBaXM3ZlMyTEZiU2RpeVEvY2pETzM4Nm4zaXhNbDl2RFhYaUxxanpNaFhEcE52V0hJbE9sNWhIbWl5WEpKRm1EQXppcUFQVExMcXp6c0tobUJGOVlJVXdqc3FjVkFFemNTSnFkNS9IRFp5dVBqSFB6MEhSczQ2ZmtnaWlNa25HNlljTHQ2OHVOSFFrUVRQUWxQWEZqMG9pN3hucVF2WFl2WGkreVRVdFJFOWRzTi9qVG1tT3dpU3AvRmNXQm1xRVZsbzRjckJ4TE0wSVRibXpCYWc3c3BXSi9RWWtUbDhlY0IwUDZiUms1UFJyaUVxU05lVTJCNzAweW5yZVNDWXB1OW9tQmp6ZnFxZ1lXeXJ5ajRmcDN5M2taSUJCRmZHWE9qSTBpeXpWWDRwUCt0N1dkcTZ0alNLTEdYQ0dNaUluRUhmSDg5bDkwT2pYeHd1VG1SUlNZMkIwUDJZaGkvRjNwNEJVanhiWExoNlRyTm5xenRhRmczR0VuZThMQTBaWGQxRkJvTFFHQWdla1BxdVJXaHF2N3o0M1JydHBzcERlVERhNnlxenRjUkZBcVRSeHBDVXBUM2drYTN1NG55YzdJNjFBNDhpdzYvdWpheVo2aW9EM3prRGdtQVVHZUxpU1B1QVYzVjF4eGphYTJvRVNteUpmNWtYTVdDcjg4L0kydkp6MkpYRkdUVFFrTEdrcVR0ZUZmSmQ1WElmUThPekpBV0NqTDlNcXdpUkxFNDJWakR6VEpYZkgrWWU4SE5EM1VGZG04Qnl2c3IrenU4TkJCb0VTcXBuZmZZMXkvZG5xc3k3clJySTFGeFg5bWxmbGc3OGhKWTBnWlh2VzRCZ2FvdTZLL3ZLZmp4WDlyTGZUeGRJaVExMXVEZm0vRnRPVTBGYnppL0dRcS91WlBtYXI0MWdzdUFVWkNEWWxnZHlJdnZDVWVZcXY2cXRqYVpYY1dheFRHS3hiZGNTaDc2aDd2YXlSUGhLY0tWem93M2dYbDFkM2NXeU5JS0E3VElBVFNESXZvU3pXRmRIMEpKZVM3MEtEWFdYaklOSk9HWnpHYjc1d3BPVENaR0ZKckd0emk3TmsvUEQ3NmQ0ZjJNdGVaSUgvTE1wRGpON3dLdUdOdHFiYWpmRi9BSkkyVnJpY0duTSsvNUxKcnN5N09UeVFNTXRHUEJyV3gxQmdIaG9peGpmY0RObWlWd2ZaU2w1a2tXWTZ1eU93Ymk1YmlQYWhLKzZKbXpIS0dGMHBHUVdVbWlzQjZiYTJXQjgyZUl3MWRsaTNnc1l1elNlNkE4TE45WXlkQjB1cnVCOXVBVkRqTzFKaE9YMk1SQjJ0dHFsalRuQkFMWUZxY2twdnFHTlVrT2JZWDJJckt5YjZDcnZHYXl5R3FzalB1ZDNEWFB2aGpaaVRiV0cwd04yeVBjc2ZGbXcrUGtKYlhIeUVTK2lzUUcrQUhWMUVoTGQwb1NOaFpUVUhyUmZ4bk5oYjNLUTA3WFowaFNWN00wbnR1cFJmdDVsQjE2b2hCZi9YeDU0dnE1TzFqWTd6SXlCc0xSWVpxdHJzMGhITy9neURSTlptaXd0VG9EWDVoaHIrVE1ESDJOeW1KbmNhR094OUtNc0RyZmdPWFMvU3lOb2lZb0gyRVZDN041N082azg5eFZNNzhuYTNHd0RWanRQUjBvTXNzS0dvbnd0SWpONFdLL3dHUTE2NnQ2Mm5zNTJ0NFl5d2ZNdGJiR2J2WmY4OS90SmlhTUd1ZWEyaE9oTHdac20yWDdxRjJjZVFFbG1zZDNraUlIUjY0bGU1M0s1alBVYXI2L1lvNjNGOHRBS3BnbmdCS2l6RUpucTZ4RnZBdzlqd3llOHduaFRtWTNsOTlleWRPU05QSWhkaXhOb2JBOTBkZXZxYkRjQjRpN1NWUjdiaExVc2RyZTJDRGNXR3NaMXpLN1NnUjl1anZZUyt4dVlZanNDMkNHZUE0NDFJYlBZR2FOejB4U3dDVyt6UTFwblBRaWdzREcrbldBaHVNV2VWTWI0VjNWNFdlSE5veXhOMW81bWU3WTRDUTFOeHZTNnBzb3ZMVWxaWGFhM1NYYnRvMytRN01nVzNhb3YzVnJzTHRLNVZWcmo0YUtrK1lobmdJYXB3Uzdja1JqSDhtREdFbjk5bkJ0Zng1OExmTXhZWXFjMVpXUFgvSE9KaCt1KzdDYk1Cam5lRjJKM2Rhb3J0L0RLT281SnIvdU9DbjZlUXhld2t3MFFGemZLQXorcnZEZmFrb3BQdDFsSW00TktUQllJRzB1RVMyZk81NWdRb1dlaENUenM4OGl6VEZmNXdKajNWMmEyZFVlUzdyNHQ2Y3JjK0xyUS9YalA3UlcrZitKUHZocFRmS296Unh2QVRDMTJkbXBEYm9rRDRsUHNYdktoT1dhN3FhSHlPTVpZNmRwb0RWQjNZOTIyenZINVpydWJWbmpDbWRvc3JNYkNRT3pHcGpyaHg0amdJelpWSEFzbzVYNHJPamZ5TEdUamVHODlIdlJYdHQ5Ly9ENC96bzJ2NDgrRmJWL1pQbzQzaDR6RnplRG5NbW55TloxL0RWWU1CS3lMOGZrdmJBOUkzQ1FPVXd0MWFleHpMWll2L1RwdGlnc1hpTjJWTE0wZzNvZXV6ZURYY2lxOGxpZFlpTi9ZNHBDc1ZiV1A1L2tHb1MwdGFjdjNPSWtNVVZucW1weWFHcWEzVThaWTVKazN2Ky9qR05tWXk1L3MveC8vb080b0ZOcUpUeExOUEUzbjd6bjZuYUY3ZExmSGNBK1BUd3pQMGwyR0xUTDFuM2NOZVdtZWtpTW5TTzV0YzcxYWh5RjZ5RXhVejFIemZLT2FIeDM5SDhha2gyT2JnazRQaVBBUXcrWXhqckFmYy9wdWdKTElRdE5IK2RzTUFuRzNjVlFHMi84WFMxVm9YWjE1dHZqdGNlQVgrZC83bGJoanpsVHdIN3F5V05pYWZmZ2lEL291dHN0WUZsL1N2WUdBNWJUQytpVS81L2o3d2x3MzZOZld0YkF0RWJGdjd1ZFk4UHV1bk9lOG4vdEk4UmkzRElMSjFsQmZDYS95L0FBdWRlMjFqRmNhWlhSNGJqSFoySGlQeGZwSFB5by9GdlFrSk1iOWRzTFRRZDh0Y1BCSkRQQlpmSFhLYTczZ3RVQWJoSzlEMm5ndjFoUVphSXZEbGE3TnZEYzNkSE02aEZKdUJiMi9TRnZkbDU3S3AzMlVENmFqYmsrT3ROeU1qOFRRSnVGVTVWT0x3emlIR3l0bzRvVmJ3ZDFSeGprTmgxd2ZncUMrOS9GY0lQbGszUzlVYUJ6MFhWTmxQQVBuYjRNUmlhdVBOdXJJa3pHQ2lhN2FjQnlNSUJDN2UxT2JiVUN3SXJGT3JvdUhXT3E0enB5UExIVVlHSE9lMWxXQW4vV3J0TWtEZ2RndFU5VXZqZC9hNlBYRWh0UnB0MUUzdGxVR3ZxdGR4Z3BtZGY3bi95VkZ6YXltSitQY3ByeWNQRXN3Ym5GS2FnOEZ6eGJkNjNvakdjc3hZb2pPTExETmI2RHZKSFk0djNjZWkyYUdOdG5ZMm1ocGFLOUhtUjh3VmFsUFZQU3ZQdWRzbzZyRHhCcWNZWGYzNnQ5SzQxK1JqY0JhN0k2eFZPVkVIdlRCZmxmNGlQTWxXaitoQ1lpa0xyQzNNZDFEWTJOSlNtSXNKckd1d3VSY3hzTFNFb2VSdGFqVU56Q2ZOQ1VDU0ZuSmc5RVozVHE3ODB5VnlmTkdFZTVyejB0MmFLaHQ5MXpXU3Fxcm85aFFwNjZwdmJxRkw3N0tuOW82VmJzaFhZMHhML3R2cHNjODlmanVBOGN5UE52aG54NXY5Tjh4Q0NQbkJ1ZGRCUGIvRTQ0N1QvNS9ENmQ5clJEeDF4MjJWQllwYm5QV3BVeisyeHgxbVZUK2JrNjZPZG45MytLZ2ovaS94VGtYdlBpQ1k4N24vOXdwYnkxdVJEYzVsL0ZjV0Zvc0hnZFRReHROOFhObE1lNk1ybUFDUVdCRU9ydkFTV0ptTnpoQWdCVFBFUEZjay8xQ0dtMTB0SGlzMDRKNTU5RzJKRWlHTmoyL1J4ekZrRGFmUTNlOFBYUDhyaXdKRzBEMDdZSStzVXBtSTdnMDVqelpjdzAzQlZaTnpZQVdVdmFBd2NuOUNEWTRuOUNXWnRzWnE5QU53UWVtSVE4a0JwMm1ZR1A3VjNuNGV3WVJYMGhJRHc2TmVlcXlUenpQM2ViUVRseVpyZ21SVXVrbDZKcXdCVm1YZloxR2E2eWliNzd3emRDRTJPSmdndFYxZ0U1TWsxaUpIUzcwTU01TlZ4a2pmYVhHZHRGMTNEUVh1TWtrVjl5ZGVHczlyMUxqZGFNOUVKVWw0UXVHaXJpTGRIYTRQNGZwNGQ0emlabExlRlpxMUtWS1dDcVorL1hNOU4vb2ppL1VEanV5eUVjV21tRzM2azVLV0ZacU9NZjE2K0ZJenB0ejkzaTdISzdVeEUvb2Vxdkh4bDZ0UnZRTGErTzQydngyVXNlNjZnYUZvend2eC9hMEpWMk01OG56STdHYTYrVDF1eU1XWmpISStHcnVoREY1N09rUDVJMmh6WlpqYmtaNFZEVkpSZis3ekJrV2ppYmtmZkNLeWJiRjNYNGNGSG1BTXVPQnVEaVpmN1EzMUVsbWFGTy9JYzZPREY5SWpYay9QTjJ2elE0ais1dXhBU3RzYW1kNTMxN3N2cFBlUFFLUlBCZ2hYZDN0alhtZFpsUGxJL3ZiVFc2ZDAxVklqMVZqQTN3R3IxazN0Mkx1dnM5MWkvQXpzaENrcDJ3M3RYRitnNVJzbm9jRHAzdjNiVzNDNjZqYmZsdCtTMS8zdW4vYWQ2aXZTZnBKSGc3YnoxMHE3UUxXYlhEOS9VVGZOdVRXMHJiSnJVR2Q5VGJ5WUtUaHZac3FIeFIxMXNYNzhOWFZzZHVWWGwxYjdCQTdiYWpEVEJhSGRORXpxV05JbzlPeDMvYWJYRC9Hb3FsdVhUWHJKMFpSTjdieU9zQlUxMlloNlFjU3ZQRkxFRXhkYmQ1SEkxK3c1QUdETHF5MUlUaERDWFRtZ3YyV0NTdXJLYXpBWVFlN2c0YldkMStiN291empZVVcxL2hTNDRPQnVveUZwckVzWVIyZlFFT2RZZXlsc3ZzWGFoM1NMQWFOdEZWMHVPamYxdlg2WE84UGJ2eEM3bHJPclZkd2VoSldWR293d3kzbzMxcC91am0wL1hlSHRJY3dyTHJIUlI2U2Rhcm5kZDZlKytmNmRreHYwSmxOcTlRVW1zYmRSaC9CK0w0ODI3QzRFQ3BlbE9jditZU2E3YTdwRWVtOW5jeFIxOHR0OWJ5WlAyWVZXcys2TklsbHp1a3EvY0tFckhHU05wN1dsVEJQbTJ4RmRmMjNDN2FpTWIzQUtjcTNibXBKcThmOGZOZWlTVWFsclU4TkZxYk9nTmo1QkdQRlFERDRuSjUrN2h0WlBqQlZ2azFpTTZTblJyOHBuUmhCWFoxOXQ5Q09mL1BKK1N6WUpNY0xNczRNZGJnaS9vcWJUQUhxK29kVXZhcVAwb3dHMzJ5STQwSW5FN1lsamVQTDZjcFg5Y005eFpFbFF0YjRyZWo2dnhRakZXTzB4cElNa2tWbGQ3YjJZTFFsNVVCdFF1T2NReWw4MDVUVU8ra3pQYTdveUhrTUpBbmtuQmZnY0x3OFU0dDFua2xOdHdFSDFacHFjYVl1TTdRaFk1THpmSDAvNTRQQTZuUmVMeTVLakJHb1BTZHdwcWlraDcwWC9ESzExNnUxWjlrL2srZldScFBuU3YzNXhJNlgrb2hqU0JLSFFqRHZyMHBmcmtod1MrSjhhYlF4RWM2WmxKVjhsbDVmczIvQ0ZxQXU2UThiYWtNOEp4M0tBSTNsay9GY0tESFJlRCtQR1dxNThRbmVKbERuUnREKzFyVDNFLzNWY0Y3MmVubWRuSjYxb2EzeStDV1AyeTdPVnl1djNQWjhJb3NKZEFvK2tqaHZHcnJYNWkvTFM0M1BTNVZ6cjVmMVpBblkxZGYwUVp6c3pRYmNHOUlvc2hFNVgxakliTFlmYTZRV0FNZG9zamZuL1BwTkltZENYbjdGajVXWW5Hb3pHaURvMjlxc3NUeUU4OGxpZld5cldWT2RRYkNheExvMjJWL1d4d0luUXlHek9DTXlSQ1hEdGdKd3I3bk9JV1ZucXpERGNaRE5ldER5aFRvZlJiZ25mS24zVzRnOUJxeXlCRWloRjlKb1l5TzRNclFSMXNkOWZtN3JncnkrWko4SzJwL1BlVkd1L1Y1cmJ6VFRkendiZVJhWGJZQkU4bmpQd2xpVFJvelJSRGM2aXhFcmNYVVJPMmhZRHhnY015SlRCZWQ1SHpJaWcyWTgwTENYRzFvMDFmam01VUwvOEhLcGorc3hiSTluSGpwOG0rWTZMSE8xMU9jbFNiUU8wK1NXcHBYQkRtbERzejFIR1cwd2FrK2o2dFBxNE9INU9aOGEyb3l6dU5FYVo2bGpGTGVMaGsyMWNpZ3J3OWwwZ2JxTUxTNiszdGo2OVliV2JWV3Z2T0JhcWRnSkhrRFljNDJnY2F4S0pKZXMrQm52Z3NwNHZ6aU4zbGhScVdacXRtZUxDcWRyY0c1eENtM00rYTJ1amJBM254dXFuaEllYVpPdHJwNW9YdjRyaWowUWg4c0c3UWwwYlFadGRzZ1h2RStCT014d3RMRkFDaXAralpLUG5kK2N0WDZKYnF5NXBPR3pPdmR1Si9lK3l0ZDllU0x0M0NxYzAzOGI1cjBONEdZMWVabGlkMjhYUEM2ckJlUDVTWlI4em9QUTRpWjAvb3VaazFONGZzTnBBV25FV0dKdGZuTENIZE9QNVhTeEVuQzEwbjVMRTZlaGVYTnlTdkRLS1RpRzduSE1RN3Y5eU5JZGhtNWZzMFIrNEs2ZE9MN0JEbUViQXBDeUJ4a1BMVFQwTFJ6TkZhZHFUZVh3YXdac3JhRXQyUnRBbXVjZ05mZGVYcFd2TmRSaGFuQWpDTGpYMzkvbWlDV3RrOXp6MHMwNlVlSFBzdkpjMlYzSmJIVlhpVGpvSEwvUFozWWhzcENkR2Rwa24yTitlbkthTjZ3MTV1b05YeHd0ZW1lVnMvRzh6Q1pQZGVNZ2d4UmNPT0dESTNBOGxrVHk3MWRvRGNqYWVUVFRWRzBRUjU3T0pyQzVLa3ZzVFk3MzkvRGxoaWo5YzcwNjBhOHIwVDlqcVNNSWxtZDdPMVNjeGdHWjQyc25XWTQ2eUhGY2grNWNVOEhZV1c5ODRQemRwMWlxVHY3dzA2QmZhQTBtNVhINDM2TkZlUFc0ZllNaTU0Qys4WGg1Y1VxaEduQ1ExUGxSL2phSmJXMUNHOXBvdE9nM3R3SC8vdE1uWlVoOFd1S2xYZEl4UHpjZTVTbUlSdkFlVWlFY2FMQUt2ZmdMYzVSR0dnZWZOenNtcHNmd3ZmYlRRNGVsdVNlbXpUM2VvQldmdE1MdDViY1hrNFdwOFJ5Nmk5S0lUS1BFMEdZZU9YcEhETW9oL2JuNDA2cnFhU1c3MmRoVitGR1VuM0xaSEozSzh0L2xqTUxDa00ycWdjaW5aY0h6VXhVQ3JXdWpBS2UybjQydFllU1ROa0NKQlZMQzdJZS8wQks0aU9jeXhjemxxbndaeTUrT3I5RmVwbjNTalhqbWlKSG5IcmdPelQ0K3RmbXJWajZCOFQwSWd3L2ZSV1owZzVWdjR0WTE5RStMZ3Z5N090eitpcFcza0IxWmdadVVSYmpTYXBlSSsrekhpUU4wRE9HT0RSQ2VKT3R2dnRBcG0vVllpd3hOZHAxdFdEbUhOS0VOdFkyUjlYUk1hUWdhSVlEZFBPd2ZkcDRxaHhzMk9wc2ZNcEFIbmNwY3BJbXdzYmlwTythVVBmQzdleE1qWk40dGt2dHVhSXRNL0ZaOVhpVGVxRjMrZjR3ODJsSzNGVHJLYzIvMU01Wi9hOU85M0tzdlZQZVlGNDF2YllqTmhUMWd0N2Z4VDVyc3JXRjNhV2dqMmxTeHhnOXBZMzRvZVB5bEJsZWxLWDE5UGFXN05yVFYzN1VlbnV0M3dzY1hEejh6Nzh4VHI4MzFlT2FCWmRyc0kvOTB0Q2IvZVVkdFRKZzZNZFg3a3lwL3FvUS9PNEZwUWNlbWVoOG1qSjA3eWtlbTYrQWJheWNLWXo4SjF4blZvd0xYRDNiVUhaV1lMbm10Qi90MGI4TElEeHpxNXgwVmJRQWVBS0RwbzBsdXNxaTdzNGxSbUFiSmR6UHhxQjcxQjdGWlArL3dJdEFINWdEZm8zck16enZLTlJObmEyYXpNRTJjSnZxOE1FNkN3eUtSdVhhQ1pPWjhWRjUvNGdTYk1LUHV5TmM0TWtIeGFPeUF4QStEa3NDZlAzOXByMFdxVyt3M2pvdnB5akZOMUphVTVqc3ZQcjduYjBUNXZuWSsvQjJlR0RteGgyZjFnNlVEa21JQ3pOd1EraUFqNjRVb2dyNFpBR2RzV2c3RU5QdzhaK0VkUlZLQXYwbTA1NVBuRVJXZUpRclhDZFhyMEIwYWs5Rnc0L0RlbHdGTTQ4Ulp5OS94bEFtaC9DbzhLSUtwUVIxUHNRUFdUbkw2L2ZzNjNQaTJzeDVnWVpRM0NDWGZDUlh0Tm5kSGJVS1lJcWRnZVQ2T3VxTzJwcDhNdy9YQVdTY3gxVXZXcVVQMkFUd0htZVZyYWZKdlIxMmphWnE1Si8vZWFicEgvaG5VSGZYaFE2eForWmh6eldUcGQvcUovS3l3KzlDbUh4OFptdXNjL1R5VmUzVENsRjJ5TmcvU3BVQVlKL2ZBQ1JKblRmWGE3QjJWT0NhaWVoU09CajdDTlRvQjVJR2w1VjZRR2ZnZkRrSGcvZjM5aitEL3RlWmh1Z1pPcjFWL1JkQWZ6Ukh6aitENGVwOWVhOFA4Q0ZaK1lQZGE4L3laSDBINTdxSGVqNkRWd3VwV1R2d2ppQ01Ia01zWUFyM1dBUUg0VXV4QUJ5VGhtdHh2dGN3b09vNXJ0VEI2NHVMV1BmbldhM1hvL0h1cmxaaHIxMG0rbjF6TjEvYVNKUG9SM0xyVGs1T3k5YzJhVVJUL2Nkeng4K0hacTV0dXRTQ1JYVUc5NTBEMEVIdC9rUGNtblZKeVQxN0ZkT0RBd3lxMW5IWGdKRTc4NElkL1ZPY3RSMXg2MWcvaUJGdUZLaDFOejIzS3pmM0kzOHYwZzdyMEpESUQwM1hzZXl2cnRTUUhva1k1TlEzRUppb01uQUR2ZHBWdHpRUjR6cm9DaHNLY3hMMFcwd0FFaEo4ZlZ6bDR0bWdwdm5KRVZSYjREOVpIZjBFR1g1WERWMlR4TlhsOFJTWmZFa05sd0NsOVpoQ0VDWGt4VjVWNSthZUQ5UEFmQ0lQRTlBTm5YWDN1dnRBRE00cU9GMXN0NG0vdzlvaUw2VlZjUzNXcmRZMC9UbmxZNlZUWjhkL2FNVzAvY09MNCt6cTBuSk94MkE2SVR0SnIvZG5DcnJiWCt1UHVZRWRhUDZ2UFFuL2ovT29zdDlxWmFuRzhibVFDSjltRzY1VWZ1QStyVGc2Smc4V1I4MUZmTVRjMXNSNkVWaXcvS0lPVlhvdElnMmhqQ3AyanBjV2hDaGJXVVRhWUF4V21ZQzdVeFhSZmNxYk91VEsrNmJYeThLWisxekxCeWduc0UyNWpZMEM4eXRuMTgxM1gvNGhNemkrM1drR0tMR2VkSTZmNkVqeW1IaG9lM3Z0blJoSE0vb21jeEF0dGZEMDJxWi8vRlFBQS8vLzlQM2QvSGxBQUFBPT0=
+  kind: Secret
+  metadata:
+    creationTimestamp: &#34;2026-06-08T15:08:35Z&#34;
+    labels:
+      modifiedAt: &#34;1780931317&#34;
+      name: sample
+      owner: helm
+      status: deployed
+      version: &#34;1&#34;
+    name: sh.helm.release.v1.sample.v1
+    namespace: sample
+    resourceVersion: &#34;517&#34;
+    uid: 06566245-db4f-4207-8b76-b62769ab873d
+  type: helm.sh/release.v1
+kind: List
+metadata:
+  resourceVersion: &#34;&#34;
+</code></pre>
+  </div>
+</details>
+<details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">services.yaml</span>
+    <span class="codeblock-meta">783 B · 37 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/manifests/services.yaml" data-artifact="manifest">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: sample
+      meta.helm.sh/release-namespace: sample
+    creationTimestamp: &#34;2026-06-08T15:08:35Z&#34;
+    labels:
+      app.kubernetes.io/managed-by: Helm
+    name: sample
+    namespace: sample
+    resourceVersion: &#34;463&#34;
+    uid: 3a3c3749-249b-4d11-b0e9-e89ab310f568
+  spec:
+    clusterIP: 10.96.101.113
+    clusterIPs:
+    - 10.96.101.113
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: sample
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: &#34;&#34;
+</code></pre>
+  </div>
+</details>
+      </div>
+    </div>
+    <p class="no-results">⚠ no agent reported on this scenario — UNTESTED</p>
+  </details>
+</section>
+
+<script>
+(function () {
+  function flash(btn) {
+    var orig = btn.textContent;
+    btn.textContent = "Copied!";
+    btn.classList.add("copy-btn-success");
+    setTimeout(function () {
+      btn.textContent = orig;
+      btn.classList.remove("copy-btn-success");
+    }, 1200);
+  }
+  function fallbackCopy(text, btn) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "absolute";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      flash(btn);
+    } catch (e) { /* clipboard unavailable */ }
+  }
+  document.querySelectorAll(".codeblock .copy-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var block = btn.closest(".codeblock");
+      var code = block ? block.querySelector("pre code") : null;
+      var text = code ? code.textContent : "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { flash(btn); },
+          function () { fallbackCopy(text, btn); }
+        );
+      } else {
+        fallbackCopy(text, btn);
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

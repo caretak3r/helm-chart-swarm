@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -112,21 +112,106 @@ aria-current="page">Runs</a>
     </dl>
     <div class="artifact-links">
       <h5>Artifacts</h5>
-      <ul>
-        <li><a href="labels-on/artifacts/scenario.yaml" data-artifact="scenario">Scenario YAML</a></li>
-        <li class="artifact-fixtures">
-          <span>Fixtures</span>
+      <div class="artifact-group">
+        <span class="artifact-group-label">Scenario YAML</span>
+        <details class="codeblock-details">
+  <summary class="codeblock-summary">
+    <span class="codeblock-name">scenario.yaml</span>
+    <span class="codeblock-meta">1060 B · 29 ln</span>
+  </summary>
+  <div class="codeblock">
+    <div class="codeblock-bar">
+      <button type="button" class="copy-btn" aria-label="Copy to clipboard">Copy</button>
+<a class="codeblock-full" href="labels-on/artifacts/scenario.yaml" data-artifact="scenario">View full file</a>    </div>
+    <pre class="codeblock-pre"><code>---
+id: labels-on
+name: &#34;Capability: extra labels stamped on every object (ON)&#34;
+description: &gt;-
+  Renders the product chart with a global extra-label knob set (extraLabels.team=platform, extraLabels.cost-center=42) and asserts every rendered object (all kinds, not just pod templates) carries the configured labels at .metadata.labels. The sample chart does NOT expose an extraLabels/commonLabels knob — this scenario is EXPECTED to FAIL (honest red gap) documenting that the chart lacks global label propagation.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    ingress.enabled: true
+    extraLabels.team: platform
+    extraLabels.cost-center: &#34;42&#34;
+asserts:
+  - type: labels-present
+    namespace: sample
+    source: rendered
+    labels:
+      team: platform
+      cost-center: &#34;42&#34;
+tags: [capability, compliance, curated-live]
+category: capability
+capability: label-all-objects
+tier: capability
+mechanisms: [&#34;capability:labels&#34;]
+</code></pre>
+  </div>
+</details>
+
+      </div>
+      <div class="artifact-group artifact-fixtures">
+        <span class="artifact-group-label">Fixtures</span>
           <span class="empty">(no fixtures captured)</span>
-        </li>
-        <li class="artifact-manifests">
-          <span>Manifests</span>
+      </div>
+      <div class="artifact-group artifact-manifests">
+        <span class="artifact-group-label">Manifests</span>
           <span class="empty">(no manifests captured)</span>
-        </li>
-      </ul>
+      </div>
     </div>
     <p class="no-results">⚠ no agent reported on this scenario — UNTESTED</p>
   </details>
 </section>
+
+<script>
+(function () {
+  function flash(btn) {
+    var orig = btn.textContent;
+    btn.textContent = "Copied!";
+    btn.classList.add("copy-btn-success");
+    setTimeout(function () {
+      btn.textContent = orig;
+      btn.classList.remove("copy-btn-success");
+    }, 1200);
+  }
+  function fallbackCopy(text, btn) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "absolute";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      flash(btn);
+    } catch (e) { /* clipboard unavailable */ }
+  }
+  document.querySelectorAll(".codeblock .copy-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var block = btn.closest(".codeblock");
+      var code = block ? block.querySelector("pre code") : null;
+      var text = code ? code.textContent : "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { flash(btn); },
+          function () { fallbackCopy(text, btn); }
+        );
+      } else {
+        fallbackCopy(text, btn);
+      }
+    });
+  });
+})();
+</script>
 
 </body>
 </html>

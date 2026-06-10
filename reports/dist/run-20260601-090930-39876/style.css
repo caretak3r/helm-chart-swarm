@@ -892,3 +892,176 @@ a:hover { text-decoration: underline; }
   margin: 0.5rem 0;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Inline artifact / error codeblocks (run page)                              */
+/* -------------------------------------------------------------------------- */
+
+.cap-details .artifact-group {
+  margin: 0.5rem 0.9rem 0.6rem;
+}
+
+.cap-details .artifact-group-label {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.codeblock-details {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  margin: 0.25rem 0 0.4rem;
+  overflow: hidden;
+}
+
+.codeblock-details > summary.codeblock-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+  list-style: none;
+  background: #f5f5f5;
+  font-size: 0.8rem;
+}
+
+.codeblock-details > summary.codeblock-summary::-webkit-details-marker {
+  display: none;
+}
+
+.codeblock-details > summary.codeblock-summary::before {
+  content: "▸";
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.codeblock-details[open] > summary.codeblock-summary::before {
+  content: "▾";
+}
+
+.codeblock-name {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.codeblock-meta {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.codeblock-tag {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--tag-bg);
+  padding: 0.08rem 0.4rem;
+  border-radius: 2px;
+}
+
+.codeblock {
+  border-top: 1px solid var(--border);
+}
+
+.codeblock-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.6rem;
+  background: #2b2b3a;
+  border-bottom: 1px solid #1c1c28;
+}
+
+.codeblock .copy-btn {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid #4a4a5e;
+  border-radius: 3px;
+  cursor: pointer;
+  background: #3a3a4d;
+  color: #e8e8f0;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.codeblock .copy-btn:hover {
+  background: #4a4a5e;
+  border-color: #6a6a82;
+}
+
+.codeblock .copy-btn-success {
+  background: var(--pass);
+  border-color: var(--pass);
+  color: #fff;
+}
+
+.codeblock-full {
+  font-size: 0.74rem;
+  color: #9ecbff;
+  margin-left: auto;
+}
+
+.codeblock-full:hover {
+  color: #c5e0ff;
+}
+
+.codeblock-pre {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  background: #1e1e2a;
+  color: #e6e6ed;
+  overflow-x: auto;
+  white-space: pre;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  max-height: 30rem;
+}
+
+.codeblock-pre code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  color: inherit;
+}
+
+.codeblock-trunc {
+  padding: 0.35rem 0.7rem;
+  background: #fff8e1;
+  border-top: 1px solid #ffe082;
+  font-size: 0.74rem;
+  color: #8a6d00;
+}
+
+/* Error-flavoured codeblocks (failure text + log snippet) */
+.codeblock-details.codeblock-error {
+  border-color: #f0b4b4;
+}
+
+.codeblock-details.codeblock-error > summary.codeblock-summary {
+  background: #fdecec;
+}
+
+.codeblock-details.codeblock-error .codeblock-bar {
+  background: #3a2330;
+  border-bottom-color: #2a1722;
+}
+
+.cap-details dd.error-summary,
+.cap-details dd.error-snippet {
+  margin: 0;
+}
+
+.cap-details dt.error-snippet-label {
+  color: var(--fail);
+}
+
+.cap-details dd.error-log a[data-log] {
+  margin-left: 0.5rem;
+  font-size: 0.78rem;
+}
+

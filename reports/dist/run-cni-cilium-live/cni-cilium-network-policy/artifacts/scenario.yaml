@@ -1,0 +1,37 @@
+---
+id: cni-cilium-network-policy
+name: "CiliumNetworkPolicy enforcement — default-deny + allow-by-label"
+description: "Proves CiliumNetworkPolicy (CNP) enforcement on kind: default-deny + allow-by-label. Blocks unlabeled traffic; allows labeled clients. CNP applied as raw_manifest preinstall."
+labels: {customer: any, profile: cni}
+cluster:
+  provider: kind
+  config: ./fixtures/kind-cilium.yaml
+  cni:
+    provider: cilium
+    kube_proxy_replacement: true
+  preinstall:
+    - kind: raw_manifest
+      path: ./fixtures/cilium-network-policy.yaml
+      namespace: sample
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.27-alpine"
+    ingress.enabled: "false"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: smoke-script
+    path: chart-test/assertions/cni/cilium-network-policy.sh
+tags: [nightly]
+mechanisms: ['addon:cilium']
+category: cni
+integration: cilium
+tier: live

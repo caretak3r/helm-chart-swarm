@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import re
 import shutil
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -297,6 +298,265 @@ def _copy_artifact_bundle(
     return rel_hrefs
 
 
+# ---------------------------------------------------------------------------
+# Inline artifact / error codeblocks (embedded file content)
+# ---------------------------------------------------------------------------
+
+# Markers that anchor the "focused window" of a failing log.
+_ERROR_MARKER_RE = re.compile(r"fail|error|fatal|panic|exit code|non-zero", re.IGNORECASE)
+
+
+@dataclass
+class CodeBlock:
+    """A single embedded, expandable codeblock rendered on the run page.
+
+    ``content`` holds the (already capped) UTF-8 text to embed.  ``href`` is the
+    relative dist path to the full copied file (``None`` for synthesized error
+    text that has no backing file).
+    """
+
+    basename: str
+    href: str | None
+    content: str
+    truncated: bool
+    shown_lines: int
+    total_lines: int
+    bytes: int
+    label: str = ""
+
+
+@dataclass
+class ArtifactBlocks:
+    """Embedded codeblocks for a scenario's captured artifacts."""
+
+    scenario: CodeBlock | None = None
+    overrides: CodeBlock | None = None
+    fixtures: list[CodeBlock] = field(default_factory=list)
+    manifests: list[CodeBlock] = field(default_factory=list)
+    has_fixtures: bool = False
+    has_manifests: bool = False
+
+
+@dataclass
+class ErrorBlock:
+    """Embedded error content + focused log snippet for a FAIL scenario."""
+
+    error_content: CodeBlock | None = None
+    log_snippet: CodeBlock | None = None
+
+
+@dataclass
+class ScenarioBlocks:
+    """Render-only blocks attached to a scenario by id (not serialized to JSON)."""
+
+    artifacts: ArtifactBlocks | None = None
+    error: ErrorBlock | None = None
+
+
+def _cap_text(raw: str, max_lines: int = 200, max_bytes: int = 65536) -> tuple[str, bool]:
+    """Cap *raw* by whichever of ``max_lines`` / ``max_bytes`` is hit first.
+
+    Returns ``(text, truncated)``.
+    """
+    truncated = False
+    encoded = raw.encode("utf-8")
+    if len(encoded) > max_bytes:
+        raw = encoded[:max_bytes].decode("utf-8", errors="replace")
+        truncated = True
+    lines = raw.splitlines()
+    if len(lines) > max_lines:
+        lines = lines[:max_lines]
+        raw = "\n".join(lines)
+        truncated = True
+    return raw, truncated
+
+
+def _read_capped_text(
+    path: Path, max_lines: int = 200, max_bytes: int = 65536
+) -> tuple[str, bool, int]:
+    """Read *path* as UTF-8 (errors replaced) and cap it for inline embedding.
+
+    Returns ``(text, truncated, total_lines)`` where ``total_lines`` is the line
+    count of the *full* file.  On ``OSError`` returns ``("", False, 0)``.
+    """
+    try:
+        raw = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ("", False, 0)
+    total_lines = len(raw.splitlines())
+    text, truncated = _cap_text(raw, max_lines, max_bytes)
+    return text, truncated, total_lines
+
+
+def _file_codeblock(scenario_id: str, artifact_dir: Path, rel: str) -> CodeBlock:
+    """Build a :class:`CodeBlock` for a single artifact file.
+
+    Content is read from the authoritative source ``artifact_dir/<rel>`` while the
+    href points at the copied file in the dist tree (``<scenario_id>/artifacts/<rel>``).
+    """
+    src = artifact_dir / rel
+    content, truncated, total_lines = _read_capped_text(src)
+    try:
+        size = src.stat().st_size
+    except OSError:
+        size = 0
+    return CodeBlock(
+        basename=Path(rel).name,
+        href=f"{scenario_id}/artifacts/{rel}",
+        content=content,
+        truncated=truncated,
+        shown_lines=len(content.splitlines()) if content else 0,
+        total_lines=total_lines,
+        bytes=size,
+    )
+
+
+def _build_artifact_blocks(
+    scenario_id: str, artifact_dir: Path, src_links: dict[str, Any]
+) -> ArtifactBlocks:
+    """Build embedded codeblocks for every captured artifact.
+
+    *src_links* are the bundle-relative locators (as produced by
+    ``_collect_artifact_links``), so this must be called BEFORE
+    ``_copy_artifact_bundle`` rewrites them into dist hrefs.  Files are read in
+    sorted order for deterministic output.
+    """
+    ab = ArtifactBlocks()
+    if "scenario" in src_links:
+        ab.scenario = _file_codeblock(scenario_id, artifact_dir, src_links["scenario"])
+    if "overrides" in src_links:
+        ab.overrides = _file_codeblock(scenario_id, artifact_dir, src_links["overrides"])
+    if "fixtures" in src_links:
+        ab.has_fixtures = True
+        ab.fixtures = [
+            _file_codeblock(scenario_id, artifact_dir, rel) for rel in sorted(src_links["fixtures"])
+        ]
+    if "manifests" in src_links:
+        ab.has_manifests = True
+        ab.manifests = [
+            _file_codeblock(scenario_id, artifact_dir, rel)
+            for rel in sorted(src_links["manifests"])
+        ]
+    return ab
+
+
+def _resolve_relevant_log(logs_dir: Path, fail_stage: str, asserts: list[Any]) -> Path | None:
+    """Resolve the most relevant log file for a failing scenario.
+
+    Resolution order:
+      1. First FAIL assert -> ``assert-<idx>-<type>.log`` (then any
+         ``assert-*-<type>.log``), else fall through to the stage log.
+      2. ``<fail_stage>.log`` when *fail_stage* is set.
+      3. The last-modified ``*.log`` under *logs_dir*.
+
+    Returns ``None`` when nothing is resolvable.
+    """
+    if not logs_dir.is_dir():
+        return None
+
+    for idx, a in enumerate(asserts):
+        if getattr(a, "status", "") == "FAIL":
+            a_type = getattr(a, "type", "")
+            exact = logs_dir / f"assert-{idx}-{a_type}.log"
+            if exact.is_file():
+                return exact
+            glob_matches = sorted(logs_dir.glob(f"assert-*-{a_type}.log"))
+            if glob_matches:
+                return glob_matches[0]
+            break  # fall through to stage / last-modified resolution
+
+    if fail_stage:
+        stage_log = logs_dir / f"{fail_stage}.log"
+        if stage_log.is_file():
+            return stage_log
+
+    log_files = [p for p in logs_dir.glob("*.log") if p.is_file()]
+    if log_files:
+        return max(log_files, key=lambda p: p.stat().st_mtime)
+    return None
+
+
+def _extract_log_snippet(path: Path, before: int = 20, tail: int = 40) -> tuple[str, int]:
+    """Extract a focused window from *path*.
+
+    Anchors on the LAST line matching an error marker and shows ~*before* lines
+    before it through end-of-file; if no marker is found, shows the last ~*tail*
+    lines.  Returns ``(window_text, total_lines)``.
+    """
+    try:
+        raw = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ("", 0)
+    lines = raw.splitlines()
+    if not lines:
+        return ("", 0)
+    last_marker: int | None = None
+    for i, line in enumerate(lines):
+        if _ERROR_MARKER_RE.search(line):
+            last_marker = i
+    window = lines[max(0, last_marker - before) :] if last_marker is not None else lines[-tail:]
+    return ("\n".join(window), len(lines))
+
+
+def _build_error_block(scenario: Scenario, run_out_dir: Path) -> ErrorBlock:
+    """Build the error content + focused log snippet for a FAIL scenario.
+
+    The error text is sourced from ``scenario.fail_msg`` when present, otherwise
+    from the concatenated notes of all FAIL asserts (with each assert ``type`` as
+    a heading).  The resolved relevant log is copied into the dist tree so the
+    snippet's "View full log" link is servable over HTTP.
+    """
+    if scenario.fail_msg:
+        error_text = scenario.fail_msg
+    else:
+        parts = [
+            f"{a.type}:\n{a.notes}" for a in scenario.asserts if a.status == "FAIL" and a.notes
+        ]
+        error_text = "\n\n".join(parts)
+
+    error_content: CodeBlock | None = None
+    if error_text:
+        content, truncated = _cap_text(error_text)
+        error_content = CodeBlock(
+            basename="error",
+            href=None,
+            content=content,
+            truncated=truncated,
+            shown_lines=len(content.splitlines()) if content else 0,
+            total_lines=len(error_text.splitlines()),
+            bytes=len(error_text.encode("utf-8")),
+        )
+
+    log_snippet: CodeBlock | None = None
+    if scenario.artifact_dir is not None:
+        log_path = _resolve_relevant_log(
+            scenario.artifact_dir / "logs", scenario.fail_stage, scenario.asserts
+        )
+        if log_path is not None and log_path.is_file():
+            dst = run_out_dir / scenario.id / "artifacts" / "logs" / log_path.name
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(str(log_path), str(dst))
+            dist_href = f"{scenario.id}/artifacts/logs/{log_path.name}"
+            window, total_lines = _extract_log_snippet(log_path)
+            content, truncated = _cap_text(window)
+            try:
+                size = log_path.stat().st_size
+            except OSError:
+                size = 0
+            log_snippet = CodeBlock(
+                basename=log_path.name,
+                href=dist_href,
+                content=content,
+                truncated=truncated,
+                shown_lines=len(content.splitlines()) if content else 0,
+                total_lines=total_lines,
+                bytes=size,
+                label="log snippet",
+            )
+
+    return ErrorBlock(error_content=error_content, log_snippet=log_snippet)
+
+
 def _load_run_versions(run: Run) -> dict[str, Any] | None:
     """Load versions.json from the first scenario artifact directory that has one.
 
@@ -351,11 +611,24 @@ def render_run(run: Run, out_dir: Path) -> Path:
     # M11: copy artifact files into dist tree and replace artifact_links with
     # relative hrefs (relative to run_dir/index.html).  Scenarios without an
     # artifact_dir (legacy runs or UNTESTED) are left with an empty dict.
+    # Also build inline codeblocks (embedded file content) keyed by scenario id.
+    artifact_blocks: dict[str, ArtifactBlocks] = {}
+    error_blocks: dict[str, ErrorBlock] = {}
     for s in run.scenarios:
         if s.artifact_dir is not None and s.artifact_links:
-            s.artifact_links = _copy_artifact_bundle(
-                s.id, s.artifact_dir, s.artifact_links, run_dir
-            )
+            src_links = s.artifact_links  # bundle-relative locators
+            artifact_blocks[s.id] = _build_artifact_blocks(s.id, s.artifact_dir, src_links)
+            s.artifact_links = _copy_artifact_bundle(s.id, s.artifact_dir, src_links, run_dir)
+        if s.status == "FAIL":
+            error_blocks[s.id] = _build_error_block(s, run_dir)
+
+    scenario_blocks = {
+        s.id: ScenarioBlocks(
+            artifacts=artifact_blocks.get(s.id),
+            error=error_blocks.get(s.id),
+        )
+        for s in run.scenarios
+    }
 
     groups, standalone = build_variant_groups(run)
     # Ensure variant group members are sorted lexicographically.
@@ -369,6 +642,7 @@ def render_run(run: Run, out_dir: Path) -> Path:
         mechanisms_by_category=mechanisms_by_category(run),
         variant_groups=groups,
         standalone_scenarios=standalone,
+        scenario_blocks=scenario_blocks,
         VariantGroup=VariantGroup,
         active_page="runs",
         base_path="../",

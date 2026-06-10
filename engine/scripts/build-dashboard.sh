@@ -62,8 +62,17 @@ fi
 
 DASHBOARD_OUT="${DASHBOARD_OUT:-$_REPORTS_ROOT/dist}"
 
+# Scenarios root: explicit env > sibling scenarios dir of the reports root
+# (reports root is <project>/chart-test/reports; scenarios is <project>/chart-test/scenarios).
+if [ -n "${SCENARIOS_DIR:-}" ]; then
+  _SCENARIOS_ROOT="$SCENARIOS_DIR"
+else
+  _SCENARIOS_ROOT="$(cd "$_REPORTS_ROOT/.." 2>/dev/null && pwd)/scenarios"
+fi
+
 args=(run testgrid build --reports "$_REPORTS_ROOT" --out "$DASHBOARD_OUT")
 [ -n "$RUN" ] && args+=(--run "$RUN")
+[ -d "$_SCENARIOS_ROOT" ] && args+=(--scenarios "$_SCENARIOS_ROOT")
 
 cd "$TESTGRID_DIR"
 uv "${args[@]}"

@@ -3,5 +3,5 @@
   "fix_prompt": "# Fix Recommendation: ingress-controllers-contour-rate-limit\n\n**Scenario:** `ingress-controllers-contour-rate-limit`\n**Category:** schema-missing\n**Failure type:** smoke-script\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nAssert 'smoke-script': exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-rate-limit.sh (RELEASE=sample NAMESPACE=sample)\n==> Waiting for envoy pod Ready (3m max)\nerror: no matching resources found\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `ingress-controllers-contour-rate-limit`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
   "scenario_path": "ingress-controllers-contour-rate-limit",
   "chart_path": "chart",
-  "created_at": "2026-06-09T15:36:55.890336+00:00"
+  "created_at": "2026-06-10T11:40:01.265561+00:00"
 }
