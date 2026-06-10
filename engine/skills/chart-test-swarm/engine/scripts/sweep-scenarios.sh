@@ -142,16 +142,57 @@ else
     fi
   done
 
-  # Check every scenario-referenced assert type has a declared depth in the registry
-  echo "── Checking scenario assert types vs depth registry ──"
+  # ── Consumer registry depth validation (VAL-PLUGGABLE-035) ──
+  # Validate that every consumer registry (if present for a project) contains
+  # only L0-L3 depth values. Out-of-taxonomy values are rejected.
+  echo "── Validating consumer registry depth values ──"
+  declare -A _SEEN_CONSUMER_REGISTRIES=()
+  for _cr_f in "${SCENARIOS[@]}"; do
+    _cr_project_dir="$(dirname "$(dirname "$(dirname "$_cr_f")")")"
+    _consumer_reg="${_cr_project_dir}/chart-test/asserts/registry.yaml"
+    if [ -f "$_consumer_reg" ] && [ -z "${_SEEN_CONSUMER_REGISTRIES[$_consumer_reg]:-}" ]; then
+      _SEEN_CONSUMER_REGISTRIES["$_consumer_reg"]=1
+      echo "   checking: $_consumer_reg"
+      while IFS=':' read -r _crtype _crdepth; do
+        _crtype="${_crtype// /}"
+        _crdepth="${_crdepth// /}"
+        [ -z "$_crtype" ] && continue
+        case "$_crdepth" in
+          L0|L1|L2|L3) ;;
+          *) echo "  FAIL: consumer registry type '$_crtype' has invalid depth '$_crdepth' (expected L0|L1|L2|L3)" >&2; DEPTH_FAIL=$((DEPTH_FAIL + 1)) ;;
+        esac
+      done < <(yq 'to_entries[] | "\(.key):\(.value)"' "$_consumer_reg" 2>/dev/null || echo "")
+    fi
+  done
+
+  # Check every scenario-referenced assert type has a declared depth in the
+  # merged registry (consumer overlay over engine base).  Consumer registry
+  # wins on conflict per the layering contract (VAL-PLUGGABLE-014).
+  echo "── Checking scenario assert types vs merged depth registry ──"
   for f in "${SCENARIOS[@]}"; do
     rel="${f#"$ROOT_DIR"/}"
+    _pd="$(dirname "$(dirname "$(dirname "$f")")")"
+    _creg="${_pd}/chart-test/asserts/registry.yaml"
     while IFS= read -r t; do
       [ -z "$t" ] && continue
       [ "$t" = "null" ] && continue
-      depth=$(yq ".[\"$t\"]" "$REGISTRY" 2>/dev/null || echo "")
+      depth=""
+      # Consumer registry wins when it declares the type (VAL-PLUGGABLE-011, -016)
+      if [ -f "$_creg" ]; then
+        depth=$(yq ".[\"$t\"]" "$_creg" 2>/dev/null || echo "")
+        # Reject out-of-taxonomy consumer depths even when already validated
+        # above — a null/empty consumer value means try the engine fallback
+        case "$depth" in
+          L0|L1|L2|L3) ;;
+          *) depth="" ;;  # not a valid depth → fall through to engine registry
+        esac
+      fi
+      # Engine fallback (VAL-PLUGGABLE-013, -018)
       if [ -z "$depth" ] || [ "$depth" = "null" ]; then
-        echo "  FAIL: $rel references unregistered assert type '$t'" >&2
+        depth=$(yq ".[\"$t\"]" "$REGISTRY" 2>/dev/null || echo "")
+      fi
+      if [ -z "$depth" ] || [ "$depth" = "null" ]; then
+        echo "  FAIL: $rel references unregistered assert type '$t' (not found in engine or consumer registry)" >&2
         DEPTH_FAIL=$((DEPTH_FAIL + 1))
       fi
     done < <(yq '.asserts[].type' "$f" 2>/dev/null || true)
