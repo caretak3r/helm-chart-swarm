@@ -3,5 +3,5 @@
   "fix_prompt": "# Fix Recommendation: c3fail-deliberate\n\n**Scenario:** `c3fail-deliberate`\n**Category:** schema-missing\n**Failure type:** helm-status-deployed\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nAssert 'helm-status-deployed': jq: parse error: Invalid numeric literal at line 1, column 6\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `c3fail-deliberate`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
   "scenario_path": "c3fail-deliberate",
   "chart_path": "chart",
-  "created_at": "2026-06-10T11:40:01.265561+00:00"
+  "created_at": "2026-06-10T14:19:39.044828+00:00"
 }

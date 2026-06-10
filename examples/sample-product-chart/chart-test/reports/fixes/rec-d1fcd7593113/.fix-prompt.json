@@ -3,5 +3,5 @@
   "fix_prompt": "# Fix Recommendation: serviceaccount-annotations-on\n\n**Scenario:** `serviceaccount-annotations-on`\n**Category:** chart-fix\n**Failure type:** serviceaccount-annotations\n**Affected objects:** Service, ServiceAccount\n\n## Failure Detail\n\nAssert 'serviceaccount-annotations': FAIL: no ServiceAccount found in rendered output — chart lacks ServiceAccount template (documented gap)\n\n## Suggested Fix\n\nFix the 'serviceaccount-annotations' capability gap in `examples/sample-product-chart/chart/templates/`. Review the assertion notes above and update chart templates to satisfy the assertion requirements.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
   "scenario_path": "serviceaccount-annotations-on",
   "chart_path": "chart",
-  "created_at": "2026-06-10T11:40:01.265561+00:00"
+  "created_at": "2026-06-10T14:19:39.044828+00:00"
 }
