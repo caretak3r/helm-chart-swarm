@@ -11,11 +11,16 @@
 # Returns {status: PASS|FAIL, detail} via exit code + stdout.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/assert-helpers.sh
+source "$SCRIPT_DIR/lib/assert-helpers.sh"
+
 SCENARIO="$1"; IDX="$2"
 
 NS=$(yq ".asserts[$IDX].namespace" "$SCENARIO")
 SOURCE=$(yq ".asserts[$IDX].source // \"both\"" "$SCENARIO")
 EXPECT_PRESENT=$(yq ".asserts[$IDX].expect_present" "$SCENARIO")
+RELEASE="${RELEASE:-$(yq '.product.release' "$SCENARIO")}"
 
 if [ "$EXPECT_PRESENT" != "true" ] && [ "$EXPECT_PRESENT" != "false" ]; then
   echo "FAIL: expect_present must be 'true' or 'false', got '$EXPECT_PRESENT'" >&2
@@ -142,9 +147,9 @@ check_rendered_sa_annotations() {
 check_live_sa_annotations() {
   local sa_count=0 fail_count=0
 
-  # Get ServiceAccounts excluding the auto-created "default"
+  # Get ServiceAccounts — release-scoped, excluding the auto-created "default"
   local sa_yaml
-  sa_yaml=$(kubectl "${kubectl_args[@]}" get sa -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  sa_yaml=$(kubectl "${kubectl_args[@]}" get sa -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   sa_count=$(printf '%s' "$sa_yaml" | yq '[.items[] | select(.metadata.name != "default")] | length' 2>/dev/null || echo "0")
 
   if [ "$EXPECT_PRESENT" = "true" ] && [ "$sa_count" -eq 0 ]; then

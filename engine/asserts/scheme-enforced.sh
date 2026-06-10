@@ -5,11 +5,16 @@
 # kubectl get -o yaml. Returns {status: PASS|FAIL, detail} via exit code + stdout.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/assert-helpers.sh
+source "$SCRIPT_DIR/lib/assert-helpers.sh"
+
 SCENARIO="$1"; IDX="$2"
 
 NS=$(yq ".asserts[$IDX].namespace" "$SCENARIO")
 SOURCE=$(yq ".asserts[$IDX].source // \"both\"" "$SCENARIO")
 SCHEME=$(yq ".asserts[$IDX].scheme" "$SCENARIO")
+RELEASE="${RELEASE:-$(yq '.product.release' "$SCENARIO")}"
 
 if [ "$SCHEME" != "https-only" ] && [ "$SCHEME" != "allow-http" ]; then
   echo "FAIL: scheme must be 'https-only' or 'allow-http', got '$SCHEME'" >&2
@@ -137,9 +142,9 @@ check_rendered_scheme() {
 check_live_scheme() {
   local http_violations=0 http_found=0
 
-  # Check Service
+  # Check Service — release-scoped
   local svc_yaml
-  svc_yaml=$(kubectl "${kubectl_args[@]}" get svc -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  svc_yaml=$(kubectl "${kubectl_args[@]}" get svc -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local svc_count; svc_count=$(printf '%s' "$svc_yaml" | yq '.items | length' 2>/dev/null || echo "0")
   local i=0
   while [ "$i" -lt "$svc_count" ]; do
@@ -152,9 +157,9 @@ check_live_scheme() {
     i=$((i + 1))
   done
 
-  # Check Deployment container ports
+  # Check Deployment container ports — release-scoped
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
   i=0
   while [ "$i" -lt "$dep_count" ]; do
@@ -167,9 +172,9 @@ check_live_scheme() {
     i=$((i + 1))
   done
 
-  # Check Ingress
+  # Check Ingress — release-scoped
   local ing_yaml
-  ing_yaml=$(kubectl "${kubectl_args[@]}" get ingress -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  ing_yaml=$(kubectl "${kubectl_args[@]}" get ingress -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local ing_count; ing_count=$(printf '%s' "$ing_yaml" | yq '.items | length' 2>/dev/null || echo "0")
   i=0
   while [ "$i" -lt "$ing_count" ]; do
