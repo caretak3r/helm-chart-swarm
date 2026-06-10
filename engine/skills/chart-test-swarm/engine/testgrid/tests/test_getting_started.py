@@ -612,7 +612,7 @@ class TestHomePageGettingStartedCard:
 
     def test_home_has_five_cards(self, tmp_path: Path) -> None:
         """home.html has 5 navigation cards (including Getting Started)."""
-        summary = HomeSummary(run_count=2, coverage_pct=50.0, open_rec_count=0)
+        summary = HomeSummary(run_count=2, pass_rate_pct=50.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         # Count home-card elements
@@ -621,14 +621,14 @@ class TestHomePageGettingStartedCard:
 
     def test_getting_started_card_label(self, tmp_path: Path) -> None:
         """One card is labeled 'Getting Started'."""
-        summary = HomeSummary(run_count=2, coverage_pct=50.0, open_rec_count=0)
+        summary = HomeSummary(run_count=2, pass_rate_pct=50.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "Getting Started" in html
 
     def test_getting_started_card_links_to_page(self, tmp_path: Path) -> None:
         """Getting Started card links to getting-started.html."""
-        summary = HomeSummary(run_count=2, coverage_pct=50.0, open_rec_count=0)
+        summary = HomeSummary(run_count=2, pass_rate_pct=50.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert 'href="getting-started.html"' in html
@@ -660,7 +660,7 @@ class TestGettingStartedIntegration:
         from testgrid.collect import Run, Scenario
 
         # Build home page
-        summary = HomeSummary(run_count=1, coverage_pct=50.0, open_rec_count=0)
+        summary = HomeSummary(run_count=1, pass_rate_pct=50.0, open_rec_count=0)
         render_home(summary, tmp_path)
 
         # Build getting started page

@@ -556,7 +556,7 @@ class TestVersionsNavBar:
 
     def test_home_html_nav_has_versions_link(self, tmp_path: Path) -> None:
         """home.html nav must include a Versions link."""
-        summary = HomeSummary(run_count=1, coverage_pct=50.0, open_rec_count=0)
+        summary = HomeSummary(run_count=1, pass_rate_pct=50.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "versions.html" in html

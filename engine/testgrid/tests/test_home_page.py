@@ -3,7 +3,7 @@
 Covers:
   VAL-HOME-001: home.html loads without errors (rendered without blank content)
   VAL-HOME-002: Four navigation cards are visible on home page
-  VAL-HOME-006: Home page displays summary metric for matrix coverage
+  VAL-HOME-006: Home page displays summary metric for scenario pass rate
   VAL-HOME-007: Home page displays summary metric for run count
   VAL-HOME-008: Home page displays summary metric for open recommendation count
 """
@@ -41,14 +41,14 @@ class TestRenderHome:
 
     def test_produces_home_html(self, tmp_path: Path) -> None:
         """render_home() writes home.html to the output directory."""
-        summary = HomeSummary(run_count=3, coverage_pct=72.0, open_rec_count=2)
+        summary = HomeSummary(run_count=3, pass_rate_pct=72.0, open_rec_count=2)
         result = render_home(summary, tmp_path)
         assert result == tmp_path / "home.html"
         assert result.is_file()
 
     def test_home_html_is_valid_html(self, tmp_path: Path) -> None:
         """home.html must contain an <html> element with non-empty content."""
-        summary = HomeSummary(run_count=1, coverage_pct=50.0, open_rec_count=0)
+        summary = HomeSummary(run_count=1, pass_rate_pct=50.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "<html" in html
@@ -57,7 +57,7 @@ class TestRenderHome:
 
     def test_home_html_has_four_cards(self, tmp_path: Path) -> None:
         """home.html must contain all four navigation card labels (VAL-HOME-002)."""
-        summary = HomeSummary(run_count=5, coverage_pct=80.0, open_rec_count=3)
+        summary = HomeSummary(run_count=5, pass_rate_pct=80.0, open_rec_count=3)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "Support Matrix" in html
@@ -67,7 +67,7 @@ class TestRenderHome:
 
     def test_home_html_cards_link_to_pages(self, tmp_path: Path) -> None:
         """Each card must link to its respective page."""
-        summary = HomeSummary(run_count=2, coverage_pct=60.0, open_rec_count=1)
+        summary = HomeSummary(run_count=2, pass_rate_pct=60.0, open_rec_count=1)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "support-matrix.html" in html
@@ -77,21 +77,21 @@ class TestRenderHome:
 
     def test_home_html_shows_run_count(self, tmp_path: Path) -> None:
         """home.html must display the run count metric (VAL-HOME-007)."""
-        summary = HomeSummary(run_count=7, coverage_pct=55.0, open_rec_count=0)
+        summary = HomeSummary(run_count=7, pass_rate_pct=55.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "7" in html  # run count
 
-    def test_home_html_shows_coverage_pct(self, tmp_path: Path) -> None:
-        """home.html must display the coverage percentage metric (VAL-HOME-006)."""
-        summary = HomeSummary(run_count=3, coverage_pct=72.5, open_rec_count=0)
+    def test_home_html_shows_pass_rate_pct(self, tmp_path: Path) -> None:
+        """home.html must display the pass rate percentage metric (VAL-HOME-006)."""
+        summary = HomeSummary(run_count=3, pass_rate_pct=72.5, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
-        assert "72" in html  # coverage pct
+        assert "72.5% passing" in html  # pass rate pct
 
     def test_home_html_shows_open_rec_count(self, tmp_path: Path) -> None:
         """home.html must display the open recommendation count (VAL-HOME-008)."""
-        summary = HomeSummary(run_count=2, coverage_pct=40.0, open_rec_count=5)
+        summary = HomeSummary(run_count=2, pass_rate_pct=40.0, open_rec_count=5)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "5" in html  # open rec count
@@ -99,7 +99,7 @@ class TestRenderHome:
     def test_home_html_shows_version_status(self, tmp_path: Path) -> None:
         """home.html must display a version config status string."""
         summary = HomeSummary(
-            run_count=1, coverage_pct=0.0, open_rec_count=0, version_status="configured"
+            run_count=1, pass_rate_pct=0.0, open_rec_count=0, version_status="configured"
         )
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
@@ -113,25 +113,25 @@ class TestRenderHome:
 
     def test_home_html_zero_runs_still_renders(self, tmp_path: Path) -> None:
         """render_home() must work with zero runs without crashing."""
-        summary = HomeSummary(run_count=0, coverage_pct=0.0, open_rec_count=0)
+        summary = HomeSummary(run_count=0, pass_rate_pct=0.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "<html" in html
         # Zero values should still be displayed (not blank)
         assert "0" in html
 
-    def test_home_html_coverage_pct_displayed_as_number(self, tmp_path: Path) -> None:
-        """Coverage must render as a numeric value, not 'undefined' or 'NaN'."""
-        summary = HomeSummary(run_count=1, coverage_pct=100.0, open_rec_count=0)
+    def test_home_html_pass_rate_pct_displayed_as_number(self, tmp_path: Path) -> None:
+        """Pass rate must render as a numeric value, not 'undefined' or 'NaN'."""
+        summary = HomeSummary(run_count=1, pass_rate_pct=100.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "undefined" not in html
         assert "NaN" not in html
-        assert "100" in html  # 100% coverage
+        assert "100" in html  # 100% passing
 
     def test_home_html_cards_have_clickable_links(self, tmp_path: Path) -> None:
         """Each card must be a clickable anchor (href) not just text."""
-        summary = HomeSummary(run_count=1, coverage_pct=50.0, open_rec_count=0)
+        summary = HomeSummary(run_count=1, pass_rate_pct=50.0, open_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert 'href="support-matrix.html"' in html
@@ -143,21 +143,21 @@ class TestRenderHome:
         """HomeSummary dataclass has sensible defaults."""
         summary = HomeSummary()
         assert summary.run_count == 0
-        assert summary.coverage_pct == 0.0
+        assert summary.pass_rate_pct == 0.0
         assert summary.open_rec_count == 0
         assert summary.fixed_rec_count == 0
         assert summary.version_status == "default"
 
     def test_home_html_shows_fixed_rec_count(self, tmp_path: Path) -> None:
         """home.html must display the fixed recommendation count when > 0."""
-        summary = HomeSummary(run_count=2, coverage_pct=40.0, open_rec_count=3, fixed_rec_count=2)
+        summary = HomeSummary(run_count=2, pass_rate_pct=40.0, open_rec_count=3, fixed_rec_count=2)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "3 Open, 2 Fixed" in html
 
     def test_home_html_shows_open_rec_count_only_when_fixed_is_zero(self, tmp_path: Path) -> None:
         """home.html shows only open count when fixed_rec_count is 0."""
-        summary = HomeSummary(run_count=2, coverage_pct=40.0, open_rec_count=3, fixed_rec_count=0)
+        summary = HomeSummary(run_count=2, pass_rate_pct=40.0, open_rec_count=3, fixed_rec_count=0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert "3 Open" in html

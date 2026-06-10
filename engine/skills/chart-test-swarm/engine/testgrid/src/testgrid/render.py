@@ -694,11 +694,12 @@ class HomeSummary:
     run_count: int = 0
     """Total number of runs available in the reports directory."""
 
-    coverage_pct: float = 0.0
-    """Percentage of catalog scenarios that have been run (0–100).
+    pass_rate_pct: float = 0.0
+    """Scenario pass rate: PASS scenarios / all catalog scenarios (0–100).
 
-    Authored-only (cloud) scenarios are excluded from both numerator
-    and denominator.
+    The numerator counts only scenarios with status ``PASS``.  The
+    denominator includes authored-only (cloud) scenarios, which are never
+    run and never PASS, so they only ever sit in the denominator.
     """
 
     open_rec_count: int = 0
@@ -727,7 +728,7 @@ def render_home(summary: HomeSummary, out_dir: Path) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     html = tpl.render(
         run_count=summary.run_count,
-        coverage_pct=summary.coverage_pct,
+        pass_rate_pct=summary.pass_rate_pct,
         open_rec_count=summary.open_rec_count,
         fixed_rec_count=summary.fixed_rec_count,
         version_status=summary.version_status,

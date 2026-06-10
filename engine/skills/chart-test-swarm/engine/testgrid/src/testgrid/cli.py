@@ -74,7 +74,7 @@ def cmd_build(args: argparse.Namespace) -> int:
     # f12-5: render support matrix if scenarios_dir is provided.
     # This is rendered even when there are no runs — the matrix shows
     # all catalog scenarios with UNTESTED/AUTHORED status.
-    coverage_pct = 0.0
+    pass_rate_pct = 0.0
     if scenarios_dir and scenarios_dir.is_dir():
         sm_path = render_support_matrix(
             scenarios_dir=scenarios_dir,
@@ -83,8 +83,8 @@ def cmd_build(args: argparse.Namespace) -> int:
             out_dir=out,
         )
         print(f"  {'support-matrix':30s}  →  {sm_path}")
-        # Compute coverage % for the home page from the support-matrix output.
-        coverage_pct = _compute_coverage_pct(
+        # Compute the scenario pass rate for the home page from the support-matrix output.
+        pass_rate_pct = _compute_pass_rate_pct(
             scenarios_dir, reports if reports.is_dir() else None, all_runs
         )
 
@@ -116,7 +116,7 @@ def cmd_build(args: argparse.Namespace) -> int:
     # f1-1: render home page as the new landing page.
     summary = HomeSummary(
         run_count=len(all_runs),
-        coverage_pct=coverage_pct,
+        pass_rate_pct=pass_rate_pct,
         open_rec_count=open_rec_count,
         fixed_rec_count=fixed_rec_count,
         version_status=version_status,
@@ -175,15 +175,18 @@ def cmd_build(args: argparse.Namespace) -> int:
     return 0 if has_output else 1
 
 
-def _compute_coverage_pct(
+def _compute_pass_rate_pct(
     scenarios_dir: Path,
     reports_dir: Path | None,
     runs: list[Run],
 ) -> float:
-    """Compute what fraction of runnable catalog scenarios have been run.
+    """Compute the scenario pass rate: PASS scenarios / all catalog scenarios.
 
-    Authored-only (cloud) scenarios are excluded from both the numerator
-    and the denominator.  Returns 0.0 when there are no runnable scenarios.
+    The numerator counts only scenarios with status ``PASS``.  The
+    denominator is the total number of catalog scenarios, including
+    authored-only (cloud) scenarios.  Authored-only scenarios are never
+    run and never PASS, so they only ever sit in the denominator.
+    Returns 0.0 when there are no catalog scenarios.
     """
     import tempfile
 
@@ -194,10 +197,9 @@ def _compute_coverage_pct(
 
     all_entries = [e for entries in matrix.values() for e in entries]
     counts = support_matrix_run_counts(all_entries)
-    total_runnable = sum(1 for e in all_entries if not e.is_authored_only)
-    if total_runnable == 0:
+    if len(all_entries) == 0:
         return 0.0
-    return round(counts.get("run", 0) / total_runnable * 100, 1)
+    return round(counts.get("PASS", 0) / len(all_entries) * 100, 1)
 
 
 def cmd_catalog(args: argparse.Namespace) -> int:

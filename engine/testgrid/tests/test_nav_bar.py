@@ -75,7 +75,7 @@ class TestHomeLinkCards:
 
     def test_support_matrix_card_links_to_support_matrix_html(self, tmp_path: Path) -> None:
         """Home page Support Matrix card must link to support-matrix.html (VAL-HOME-003)."""
-        summary = HomeSummary(run_count=2, coverage_pct=50.0)
+        summary = HomeSummary(run_count=2, pass_rate_pct=50.0)
         render_home(summary, tmp_path)
         html = (tmp_path / "home.html").read_text(encoding="utf-8")
         assert 'href="support-matrix.html"' in html

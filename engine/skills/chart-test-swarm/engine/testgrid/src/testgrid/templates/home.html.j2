@@ -30,13 +30,13 @@
       <div class="home-card-icon">🗂</div>
       <div class="home-card-title">Support Matrix</div>
       <div class="home-card-metric">
-        {% if coverage_pct is defined %}
-          {{ "%.1f"|format(coverage_pct) }}% covered
+        {% if pass_rate_pct is defined %}
+          {{ "%.1f"|format(pass_rate_pct) }}% passing
         {% else %}
-          0% covered
+          0% passing
         {% endif %}
       </div>
-      <div class="home-card-hint">Capability coverage across catalog scenarios</div>
+      <div class="home-card-hint">Scenario pass rate (passed / all catalog scenarios)</div>
     </a>
 
     <a href="runs.html" class="home-card" aria-label="Run History">
