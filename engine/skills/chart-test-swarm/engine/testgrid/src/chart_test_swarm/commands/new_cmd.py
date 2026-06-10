@@ -113,6 +113,22 @@ def _resolve_integrations_root() -> Path:
     )
 
 
+def _resolve_consumer_primers_root(project_dir: str | None = None) -> Path | None:
+    """Resolve the consumer-provided primers root directory.
+
+    Consumer primers live at ``$PROJECT_DIR/chart-test/primers/``, mirroring
+    the engine's ``references/integrations/<category>/<integration>.md``
+    structure.  Returns ``None`` when *project_dir* is not provided or the
+    ``chart-test/primers/`` directory does not exist.
+    """
+    if not project_dir:
+        return None
+    primers_root = Path(project_dir).resolve() / "chart-test" / "primers"
+    if not primers_root.is_dir():
+        return None
+    return primers_root
+
+
 def _resolve_chart_test_dir(project_dir: str | None = None) -> Path:
     """Resolve the chart-test/ directory where scaffolded files are written.
 
@@ -148,6 +164,61 @@ def _primer_exists(integrations_root: Path, category: str, integration: str) -> 
     """Check whether a primer .md file exists for the given category+integration."""
     primer_path = integrations_root / category / f"{integration}.md"
     return primer_path.is_file()
+
+
+def _primers_for_category_merged(
+    engine_root: Path,
+    consumer_root: Path | None,
+    category: str,
+) -> list[str]:
+    """List primer stems for a category, merging consumer and engine sources.
+
+    Consumer primers take precedence: they appear first in the result and
+    engine primers are only appended when no consumer primer with the same
+    stem exists.  The result is de-duplicated and sorted for deterministic
+    output (consumer entries first, then new engine entries, then
+    alphabetically sorted within each group).
+    """
+    consumer_stems: list[str] = []
+    if consumer_root is not None:
+        consumer_stems = _primers_for_category(consumer_root, category)
+
+    engine_stems = _primers_for_category(engine_root, category)
+
+    # Consumer-preferred ordering: consumer stems first, then engine stems
+    # that are not already covered by a consumer primer.
+    consumer_set = set(consumer_stems)
+    merged = list(consumer_stems)  # already sorted from _primers_for_category
+    for stem in engine_stems:
+        if stem not in consumer_set:
+            merged.append(stem)
+
+    return merged
+
+
+def _resolve_primer_path(
+    engine_root: Path,
+    consumer_root: Path | None,
+    category: str,
+    integration: str,
+) -> Path | None:
+    """Resolve the primer path, preferring the consumer over the engine.
+
+    Returns the absolute path to the resolved primer file, or ``None`` when
+    the primer exists in neither tree.
+    """
+    if consumer_root is not None:
+        consumer_path = consumer_root / category / f"{integration}.md"
+        if consumer_path.is_file():
+            _debug(f"Resolved consumer primer: {consumer_path}")
+            return consumer_path
+
+    engine_path = engine_root / category / f"{integration}.md"
+    if engine_path.is_file():
+        _debug(f"Resolved engine primer: {engine_path}")
+        return engine_path
+
+    return None
 
 
 def _determine_tier(category: str, kind: str) -> str:
@@ -437,6 +508,7 @@ def _scaffold_integration(
     target: ParsedTarget,
     chart_test_dir: Path,
     integrations_root: Path,
+    consumer_primers_root: Path | None = None,
     dry_run: bool = False,
     force: bool = False,
     project_dir: str | None = None,
@@ -448,6 +520,7 @@ def _scaffold_integration(
     tier = tier_override if tier_override else _determine_tier(category, "integration")
 
     _debug(f"Integration mode: category={category}, integration={integration}, tier={tier}")
+    _debug(f"Consumer primers root: {consumer_primers_root}")
 
     # Validate category against taxonomy
     discovered = _discover_categories(integrations_root)
@@ -462,9 +535,14 @@ def _scaffold_integration(
             code=1,
         )
 
-    # Check primer existence (only for non-capability categories)
-    if not _primer_exists(integrations_root, category, integration):
-        available = _primers_for_category(integrations_root, category)
+    # Check primer existence (merged consumer + engine)
+    resolved_primer = _resolve_primer_path(
+        integrations_root, consumer_primers_root, category, integration
+    )
+    if resolved_primer is None:
+        available = _primers_for_category_merged(
+            integrations_root, consumer_primers_root, category
+        )
         if available:
             _die(
                 f"ERROR: no primer found for {category}/{integration}.\n"
@@ -690,6 +768,8 @@ def new_cmd(
     # Resolve directories
     # integrations_root: always the real repo's primer tree (independent of --project-dir)
     integrations_root = _resolve_integrations_root()
+    # consumer_primers_root: consumer-provided primers (under $PROJECT_DIR/chart-test/primers/)
+    consumer_primers_root = _resolve_consumer_primers_root(project_dir)
     # chart_test_dir: where scaffolded files are written
     chart_test_dir = _resolve_chart_test_dir(project_dir)
 
@@ -708,6 +788,7 @@ def new_cmd(
             target=parsed,
             chart_test_dir=chart_test_dir,
             integrations_root=integrations_root,
+            consumer_primers_root=consumer_primers_root,
             dry_run=dry_run,
             force=force,
             project_dir=project_dir,

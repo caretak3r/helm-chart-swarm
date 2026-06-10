@@ -251,20 +251,31 @@ def list_integrations_cmd(
         help="Path to the integrations root directory "
         "(default: engine/skills/chart-test-swarm/references/integrations).",
     ),
+    project_dir: str | None = typer.Option(
+        None,
+        "--project-dir",
+        metavar="DIR",
+        help="Root of the consumer chart project. "
+        "When provided, consumer primers from chart-test/primers/ are "
+        "merged with engine primers (consumer-preferred).",
+    ),
 ) -> None:
     """List available integration categories and their primers.
 
     Walks ``engine/skills/chart-test-swarm/references/integrations/<category>/``
-    and emits one tab-separated line per primer in sorted order.
+    and emits one tab-separated line per primer in sorted order.  When
+    ``--project-dir`` is provided, consumer primers are merged in
+    (consumer-preferred, de-duplicated).
 
     \b
     Examples:
         chart-test-swarm list integrations
         chart-test-swarm list integrations --root /custom/integrations
+        chart-test-swarm list integrations --project-dir ./my-chart
     """
     from chart_test_swarm.commands.list_cmd import list_integrations as _list_integrations_impl
 
-    _list_integrations_impl(root=root)
+    _list_integrations_impl(root=root, project_dir=project_dir)
 
 
 @list_app.command(name="variants")
