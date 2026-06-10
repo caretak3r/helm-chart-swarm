@@ -282,27 +282,27 @@ STUB
 # VAL-STRICT-008: Anchored parser does NOT false-PASS on code in body
 # ═══════════════════════════════════════════════════════════════════════
 
-@test "VAL-STRICT-008: parse_http_code rejects code embedded in body" {
+@test "VAL-STRICT-008: parse_http_code rejects body-embedded code when no real status present" {
   run bash -c "
     source '$HELPERS_LIB'
-    # Simulate body containing 'error 200 occurred' but actual http_code is 500
-    parse_http_code 'error 200 occurred\n500'
+    # Body text containing 'error 200 occurred' — the last token is 'occurred',
+    # not a valid 3-digit code. Parser must not false-match '200' from the body.
+    parse_http_code 'error 200 occurred'
   "
   [ $status -ne 0 ]
   [[ "$output" != "200" ]]
 }
 
-@test "VAL-STRICT-008: parse_http_code returns actual status not body number" {
+@test "VAL-STRICT-008: parse_http_code extracts real status from body+status input (not body number)" {
   run bash -c "
     source '$HELPERS_LIB'
-    # body mentions 200 but real status is 500
-    printf 'error code 200 in body\n500' | while read -r line; do
-      code=\"\$line\"
-    done
-    source '$HELPERS_LIB'
+    # Real curl output with body text on first line, actual http_code on last line
+    # The parser extracts the last token (500), not the body-embedded 200
+    code=\$(printf \$'error code 200 in body\n500' | tail -1)
     parse_http_code \"\$code\"
   "
-  [ $status -ne 0 ] || true  # We just verify it doesn't false-match
+  [ $status -eq 0 ]
+  [[ "$output" == "500" ]]
 }
 
 # ═══════════════════════════════════════════════════════════════════════

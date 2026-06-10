@@ -16,7 +16,13 @@ lookup_depth() {
   local assert_type="$1"
   local registry_file="${ENGINE_DIR:-}/asserts/registry.yaml"
   if [ -f "$registry_file" ] && command -v yq >/dev/null 2>&1; then
-    yq ".[\"$assert_type\"]" "$registry_file" 2>/dev/null || echo ""
+    local depth
+    depth=$(yq ".[\"$assert_type\"]" "$registry_file" 2>/dev/null) || true
+    if [ -n "$depth" ] && [ "$depth" != "null" ]; then
+      echo "$depth"
+    else
+      echo ""
+    fi
   else
     echo ""
   fi
