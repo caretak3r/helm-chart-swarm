@@ -168,7 +168,8 @@
       "required": ["type"],
       "properties": {
         "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present"] },
-        "timeout": { "type": "string", "default": "5m" }
+        "timeout": { "type": "string", "default": "5m", "description": "Per-assert timeout (e.g. 30s, 5m). Used as the overall wait ceiling by wait_with_backoff." },
+        "retries": { "type": "integer", "minimum": 0, "default": 0, "description": "Number of retry attempts after the initial probe. 0 means a single attempt. Must be a non-negative integer." }
       },
       "oneOf": [
         {
