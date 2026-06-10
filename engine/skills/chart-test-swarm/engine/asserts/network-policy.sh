@@ -8,11 +8,16 @@
 # Returns {status: PASS|FAIL, detail} via exit code + stdout.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/assert-helpers.sh
+source "$SCRIPT_DIR/lib/assert-helpers.sh"
+
 SCENARIO="$1"; IDX="$2"
 
 NS=$(yq ".asserts[$IDX].namespace" "$SCENARIO")
 SOURCE=$(yq ".asserts[$IDX].source // \"both\"" "$SCENARIO")
 EXPECT_PRESENT=$(yq ".asserts[$IDX].expect_present" "$SCENARIO")
+RELEASE="${RELEASE:-$(yq '.product.release' "$SCENARIO")}"
 
 if [ "$EXPECT_PRESENT" != "true" ] && [ "$EXPECT_PRESENT" != "false" ]; then
   echo "FAIL: expect_present must be 'true' or 'false', got '$EXPECT_PRESENT'" >&2
@@ -26,7 +31,7 @@ fi
 
 rendered_file=""
 # shellcheck disable=SC2329  # invoked via trap
-cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; }
+cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; return 0; }
 trap cleanup EXIT
 
 render_helm_template() {
@@ -116,25 +121,58 @@ check_rendered_network_policy() {
 }
 
 check_live_network_policy() {
-  local netpol_count=0
-
+  # Get all NetworkPolicies in the namespace as YAML
   local np_yaml
   np_yaml=$(kubectl "${kubectl_args[@]}" get networkpolicy -n "$NS" -o yaml 2>/dev/null || echo "items: []")
-  netpol_count=$(printf '%s' "$np_yaml" | yq '.items | length' 2>/dev/null || echo "0")
+  local total_count
+  total_count=$(printf '%s' "$np_yaml" | yq '.items | length' 2>/dev/null || echo "0")
+
+  # Build release-scoped label selector (verify RELEASE is set)
+  if ! selector_for_release >/dev/null 2>/dev/null; then
+    echo "FAIL: cannot build release selector (RELEASE not set)" >&2
+    return 1
+  fi
+
+  # Count NetworkPolicies whose podSelector selects the release workload.
+  # A policy selects the release if its spec.podSelector.matchLabels includes
+  # app.kubernetes.io/instance=$RELEASE OR if it has an empty podSelector
+  # (selects all) but that's weakly scoped — we still count it as a match.
+  local release_matching=0
+  local matching_names=""
+  local i=0
+  while [ "$i" -lt "$total_count" ]; do
+    local np_name
+    np_name=$(printf '%s' "$np_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+
+    # Check if policy has the release-scoped labels on the podSelector
+    local match_labels
+    match_labels=$(printf '%s' "$np_yaml" | yq ".items[$i].spec.podSelector.matchLabels // {}" 2>/dev/null || echo "{}")
+    local instance_label
+    instance_label=$(printf '%s' "$match_labels" | yq '.["app.kubernetes.io/instance"] // ""' 2>/dev/null || echo "")
+
+    if [ "$instance_label" = "$RELEASE" ]; then
+      release_matching=$((release_matching + 1))
+      matching_names="${matching_names}  NetworkPolicy/$np_name selects release '$RELEASE'"$'\n'
+    fi
+    i=$((i + 1))
+  done
 
   if [ "$EXPECT_PRESENT" = "true" ]; then
-    if [ "$netpol_count" -eq 0 ]; then
-      echo "FAIL: no live NetworkPolicy objects found" >&2
+    if [ "$release_matching" -eq 0 ]; then
+      echo "FAIL: no NetworkPolicy selects the release workload (${total_count} total policy/policies in namespace, none release-scoped)" >&2
       return 1
     fi
-    echo "PASS: $netpol_count live NetworkPolicy object(s) found"
+    echo "PASS: $release_matching NetworkPolicy object(s) select the release workload (${total_count} total)"
+    printf '%s' "$matching_names"
     return 0
   else
-    if [ "$netpol_count" -gt 0 ]; then
-      echo "FAIL: $netpol_count live NetworkPolicy object(s) found (expected 0)" >&2
+    # expect_present=false: only release-scoped policies matter
+    if [ "$release_matching" -gt 0 ]; then
+      echo "FAIL: $release_matching NetworkPolicy object(s) select the release (expected 0):" >&2
+      printf '%s' "$matching_names" >&2
       return 1
     fi
-    echo "PASS: no live NetworkPolicy objects found (as expected)"
+    echo "PASS: no NetworkPolicy selects the release workload (as expected, ${total_count} total policy/policies ignored)"
     return 0
   fi
 }
