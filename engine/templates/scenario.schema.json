@@ -167,7 +167,7 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present", "network-policy-enforced", "mesh-mtls-enforced", "tls-cert-valid", "ingress-routes-traffic", "gateway-routes-traffic"] },
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present", "network-policy-enforced", "mesh-mtls-enforced", "tls-cert-valid", "ingress-routes-traffic", "gateway-routes-traffic", "policy-denies-violation", "rbac-effective", "scheduled-on-target"] },
         "timeout": { "type": "string", "default": "5m", "description": "Per-assert timeout (e.g. 30s, 5m). Used as the overall wait ceiling by wait_with_backoff." },
         "retries": { "type": "integer", "minimum": 0, "default": 0, "description": "Number of retry attempts after the initial probe. 0 means a single attempt. Must be a non-negative integer." }
       },
@@ -399,6 +399,39 @@
             "curl_image":           { "type": "string", "description": "Curl image for in-cluster probing." }
           },
           "required": ["namespace"]
+        },
+        {
+          "description": "L3 behavioral assert: proves an admission policy actually denies a violating object and admits a compliant one. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":              { "const": "policy-denies-violation" },
+            "namespace":         { "type": "string", "description": "Product namespace." },
+            "policy_type":       { "enum": ["kyverno", "gatekeeper", "vap"], "default": "kyverno", "description": "Admission engine type." },
+            "violating_fixture": { "type": "string", "description": "Path relative to PROJECT_DIR of a fixture that SHOULD be denied by the policy." },
+            "compliant_fixture": { "type": "string", "description": "Path relative to PROJECT_DIR of a fixture that SHOULD be admitted by the policy." },
+            "policy_name":       { "type": "string", "description": "Name of the policy/constraint to check for readiness." },
+            "policy_namespace":  { "type": "string", "description": "Namespace where the admission controller pods run." }
+          },
+          "required": ["namespace", "violating_fixture", "compliant_fixture"]
+        },
+        {
+          "description": "L3 behavioral assert: proves RBAC permissions are effectively granted via kubectl auth can-i. SKIPs when the ServiceAccount is absent.",
+          "properties": {
+            "type":             { "const": "rbac-effective" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "service_account":  { "type": "string", "description": "ServiceAccount name (default: release name)." },
+            "granted":          { "type": "array", "items": { "type": "object", "properties": { "verb": {"type": "string"}, "resource": {"type": "string"}, "subresource": {"type": "string"} }, "required": ["verb", "resource"], "additionalProperties": false }, "description": "Verb/resource pairs that SHOULD return 'yes'." },
+            "denied":           { "type": "array", "items": { "type": "object", "properties": { "verb": {"type": "string"}, "resource": {"type": "string"}, "subresource": {"type": "string"} }, "required": ["verb", "resource"], "additionalProperties": false }, "description": "Verb/resource pairs that SHOULD return 'no' (boundary check)." }
+          },
+          "required": ["namespace", "granted"]
+        },
+        {
+          "description": "L3 behavioral assert: proves pods actually land on the targeted node via nodeName verification. SKIPs when no scheduling config or no pods.",
+          "properties": {
+            "type":         { "const": "scheduled-on-target" },
+            "namespace":    { "type": "string", "description": "Product namespace." },
+            "target_label": { "type": "string", "description": "Label key=value that target nodes MUST carry (e.g. 'node-role.kubernetes.io/worker=')." }
+          },
+          "required": ["namespace", "target_label"]
         }
       ]
     }

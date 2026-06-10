@@ -40,4 +40,7 @@ gateway-routes-traffic: L3
 ingress-routes-traffic: L3
 mesh-mtls-enforced: L3
 network-policy-enforced: L3
+policy-denies-violation: L3
+rbac-effective: L3
+scheduled-on-target: L3
 tls-cert-valid: L3
