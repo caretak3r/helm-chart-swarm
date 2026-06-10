@@ -17,12 +17,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pytest
-import yaml
-
 from testgrid.collect import Run, Scenario
 from testgrid.render import render_run
-from testgrid.versions import DEFAULT_ENGINE_VERSIONS, load_engine_defaults
+from testgrid.versions import load_engine_defaults
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -66,7 +63,8 @@ class TestVersionsYamlFormat:
     """
 
     def test_engine_defaults_kubernetes_kind_is_full_patch_format(self) -> None:
-        """kubernetes.kind must be in full patch format (vMAJOR.MINOR.PATCH) for kind --image flag."""
+        """kubernetes.kind must be in full patch format
+        (vMAJOR.MINOR.PATCH) for kind --image flag."""
         config = load_engine_defaults()
         kind_ver = config["kubernetes"]["kind"]
         # Must start with 'v' and have exactly three version components
@@ -129,7 +127,8 @@ class TestRunDetailVersionInfo:
         assert "version" in html.lower(), "Run page must contain version info section"
 
     def test_render_run_shows_k8s_server_version_from_versions_json(self, tmp_path: Path) -> None:
-        """Run detail page must show the k8s server version from artifacts/versions.json (VAL-VER-011)."""
+        """Run detail page must show the k8s server version from
+        artifacts/versions.json (VAL-VER-011)."""
         versions_data = _minimal_versions_json()
         versions_data["k8s_server"] = "v1.31.0"
         art_dir = _make_artifact_dir_with_versions(tmp_path / "scenario-dir", versions_data)

@@ -143,12 +143,10 @@ class TestSkipRankOrdering:
         from testgrid.collect import STATUS_RANK
 
         assert STATUS_RANK["INTERRUPTED"] < STATUS_RANK["SKIP"], (
-            f"SKIP {STATUS_RANK['SKIP']} should be > "
-            f"INTERRUPTED {STATUS_RANK['INTERRUPTED']}"
+            f"SKIP {STATUS_RANK['SKIP']} should be > INTERRUPTED {STATUS_RANK['INTERRUPTED']}"
         )
         assert STATUS_RANK["SKIP"] < STATUS_RANK["AUTHORED"], (
-            f"SKIP {STATUS_RANK['SKIP']} should be < "
-            f"AUTHORED {STATUS_RANK['AUTHORED']}"
+            f"SKIP {STATUS_RANK['SKIP']} should be < AUTHORED {STATUS_RANK['AUTHORED']}"
         )
 
     def test_skip_non_failing_rollup(self) -> None:
@@ -163,9 +161,7 @@ class TestSkipRankOrdering:
             (s.status for s in scenarios),
             key=lambda st: STATUS_RANK.get(st, 99),
         )
-        assert rolled == "SKIP", (
-            f"SKIP + PASS rollup should be SKIP, got {rolled}"
-        )
+        assert rolled == "SKIP", f"SKIP + PASS rollup should be SKIP, got {rolled}"
 
     def test_fail_still_worse_than_skip(self) -> None:
         """FAIL + SKIP: FAIL is worse than SKIP."""
@@ -179,9 +175,7 @@ class TestSkipRankOrdering:
             (s.status for s in scenarios),
             key=lambda st: STATUS_RANK.get(st, 99),
         )
-        assert rolled == "FAIL", (
-            f"FAIL + SKIP rollup should be FAIL, got {rolled}"
-        )
+        assert rolled == "FAIL", f"FAIL + SKIP rollup should be FAIL, got {rolled}"
 
 
 # ---------------------------------------------------------------------------
@@ -221,9 +215,7 @@ class TestSkipKnownStatus:
         )
         run = collect_run(reports, "run-skip-status")
         assert len(run.scenarios) == 1
-        assert run.scenarios[0].status == "SKIP", (
-            f"Expected SKIP, got {run.scenarios[0].status}"
-        )
+        assert run.scenarios[0].status == "SKIP", f"Expected SKIP, got {run.scenarios[0].status}"
 
 
 # ---------------------------------------------------------------------------
@@ -510,9 +502,7 @@ class TestSkipInStatusCounts:
         )
         run = collect_run(reports, "run-no-skip")
         counts = run.status_counts
-        assert "SKIP" not in counts, (
-            f"SKIP should not appear when no SKIP scenarios, got {counts}"
-        )
+        assert "SKIP" not in counts, f"SKIP should not appear when no SKIP scenarios, got {counts}"
 
     def test_status_counts_skip_not_under_unknown(self, tmp_path: Path) -> None:
         """SKIP scenarios are counted under 'SKIP', not 'UNKNOWN'."""
@@ -546,8 +536,7 @@ class TestBundleMirror:
     def test_sync_script_exists(self) -> None:
         """sync-engine.sh exists in the expected location."""
         sync_script = (
-            REPO_ROOT / "engine" / "skills" / "chart-test-swarm"
-            / "scripts" / "sync-engine.sh"
+            REPO_ROOT / "engine" / "skills" / "chart-test-swarm" / "scripts" / "sync-engine.sh"
         )
         assert sync_script.is_file(), f"sync-engine.sh not found at {sync_script}"
 

@@ -13,14 +13,9 @@ Covers:
 
 from __future__ import annotations
 
-import json
-import shutil
 import subprocess
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from testgrid.render import (
     HomeSummary,
@@ -30,7 +25,6 @@ from testgrid.render import (
     render_getting_started,
     render_home,
 )
-
 
 # -----------------------------------------------------------------------------
 # Prerequisites detection tests
@@ -66,7 +60,7 @@ class TestDetectPrerequisites:
             mock_which.side_effect = lambda cmd: (
                 f"/path/to/{cmd}" if cmd in ["kind", "kubectl"] else None
             )
-            prereqs = detect_prerequisites()
+            detect_prerequisites()
             assert (
                 mock_which.call_count >= 7
             )  # At least 7 tools checked (kind, k3d, kubectl, helm, yq, jq, uv)
@@ -311,7 +305,8 @@ class TestGettingStartedPrerequisitesSection:
         # Should have two occurrences of "Kubernetes (kind/k3d)" - one for kind, one for k3d
         display_name_count = html.count("Kubernetes (kind/k3d)")
         assert display_name_count >= 2, (
-            f"Expected at least 2 occurrences of 'Kubernetes (kind/k3d)', found {display_name_count}"
+            f"Expected at least 2 occurrences of 'Kubernetes (kind/k3d)', "
+            f"found {display_name_count}"
         )
 
     def test_seven_tools_detected(self, tmp_path: Path) -> None:
@@ -657,7 +652,6 @@ class TestGettingStartedIntegration:
 
     def test_full_page_build_integration(self, tmp_path: Path) -> None:
         """All render functions work together."""
-        from testgrid.collect import Run, Scenario
 
         # Build home page
         summary = HomeSummary(run_count=1, pass_rate_pct=50.0, open_rec_count=0)

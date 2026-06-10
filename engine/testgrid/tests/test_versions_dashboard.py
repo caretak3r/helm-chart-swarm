@@ -22,19 +22,15 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pytest
 import yaml
 
+from testgrid.render import HomeSummary, render_home, render_runs, render_versions
 from testgrid.versions import (
     VersionRow,
     build_version_rows,
-    get_resolved_config,
-    load_engine_defaults,
-    load_project_overrides,
     log_version_history,
     write_version_edit,
 )
-from testgrid.render import HomeSummary, render_home, render_runs, render_versions
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -451,7 +447,8 @@ class TestLogVersionHistory:
         assert history_file.is_file(), "versions-history.json must be created"
 
     def test_history_entry_has_required_fields(self, tmp_path: Path) -> None:
-        """History entries must have: timestamp, component, old_value, new_value, source_file (VAL-VER-010)."""
+        """History entries must have: timestamp, component, old_value,
+        new_value, source_file (VAL-VER-010)."""
         reports_dir = tmp_path / "reports"
         reports_dir.mkdir()
 

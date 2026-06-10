@@ -20,15 +20,10 @@ Covers VAL-RECPAGE-001 through VAL-RECPAGE-014:
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-import pytest
-
-from testgrid.recommendations import Recommendation, generate_recommendations
 from testgrid.render import render_recommendations
-
 
 # ---------------------------------------------------------------------------
 # Helpers
