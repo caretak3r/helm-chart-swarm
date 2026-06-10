@@ -20,16 +20,20 @@ smoke-script: L0
 # --- L1: presence / static-live ---
 annotations-present: L1
 helm-status-deployed: L1
+hpa-present: L1
 imagepullsecrets-present: L1
 labels-present: L1
 network-policy: L1
+pdb-present: L1
 priority-class-present: L1
+probes-present: L1
 rbac-objects: L1
 resources-present: L1
 scheduling-present: L1
 scheme-enforced: L1
 security-context: L1
 serviceaccount-annotations: L1
+volume-mounts-present: L1
 
 # --- L2: readiness / exec ---
 pods-ready: L2
