@@ -19,10 +19,14 @@ smoke-script: L0
 
 # --- L1: presence / static-live ---
 annotations-present: L1
+dns-config: L1
 helm-status-deployed: L1
+host-network: L1
 hpa-present: L1
 imagepullsecrets-present: L1
+init-containers: L1
 labels-present: L1
+lifecycle-hooks: L1
 network-policy: L1
 pdb-present: L1
 priority-class-present: L1

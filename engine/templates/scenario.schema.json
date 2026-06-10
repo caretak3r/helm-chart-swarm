@@ -167,7 +167,7 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present", "probes-present", "volume-mounts-present", "pdb-present", "hpa-present", "network-policy-enforced", "mesh-mtls-enforced", "tls-cert-valid", "ingress-routes-traffic", "gateway-routes-traffic", "policy-denies-violation", "rbac-effective", "scheduled-on-target"] },
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present", "probes-present", "volume-mounts-present", "pdb-present", "hpa-present", "init-containers", "host-network", "lifecycle-hooks", "dns-config", "network-policy-enforced", "mesh-mtls-enforced", "tls-cert-valid", "ingress-routes-traffic", "gateway-routes-traffic", "policy-denies-violation", "rbac-effective", "scheduled-on-target"] },
         "timeout": { "type": "string", "default": "5m", "description": "Per-assert timeout (e.g. 30s, 5m). Used as the overall wait ceiling by wait_with_backoff." },
         "retries": { "type": "integer", "minimum": 0, "default": 0, "description": "Number of retry attempts after the initial probe. 0 means a single attempt. Must be a non-negative integer." }
       },
@@ -478,6 +478,52 @@
             "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
             "min_replicas":     { "type": "integer", "description": "Expected minReplicas value. Checked when expect_present=true." },
             "max_replicas":     { "type": "integer", "description": "Expected maxReplicas value. Checked when expect_present=true." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: initContainers are rendered on workload pod specs (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "init-containers" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload pod spec MUST carry a non-empty initContainers list. false: no initContainers on any workload." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "names":            { "type": "array", "items": { "type": "string" }, "description": "Expected init container names. Checked when expect_present=true." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: hostNetwork is rendered on workload pod specs (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "host-network" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload pod spec MUST have hostNetwork=true. false: no hostNetwork on any workload." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "check_host_port":  { "type": "boolean", "default": false, "description": "Also verify at least one container port declares a hostPort." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: lifecycle hooks (postStart and/or preStop) are rendered on workload containers (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "lifecycle-hooks" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload container MUST carry the configured lifecycle hook types. false: no lifecycle hooks on any container." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "check_postStart":  { "type": "boolean", "default": true, "description": "Check postStart lifecycle hook on container specs." },
+            "check_preStop":    { "type": "boolean", "default": true, "description": "Check preStop lifecycle hook on container specs." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: dnsPolicy and/or dnsConfig are rendered on workload pod specs (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "dns-config" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload pod spec MUST carry the configured dnsPolicy/dnsConfig. false: no custom DNS settings." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "dns_policy":       { "type": "string", "description": "Expected dnsPolicy value (e.g. None, ClusterFirstWithHostNet). Checked when expect_present=true." },
+            "nameservers":      { "type": "array", "items": { "type": "string" }, "description": "Expected dnsConfig.nameservers entries. Checked when expect_present=true." }
           },
           "required": ["namespace", "expect_present"]
         }
