@@ -167,7 +167,7 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present"] },
+        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present", "network-policy-enforced", "mesh-mtls-enforced"] },
         "timeout": { "type": "string", "default": "5m", "description": "Per-assert timeout (e.g. 30s, 5m). Used as the overall wait ceiling by wait_with_backoff." },
         "retries": { "type": "integer", "minimum": 0, "default": 0, "description": "Number of retry attempts after the initial probe. 0 means a single attempt. Must be a non-negative integer." }
       },
@@ -333,6 +333,30 @@
             "priority_class_name": { "type": "string", "description": "Expected priorityClassName value. Checked when expect_present=true." }
           },
           "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "L3 behavioral assert: proves NetworkPolicy/CiliumNetworkPolicy enforcement — allowed traffic succeeds AND denied traffic is blocked. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":            { "const": "network-policy-enforced" },
+            "namespace":       { "type": "string", "description": "Product namespace." },
+            "port":            { "type": "integer", "default": 80, "description": "Service port to probe." },
+            "allowed_label":   { "type": "string", "default": "access=allowed", "description": "Label for the allowed probe pod." },
+            "expected_status": { "type": "integer", "default": 200, "description": "Expected HTTP status from the allowed probe." },
+            "curl_image":      { "type": "string", "description": "Curl image for in-cluster probing." }
+          },
+          "required": ["namespace"]
+        },
+        {
+          "description": "L3 behavioral assert: proves service mesh mTLS enforcement — plaintext is rejected AND in-mesh traffic succeeds over auto-upgraded mTLS. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":              { "const": "mesh-mtls-enforced" },
+            "namespace":         { "type": "string", "description": "Product namespace." },
+            "port":              { "type": "integer", "default": 80, "description": "Service port to probe." },
+            "mesh_type":         { "enum": ["istio", "linkerd"], "default": "istio", "description": "Service mesh type." },
+            "control_namespace": { "type": "string", "description": "Non-mesh control namespace for plaintext probe." },
+            "curl_image":        { "type": "string", "description": "Curl image for in-cluster probing." }
+          },
+          "required": ["namespace"]
         }
       ]
     }

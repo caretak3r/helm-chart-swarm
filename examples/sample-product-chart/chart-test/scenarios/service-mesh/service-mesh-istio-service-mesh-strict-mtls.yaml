@@ -61,6 +61,10 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/istio-strict-mtls.sh
+  - type: mesh-mtls-enforced
+    namespace: sample
+    port: 80
+    mesh_type: "istio"
 tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
 category: service-mesh

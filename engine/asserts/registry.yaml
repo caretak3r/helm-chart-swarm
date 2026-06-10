@@ -34,3 +34,7 @@ serviceaccount-annotations: L1
 # --- L2: readiness / exec ---
 pods-ready: L2
 service-reachable: L2
+
+# --- L3: behavioral / traffic / enforcement ---
+network-policy-enforced: L3
+mesh-mtls-enforced: L3
