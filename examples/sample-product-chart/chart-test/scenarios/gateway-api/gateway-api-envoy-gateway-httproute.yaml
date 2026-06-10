@@ -47,6 +47,13 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/envoy-gateway-httproute.sh
+  - type: gateway-routes-traffic
+    namespace: sample
+    gateway_host: "sample.sample.svc"
+    gateway_class: "envoy"
+    gateway_name: "sample-gw"
+    route_name: "sample-route"
+    controller_namespace: "envoy-gateway-system"
 tags: [nightly]
 mechanisms: ['addon:envoy-gateway', 'gateway-api:envoy']
 category: gateway-api

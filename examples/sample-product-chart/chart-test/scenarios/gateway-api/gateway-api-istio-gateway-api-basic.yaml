@@ -65,6 +65,13 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/istio-gateway-api-basic.sh
+  - type: gateway-routes-traffic
+    namespace: sample
+    gateway_host: "sample.test.local"
+    gateway_class: "istio"
+    gateway_name: "sample-gw"
+    route_name: "sample-route"
+    controller_namespace: "istio-system"
 tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'gateway-api:istio']
 category: gateway-api
