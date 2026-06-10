@@ -36,7 +36,7 @@ echo "NGINX pod IP: ${NGINX_IP}"
 
 echo "==> Probing HTTP with Host header (expect 200)"
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${HOST}" \
     "http://${NGINX_IP}/" 2>/dev/null || echo "000")

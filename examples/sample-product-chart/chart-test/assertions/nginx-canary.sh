@@ -53,7 +53,7 @@ STABLE_COUNT=0
 
 for i in $(seq 1 "${PROBE_COUNT}"); do
   RESULT=$(kctl -n "${NS}" run "ct-canary-${i}" --rm -i --restart=Never --quiet \
-    --image=quay.io/curl/curl:8.6.0 --timeout=15s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=15s -- \
     sh -c "curl -s -D - --max-time 5 \
       -H 'Host: ${HOST}' \
       'http://${NGINX_IP}/'" 2>/dev/null || echo "")

@@ -46,7 +46,7 @@ echo "Traefik pod IP: ${TRAEFIK_IP}"
 
 echo "==> Probing HTTP with Host header (expect 200)"
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe-crd --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${HOST}" \
     "http://${TRAEFIK_IP}:8000/" 2>/dev/null || echo "000")

@@ -10,7 +10,7 @@ set -euo pipefail
 NS="${NAMESPACE:-sample}"
 RELEASE="${RELEASE:-sample}"
 SVC_PORT=80
-CURL_IMAGE="quay.io/curl/curl:8.6.0"
+CURL_IMAGE="quay.io/curl/curl:8.20.0"
 TIMEOUT=15
 
 kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }

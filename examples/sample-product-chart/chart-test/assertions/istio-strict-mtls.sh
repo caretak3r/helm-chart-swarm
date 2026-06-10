@@ -60,7 +60,7 @@ PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 # Non-mesh pod: no sidecar, plain HTTP → should be rejected under STRICT
 # Create a pod in the non-mesh namespace
 kctl -n "${CTRL_NS}" run ct-nonmesh --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   sleep 300 2>/dev/null || true
 kctl -n "${CTRL_NS}" wait pod ct-nonmesh --for=condition=Ready --timeout=60s || true
 
@@ -80,7 +80,7 @@ fi
 echo "==> In-mesh probe: HTTP from pod with sidecar (expect 200)"
 # Create a dedicated probe pod with sidecar injection
 kctl -n "${NS}" run ct-mesh-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
   sleep 300 2>/dev/null || true
 echo "  Waiting for in-mesh probe pod to be ready (2m max)"

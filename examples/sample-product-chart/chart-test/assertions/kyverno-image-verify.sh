@@ -45,7 +45,7 @@ else
   fi
 fi
 
-echo "==> Phase 2b: Pod with allowlisted image (public.ecr.aws/nginx/nginx:1.27-alpine)"
+echo "==> Phase 2b: Pod with allowlisted image (public.ecr.aws/nginx/nginx:1.29-alpine)"
 if kctl apply --dry-run=server -f "${FIXTURES}/test-pod-trusted-image-kyverno.yaml" 2>&1; then
   echo "PASS: Pod with allowlisted image accepted"
 else

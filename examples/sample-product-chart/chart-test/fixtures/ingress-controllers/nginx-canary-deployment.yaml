@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: canary-backend
-          image: public.ecr.aws/nginx/nginx:1.27-alpine
+          image: public.ecr.aws/nginx/nginx:1.29-alpine
           ports:
             - containerPort: 80
           volumeMounts:

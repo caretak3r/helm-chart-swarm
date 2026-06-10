@@ -105,7 +105,7 @@ echo "==> Probing product Service from an in-mesh test pod"
 PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 
 kctl -n "${NS}" run ct-mesh-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   --overrides='{"metadata":{"annotations":{"linkerd.io/inject":"enabled"}}}' -- \
   sleep 300 2>/dev/null || true
 

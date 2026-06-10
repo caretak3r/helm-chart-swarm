@@ -165,7 +165,7 @@ PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 echo "==> VAL-MSH-007: Creating in-mesh probe pod (ambient-enrolled, no sidecar)"
 # The probe pod must also be in the ambient namespace to route through ztunnel
 kctl -n "${NS}" run ct-ambient-live-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s -- \
   sleep 300 2>/dev/null || true
 
 echo "  Waiting for probe pod to be ready (2m max)"

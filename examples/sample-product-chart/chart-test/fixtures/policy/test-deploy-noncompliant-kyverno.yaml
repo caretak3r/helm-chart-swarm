@@ -17,4 +17,4 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: public.ecr.aws/nginx/nginx:1.27-alpine
+          image: public.ecr.aws/nginx/nginx:1.29-alpine

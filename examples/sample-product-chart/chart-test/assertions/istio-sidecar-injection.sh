@@ -64,7 +64,7 @@ PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 
 # Create a dedicated probe pod with sidecar injection
 kctl -n "${NS}" run ct-mesh-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
   sleep 300 2>/dev/null || true
 

@@ -124,7 +124,7 @@ fi
 echo "==> Probing LB endpoint via in-cluster curl (expect 200)"
 # Use a temporary curl pod in the product namespace
 HTTP_CODE=$(kctl -n "${NS}" run ct-metallb-lb --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${LB_IP}:80/" 2>/dev/null || echo "000")
 

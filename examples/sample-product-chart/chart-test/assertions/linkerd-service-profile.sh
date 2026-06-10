@@ -131,7 +131,7 @@ echo "==> Probing product Service (ServiceProfile routes active)"
 PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-sp-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s \
   --overrides='{"metadata":{"annotations":{"linkerd.io/inject":"disabled"}}}' \
   --attach --rm -i -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 10 \

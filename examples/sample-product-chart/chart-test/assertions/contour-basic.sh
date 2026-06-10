@@ -46,7 +46,7 @@ fi
 
 echo "==> Probing HTTP with Host header (expect 200) on envoy container port 8080"
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${HOST}" \
     "http://${ENVOY_IP}:8080/" 2>/dev/null || echo "000")
@@ -62,7 +62,7 @@ fi
 
 echo "==> Probing HTTP without Host header (expect 404) on envoy container port 8080"
 RAW_NO_HOST_CODE=$(kctl -n "${NS}" run ct-probe-no-host --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${ENVOY_IP}:8080/" 2>/dev/null || echo "000")
 NO_HOST_CODE=$(echo "$RAW_NO_HOST_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)

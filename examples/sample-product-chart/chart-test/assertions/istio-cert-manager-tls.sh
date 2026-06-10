@@ -180,7 +180,7 @@ echo "==> Testing HTTPS through Istio Gateway with TLS"
 # Create a dedicated long-running pod for curl tests (avoids sidecar attach timeout)
 CURL_POD="ct-gw-tls-probe"
 kctl -n "${NS}" delete pod "${CURL_POD}" --ignore-not-found --grace-period=0 --force 2>/dev/null || true
-kctl -n "${NS}" run "${CURL_POD}" --restart=Never --image=quay.io/curl/curl:8.6.0 -- sleep 300
+kctl -n "${NS}" run "${CURL_POD}" --restart=Never --image=quay.io/curl/curl:8.20.0 -- sleep 300
 kctl -n "${NS}" wait pod "${CURL_POD}" --for=condition=Ready --timeout=2m
 echo "PASS: test pod ${CURL_POD} ready"
 

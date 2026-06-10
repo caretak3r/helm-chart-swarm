@@ -29,13 +29,13 @@ kctl create namespace "${CTRL_NS}" --dry-run=client -o yaml | kctl apply -f -
 
 echo "==> Creating non-mesh probe pod in ${CTRL_NS}"
 kctl -n "${CTRL_NS}" run ct-nonmesh --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   sleep 300 2>/dev/null || true
 kctl -n "${CTRL_NS}" wait pod ct-nonmesh --for=condition=Ready --timeout=60s || true
 
 echo "==> Creating in-mesh probe pod in ${NS} with sidecar"
 kctl -n "${NS}" run ct-mesh-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
   sleep 300 2>/dev/null || true
 echo "  Waiting for in-mesh probe pod to be ready (2m max)"

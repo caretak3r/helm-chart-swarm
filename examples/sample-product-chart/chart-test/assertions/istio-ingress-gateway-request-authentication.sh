@@ -160,7 +160,7 @@ INVALID_JWT=$(jwt_sign "https://wrong-issuer.local")
 
 echo "==> Test 1: Request WITHOUT Bearer token → should pass (no deny rule)"
 NOAUTH_CODE=$(kctl -n "${NS}" run ct-ra-noauth --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
@@ -175,7 +175,7 @@ fi
 
 echo "==> Test 2: Request WITH valid JWT → should succeed"
 AUTH_CODE=$(kctl -n "${NS}" run ct-ra-valid --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     -H 'Authorization: Bearer ${VALID_JWT}' \
@@ -193,7 +193,7 @@ echo "==> Test 3: Request WITH invalid JWT (wrong issuer) → should be rejected
 # RequestAuthentication validates JWTs even without AuthorizationPolicy.
 # Invalid tokens (wrong issuer) are rejected with 401.
 INV_CODE=$(kctl -n "${NS}" run ct-ra-invalid --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     -H 'Authorization: Bearer ${INVALID_JWT}' \

@@ -61,7 +61,7 @@ CA_CRT_B64=$(kctl -n "${NS}" get secret "${SECRET_NAME}" -o jsonpath='{.data.ca\
 
 echo "==> Probing HTTPS with --cacert (expect 200 with cert chain rooted at ClusterIssuer CA)"
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-curl-tls --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   sh -c "echo '${CA_CRT_B64}' | base64 -d > /tmp/ca.crt && \
     curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
     --resolve '${HOST}:443:${NGINX_IP}' \

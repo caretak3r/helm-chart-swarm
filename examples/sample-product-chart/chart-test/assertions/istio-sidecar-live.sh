@@ -106,7 +106,7 @@ PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 
 echo "==> VAL-MSH-003: Creating in-mesh probe pod with sidecar injection"
 kctl -n "${NS}" run ct-sidecar-live-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
   sleep 300 2>/dev/null || true
 

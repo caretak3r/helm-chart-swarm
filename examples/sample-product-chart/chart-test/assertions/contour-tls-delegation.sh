@@ -68,7 +68,7 @@ echo "envoy pod IP: ${ENVOY_IP}"
 
 echo "==> Probing HTTPS (expect 200) on envoy container port 8443"
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe-tls --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 --insecure \
     --resolve "${HOST}:8443:${ENVOY_IP}" \
     "https://${HOST}:8443/" 2>/dev/null || echo "000")

@@ -30,7 +30,7 @@ echo "NGINX pod IP: ${NGINX_IP}"
 
 echo "==> Probing HTTP without Host header (should hit custom default backend)"
 RAW_BODY=$(kctl -n "${NS}" run ct-probe-def --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s --max-time 15 \
     "http://${NGINX_IP}/" 2>/dev/null || echo "")
 BODY="${RAW_BODY}"
@@ -46,7 +46,7 @@ fi
 
 echo "==> Verifying Host-matched request still reaches product Service"
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe-host --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: sample.test.local" \
     "http://${NGINX_IP}/" 2>/dev/null || echo "000")

@@ -84,7 +84,7 @@ echo "  Gateway pod IP: ${GW_POD_IP}"
 
 echo "==> Probing product through istio ingress gateway"
 HTTP_CODE=$(kctl -n "${NS}" run ct-igw-probe --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
@@ -97,7 +97,7 @@ else
   echo "FAIL: expected HTTP 200, got ${HTTP_CODE}" >&2
   # Debug: try verbose curl
   kctl -n "${NS}" run ct-igw-debug --restart=Never --rm -i \
-    --image=quay.io/curl/curl:8.6.0 --timeout=30s \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s \
     -- sh -c "curl -v --max-time 15 -H 'Host: ${RELEASE}.test.local' \
       'http://${GW_POD_IP}:80/'" 2>&1 || true
   exit 1

@@ -42,7 +42,7 @@ echo "==> Sending ${LIMIT} requests at ≤limit rate (expect all 200)"
 ALL_OK=1
 for i in $(seq 1 "${LIMIT}"); do
   RAW_CODE=$(kctl -n "${NS}" run "ct-rl-und-${i}" --rm -i --restart=Never --quiet \
-    --image=quay.io/curl/curl:8.6.0 --timeout=20s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=20s -- \
     curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
       -H "Host: ${HOST}" \
       "http://${ENVOY_IP}:8080/" 2>/dev/null || echo "000")
@@ -63,7 +63,7 @@ echo "==> Sending $((${LIMIT} * 3)) requests above limit rate (expect at least o
 GOT_429=0
 for i in $(seq 1 $((${LIMIT} * 3))); do
   RAW_CODE=$(kctl -n "${NS}" run "ct-rl-over-${i}" --rm -i --restart=Never --quiet \
-    --image=quay.io/curl/curl:8.6.0 --timeout=20s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=20s -- \
     curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
       -H "Host: ${HOST}" \
       "http://${ENVOY_IP}:8080/" 2>/dev/null || echo "000")

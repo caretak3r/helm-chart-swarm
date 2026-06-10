@@ -90,7 +90,7 @@ echo "  Gateway pod IP: ${GW_POD_IP}"
 
 echo "==> Probing skywatcher host through gateway"
 SW_CODE=$(kctl -n "${NS}" run ct-igw-sw --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: skywatcher.${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
@@ -99,7 +99,7 @@ echo "  Skywatcher HTTP code: ${SW_CODE}"
 
 echo "==> Probing api host through gateway"
 API_CODE=$(kctl -n "${NS}" run ct-igw-api --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: api.${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
