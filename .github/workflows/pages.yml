@@ -30,7 +30,15 @@ jobs:
       - name: Disable Jekyll processing
         run: touch reports/dist/.nojekyll
 
+      # The generated index.html is the legacy runs table (its successor lives at
+      # runs.html); home.html is the real portal with full nav. GitHub Pages serves
+      # index.html at the root, so promote the portal to root. See render.py render_home.
+      - name: Promote portal page to site root
+        run: cp reports/dist/home.html reports/dist/index.html
+
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
