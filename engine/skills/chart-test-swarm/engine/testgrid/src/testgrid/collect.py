@@ -31,8 +31,9 @@ STATUS_RANK = {
     "UNTESTED": 2,
     "INCONCLUSIVE": 3,
     "INTERRUPTED": 4,
-    "AUTHORED": 5,
-    "PASS": 6,
+    "SKIP": 5,
+    "AUTHORED": 6,
+    "PASS": 7,
 }
 
 KNOWN_STATUSES = frozenset(STATUS_RANK.keys()) | {"UNKNOWN"}
@@ -49,6 +50,7 @@ class Assertion:
     type: str
     status: str
     notes: str = ""
+    depth_level: str = ""
 
 
 @dataclass
@@ -202,6 +204,7 @@ def _scenario_from_result(doc: dict[str, Any], agent: int | None) -> Scenario:
             type=a.get("type", ""),
             status=(a.get("status") or "UNKNOWN").strip(),
             notes=(a.get("notes") or "").strip(),
+            depth_level=str(a.get("depth_level", "") or "").strip(),
         )
         for a in (doc.get("asserts") or [])
     ]

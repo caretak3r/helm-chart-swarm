@@ -846,7 +846,8 @@ class TestStatusRankOrdering:
         )
 
     def test_status_rank_full_ordering(self) -> None:
-        """FAIL(0) < PARTIAL(1) < UNTESTED(2) < INCONCLUSIVE(3) < INTERRUPTED(4) < AUTHORED(5) < PASS(6)."""
+        """FAIL(0) < PARTIAL(1) < UNTESTED(2) < INCONCLUSIVE(3)
+        < INTERRUPTED(4) < SKIP(5) < AUTHORED(6) < PASS(7)."""
         from testgrid.collect import STATUS_RANK
 
         assert STATUS_RANK["FAIL"] == 0
@@ -854,8 +855,9 @@ class TestStatusRankOrdering:
         assert STATUS_RANK["UNTESTED"] == 2
         assert STATUS_RANK["INCONCLUSIVE"] == 3
         assert STATUS_RANK["INTERRUPTED"] == 4
-        assert STATUS_RANK["AUTHORED"] == 5
-        assert STATUS_RANK["PASS"] == 6
+        assert STATUS_RANK["SKIP"] == 5
+        assert STATUS_RANK["AUTHORED"] == 6
+        assert STATUS_RANK["PASS"] == 7
         # Verify monotonic
         ranks = [
             STATUS_RANK[k]
@@ -865,6 +867,7 @@ class TestStatusRankOrdering:
                 "UNTESTED",
                 "INCONCLUSIVE",
                 "INTERRUPTED",
+                "SKIP",
                 "AUTHORED",
                 "PASS",
             ]

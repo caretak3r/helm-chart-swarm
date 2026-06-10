@@ -199,7 +199,7 @@ class TestVariantGroupProperties:
         assert rolled == "PASS"
 
     def test_rolled_status_mixed_with_partial(self) -> None:
-        """PASS + PARTIAL + FAIL -> rolled is FAIL (STATUS_RANK: FAIL=0, PARTIAL=1)."""
+        """PASS + PARTIAL + FAIL -> rolled is FAIL (STATUS_RANK: FAIL=0, PARTIAL=1, PASS=7)."""
         from testgrid.collect import STATUS_RANK, Scenario
 
         scenarios = [
@@ -259,7 +259,7 @@ class TestVariantGroupProperties:
         breakdown = " / ".join(parts)
 
         # STATUS_RANK order: FAIL=0, PARTIAL=1, UNTESTED=2, INCONCLUSIVE=3,
-        # AUTHORED=4, PASS=5. So FAIL comes before PASS.
+        # INTERRUPTED=4, SKIP=5, AUTHORED=6, PASS=7. So FAIL comes before PASS.
         assert breakdown == "1 FAIL / 2 PASS", (
             f"Expected '1 FAIL / 2 PASS' (STATUS_RANK order), got '{breakdown}'"
         )
@@ -729,5 +729,5 @@ class TestVariantGroupingEdgeCases:
             Scenario(id="sc-3", status="MADE_UP_STATUS"),
         ]
         rolled = min((s.status for s in scenarios), key=lambda st: STATUS_RANK.get(st, 99))
-        # MADE_UP_STATUS has rank 99, PASS has rank 4, so PASS should be rolled
+        # MADE_UP_STATUS has rank 99, PASS has rank 7, so PASS should be rolled
         assert rolled == "PASS"
