@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: resources-present — validates presence or absence of resource
 # requests/limits on workload containers.
 # When expect_present=true, asserts that every workload container carries

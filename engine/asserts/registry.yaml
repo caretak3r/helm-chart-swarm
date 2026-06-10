@@ -1,0 +1,36 @@
+# Assertion Depth Registry — maps every engine assert type to a declared depth
+# in the L0-L3 taxonomy (architecture §3.A).
+#
+# Depth taxonomy:
+#   L0 — render-only: static analysis of helm template output; no live cluster needed.
+#   L1 — presence / static-live: queries live Kubernetes API for object presence,
+#         does NOT check behavioral semantics.
+#   L2 — readiness / exec: validates objects are in their intended operational state
+#         (readiness, connectivity, process execution).
+#   L3 — behavioral / traffic / enforcement: exercises real traffic, validates
+#         policy enforcement, proves actual behavior beyond mere object presence.
+#
+# Every engine assert script MUST carry a `# DEPTH: Lx` header matching its entry here.
+# sweep-scenarios.sh enforces header/registry consistency and blocks scenarios that
+# reference unregistered assert types.
+
+# --- L0: render-only ---
+smoke-script: L0
+
+# --- L1: presence / static-live ---
+annotations-present: L1
+helm-status-deployed: L1
+imagepullsecrets-present: L1
+labels-present: L1
+network-policy: L1
+priority-class-present: L1
+rbac-objects: L1
+resources-present: L1
+scheduling-present: L1
+scheme-enforced: L1
+security-context: L1
+serviceaccount-annotations: L1
+
+# --- L2: readiness / exec ---
+pods-ready: L2
+service-reachable: L2

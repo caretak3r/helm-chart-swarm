@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: labels-present — every rendered/live object carries the configured
 # extra labels. Introspects helm template output and/or live kubectl get -o yaml.
 # Returns {status: PASS|FAIL, detail} via exit code + stdout.

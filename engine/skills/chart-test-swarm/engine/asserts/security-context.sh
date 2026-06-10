@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: security-context — validates presence or absence of pod-level and
 # container-level securityContext fields on workload objects.
 # When expect_present=true, asserts that configured podSecurityContext and

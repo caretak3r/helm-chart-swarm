@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: scheduling-present — validates presence or absence of scheduling knobs
 # (nodeSelector, tolerations, affinity, topologySpreadConstraints) on workload
 # pod specs.

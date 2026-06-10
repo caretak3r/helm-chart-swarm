@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: priority-class-present — validates presence or absence of
 # priorityClassName on workload pod specs.
 # When expect_present=true, asserts that every workload pod spec carries

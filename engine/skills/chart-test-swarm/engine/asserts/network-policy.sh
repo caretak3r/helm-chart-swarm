@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: network-policy — validates presence or absence of NetworkPolicy objects.
 # When expect_present=true, asserts that at least one NetworkPolicy is rendered
 # whose spec.podSelector matches the chart's workload selector labels.

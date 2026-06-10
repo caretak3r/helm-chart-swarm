@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L2
 # Assert: all pods in target namespace (optionally matching a label selector)
 # reach condition=Ready within timeout.
 set -euo pipefail

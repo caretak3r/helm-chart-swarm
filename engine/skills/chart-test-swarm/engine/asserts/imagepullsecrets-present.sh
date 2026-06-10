@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: imagepullsecrets-present — validates presence or absence of
 # imagePullSecrets on workload pod specs and optionally on the chart's
 # ServiceAccount.

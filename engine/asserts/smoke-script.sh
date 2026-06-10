@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L0
 # Assert: invoke a consumer-owned script. Contract:
 #   - script receives RELEASE, NAMESPACE, KUBECONFIG, KUBE_CONTEXT, PROJECT_DIR via env
 #   - exit 0 = PASS, non-zero = FAIL

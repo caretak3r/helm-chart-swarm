@@ -3,7 +3,10 @@
 #
 # Runs check-jsonschema CLI against every scenario YAML found under the
 # examples directory (or a configurable root), validating each against
-# the project's scenario.schema.json. Exits 0 only if ALL scenarios pass.
+# the project's scenario.schema.json. Also enforces that every assert type
+# referenced by any scenario has a declared depth in the engine depth registry
+# AND that each engine assert script's # DEPTH: header matches its registry entry.
+# Exits 0 only if ALL scenarios pass and depth enforcement passes.
 #
 # Usage:   sweep-scenarios.sh [OPTIONS]
 # Options: --root <dir>   Override scenarios search root (default: examples/)
@@ -100,11 +103,74 @@ for f in "${SCENARIOS[@]}"; do
   fi
 done
 
+# ── Depth Registry Enforcement (architecture §3.A.3) ──────────────────────
+REGISTRY="$ENGINE_DIR/asserts/registry.yaml"
+echo ""
+echo "==> Depth Registry Enforcement"
+
+DEPTH_FAIL=0
+
+if [ ! -f "$REGISTRY" ]; then
+  echo "  FAIL: depth registry not found: $REGISTRY" >&2
+  DEPTH_FAIL=1
+else
+  # Validate all registry values are within {L0,L1,L2,L3}
+  echo "── Validating registry depth values ──"
+  while IFS=':' read -r rtype rdepth; do
+    rtype="${rtype// /}"   # trim whitespace
+    rdepth="${rdepth// /}"
+    if [ -z "$rtype" ] && [ -z "$rdepth" ]; then continue; fi
+    case "$rdepth" in
+      L0|L1|L2|L3) ;;
+      *) echo "  FAIL: registry type '$rtype' has invalid depth '$rdepth' (expected L0|L1|L2|L3)" >&2; DEPTH_FAIL=$((DEPTH_FAIL + 1)) ;;
+    esac
+  done < <(yq 'to_entries[] | "\(.key):\(.value)"' "$REGISTRY" 2>/dev/null || echo "")
+
+  # Check every engine assert script carries a # DEPTH: Lx header matching the registry
+  echo "── Checking engine assert DEPTH headers vs registry ──"
+  for script in "$ENGINE_DIR"/asserts/*.sh; do
+    if [ ! -f "$script" ]; then continue; fi
+    type=$(basename "$script" .sh)
+    header_depth=$(grep '^# DEPTH: L[0-3]' "$script" 2>/dev/null | head -1 | awk '{print $NF}')
+    registry_depth=$(yq ".[\"$type\"]" "$REGISTRY" 2>/dev/null || echo "")
+    if [ -z "$header_depth" ]; then
+      echo "  FAIL: $type — missing # DEPTH: header" >&2
+      DEPTH_FAIL=$((DEPTH_FAIL + 1))
+    elif [ "$header_depth" != "$registry_depth" ]; then
+      echo "  FAIL: $type — header=$header_depth registry=$registry_depth" >&2
+      DEPTH_FAIL=$((DEPTH_FAIL + 1))
+    fi
+  done
+
+  # Check every scenario-referenced assert type has a declared depth in the registry
+  echo "── Checking scenario assert types vs depth registry ──"
+  for f in "${SCENARIOS[@]}"; do
+    rel="${f#"$ROOT_DIR"/}"
+    while IFS= read -r t; do
+      [ -z "$t" ] && continue
+      [ "$t" = "null" ] && continue
+      depth=$(yq ".[\"$t\"]" "$REGISTRY" 2>/dev/null || echo "")
+      if [ -z "$depth" ] || [ "$depth" = "null" ]; then
+        echo "  FAIL: $rel references unregistered assert type '$t'" >&2
+        DEPTH_FAIL=$((DEPTH_FAIL + 1))
+      fi
+    done < <(yq '.asserts[].type' "$f" 2>/dev/null || true)
+  done
+fi
+
+if [ "$DEPTH_FAIL" -gt 0 ]; then
+  echo "  FAIL: $DEPTH_FAIL depth enforcement issue(s)"
+  FAIL=$((FAIL + 1))
+  FAILS+=("depth-enforcement")
+else
+  echo "  OK: depth enforcement passed"
+fi
+
 echo ""
 echo "==> Sweep complete: $PASS passed, $FAIL failed"
 
 if [ $FAIL -gt 0 ]; then
-  echo "==> Failed scenarios:" >&2
+  echo "==> Failed scenarios/checks:" >&2
   for f in "${FAILS[@]}"; do
     echo "    $f" >&2
   done

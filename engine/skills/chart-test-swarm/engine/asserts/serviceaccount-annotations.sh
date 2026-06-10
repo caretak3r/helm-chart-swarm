@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: serviceaccount-annotations — validates presence or absence of
 # cloud-identity annotations (IRSA, Azure workload identity, GKE WI)
 # on the chart's ServiceAccount.

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L2
 # Assert: HTTP GET against an in-cluster service returns the expected status.
 # Runs from an ephemeral curlimages/curl pod in the service's namespace.
 set -euo pipefail

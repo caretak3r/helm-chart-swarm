@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: rbac-objects — validates presence or absence of RBAC objects
 # (ServiceAccount, Role, RoleBinding, ClusterRole, ClusterRoleBinding).
 # When expect_present=true, also validates wiring (roleRef, subjects, serviceAccountName).
