@@ -512,15 +512,22 @@ capture_gateway_crds_version() {
 } > "$RESULT"
 
 emit_assert() {
-  # $1=type $2=status $3=notes
+  # $1=type $2=status $3=notes [$4=depth_level] [$5=detail]
   local t="$1" s="$2" n="$3"
+  local depth="${4:-}"
+  local detail="${5:-}"
   {
     echo "  - type: $t"
     echo "    status: $s"
+    [ -n "$depth" ] && echo "    depth_level: $depth"
+    [ -n "$detail" ] && echo "    detail: $detail"
     printf '    notes: |\n'
     printf '      %s\n' "${n//$'\n'/$'\n      '}"
   } >> "$RESULT"
 }
+
+# ── Source the output-contract helpers (lookup_depth / parse_assert_log) ──
+. "$SCRIPT_DIR/lib/output-contract.sh"
 
 fail() {
   local stage="$1" msg="$2"
@@ -867,8 +874,11 @@ for i in $(seq 0 $((acount - 1))); do
   echo ""
   echo "==> assert[$i] type=$atype"
 
+  # ── Resolve depth_level from the registry before dispatch ─────────
+  depth=$(lookup_depth "$atype")
+
   if [ ! -x "$ASSERTS_DIR/${atype}.sh" ]; then
-    emit_assert "$atype" FAIL "no runner at $ASSERTS_DIR/${atype}.sh"
+    emit_assert "$atype" FAIL "no runner at $ASSERTS_DIR/${atype}.sh" "$depth"
     overall=FAIL
     continue
   fi
@@ -880,13 +890,22 @@ for i in $(seq 0 $((acount - 1))); do
   export ASSERT_INDEX="$i"
   export SCENARIO
 
-  if PROJECT_DIR="$PROJECT_DIR" bash "$ASSERTS_DIR/${atype}.sh" "$SCENARIO" "$i" \
-       > "$alog" 2>&1; then
-    notes="$(tail -n 20 "$alog" | sed 's/[[:cntrl:]]//g')"
-    emit_assert "$atype" PASS "$notes"
-  else
-    notes="$(tail -n 40 "$alog" | sed 's/[[:cntrl:]]//g')"
-    emit_assert "$atype" FAIL "$notes"
+  set +e
+  PROJECT_DIR="$PROJECT_DIR" bash "$ASSERTS_DIR/${atype}.sh" "$SCENARIO" "$i" \
+       > "$alog" 2>&1
+  _assert_ec=$?
+  set -e
+
+  # ── Parse structured output contract, with exit-code fallback ─────
+  parse_assert_log "$alog" "$_assert_ec"
+
+  # ── Capture notes (PASS → tail 20, FAIL → tail 40) ────────────────
+  notes="$(tail -n 20 "$alog" | sed 's/[[:cntrl:]]//g')"
+  [ "$_PARSED_RESULT" != "PASS" ] && notes="$(tail -n 40 "$alog" | sed 's/[[:cntrl:]]//g')"
+
+  emit_assert "$atype" "$_PARSED_RESULT" "$notes" "$depth" "${_PARSED_DETAIL:-}"
+
+  if [ "$_PARSED_RESULT" = "FAIL" ]; then
     overall=FAIL
   fi
 done
