@@ -8,16 +8,33 @@
 #
 # Both functions depend on:
 #   $ENGINE_DIR   (set by the caller before sourcing)
+# lookup_depth also uses $PROJECT_DIR for consumer registry layering.
 
 # ── Depth registry lookup ────────────────────────────────────────────
-# Resolves the declared depth_level for an assert type from the engine
-# registry.  Returns empty string when the type or registry is absent.
+# Resolves the declared depth_level for an assert type from the merged
+# registry (consumer overrides engine).  Returns empty string when the
+# type or both registries are absent.
+# Consumer registry: $PROJECT_DIR/chart-test/asserts/registry.yaml
+# Engine registry:  $ENGINE_DIR/asserts/registry.yaml
 lookup_depth() {
   local assert_type="$1"
-  local registry_file="${ENGINE_DIR:-}/asserts/registry.yaml"
-  if [ -f "$registry_file" ] && command -v yq >/dev/null 2>&1; then
+  local consumer_registry="${PROJECT_DIR:-}/chart-test/asserts/registry.yaml"
+  local engine_registry="${ENGINE_DIR:-}/asserts/registry.yaml"
+
+  # Consumer registry wins (if it exists and declares this type).
+  if [ -f "$consumer_registry" ] && command -v yq >/dev/null 2>&1; then
     local depth
-    depth=$(yq ".[\"$assert_type\"]" "$registry_file" 2>/dev/null) || true
+    depth=$(yq ".[\"$assert_type\"]" "$consumer_registry" 2>/dev/null) || true
+    if [ -n "$depth" ] && [ "$depth" != "null" ]; then
+      echo "$depth"
+      return
+    fi
+  fi
+
+  # Fall back to engine registry.
+  if [ -f "$engine_registry" ] && command -v yq >/dev/null 2>&1; then
+    local depth
+    depth=$(yq ".[\"$assert_type\"]" "$engine_registry" 2>/dev/null) || true
     if [ -n "$depth" ] && [ "$depth" != "null" ]; then
       echo "$depth"
     else

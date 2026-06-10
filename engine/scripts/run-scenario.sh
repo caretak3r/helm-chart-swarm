@@ -877,13 +877,34 @@ for i in $(seq 0 $((acount - 1))); do
   # ── Resolve depth_level from the registry before dispatch ─────────
   depth=$(lookup_depth "$atype")
 
-  if [ ! -x "$ASSERTS_DIR/${atype}.sh" ]; then
-    emit_assert "$atype" FAIL "no runner at $ASSERTS_DIR/${atype}.sh" "$depth"
+  # ── Consumer-first assert resolution (Area E, architecture §3.E.1) ─
+  # Prefer $PROJECT_DIR/chart-test/asserts/<type>.sh when present AND
+  # executable; otherwise fall back to the engine assert.
+  consumer_assert="${PROJECT_DIR:-}/chart-test/asserts/${atype}.sh"
+  engine_assert="$ASSERTS_DIR/${atype}.sh"
+  resolved=""
+
+  if [ -x "$consumer_assert" ]; then
+    # Consumer wins: present AND executable (VAL-PLUGGABLE-001, -002)
+    resolved="$consumer_assert"
+  elif [ -x "$engine_assert" ]; then
+    # Engine fallback: consumer absent, non-executable, or not found
+    # (VAL-PLUGGABLE-003, -004, -005)
+    resolved="$engine_assert"
+  elif [ -f "$consumer_assert" ]; then
+    # Consumer exists but not executable, no engine fallback
+    # (VAL-PLUGGABLE-006)
+    emit_assert "$atype" FAIL "no runner at $consumer_assert (not executable)" "$depth"
+    overall=FAIL
+    continue
+  else
+    # Neither consumer nor engine has a runner
+    emit_assert "$atype" FAIL "no runner at $engine_assert" "$depth"
     overall=FAIL
     continue
   fi
 
-  # Export everything an assert might need.
+  # Export everything an assert might need (VAL-PLUGGABLE-007).
   export RELEASE="$PRODUCT_RELEASE"
   export NAMESPACE="$PRODUCT_NS"
   export PROJECT_DIR
@@ -891,20 +912,23 @@ for i in $(seq 0 $((acount - 1))); do
   export SCENARIO
 
   set +e
-  PROJECT_DIR="$PROJECT_DIR" bash "$ASSERTS_DIR/${atype}.sh" "$SCENARIO" "$i" \
+  PROJECT_DIR="$PROJECT_DIR" bash "$resolved" "$SCENARIO" "$i" \
        > "$alog" 2>&1
   _assert_ec=$?
   set -e
 
   # ── Parse structured output contract, with exit-code fallback ─────
+  # Consumer assert exit-code contract preserved (VAL-PLUGGABLE-008):
+  # exit 0 → PASS, non-zero → FAIL (unless overridden by ASSERTION_RESULT).
   parse_assert_log "$alog" "$_assert_ec"
 
-  # ── Capture notes (PASS → tail 20, FAIL → tail 40) ────────────────
+  # ── Capture notes (PASS → tail 20, FAIL/SKIP → tail 40) ───────────
   notes="$(tail -n 20 "$alog" | sed 's/[[:cntrl:]]//g')"
   [ "$_PARSED_RESULT" != "PASS" ] && notes="$(tail -n 40 "$alog" | sed 's/[[:cntrl:]]//g')"
 
   emit_assert "$atype" "$_PARSED_RESULT" "$notes" "$depth" "${_PARSED_DETAIL:-}"
 
+  # SKIP is non-failing (VAL-CROSS-003): only FAIL flips overall.
   if [ "$_PARSED_RESULT" = "FAIL" ]; then
     overall=FAIL
   fi
