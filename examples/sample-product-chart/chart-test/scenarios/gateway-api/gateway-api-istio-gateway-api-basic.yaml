@@ -72,6 +72,7 @@ asserts:
     gateway_name: "sample-gw"
     route_name: "sample-route"
     controller_namespace: "istio-system"
+    expected_status: 200
 tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'gateway-api:istio']
 category: gateway-api

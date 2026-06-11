@@ -71,6 +71,7 @@ asserts:
     controller_namespace: "kong"
     controller_label: "app.kubernetes.io/name=kong"
     controller_port: 8000
+    expected_status: 200
 tags: [nightly, curated-live]
 mechanisms: ['addon:kong']
 category: networking

@@ -70,6 +70,7 @@ asserts:
     controller_namespace: "traefik"
     controller_label: "app.kubernetes.io/name=traefik"
     controller_port: 8000
+    expected_status: 200
 tags: [nightly, curated-live]
 mechanisms: ['addon:traefik']
 category: networking

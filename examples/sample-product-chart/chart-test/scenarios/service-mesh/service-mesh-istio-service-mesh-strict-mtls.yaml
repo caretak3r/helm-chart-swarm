@@ -65,6 +65,7 @@ asserts:
     namespace: sample
     port: 80
     mesh_type: "istio"
+    control_namespace: "sample-plain"
 tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
 category: service-mesh

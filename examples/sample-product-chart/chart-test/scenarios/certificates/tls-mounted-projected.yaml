@@ -35,6 +35,9 @@ asserts:
   - type: tls-cert-valid
     namespace: sample
     tls_secret: "mounted-tls-projected"
+    tls_host: "sample.sample.svc"
+    port: 443
+    expected_status: 200
 tags: [nightly, curated-live]
 mechanisms: ['addon:mounted-tls-certs']
 category: certificates

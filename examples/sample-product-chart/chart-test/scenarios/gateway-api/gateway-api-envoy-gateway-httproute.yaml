@@ -54,6 +54,7 @@ asserts:
     gateway_name: "sample-gw"
     route_name: "sample-route"
     controller_namespace: "envoy-gateway-system"
+    expected_status: 200
 tags: [nightly]
 mechanisms: ['addon:envoy-gateway', 'gateway-api:envoy']
 category: gateway-api
