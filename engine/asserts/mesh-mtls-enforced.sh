@@ -237,6 +237,17 @@ kctl -n "${NS}" delete pod ct-mme-mesh --ignore-not-found --timeout=30s 2>/dev/n
 
 case "${MESH_TYPE}" in
   istio)
+    # Wait for Istio sidecar injector webhook to be ready before creating the probe pod.
+    echo "  Waiting for istio-sidecar-injector webhook (up to 60s)"
+    for _wi in $(seq 1 20); do
+      if kctl get mutatingwebhookconfiguration istio-sidecar-injector >/dev/null 2>&1; then
+        echo "  istio-sidecar-injector webhook registered"
+        break
+      fi
+      [ "$_wi" -eq 20 ] && echo "  WARN: istio-sidecar-injector webhook not found after 60s"
+      sleep 3
+    done
+    sleep 5
     # Istio: request sidecar injection via annotation
     kctl -n "${NS}" run ct-mme-mesh --restart=Never \
       --image="${CURL_IMAGE}" --pod-running-timeout="${PTIMEOUT}" \
@@ -262,12 +273,21 @@ echo ""
 echo "==> Phase 3b: Verifying sidecar was injected into in-mesh probe pod"
 
 SIDECAR_FOUND=0
-CONTAINER_COUNT=$(kctl -n "${NS}" get pod ct-mme-mesh -o jsonpath='{.spec.containers[*].name}' 2>/dev/null | wc -w || echo "0")
-if [ "${CONTAINER_COUNT:-0}" -ge 2 ]; then
+# Check BOTH spec.containers and spec.initContainers for the sidecar.
+# Istio 1.25+ on K8s 1.28+ uses native sidecar injection (initContainer
+# with restartPolicy=Always), so istio-proxy appears in spec.initContainers.
+REG_CONTAINERS=$(kctl -n "${NS}" get pod ct-mme-mesh -o jsonpath='{.spec.containers[*].name}' 2>/dev/null || echo "")
+INIT_CONTAINERS=$(kctl -n "${NS}" get pod ct-mme-mesh -o jsonpath='{.spec.initContainers[*].name}' 2>/dev/null || echo "")
+ALL_CONTAINERS="${REG_CONTAINERS} ${INIT_CONTAINERS}"
+CONTAINER_COUNT=$(echo "$ALL_CONTAINERS" | wc -w | tr -d ' ')
+if [ "${CONTAINER_COUNT:-0}" -ge 2 ] && echo "$ALL_CONTAINERS" | grep -q "istio-proxy\|linkerd-proxy"; then
   SIDECAR_FOUND=1
-  echo "  Pod has ${CONTAINER_COUNT} containers (sidecar injection confirmed)"
+  echo "  Pod has ${CONTAINER_COUNT} total containers (regular + init): ${ALL_CONTAINERS}"
+  echo "  Sidecar injection confirmed"
 else
-  echo "WARN: in-mesh probe pod has only ${CONTAINER_COUNT:-0} container(s) — sidecar may not be injected"
+  echo "WARN: in-mesh probe pod has only ${CONTAINER_COUNT:-0} total container(s) — sidecar may not be injected"
+  echo "  spec.containers: ${REG_CONTAINERS}"
+  echo "  spec.initContainers: ${INIT_CONTAINERS}"
 fi
 
 # ── Phase 4: In-mesh probe — MUST succeed over auto-upgraded mTLS ────────
@@ -305,10 +325,16 @@ case "${MESH_TYPE}" in
       printf '%s' "$ssl_handshakes" | while IFS= read -r line; do echo "    $line"; done
       echo "  mTLS negotiation confirmed via Envoy ssl.handshake counters"
     else
-      # Fallback: try inspecting the sidecar's listeners to confirm mTLS
-      listeners_mtls=$(kctl -n "${NS}" exec ct-mme-mesh -c istio-proxy -- \
-        pilot-agent request GET listeners 2>/dev/null | \
-        grep -c 'ssl' 2>/dev/null || echo "0")
+      # Fallback: try inspecting the sidecar's listeners to confirm mTLS.
+      # Use separate capture to avoid pipefail double-output issue.
+      _listeners_raw=$(kctl -n "${NS}" exec ct-mme-mesh -c istio-proxy -- \
+        pilot-agent request GET listeners 2>/dev/null) || _listeners_raw=""
+      listeners_mtls=0
+      if [ -n "$_listeners_raw" ]; then
+        listeners_mtls=$(printf '%s' "$_listeners_raw" | grep -c 'ssl' 2>/dev/null || echo "0")
+        # Sanitize: extract first integer only
+        listeners_mtls=$(printf '%s' "$listeners_mtls" | grep -oE '^[0-9]+' || echo "0")
+      fi
       if [ "${listeners_mtls:-0}" -gt 0 ]; then
         MTLS_EVIDENCE="ssl_listeners:${listeners_mtls}"
         echo "  mTLS listeners: ${listeners_mtls} (mTLS configuration confirmed via Envoy)"

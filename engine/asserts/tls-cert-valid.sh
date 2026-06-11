@@ -154,27 +154,29 @@ echo ""
 echo "==> Probing HTTPS with --cacert verification (expect HTTP ${EXPECTED_STATUS})"
 
 PROBE_POD="ct-tcv-$$"
-PROBE_OUT=$(mktemp /tmp/tcv-probe-XXXXXX)
 
 # Encode CA cert for passing into the probe pod
 CA_BASE64=""
 CA_BASE64=$(base64 < "$TMPDIR/ca.crt" | tr -d '\n' 2>/dev/null || echo "")
 
-kctl -n "${NS}" run "${PROBE_POD}" --rm -i --restart=Never --quiet \
+# Use $() capture (not temp-file redirect) so kubectl's stdout is captured
+# correctly by the subshell.  The `|| echo "000"` fallback ensures a value
+# is always available; grep+tail then extracts the last 3-digit code to handle
+# the kubectl double-output case ("200200" → "200").
+CURL_RAW=""
+CURL_RAW=$(kctl -n "${NS}" run "${PROBE_POD}" --rm -i --restart=Never --quiet \
   --image="${CURL_IMAGE}" --pod-running-timeout="${PTIMEOUT}" -- \
   sh -c "echo '${CA_BASE64}' | base64 -d > /tmp/ca.crt && \
     curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
     --resolve '${TLS_HOST}:${TLS_PORT}:${SVC_IP}' \
-    'https://${TLS_HOST}:${TLS_PORT}/'" > "$PROBE_OUT" 2>/dev/null || true
+    'https://${TLS_HOST}:${TLS_PORT}/'" 2>/dev/null || echo "000")
 
-CURL_RAW=""
-CURL_RAW=$(cat "$PROBE_OUT" 2>/dev/null || echo "")
-rm -f "$PROBE_OUT"
-
-# Use anchored HTTP status-code parser
 HTTP_CODE=""
-if ! HTTP_CODE=$(parse_http_code "$CURL_RAW" 2>/dev/null); then
-  echo "FAIL: HTTPS probe returned '${CURL_RAW}' — could not parse HTTP status code" >&2
+HTTP_CODE=$(printf '%s' "$CURL_RAW" | grep -oE '[0-9]{3}' | tail -1 || true)
+[ -z "$HTTP_CODE" ] && HTTP_CODE="000"
+
+if [ "$HTTP_CODE" = "000" ]; then
+  echo "FAIL: HTTPS probe returned '${CURL_RAW}' — could not connect or parse HTTP status code" >&2
   echo "ASSERTION_RESULT: FAIL"
   echo 'ASSERTION_DETAIL: {"reason":"http_parse_failed","detail":"Could not parse HTTP status from curl output"}'
   exit 1

@@ -214,13 +214,12 @@ curl_raw=$(kctl -n "${NS}" run "${PROBE_POD}" --rm -i --restart=Never --quiet \
     -H "Host: ${GW_HOST}" \
     "http://${GW_SVC_IP}:80/" 2>/dev/null) || curl_raw="000"
 
-# Use anchored HTTP status-code parser
+# Extract last 3-digit HTTP status code.
+# kubectl run --rm -i may output the code twice ("200200") on some versions.
+# Using grep+tail to pick the last occurrence is robust against this.
 HTTP_CODE=""
-if ! HTTP_CODE=$(parse_http_code "$curl_raw" 2>/dev/null); then
-  echo "FAIL: gateway probe returned '${curl_raw}' — could not parse HTTP status code" >&2
-  echo "ASSERTION_RESULT: FAIL"
-  exit 1
-fi
+HTTP_CODE=$(printf '%s' "$curl_raw" | grep -oE '[0-9]{3}' | tail -1 || true)
+[ -z "$HTTP_CODE" ] && HTTP_CODE="000"
 
 echo "Gateway HTTP response: ${HTTP_CODE}"
 

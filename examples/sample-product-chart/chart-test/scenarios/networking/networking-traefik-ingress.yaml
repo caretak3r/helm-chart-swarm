@@ -60,7 +60,7 @@ asserts:
   - type: pods-ready
     namespace: traefik
     timeout: 3m
-    selector: app.kubernetes.io/instance=traefik
+    selector: app.kubernetes.io/name=traefik
   - type: smoke-script
     path: chart-test/assertions/traefik-ingress.sh
   - type: ingress-routes-traffic

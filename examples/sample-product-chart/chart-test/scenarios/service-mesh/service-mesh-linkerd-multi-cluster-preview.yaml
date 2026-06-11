@@ -31,7 +31,7 @@ cluster:
       wait: none
     - kind: helm
       chart: linkerd/linkerd-multicluster
-      version: 1.14.2
+      version: 30.11.11
       release: linkerd-multicluster
       namespace: linkerd-multicluster
       repo:
@@ -66,11 +66,11 @@ asserts:
   - type: pods-ready
     namespace: linkerd
     timeout: 3m
-    selector: app.kubernetes.io/instance=linkerd-control-plane
+    selector: linkerd.io/control-plane-component
   - type: pods-ready
     namespace: linkerd-multicluster
     timeout: 3m
-    selector: app.kubernetes.io/instance=linkerd-multicluster
+    selector: app=linkerd-gateway
   - type: pods-ready
     namespace: sample
     timeout: 5m

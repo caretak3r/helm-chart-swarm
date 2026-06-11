@@ -15,6 +15,23 @@ kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }
 echo "==> Labeling namespace ${NS} for istio injection"
 kctl label namespace "${NS}" istio-injection=enabled --overwrite || true
 
+# Wait for the Istio sidecar injector webhook to be registered and ready.
+# istiod may have just started; the webhook may not be registered yet.
+echo "==> Waiting for istio-sidecar-injector MutatingWebhookConfiguration (up to 60s)"
+for _wi in $(seq 1 20); do
+  if kctl get mutatingwebhookconfiguration istio-sidecar-injector >/dev/null 2>&1; then
+    echo "PASS: istio-sidecar-injector webhook registered"
+    break
+  fi
+  if [ "$_wi" -eq 20 ]; then
+    echo "FAIL: istio-sidecar-injector MutatingWebhookConfiguration not found after 60s" >&2
+    exit 1
+  fi
+  sleep 3
+done
+# Extra settle time for the webhook server to begin serving requests
+sleep 10
+
 echo "==> Restarting deployments to pick up sidecar injection"
 for DEPLOY in $(kctl -n "${NS}" get deploy -o jsonpath='{.items[*].metadata.name}'); do
   echo "  Restarting deployment/${DEPLOY}"
@@ -38,17 +55,22 @@ for DEPLOY in $(kctl -n "${NS}" get deploy -o jsonpath='{.items[*].metadata.name
   POD_COUNT=0
   for POD in $PODS; do
     POD_COUNT=$((POD_COUNT + 1))
-    CONTAINERS=$(kctl -n "${NS}" get pod "$POD" -o jsonpath='{.spec.containers[*].name}')
-    CONTAINER_COUNT=$(echo "$CONTAINERS" | wc -w | tr -d ' ')
-    echo "  Pod $POD (deploy/${DEPLOY}) containers (${CONTAINER_COUNT}): ${CONTAINERS}"
-    if echo "$CONTAINERS" | grep -q "istio-proxy"; then
-      echo "    ✓ istio-proxy sidecar present"
+    # Check both spec.containers and spec.initContainers — Istio 1.25+ on K8s 1.28+
+    # uses native sidecar injection (initContainer with restartPolicy=Always) so
+    # istio-proxy appears in spec.initContainers, not spec.containers.
+    REG_CONTAINERS=$(kctl -n "${NS}" get pod "$POD" -o jsonpath='{.spec.containers[*].name}' 2>/dev/null || echo "")
+    INIT_CONTAINERS=$(kctl -n "${NS}" get pod "$POD" -o jsonpath='{.spec.initContainers[*].name}' 2>/dev/null || echo "")
+    ALL_CONTAINERS="${REG_CONTAINERS} ${INIT_CONTAINERS}"
+    CONTAINER_COUNT=$(echo "$ALL_CONTAINERS" | wc -w | tr -d ' ')
+    echo "  Pod $POD (deploy/${DEPLOY}) containers (${CONTAINER_COUNT}): ${ALL_CONTAINERS}"
+    if echo "$ALL_CONTAINERS" | grep -q "istio-proxy"; then
+      echo "    ✓ istio-proxy sidecar present (regular or native init container)"
     else
       echo "FAIL: Pod ${POD} missing istio-proxy sidecar" >&2
       exit 1
     fi
-    if [ "${CONTAINER_COUNT}" -ne 2 ]; then
-      echo "FAIL: Pod ${POD} has ${CONTAINER_COUNT} containers (want 2: app + istio-proxy)" >&2
+    if [ "${CONTAINER_COUNT}" -lt 2 ]; then
+      echo "FAIL: Pod ${POD} has only ${CONTAINER_COUNT} total containers (want at least 2 incl. istio-proxy)" >&2
       exit 1
     fi
   done

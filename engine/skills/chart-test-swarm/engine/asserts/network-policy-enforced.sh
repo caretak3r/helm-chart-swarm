@@ -120,8 +120,12 @@ probe_service() {
     curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
       "http://${SVC_IP}:${PORT}/" 2>/dev/null) || raw_code="000"
 
+  # Extract last 3-digit HTTP status code.
+  # kubectl run --rm -i may output the code twice ("200200") on some versions
+  # (observed with Cilium CNI on kind). Using grep+tail picks the last occurrence.
   local code
-  code=$(parse_http_code "$raw_code" 2>/dev/null || echo "$raw_code")
+  code=$(printf '%s' "$raw_code" | grep -oE '[0-9]{3}' | tail -1 || true)
+  [ -z "$code" ] && code="000"
   printf '%s' "$code"
 }
 

@@ -161,22 +161,18 @@ echo "Waiting for gatekeeper controller pods to be Ready again..."
 kctl -n "${GK_NS}" wait pod -l control-plane=controller-manager --for=condition=Ready --timeout=3m
 echo "PASS: gatekeeper controller pods Ready"
 
-# Note: kind clusters may restart kube-controller-manager during gatekeeper CRD installation,
-# which can delay endpoint reconciliation. We retry with generous timeout.
-echo "Waiting for admission webhook to accept requests (180s max, may be slow on resource-constrained clusters)..."
+# Note: kind clusters may take longer to restore webhook endpoints due to
+# resource constraints. We retry with a generous 5-minute timeout.
+echo "Waiting for admission webhook to accept requests (300s max, may be slow on resource-constrained clusters)..."
 ADMISSION_RESTORED=0
-for i in $(seq 1 36); do
-  # Periodically nudge the endpoint controller by touching the service
-  if [ $((i % 6)) -eq 0 ]; then
-    kctl -n "${GK_NS}" delete endpoints gatekeeper-webhook-service --ignore-not-found=true 2>/dev/null || true
-  fi
+for i in $(seq 1 60); do
   if kctl apply --dry-run=server -f "${FIXTURES}/test-deploy-compliant.yaml" 2>/dev/null; then
     echo "PASS: admission restored after webhook recovery (attempt ${i})"
     ADMISSION_RESTORED=1
     break
   fi
-  if [ "$i" -eq 36 ]; then
-    echo "FAIL: admission still failing after controller restore (36 attempts, 180s)" >&2
+  if [ "$i" -eq 60 ]; then
+    echo "FAIL: admission still failing after controller restore (60 attempts, 300s)" >&2
     exit 1
   fi
   sleep 5

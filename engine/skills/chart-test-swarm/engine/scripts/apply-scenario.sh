@@ -194,10 +194,21 @@ apply_raw_manifest() {
     kubectl_args+=(--namespace "$raw_ns")
   fi
 
-  kubectl_ctx "${kubectl_args[@]}" || {
-    echo "ERROR: kubectl apply failed for raw_manifest path=$resolved" >&2
-    exit 1
-  }
+  # Retry apply up to 3 times with a short backoff to handle transient webhook
+  # unavailability (e.g., admission controller pods just became Ready but
+  # the webhook server is still initializing connections).
+  local attempt
+  for attempt in 1 2 3; do
+    if kubectl_ctx "${kubectl_args[@]}"; then
+      return 0
+    fi
+    if [ "$attempt" -lt 3 ]; then
+      echo "    raw_manifest apply attempt ${attempt} failed, retrying in 10s..."
+      sleep 10
+    fi
+  done
+  echo "ERROR: kubectl apply failed for raw_manifest path=$resolved" >&2
+  exit 1
 }
 
 # Apply a helm preinstall item via helm upgrade --install.
