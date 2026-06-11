@@ -182,13 +182,16 @@ check_rendered_dns() {
 check_live_dns() {
   local fail_count=0 workload_count=0
 
+  # Query all 5 in-scope workload types (not just Deployments)
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy,statefulset,daemonset,job,replicaset -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
 
   local i=0
   while [ "$i" -lt "$dep_count" ]; do
-    local dname; dname=$(printf '%s' "$dep_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+    local dname kind_val
+    dname=$(printf '%s' "$dep_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+    kind_val=$(printf '%s' "$dep_yaml" | yq ".items[$i].kind // \"\"" 2>/dev/null || echo "")
     workload_count=$((workload_count + 1))
 
     if [ "$EXPECT_PRESENT" = "true" ]; then
@@ -196,7 +199,7 @@ check_live_dns() {
         local actual_policy
         actual_policy=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.dnsPolicy // \"\"" 2>/dev/null || echo "")
         if [ "$actual_policy" != "$DNS_POLICY" ]; then
-          echo "  Deployment/$dname: dnsPolicy expected='$DNS_POLICY' actual='${actual_policy:-<unset>}'" >&2
+          echo "  $kind_val/$dname: dnsPolicy expected='$DNS_POLICY' actual='${actual_policy:-<unset>}'" >&2
           fail_count=$((fail_count + 1))
         fi
       fi
@@ -205,7 +208,7 @@ check_live_dns() {
         local dns_config
         dns_config=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.dnsConfig // null" 2>/dev/null || echo "null")
         if [ "$dns_config" = "null" ] || [ -z "$dns_config" ]; then
-          echo "  Deployment/$dname: dnsConfig missing (expected nameservers)" >&2
+          echo "  $kind_val/$dname: dnsConfig missing (expected nameservers)" >&2
           fail_count=$((fail_count + 1))
         else
           local si=0
@@ -216,7 +219,7 @@ check_live_dns() {
               local found
               found=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.dnsConfig.nameservers[] | select(. == \"$expected_ns\") | ." 2>/dev/null || echo "")
               if [ -z "$found" ] || [ "$found" = "null" ]; then
-                echo "  Deployment/$dname: nameserver '$expected_ns' not found in dnsConfig.nameservers" >&2
+                echo "  $kind_val/$dname: nameserver '$expected_ns' not found in dnsConfig.nameservers" >&2
                 fail_count=$((fail_count + 1))
               fi
             fi
@@ -233,7 +236,7 @@ check_live_dns() {
           dns_policy=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.dnsPolicy // \"\"" 2>/dev/null || echo "")
           if [ "$dns_config" = "null" ] || [ -z "$dns_config" ]; then
             if [ -z "$dns_policy" ] || [ "$dns_policy" = "null" ] || [ "$dns_policy" = "ClusterFirst" ]; then
-              echo "  Deployment/$dname: no explicit dnsConfig or non-default dnsPolicy" >&2
+              echo "  $kind_val/$dname: no explicit dnsConfig or non-default dnsPolicy" >&2
               fail_count=$((fail_count + 1))
             fi
           fi
@@ -243,13 +246,13 @@ check_live_dns() {
       local dns_config
       dns_config=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.dnsConfig // null" 2>/dev/null || echo "null")
       if [ "$dns_config" != "null" ] && [ -n "$dns_config" ]; then
-        echo "  Deployment/$dname: unexpected dnsConfig present" >&2
+        echo "  $kind_val/$dname: unexpected dnsConfig present" >&2
         fail_count=$((fail_count + 1))
       fi
       local dns_policy
       dns_policy=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.dnsPolicy // \"\"" 2>/dev/null || echo "")
       if [ -n "$dns_policy" ] && [ "$dns_policy" != "null" ] && [ "$dns_policy" != "ClusterFirst" ]; then
-        echo "  Deployment/$dname: unexpected non-default dnsPolicy='$dns_policy'" >&2
+        echo "  $kind_val/$dname: unexpected non-default dnsPolicy='$dns_policy'" >&2
         fail_count=$((fail_count + 1))
       fi
     fi

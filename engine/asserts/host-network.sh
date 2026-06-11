@@ -92,11 +92,9 @@ check_rendered_host_network() {
     hn_val=$(yq "select(di == $di) | .spec.template.spec.hostNetwork // false" "$rendered_file" 2>/dev/null || echo "false")
 
     if [ "$EXPECT_PRESENT" = "true" ]; then
-      if [ "$hn_val" != "true" ]; then
-        echo "  $kind_val/$name_val: hostNetwork is not true (hostNetwork=$hn_val)" >&2
-        fail_count=$((fail_count + 1))
-      fi
       if [ "$CHECK_HOST_PORT" = "true" ]; then
+        # When check_host_port=true, hostPort presence satisfies the assert
+        # independently of hostNetwork (VAL-CONFIG-041).
         local ctr_count; ctr_count=$(yq "select(di == $di) | .spec.template.spec.containers | length" "$rendered_file" 2>/dev/null || echo "0")
         local ci=0 hostport_found=0
         while [ "$ci" -lt "$ctr_count" ]; do
@@ -114,7 +112,13 @@ check_rendered_host_network() {
           ci=$((ci + 1))
         done
         if [ "$hostport_found" -eq 0 ]; then
-          echo "  $kind_val/$name_val: hostPort not found on any container port" >&2
+          echo "  $kind_val/$name_val: hostPort not found on any container port (hostNetwork=$hn_val)" >&2
+          fail_count=$((fail_count + 1))
+        fi
+      else
+        # Only checking hostNetwork (check_host_port=false / default)
+        if [ "$hn_val" != "true" ]; then
+          echo "  $kind_val/$name_val: hostNetwork is not true (hostNetwork=$hn_val)" >&2
           fail_count=$((fail_count + 1))
         fi
       fi
@@ -171,24 +175,25 @@ check_rendered_host_network() {
 check_live_host_network() {
   local fail_count=0 workload_count=0
 
+  # Query all 5 in-scope workload types (not just Deployments)
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy,statefulset,daemonset,job,replicaset -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
 
   local i=0
   while [ "$i" -lt "$dep_count" ]; do
-    local dname; dname=$(printf '%s' "$dep_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+    local dname kind_val
+    dname=$(printf '%s' "$dep_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+    kind_val=$(printf '%s' "$dep_yaml" | yq ".items[$i].kind // \"\"" 2>/dev/null || echo "")
     workload_count=$((workload_count + 1))
 
     local hn_val
     hn_val=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.hostNetwork // false" 2>/dev/null || echo "false")
 
     if [ "$EXPECT_PRESENT" = "true" ]; then
-      if [ "$hn_val" != "true" ]; then
-        echo "  Deployment/$dname: hostNetwork is not true (hostNetwork=$hn_val)" >&2
-        fail_count=$((fail_count + 1))
-      fi
       if [ "$CHECK_HOST_PORT" = "true" ]; then
+        # When check_host_port=true, hostPort presence satisfies the assert
+        # independently of hostNetwork (VAL-CONFIG-041).
         local ctr_count; ctr_count=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.containers | length" 2>/dev/null || echo "0")
         local ci=0 hostport_found=0
         while [ "$ci" -lt "$ctr_count" ]; do
@@ -206,13 +211,19 @@ check_live_host_network() {
           ci=$((ci + 1))
         done
         if [ "$hostport_found" -eq 0 ]; then
-          echo "  Deployment/$dname: hostPort not found on any container port" >&2
+          echo "  $kind_val/$dname: hostPort not found on any container port (hostNetwork=$hn_val)" >&2
+          fail_count=$((fail_count + 1))
+        fi
+      else
+        # Only checking hostNetwork (check_host_port=false / default)
+        if [ "$hn_val" != "true" ]; then
+          echo "  $kind_val/$dname: hostNetwork is not true (hostNetwork=$hn_val)" >&2
           fail_count=$((fail_count + 1))
         fi
       fi
     else
       if [ "$hn_val" = "true" ]; then
-        echo "  Deployment/$dname: unexpected hostNetwork=true" >&2
+        echo "  $kind_val/$dname: unexpected hostNetwork=true" >&2
         fail_count=$((fail_count + 1))
       fi
       if [ "$CHECK_HOST_PORT" = "true" ]; then
@@ -233,7 +244,7 @@ check_live_host_network() {
           ci=$((ci + 1))
         done
         if [ "$hostport_found" -eq 1 ]; then
-          echo "  Deployment/$dname: unexpected hostPort present" >&2
+          echo "  $kind_val/$dname: unexpected hostPort present" >&2
           fail_count=$((fail_count + 1))
         fi
       fi

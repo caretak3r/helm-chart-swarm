@@ -142,20 +142,23 @@ check_rendered_init_containers() {
 check_live_init_containers() {
   local fail_count=0 workload_count=0
 
+  # Query all 5 in-scope workload types (not just Deployments)
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy,statefulset,daemonset,job,replicaset -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
 
   local i=0
   while [ "$i" -lt "$dep_count" ]; do
-    local dname; dname=$(printf '%s' "$dep_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+    local dname kind_val
+    dname=$(printf '%s' "$dep_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+    kind_val=$(printf '%s' "$dep_yaml" | yq ".items[$i].kind // \"\"" 2>/dev/null || echo "")
     workload_count=$((workload_count + 1))
 
     local ic_count; ic_count=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.initContainers | length" 2>/dev/null || echo "0")
 
     if [ "$EXPECT_PRESENT" = "true" ]; then
       if [ "$ic_count" -eq 0 ]; then
-        echo "  Deployment/$dname: missing initContainers" >&2
+        echo "  $kind_val/$dname: missing initContainers" >&2
         fail_count=$((fail_count + 1))
       elif [ "$NAMES_COUNT" -gt 0 ]; then
         local ni=0
@@ -166,7 +169,7 @@ check_live_init_containers() {
             local found
             found=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.initContainers[] | select(.name == \"$expected_name\") | .name" 2>/dev/null || echo "")
             if [ -z "$found" ] || [ "$found" = "null" ]; then
-              echo "  Deployment/$dname: init container '$expected_name' not found" >&2
+              echo "  $kind_val/$dname: init container '$expected_name' not found" >&2
               fail_count=$((fail_count + 1))
             fi
           fi
@@ -175,7 +178,7 @@ check_live_init_containers() {
       fi
     else
       if [ "$ic_count" -gt 0 ]; then
-        echo "  Deployment/$dname: unexpected initContainers present" >&2
+        echo "  $kind_val/$dname: unexpected initContainers present" >&2
         fail_count=$((fail_count + 1))
       fi
     fi

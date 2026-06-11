@@ -61,6 +61,13 @@ render_helm_template() {
 }
 
 check_rendered_lifecycle_hooks() {
+  # Guard: when expect_present=true and both hook checks are disabled,
+  # there is nothing to verify — must FAIL, not vacuously PASS.
+  if [ "$EXPECT_PRESENT" = "true" ] && [ "$CHECK_POSTSTART" != "true" ] && [ "$CHECK_PRESTOP" != "true" ]; then
+    echo "FAIL: expect_present=true but both check_postStart and check_preStop are disabled; nothing to verify" >&2
+    return 1
+  fi
+
   local doc_count=0 fail_count=0 workload_count=0
   doc_count=$(yq '.kind // ""' "$rendered_file" 2>/dev/null | grep -cv '^$\|^null$\|^---$')
   if [ "$doc_count" -eq 0 ]; then
@@ -155,15 +162,25 @@ check_rendered_lifecycle_hooks() {
 }
 
 check_live_lifecycle_hooks() {
+  # Guard: when expect_present=true and both hook checks are disabled,
+  # there is nothing to verify — must FAIL, not vacuously PASS.
+  if [ "$EXPECT_PRESENT" = "true" ] && [ "$CHECK_POSTSTART" != "true" ] && [ "$CHECK_PRESTOP" != "true" ]; then
+    echo "FAIL: expect_present=true but both check_postStart and check_preStop are disabled; nothing to verify" >&2
+    return 1
+  fi
+
   local fail_count=0 workload_count=0
 
+  # Query all 5 in-scope workload types (not just Deployments)
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy,statefulset,daemonset,job,replicaset -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
 
   local i=0
   while [ "$i" -lt "$dep_count" ]; do
-    local dname; dname=$(printf '%s' "$dep_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+    local dname kind_val
+    dname=$(printf '%s' "$dep_yaml" | yq ".items[$i].metadata.name // \"\"" 2>/dev/null || echo "")
+    kind_val=$(printf '%s' "$dep_yaml" | yq ".items[$i].kind // \"\"" 2>/dev/null || echo "")
     workload_count=$((workload_count + 1))
 
     local ctr_count; ctr_count=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.containers | length" 2>/dev/null || echo "0")
@@ -176,7 +193,7 @@ check_live_lifecycle_hooks() {
           local poststart
           poststart=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.containers[$ci].lifecycle.postStart // null" 2>/dev/null || echo "null")
           if [ "$poststart" = "null" ] || [ -z "$poststart" ]; then
-            echo "  Deployment/$dname container/$ctr_name: missing postStart lifecycle hook" >&2
+            echo "  $kind_val/$dname container/$ctr_name: missing postStart lifecycle hook" >&2
             fail_count=$((fail_count + 1))
           fi
         fi
@@ -184,7 +201,7 @@ check_live_lifecycle_hooks() {
           local prestop
           prestop=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.containers[$ci].lifecycle.preStop // null" 2>/dev/null || echo "null")
           if [ "$prestop" = "null" ] || [ -z "$prestop" ]; then
-            echo "  Deployment/$dname container/$ctr_name: missing preStop lifecycle hook" >&2
+            echo "  $kind_val/$dname container/$ctr_name: missing preStop lifecycle hook" >&2
             fail_count=$((fail_count + 1))
           fi
         fi
@@ -193,7 +210,7 @@ check_live_lifecycle_hooks() {
           local poststart
           poststart=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.containers[$ci].lifecycle.postStart // null" 2>/dev/null || echo "null")
           if [ "$poststart" != "null" ] && [ -n "$poststart" ]; then
-            echo "  Deployment/$dname container/$ctr_name: unexpected postStart lifecycle hook present" >&2
+            echo "  $kind_val/$dname container/$ctr_name: unexpected postStart lifecycle hook present" >&2
             fail_count=$((fail_count + 1))
           fi
         fi
@@ -201,7 +218,7 @@ check_live_lifecycle_hooks() {
           local prestop
           prestop=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.containers[$ci].lifecycle.preStop // null" 2>/dev/null || echo "null")
           if [ "$prestop" != "null" ] && [ -n "$prestop" ]; then
-            echo "  Deployment/$dname container/$ctr_name: unexpected preStop lifecycle hook present" >&2
+            echo "  $kind_val/$dname container/$ctr_name: unexpected preStop lifecycle hook present" >&2
             fail_count=$((fail_count + 1))
           fi
         fi
