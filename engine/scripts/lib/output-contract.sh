@@ -5,10 +5,12 @@
 # Functions:
 #   lookup_depth <type>           → prints declared depth (L0-L3) or ""
 #   parse_assert_log <log> <ec>   → sets _PARSED_RESULT + _PARSED_DETAIL
+#   resolve_assert_script <type> [consumer_dir] [engine_dir]
+#                                 → prints RESOLVED:<path> or FAIL:<reason>
 #
-# Both functions depend on:
+# Dependencies:
 #   $ENGINE_DIR   (set by the caller before sourcing)
-# lookup_depth also uses $PROJECT_DIR for consumer registry layering.
+# lookup_depth and resolve_assert_script also use $PROJECT_DIR.
 
 # ── Depth registry lookup ────────────────────────────────────────────
 # Resolves the declared depth_level for an assert type from the merged
@@ -97,5 +99,49 @@ parse_assert_log() {
   # ── Capture detail (opaque — stored as-is; no JSON validation) ────
   if [ -n "$last_detail_line" ]; then
     _PARSED_DETAIL=$(echo "$last_detail_line" | sed 's/^[[:space:]]*ASSERTION_DETAIL:[[:space:]]*//')
+  fi
+}
+
+# ── Consumer-first assert script resolver (architecture §3.E.1) ──────
+# Resolves the filesystem path of an assert script following consumer-first
+# layering: the consumer project's chart-test/asserts/<type>.sh wins when
+# present AND executable; otherwise the engine assert is used.
+#
+# CALLING CONVENTION:
+#   resolve_assert_script <assert_type> [consumer_asserts_dir] [engine_asserts_dir]
+#
+# Output (stdout):
+#   RESOLVED:<absolute-path>   — a runnable script was found
+#   FAIL:no runner at <path>…  — no runnable script exists
+#
+# Defaults (when the optional arguments are omitted):
+#   consumer_asserts_dir = $PROJECT_DIR/chart-test/asserts
+#   engine_asserts_dir   = $ASSERTS_DIR  (or $ENGINE_DIR/asserts)
+#
+# This is the single source of truth for assert resolution.  Both the
+# production runner (run-scenario.sh) and the bats tests MUST call this
+# function rather than duplicating the logic inline.
+resolve_assert_script() {
+  local atype="$1"
+  local consumer_asserts_dir="${2:-${PROJECT_DIR:-}/chart-test/asserts}"
+  local engine_asserts_dir="${3:-${ASSERTS_DIR:-${ENGINE_DIR:-}/asserts}}"
+
+  local consumer_assert="${consumer_asserts_dir}/${atype}.sh"
+  local engine_assert="${engine_asserts_dir}/${atype}.sh"
+
+  if [ -x "$consumer_assert" ]; then
+    # Consumer wins: present AND executable (VAL-PLUGGABLE-001, -002)
+    echo "RESOLVED:$consumer_assert"
+  elif [ -x "$engine_assert" ]; then
+    # Engine fallback: consumer absent, non-executable, or not found
+    # (VAL-PLUGGABLE-003, -004, -005)
+    echo "RESOLVED:$engine_assert"
+  elif [ -f "$consumer_assert" ]; then
+    # Consumer exists but not executable, no engine fallback
+    # (VAL-PLUGGABLE-006)
+    echo "FAIL:no runner at $consumer_assert (not executable)"
+  else
+    # Neither consumer nor engine has a runner
+    echo "FAIL:no runner at $engine_assert"
   fi
 }

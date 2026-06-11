@@ -878,31 +878,24 @@ for i in $(seq 0 $((acount - 1))); do
   depth=$(lookup_depth "$atype")
 
   # ── Consumer-first assert resolution (Area E, architecture §3.E.1) ─
+  # Single source of truth: resolve_assert_script() in output-contract.sh.
   # Prefer $PROJECT_DIR/chart-test/asserts/<type>.sh when present AND
   # executable; otherwise fall back to the engine assert.
-  consumer_assert="${PROJECT_DIR:-}/chart-test/asserts/${atype}.sh"
-  engine_assert="$ASSERTS_DIR/${atype}.sh"
+  resolved_line=$(resolve_assert_script "$atype" "${PROJECT_DIR:-}/chart-test/asserts" "$ASSERTS_DIR")
   resolved=""
 
-  if [ -x "$consumer_assert" ]; then
-    # Consumer wins: present AND executable (VAL-PLUGGABLE-001, -002)
-    resolved="$consumer_assert"
-  elif [ -x "$engine_assert" ]; then
-    # Engine fallback: consumer absent, non-executable, or not found
-    # (VAL-PLUGGABLE-003, -004, -005)
-    resolved="$engine_assert"
-  elif [ -f "$consumer_assert" ]; then
-    # Consumer exists but not executable, no engine fallback
-    # (VAL-PLUGGABLE-006)
-    emit_assert "$atype" FAIL "no runner at $consumer_assert (not executable)" "$depth"
-    overall=FAIL
-    continue
-  else
-    # Neither consumer nor engine has a runner
-    emit_assert "$atype" FAIL "no runner at $engine_assert" "$depth"
-    overall=FAIL
-    continue
-  fi
+  case "$resolved_line" in
+    RESOLVED:*)
+      resolved="${resolved_line#RESOLVED:}"
+      ;;
+    FAIL:*)
+      # No runnable script — consumer non-executable (VAL-PLUGGABLE-006)
+      # or engine assert missing.
+      emit_assert "$atype" FAIL "${resolved_line#FAIL:}" "$depth"
+      overall=FAIL
+      continue
+      ;;
+  esac
 
   # Export everything an assert might need (VAL-PLUGGABLE-007).
   export RELEASE="$PRODUCT_RELEASE"

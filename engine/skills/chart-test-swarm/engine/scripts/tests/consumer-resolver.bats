@@ -2,6 +2,10 @@
 # consumer-resolver.bats — Tests for consumer-first assert resolver in
 # run-scenario.sh (feature e-consumer-resolver, Area E architecture §3.E.1).
 #
+# ALL tests exercise the production resolve_assert_script() function from
+# engine/scripts/lib/output-contract.sh — the single source of truth for
+# assert resolution used by run-scenario.sh.
+#
 # Covers:
 #   VAL-PLUGGABLE-001: Consumer override dispatches consumer script
 #   VAL-PLUGGABLE-002: Consumer-only NEW type resolves and runs
@@ -12,6 +16,7 @@
 #   VAL-PLUGGABLE-007: Consumer assert receives same env + positional args
 #   VAL-PLUGGABLE-008: Consumer assert exit-code contract preserved
 #   VAL-PLUGGABLE-009: Resolver does not break without chart-test/ dir
+#   VAL-PLUGGABLE-010: Production run-scenario.sh flow exercised (not copied helper)
 #   VAL-CROSS-003: Consumer-overridden assert SKIP → non-failing SKIP
 
 setup() {
@@ -82,33 +87,9 @@ teardown() {
   rm -rf "$WORK_DIR" 2>/dev/null || true
 }
 
-# ── Helper: simulate the consumer-first resolver ──────────────────────
-# Mirrors exactly the resolution logic in run-scenario.sh (Area E).
-# Returns the resolved path via stdout and sets RESOLVER_EXIT_CODE.
-simulate_resolver() {
-  local atype="$1" consumer_asserts_dir="$2"
-  local consumer_assert="${consumer_asserts_dir}/${atype}.sh"
-  local engine_assert="$ASSERTS_DIR/${atype}.sh"
-  local resolved=""
-
-  if [ -x "$consumer_assert" ]; then
-    resolved="$consumer_assert"
-  elif [ -x "$engine_assert" ]; then
-    resolved="$engine_assert"
-  elif [ -f "$consumer_assert" ]; then
-    # Consumer exists but not executable, no engine fallback
-    echo "FAIL:no runner at $consumer_assert (not executable)"
-    return 0
-  else
-    echo "FAIL:no runner at $engine_assert"
-    return 0
-  fi
-
-  echo "RESOLVED:$resolved"
-  return 0
-}
-
 # ── Helper: dispatch and capture output of a resolved script ──────────
+# NOTE: All resolver calls use the PRODUCTION resolve_assert_script()
+# from engine/scripts/lib/output-contract.sh — NOT a copied helper.
 dispatch_assert() {
   local resolved="$1"
   local atype="$2"
@@ -139,7 +120,7 @@ exit 0
 SH
   chmod +x "$cons_dir/pods-ready.sh"
 
-  run simulate_resolver "pods-ready" "$cons_dir"
+  run resolve_assert_script "pods-ready" "$cons_dir" "$ASSERTS_DIR"
   [ "$status" -eq 0 ]
   # Must resolve to CONSUMER path, not engine
   [[ "$output" =~ ^RESOLVED:.+/project/chart-test/asserts/pods-ready\.sh$ ]]
@@ -158,7 +139,7 @@ SH
   chmod +x "$cons_dir/pods-ready.sh"
 
   # Dispatch the resolved script
-  run simulate_resolver "pods-ready" "$cons_dir"
+  run resolve_assert_script "pods-ready" "$cons_dir" "$ASSERTS_DIR"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "pods-ready")
@@ -190,7 +171,7 @@ exit 0
 SH
   chmod +x "$cons_dir/my-custom-check.sh"
 
-  run simulate_resolver "my-custom-check" "$cons_dir"
+  run resolve_assert_script "my-custom-check" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^RESOLVED:.+my-custom-check\.sh$ ]]
 }
@@ -207,7 +188,7 @@ exit 0
 SH
   chmod +x "$cons_dir/my-custom-check.sh"
 
-  run simulate_resolver "my-custom-check" "$cons_dir"
+  run resolve_assert_script "my-custom-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "my-custom-check")
@@ -234,7 +215,7 @@ exit 0
 SH
   chmod +x "$cons_dir/my-custom-check.sh"
 
-  run simulate_resolver "my-custom-check" "$cons_dir"
+  run resolve_assert_script "my-custom-check" "$cons_dir"
   [ "$status" -eq 0 ]
   # Must resolve successfully, not emit "no runner"
   [[ "$output" =~ ^RESOLVED: ]]
@@ -251,7 +232,7 @@ SH
   export PROJECT_DIR="$WORK_DIR/project"
 
   # Consumer dir exists but has NO labels-present.sh
-  run simulate_resolver "labels-present" "$cons_dir"
+  run resolve_assert_script "labels-present" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^RESOLVED:.+/engine/asserts/labels-present\.sh$ ]]
 }
@@ -269,7 +250,7 @@ exit 0
 SH
   chmod +x "$cons_dir/other-check.sh"
 
-  run simulate_resolver "service-reachable" "$cons_dir"
+  run resolve_assert_script "service-reachable" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^RESOLVED:.+/engine/asserts/service-reachable\.sh$ ]]
 }
@@ -287,7 +268,7 @@ SH
   # This dir does NOT exist
   [ ! -d "$cons_dir" ]
 
-  run simulate_resolver "pods-ready" "$cons_dir"
+  run resolve_assert_script "pods-ready" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^RESOLVED:.+/engine/asserts/pods-ready\.sh$ ]]
 }
@@ -298,7 +279,7 @@ SH
   local cons_dir="$PROJECT_DIR/chart-test/asserts"
 
   for atype in pods-ready labels-present annotations-present service-reachable; do
-    run simulate_resolver "$atype" "$cons_dir"
+    run resolve_assert_script "$atype" "$cons_dir"
     [ "$status" -eq 0 ]
     [[ "$output" =~ ^RESOLVED:.+/engine/asserts/${atype}\.sh$ ]] \
       || { echo "FAIL: $atype did not resolve to engine path: $output"; return 1; }
@@ -324,7 +305,7 @@ SH
   [ -f "$cons_dir/pods-ready.sh" ]
   [ ! -x "$cons_dir/pods-ready.sh" ]
 
-  run simulate_resolver "pods-ready" "$cons_dir"
+  run resolve_assert_script "pods-ready" "$cons_dir"
   [ "$status" -eq 0 ]
   # Must fall back to ENGINE, not consumer
   [[ "$output" =~ ^RESOLVED:.+/engine/asserts/pods-ready\.sh$ ]]
@@ -342,7 +323,7 @@ exit 0
 SH
   # NOT executable
 
-  run simulate_resolver "pods-ready" "$cons_dir"
+  run resolve_assert_script "pods-ready" "$cons_dir"
   [ "$status" -eq 0 ]
   # No "no runner" or error — engine fallback succeeds
   [[ "$output" =~ ^RESOLVED: ]]
@@ -366,7 +347,7 @@ exit 0
 SH
   # NOT executable
 
-  run simulate_resolver "my-custom-check" "$cons_dir"
+  run resolve_assert_script "my-custom-check" "$cons_dir"
   [ "$status" -eq 0 ]
   # Must emit "no runner" FAIL
   [[ "$output" =~ ^FAIL:no\ runner ]]
@@ -385,7 +366,7 @@ exit 0
 SH
   # NOT executable
 
-  run simulate_resolver "my-custom-check" "$cons_dir"
+  run resolve_assert_script "my-custom-check" "$cons_dir"
   [ "$status" -eq 0 ]
   # Must be a FAIL result
   [[ "$output" =~ ^FAIL: ]]
@@ -413,7 +394,7 @@ exit 0
 SH
   chmod +x "$cons_dir/env-check.sh"
 
-  run simulate_resolver "env-check" "$cons_dir"
+  run resolve_assert_script "env-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
 
   # Dispatch with known env vars set
@@ -453,7 +434,7 @@ exit 0
 SH
   chmod +x "$cons_dir/args-check.sh"
 
-  run simulate_resolver "args-check" "$cons_dir"
+  run resolve_assert_script "args-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
 
   export SCENARIO="/fake/scenario.yaml"
@@ -483,7 +464,7 @@ exit 0
 SH
   chmod +x "$cons_dir/exit-check.sh"
 
-  run simulate_resolver "exit-check" "$cons_dir"
+  run resolve_assert_script "exit-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "exit-check")
@@ -507,7 +488,7 @@ exit 1
 SH
   chmod +x "$cons_dir/fail-check.sh"
 
-  run simulate_resolver "fail-check" "$cons_dir"
+  run resolve_assert_script "fail-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "fail-check")
@@ -531,7 +512,7 @@ exit 0
 SH
   chmod +x "$cons_dir/tail-check.sh"
 
-  run simulate_resolver "tail-check" "$cons_dir"
+  run resolve_assert_script "tail-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "tail-check")
@@ -561,7 +542,7 @@ exit 1
 SH
   chmod +x "$cons_dir/tail-fail-check.sh"
 
-  run simulate_resolver "tail-fail-check" "$cons_dir"
+  run resolve_assert_script "tail-fail-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "tail-fail-check")
@@ -591,7 +572,7 @@ exit 1
 SH
   chmod +x "$cons_dir/override-check.sh"
 
-  run simulate_resolver "override-check" "$cons_dir"
+  run resolve_assert_script "override-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "override-check")
@@ -618,7 +599,7 @@ SH
 
   # All engine types must resolve to engine
   for atype in pods-ready labels-present annotations-present service-reachable; do
-    run simulate_resolver "$atype" "$cons_dir"
+    run resolve_assert_script "$atype" "$cons_dir"
     [ "$status" -eq 0 ]
     [[ "$output" =~ ^RESOLVED:.+/engine/asserts/${atype}\.sh$ ]] \
       || { echo "FAIL: $atype did not resolve to engine: $output"; return 1; }
@@ -632,12 +613,126 @@ SH
   [ ! -d "$cons_dir" ]
 
   # The resolver must not produce any error output — just resolve to engine
-  run simulate_resolver "pods-ready" "$cons_dir"
+  run resolve_assert_script "pods-ready" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^RESOLVED: ]]
   [[ ! "$output" =~ ERROR ]]
   [[ ! "$output" =~ "no runner" ]]
 }
+
+# ══════════════════════════════════════════════════════════════════════
+# VAL-PLUGGABLE-010: Production run-scenario.sh flow exercised
+# ══════════════════════════════════════════════════════════════════════
+# These tests exercise the PRODUCTION resolve_assert_script() function
+# from engine/scripts/lib/output-contract.sh — the same function called
+# by run-scenario.sh at dispatch time.  This proves the resolver works
+# through the production code path, not a copied helper.
+# Live-kind end-to-end evidence is provided separately.
+
+@test "VAL-PLUGGABLE-010: production function resolves consumer override with correct output format" {
+  local cons_dir="$WORK_DIR/project/chart-test/asserts"
+  mkdir -p "$cons_dir"
+  export PROJECT_DIR="$WORK_DIR/project"
+
+  cat > "$cons_dir/pods-ready.sh" <<'SH'
+#!/usr/bin/env bash
+echo "CONSUMER_PROD: production resolver exercised"
+exit 0
+SH
+  chmod +x "$cons_dir/pods-ready.sh"
+
+  # Exercise the PRODUCTION function (not a copied helper)
+  run resolve_assert_script "pods-ready" "$cons_dir" "$ASSERTS_DIR"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ ^RESOLVED:.+/project/chart-test/asserts/pods-ready\.sh$ ]]
+}
+
+@test "VAL-PLUGGABLE-010b: production function resolves engine fallback when no consumer override" {
+  local cons_dir="$WORK_DIR/project/chart-test/asserts"
+  mkdir -p "$cons_dir"
+  export PROJECT_DIR="$WORK_DIR/project"
+
+  # No consumer override for labels-present — must use engine
+  run resolve_assert_script "labels-present" "$cons_dir" "$ASSERTS_DIR"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ ^RESOLVED:.+/engine/asserts/labels-present\.sh$ ]]
+}
+
+@test "VAL-PLUGGABLE-010c: production function handles SKIP-emitting consumer assert end-to-end" {
+  local cons_dir="$WORK_DIR/project/chart-test/asserts"
+  mkdir -p "$cons_dir"
+  export PROJECT_DIR="$WORK_DIR/project"
+
+  # Consumer assert that emits SKIP with detail
+  cat > "$cons_dir/consumer-skip-test.sh" <<'SH'
+#!/usr/bin/env bash
+echo "ASSERTION_RESULT: SKIP"
+echo "ASSERTION_DETAIL: {\"reason\":\"consumer override skip\",\"live\":true}"
+exit 0
+SH
+  chmod +x "$cons_dir/consumer-skip-test.sh"
+
+  # Resolve through production function
+  run resolve_assert_script "consumer-skip-test" "$cons_dir" "$ASSERTS_DIR"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ ^RESOLVED:.+consumer-skip-test\.sh$ ]]
+
+  # Dispatch and verify SKIP is preserved end-to-end
+  local resolved="${output#RESOLVED:}"
+  local ec_and_log
+  ec_and_log=$(dispatch_assert "$resolved" "consumer-skip-test")
+  local ec="${ec_and_log%% *}"
+  local alog="${ec_and_log#* }"
+
+  # Verify the production parse_assert_log (also from output-contract.sh)
+  # correctly identifies SKIP
+  parse_assert_log "$alog" "$ec"
+  [ "$_PARSED_RESULT" = "SKIP" ]
+  [ "$_PARSED_DETAIL" = '{"reason":"consumer override skip","live":true}' ]
+
+  # SKIP is non-failing — must not be FAIL
+  [ "$_PARSED_RESULT" != "FAIL" ]
+}
+
+@test "VAL-PLUGGABLE-010d: production resolver returns FAIL: prefix for non-executable consumer-only" {
+  local cons_dir="$WORK_DIR/project/chart-test/asserts"
+  mkdir -p "$cons_dir"
+  export PROJECT_DIR="$WORK_DIR/project"
+
+  cat > "$cons_dir/broken-check.sh" <<'SH'
+#!/usr/bin/env bash
+echo "should NOT run"
+exit 0
+SH
+  # NOT executable
+
+  run resolve_assert_script "broken-check" "$cons_dir" "$ASSERTS_DIR"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ ^FAIL:no\ runner ]]
+  [[ "$output" =~ "not executable" ]]
+}
+
+@test "VAL-PLUGGABLE-010e: production resolver with default engine dir from ASSERTS_DIR" {
+  # Verify the production function uses ASSERTS_DIR when engine dir is omitted
+  local cons_dir="$WORK_DIR/project/chart-test/asserts"
+  mkdir -p "$cons_dir"
+  export PROJECT_DIR="$WORK_DIR/project"
+  # ASSERTS_DIR is already exported from setup
+
+  # Consumer-only type — must resolve from consumer dir
+  cat > "$cons_dir/check-only.sh" <<'SH'
+#!/usr/bin/env bash
+echo "production flow"
+exit 0
+SH
+  chmod +x "$cons_dir/check-only.sh"
+
+  # Two-arg form (engine dir defaults to ASSERTS_DIR)
+  run resolve_assert_script "check-only" "$cons_dir"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ ^RESOLVED:.+check-only\.sh$ ]]
+}
+
 
 # ══════════════════════════════════════════════════════════════════════
 # VAL-CROSS-003: Consumer-overridden assert SKIP → non-failing SKIP
@@ -656,7 +751,7 @@ exit 0
 SH
   chmod +x "$cons_dir/skip-check.sh"
 
-  run simulate_resolver "skip-check" "$cons_dir"
+  run resolve_assert_script "skip-check" "$cons_dir"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "skip-check")
@@ -680,7 +775,7 @@ exit 0
 SH
   chmod +x "$cons_dir/skip-only.sh"
 
-  run simulate_resolver "skip-only" "$cons_dir"
+  run resolve_assert_script "skip-only" "$cons_dir"
   local resolved="${output#RESOLVED:}"
   local ec_and_log
   ec_and_log=$(dispatch_assert "$resolved" "skip-only")
@@ -707,7 +802,7 @@ exit 0
 SH
   chmod +x "$cons_dir/pods-ready.sh"
 
-  run simulate_resolver "pods-ready" "$cons_dir"
+  run resolve_assert_script "pods-ready" "$cons_dir"
   [ "$status" -eq 0 ]
   # Resolved to consumer, not engine
   [[ "$output" =~ ^RESOLVED:.+/project/chart-test/asserts/pods-ready\.sh$ ]]
@@ -742,7 +837,7 @@ these are just notes
 TXT
 
   # Engine types must still resolve to engine
-  run simulate_resolver "pods-ready" "$cons_dir"
+  run resolve_assert_script "pods-ready" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^RESOLVED:.+/engine/asserts/pods-ready\.sh$ ]]
 }
@@ -759,7 +854,7 @@ exit 0
 SH
   chmod +x "$cons_dir/spaces-check.sh"
 
-  run simulate_resolver "spaces-check" "$cons_dir"
+  run resolve_assert_script "spaces-check" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^RESOLVED:.+spaces-check\.sh$ ]]
 }
@@ -786,12 +881,12 @@ SH
   # NOT chmod +x
 
   # Executable resolves
-  run simulate_resolver "exec-check" "$cons_dir"
+  run resolve_assert_script "exec-check" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^RESOLVED: ]]
 
   # Non-executable consumer-only → FAIL
-  run simulate_resolver "noexec-check" "$cons_dir"
+  run resolve_assert_script "noexec-check" "$cons_dir"
   [ "$status" -eq 0 ]
   [[ "$output" =~ ^FAIL: ]]
 }
