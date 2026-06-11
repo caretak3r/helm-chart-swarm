@@ -77,9 +77,7 @@ spec:
         - name: app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            {{- if ne .Values.scheme "https-only" }}
             - containerPort: {{ .Values.service.containerPort | default 80 }}
-            {{- end }}
             {{- if .Values.tls.enabled }}
             - containerPort: {{ .Values.tls.servicePort }}
             {{- end }}
