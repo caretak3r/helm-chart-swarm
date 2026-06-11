@@ -75,8 +75,15 @@ auth_check() {
     args+=(--subresource="${subgroup}")
   fi
 
+  # kubectl auth can-i prints "yes" or "no" to stdout regardless of exit code
+  # (exit 0 = yes, exit 1 = no).  Do NOT use || echo "no" fallback here —
+  # that duplicates the "no" output when the answer is no.
   local result
-  result=$(kctl "${args[@]}" 2>/dev/null || echo "no")
+  result=$(kctl "${args[@]}" 2>/dev/null; true)
+  # If kubectl produced no output at all (unreachable, api error, etc.), default to "no"
+  if [ -z "${result}" ]; then
+    result="no"
+  fi
   printf '%s' "$result"
 }
 
