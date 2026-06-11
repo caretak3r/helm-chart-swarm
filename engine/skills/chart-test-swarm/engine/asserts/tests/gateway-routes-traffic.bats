@@ -214,3 +214,94 @@ STUBSCRIPT
   [ $status -eq 0 ]
   [[ "$output" == *"ASSERTION_RESULT: PASS"* ]]
 }
+
+# ═══════════════════════════════════════════════════════════════════════
+# PASS: Gateway route serves traffic via product-namespace Service (Istio)
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "gateway-routes-traffic finds Service in product namespace (Istio pattern)" {
+  # Istio auto-provisions the data-plane Service in the product namespace,
+  # labeled with gateway.networking.k8s.io/gateway-name=<gw>.
+  # The assert must find it there BEFORE looking in the controller namespace.
+  cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"get crd"*) exit 0 ;;
+  *"get gatewayclass"*) echo "True"; exit 0 ;;
+  *"get gateway"*"Programmed"*) echo "True"; exit 0 ;;
+  *"get httproute"*) echo "True"; exit 0 ;;
+  # Service lookup in product namespace (test-ns) → found (Istio pattern)
+  *"-n test-ns get svc"*"gateway.networking.k8s.io/gateway-name"*) echo "sample-gw-istio 10.0.0.60"; exit 0 ;;
+  *"get svc"*"-o jsonpath"*) echo "10.0.0.60"; exit 0 ;;
+  *"run"*) echo "200" ;;
+  *) exit 0 ;;
+esac
+STUBSCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/grt-istio-pass.yaml"
+  cat > "$s" <<'EOF'
+id: gateway-istio-test
+name: Istio Gateway API traffic test
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: test-ns
+asserts:
+  - type: gateway-routes-traffic
+    namespace: test-ns
+    gateway_host: sample.test.local
+    gateway_class: istio
+    gateway_name: sample-gw
+    route_name: sample-route
+    controller_namespace: istio-system
+EOF
+
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: PASS"* ]]
+  # Verify the Service was found in the product namespace, not istio-system
+  [[ "$output" == *"product namespace"* ]]
+}
+
+@test "gateway-routes-traffic FAILs when no Service found in any namespace" {
+  # Neither product namespace nor controller namespace has the Service.
+  cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"get crd"*) exit 0 ;;
+  *"get gatewayclass"*) echo "True"; exit 0 ;;
+  *"get gateway"*"Programmed"*) echo "True"; exit 0 ;;
+  *"get httproute"*) echo "True"; exit 0 ;;
+  *"get svc"*) exit 1 ;;  # No Service found anywhere
+  *) exit 0 ;;
+esac
+STUBSCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/grt-fail-no-svc.yaml"
+  cat > "$s" <<'EOF'
+id: gateway-no-svc-test
+name: No Service test
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: test-ns
+asserts:
+  - type: gateway-routes-traffic
+    namespace: test-ns
+    gateway_host: test.example.com
+    gateway_class: istio
+    gateway_name: sample-gw
+    route_name: sample-route
+    controller_namespace: istio-system
+EOF
+
+  run_assert "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: FAIL"* ]]
+}

@@ -136,43 +136,66 @@ echo "PASS: HTTPRoute '${ROUTE_NAME}' Accepted=True"
 
 # ── Phase 4: Find gateway data-plane Service ─────────────────────────────
 echo ""
-echo "==> Resolving gateway data-plane Service (namespace ${CTRL_NS})"
+echo "==> Resolving gateway data-plane Service"
 
 GW_SVC_NAME=""
 GW_SVC_IP=""
+GW_SVC_NS=""
 
-# Common label patterns for gateway data-plane services:
-# Envoy Gateway: gateway.envoyproxy.io/owning-gateway-name=<gw>
-# Istio: istio.io/gateway-name=<gw> or app=istio-ingressgateway
-# Generic: gateway.networking.k8s.io/gateway-name=<gw>
+# Service lookup order:
+# 1. Product namespace (NS) via gateway.networking.k8s.io/gateway-name=<gw> label.
+#    This catches Istio Gateway API, which auto-provisions the data-plane Service
+#    in the same namespace as the Gateway resource.
+# 2. Controller namespace (CTRL_NS) via Envoy-specific label.
+# 3. Controller namespace (CTRL_NS) via istio.io/gateway-name label.
+# 4. Controller namespace (CTRL_NS) via generic gateway.networking.k8s.io label.
 
-# Try specific label first
-GW_SVC_NAME=$(kctl -n "${CTRL_NS}" get svc -l "gateway.envoyproxy.io/owning-gateway-name=${GW_NAME}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+# Step 1: Look in the product namespace first (e.g., Istio)
+GW_SVC_NAME=$(kctl -n "${NS}" get svc -l "gateway.networking.k8s.io/gateway-name=${GW_NAME}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+if [ -n "${GW_SVC_NAME}" ]; then
+  GW_SVC_NS="${NS}"
+  echo "Found gateway Service in product namespace ${GW_SVC_NS}: ${GW_SVC_NAME}"
+else
+  # Step 2: Envoy Gateway label in controller namespace
+  GW_SVC_NAME=$(kctl -n "${CTRL_NS}" get svc -l "gateway.envoyproxy.io/owning-gateway-name=${GW_NAME}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+  if [ -n "${GW_SVC_NAME}" ]; then
+    GW_SVC_NS="${CTRL_NS}"
+    echo "Found gateway Service in controller namespace ${GW_SVC_NS} (Envoy): ${GW_SVC_NAME}"
+  fi
+fi
 
 if [ -z "${GW_SVC_NAME}" ]; then
-  # Try istio gateway label
+  # Step 3: Istio gateway label in controller namespace
   GW_SVC_NAME=$(kctl -n "${CTRL_NS}" get svc -l "istio.io/gateway-name=${GW_NAME}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+  if [ -n "${GW_SVC_NAME}" ]; then
+    GW_SVC_NS="${CTRL_NS}"
+    echo "Found gateway Service in controller namespace ${GW_SVC_NS} (Istio label): ${GW_SVC_NAME}"
+  fi
 fi
 
 if [ -z "${GW_SVC_NAME}" ]; then
-  # Try generic label
+  # Step 4: Generic label in controller namespace
   GW_SVC_NAME=$(kctl -n "${CTRL_NS}" get svc -l "gateway.networking.k8s.io/gateway-name=${GW_NAME}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+  if [ -n "${GW_SVC_NAME}" ]; then
+    GW_SVC_NS="${CTRL_NS}"
+    echo "Found gateway Service in controller namespace ${GW_SVC_NS} (generic label): ${GW_SVC_NAME}"
+  fi
 fi
 
 if [ -z "${GW_SVC_NAME}" ]; then
-  echo "FAIL: could not find gateway data-plane Service for Gateway '${GW_NAME}' in namespace ${CTRL_NS}" >&2
+  echo "FAIL: could not find gateway data-plane Service for Gateway '${GW_NAME}' (checked product ns '${NS}' and controller ns '${CTRL_NS}')" >&2
   echo "ASSERTION_RESULT: FAIL"
   exit 1
 fi
 
-GW_SVC_IP=$(kctl -n "${CTRL_NS}" get svc "${GW_SVC_NAME}" -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "")
+GW_SVC_IP=$(kctl -n "${GW_SVC_NS}" get svc "${GW_SVC_NAME}" -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "")
 if [ -z "${GW_SVC_IP}" ]; then
-  echo "FAIL: could not resolve ClusterIP for gateway Service '${GW_SVC_NAME}'" >&2
+  echo "FAIL: could not resolve ClusterIP for gateway Service '${GW_SVC_NAME}' in namespace ${GW_SVC_NS}" >&2
   echo "ASSERTION_RESULT: FAIL"
   exit 1
 fi
 
-echo "Gateway Service: ${GW_SVC_NAME} (ClusterIP: ${GW_SVC_IP})"
+echo "Gateway Service: ${GW_SVC_NAME} (Namespace: ${GW_SVC_NS}, ClusterIP: ${GW_SVC_IP})"
 
 # ── Phase 5: Probe through gateway data-plane ────────────────────────────
 echo ""
@@ -201,7 +224,7 @@ echo "Gateway HTTP response: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "${EXPECTED_STATUS}" ]; then
   echo "PASS: Gateway route served traffic successfully (HTTP ${HTTP_CODE})"
   echo "ASSERTION_RESULT: PASS"
-  echo "{\"gateway\":\"${GW_NAME}\",\"route\":\"${ROUTE_NAME}\",\"host\":\"${GW_HOST}\",\"http_code\":\"${HTTP_CODE}\",\"namespace\":\"${NS}\",\"svc\":\"${GW_SVC_NAME}\"}" | sed 's/^/ASSERTION_DETAIL: /'
+  echo "{\"gateway\":\"${GW_NAME}\",\"route\":\"${ROUTE_NAME}\",\"host\":\"${GW_HOST}\",\"http_code\":\"${HTTP_CODE}\",\"namespace\":\"${NS}\",\"svc\":\"${GW_SVC_NAME}\",\"svc_namespace\":\"${GW_SVC_NS}\"}" | sed 's/^/ASSERTION_DETAIL: /'
   exit 0
 elif [ "${HTTP_CODE}" = "503" ] || [ "${HTTP_CODE}" = "000" ] || [ "${HTTP_CODE}" = "028" ]; then
   echo "FAIL: Gateway/HTTPRoute present but traffic not served (HTTP ${HTTP_CODE})" >&2

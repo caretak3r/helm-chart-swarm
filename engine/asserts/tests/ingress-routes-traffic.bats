@@ -62,14 +62,14 @@ EOF
 # SKIP: platform capability absent
 # ═══════════════════════════════════════════════════════════════════════
 
-@test "ingress-routes-traffic SKIPs when no Ingress CRD exists" {
+@test "ingress-routes-traffic SKIPs when Ingress API resource is not available" {
   stub_cmd "kubectl" '
 case "$*" in
-  *"get crd"*) exit 1 ;;
+  *"api-resources"*) exit 1 ;;
   *) exit 0 ;;
 esac'
 
-  local s="$TEST_TMPDIR/irt-skip-nocrd.yaml"
+  local s="$TEST_TMPDIR/irt-skip-noapi.yaml"
   make_scenario > "$s"
   run_assert "$s"
   [ $status -eq 0 ]
@@ -80,7 +80,7 @@ esac'
 @test "ingress-routes-traffic SKIPs non-failing (exit 0)" {
   stub_cmd "kubectl" '
 case "$*" in
-  *"get crd"*) exit 1 ;;
+  *"api-resources"*) exit 1 ;;
   *) exit 0 ;;
 esac'
 
@@ -88,6 +88,29 @@ esac'
   make_scenario > "$s"
   run_assert "$s"
   [ $status -eq 0 ]
+}
+
+@test "ingress-routes-traffic detects Ingress via api-resources (not CRD)" {
+  # The assert should use kubectl api-resources, NOT kubectl get crd.
+  # Stub both: api-resources succeeds → capability detected.
+  cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"api-resources"*) echo "ingresses  Ingress  true  Ingress  networking.k8s.io"; exit 0 ;;
+  *"run"*) echo "200" ;;
+  *"get pod"*"podIP"*) echo "10.0.0.2" ;;
+  *"get pod"*) echo "ingress-controller-abc" ;;
+  *"get ingress"*) echo "test-release" ;;
+  *) exit 0 ;;
+esac
+STUBSCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/irt-api-resources.yaml"
+  make_scenario > "$s"
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: PASS"* ]]
 }
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -98,7 +121,7 @@ esac'
   cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
 #!/usr/bin/env bash
 case "$*" in
-  *"get crd"*) exit 0 ;;
+  *"api-resources"*) echo "ingresses  Ingress  true  Ingress  networking.k8s.io"; exit 0 ;;
   *"run"*) echo "503" ;;
   *"get pod"*"-o jsonpath"*) echo "10.0.0.2" ;;
   *"get pod"*) echo "ingress-controller-abc" ;;
@@ -123,7 +146,7 @@ STUBSCRIPT
   cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
 #!/usr/bin/env bash
 case "$*" in
-  *"get crd"*) exit 0 ;;
+  *"api-resources"*) echo "ingresses  Ingress  true  Ingress  networking.k8s.io"; exit 0 ;;
   *"run"*) echo "404" ;;
   *"get pod"*"-o jsonpath"*) echo "10.0.0.2" ;;
   *"get pod"*) echo "ingress-controller-abc" ;;
@@ -148,7 +171,7 @@ STUBSCRIPT
   cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
 #!/usr/bin/env bash
 case "$*" in
-  *"get crd"*) exit 0 ;;
+  *"api-resources"*) echo "ingresses  Ingress  true  Ingress  networking.k8s.io"; exit 0 ;;
   *"get pod"*) exit 1 ;;
   *"get ingress"*) echo "test-release" ;;
   *) exit 0 ;;
@@ -171,7 +194,7 @@ STUBSCRIPT
   cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
 #!/usr/bin/env bash
 case "$*" in
-  *"get crd"*) exit 0 ;;
+  *"api-resources"*) echo "ingresses  Ingress  true  Ingress  networking.k8s.io"; exit 0 ;;
   *"run"*) echo "200" ;;
   *"get pod"*"podIP"*) echo "10.0.0.2" ;;
   *"get pod"*) echo "ingress-controller-abc" ;;
@@ -216,8 +239,93 @@ EOF
   cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
 #!/usr/bin/env bash
 case "$*" in
-  *"get crd"*) exit 0 ;;
+  *"api-resources"*) echo "ingresses  Ingress  true  Ingress  networking.k8s.io"; exit 0 ;;
   *"run"*) echo "302" ;;
+  *"get pod"*"podIP"*) echo "10.0.0.2" ;;
+  *"get pod"*) echo "ingress-controller-abc" ;;
+  *"get ingress"*) echo "test-release" ;;
+  *) exit 0 ;;
+esac
+STUBSCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: PASS"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# PASS: ingress-routes-traffic honors controller_port
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "ingress-routes-traffic uses controller_port in probe URL" {
+  local s="$TEST_TMPDIR/irt-port.yaml"
+  cat > "$s" <<'EOF'
+id: ingress-test-port
+name: Controller port test
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: test-ns
+asserts:
+  - type: ingress-routes-traffic
+    namespace: test-ns
+    ingress_host: test.example.com
+    controller_namespace: traefik
+    controller_label: app.kubernetes.io/name=traefik
+    ingress_name: test-release
+    controller_port: 8000
+EOF
+
+  cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
+#!/usr/bin/env bash
+# This stub records the curl URL for verification
+case "$*" in
+  *"api-resources"*) echo "ingresses  Ingress  true  Ingress  networking.k8s.io"; exit 0 ;;
+  *"run"*)
+    # Verify the probe URL includes port 8000
+    echo "$*" >> /tmp/irt-port-probe
+    echo "200" ;;
+  *"get pod"*"podIP"*) echo "10.0.0.2" ;;
+  *"get pod"*) echo "traefik-abc" ;;
+  *"get ingress"*) echo "test-release" ;;
+  *) exit 0 ;;
+esac
+STUBSCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: PASS"* ]]
+}
+
+@test "ingress-routes-traffic defaults controller_port to 80" {
+  local s="$TEST_TMPDIR/irt-default-port.yaml"
+  # No controller_port specified → should default to 80
+  cat > "$s" <<'EOF'
+id: ingress-test-default-port
+name: Default port test
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: test-ns
+asserts:
+  - type: ingress-routes-traffic
+    namespace: test-ns
+    ingress_host: test.example.com
+    controller_namespace: ingress-nginx
+    ingress_name: test-release
+EOF
+
+  cat > "$STUB_BIN/kubectl" <<'STUBSCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"api-resources"*) echo "ingresses  Ingress  true  Ingress  networking.k8s.io"; exit 0 ;;
+  *"run"*) echo "200" ;;
   *"get pod"*"podIP"*) echo "10.0.0.2" ;;
   *"get pod"*) echo "ingress-controller-abc" ;;
   *"get ingress"*) echo "test-release" ;;

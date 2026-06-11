@@ -29,6 +29,7 @@
 #   ingress_name         — optional, Ingress object name (default "${RELEASE}")
 #   controller_namespace — optional, namespace of the ingress controller (default "ingress-nginx")
 #   controller_label     — optional, label selector for controller pods (default "app.kubernetes.io/name=ingress-nginx")
+#   controller_port      — optional, HTTP port of the controller pod (default 80; Traefik/Kong use 8000)
 #   expected_status      — optional, expected HTTP status (default 200)
 #   curl_image           — optional, curl image for probing
 #   timeout              — optional, per-probe timeout (default "60s")
@@ -46,6 +47,7 @@ INGRESS_HOST=$(yq ".asserts[$IDX].ingress_host // \"${RELEASE}.${NS}.svc\"" "$SC
 INGRESS_NAME=$(yq ".asserts[$IDX].ingress_name // \"${RELEASE}\"" "$SCENARIO")
 CTRL_NS=$(yq ".asserts[$IDX].controller_namespace // \"ingress-nginx\"" "$SCENARIO")
 CTRL_LABEL=$(yq ".asserts[$IDX].controller_label // \"app.kubernetes.io/name=ingress-nginx\"" "$SCENARIO")
+CTRL_PORT=$(yq ".asserts[$IDX].controller_port // 80" "$SCENARIO")
 EXPECTED_STATUS=$(yq ".asserts[$IDX].expected_status // 200" "$SCENARIO")
 CURL_IMAGE=$(yq ".asserts[$IDX].curl_image // \"quay.io/curl/curl:8.20.0\"" "$SCENARIO")
 PTIMEOUT=$(yq ".asserts[$IDX].timeout // \"60s\"" "$SCENARIO")
@@ -58,11 +60,16 @@ fi
 kctl() { kubectl "${kubectl_args[@]}" "$@"; }
 
 # ── SKIP check: platform capability absent ───────────────────────────────
-# Check if the Ingress CRD exists in the cluster.
-if ! kctl get crd ingresses.networking.k8s.io >/dev/null 2>&1; then
-  echo "SKIP: Ingress platform capability not detected (no ingresses.networking.k8s.io CRD)"
+# Ingress is a built-in networking.k8s.io API resource, NOT a CRD.
+# Use kubectl api-resources to detect it correctly.
+# Capture output to a variable first to avoid SIGPIPE from pipefail+grep -q
+# when kubectl produces multi-line output and grep exits early on match.
+_api_res=""
+_api_res=$(kctl api-resources --api-group=networking.k8s.io 2>/dev/null || true)
+if ! echo "$_api_res" | grep -q '^ingresses\b'; then
+  echo "SKIP: Ingress platform capability not detected (networking.k8s.io Ingress API resource not available)"
   echo "ASSERTION_RESULT: SKIP"
-  echo 'ASSERTION_DETAIL: {"reason":"platform_capability_absent","detail":"No ingresses.networking.k8s.io CRD found"}'
+  echo 'ASSERTION_DETAIL: {"reason":"platform_capability_absent","detail":"networking.k8s.io Ingress API resource not available"}'
   exit 0
 fi
 
@@ -117,7 +124,7 @@ curl_raw=$(kctl -n "${NS}" run "${PROBE_POD}" --rm -i --restart=Never --quiet \
   --image="${CURL_IMAGE}" --pod-running-timeout="${PTIMEOUT}" -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${INGRESS_HOST}" \
-    "http://${CTRL_IP}/" 2>/dev/null || echo "000")
+    "http://${CTRL_IP}:${CTRL_PORT}/" 2>/dev/null || echo "000")
 
 # Use anchored HTTP status-code parser
 HTTP_CODE=""
