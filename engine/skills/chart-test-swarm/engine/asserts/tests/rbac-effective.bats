@@ -274,6 +274,48 @@ SCRIPT
 }
 
 # ═══════════════════════════════════════════════════════════════════════
+# FAIL: denied list absent (Issue 3 — boundary verification required)
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "rbac-effective FAILs when denied list is absent" {
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"get serviceaccount test-release"*) echo "test-release"; exit 0 ;;
+  *"auth can-i get pods"*) echo "yes"; exit 0 ;;
+  *"auth can-i list services"*) echo "yes"; exit 0 ;;
+  *) exit 0 ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/rbac-fail-no-denied.yaml"
+  cat <<EOF > "$s"
+id: rbac-no-denied
+name: RBAC no denied
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: test-ns
+asserts:
+  - type: rbac-effective
+    namespace: test-ns
+    service_account: test-release
+    granted:
+      - verb: get
+        resource: pods
+      - verb: list
+        resource: services
+EOF
+
+  run_assert "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: FAIL"* || "$output" == *"denied"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
 # L3 depth header + registry
 # ═══════════════════════════════════════════════════════════════════════
 

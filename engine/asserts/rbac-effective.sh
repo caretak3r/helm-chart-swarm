@@ -112,23 +112,25 @@ echo ""
 echo "==> Phase 2: Checking denied permissions (boundary)"
 DENIED_COUNT=$(yq ".asserts[$IDX].denied | length" "$SCENARIO" 2>/dev/null || echo "0")
 
-if [ "${DENIED_COUNT}" != "0" ] && [ "${DENIED_COUNT}" != "null" ]; then
-  for i in $(seq 0 $((DENIED_COUNT - 1))); do
-    verb=$(yq ".asserts[$IDX].denied[$i].verb" "$SCENARIO")
-    resource=$(yq ".asserts[$IDX].denied[$i].resource" "$SCENARIO")
-    subgroup=$(yq ".asserts[$IDX].denied[$i].subresource // \"\"" "$SCENARIO")
-
-    result=$(auth_check "$verb" "$resource" "$subgroup")
-    echo "  auth can-i ${verb} ${resource} ${subgroup:+--subresource=${subgroup}} → ${result}"
-
-    if [ "${result}" != "no" ]; then
-      echo "FAIL: expected 'no' for ${verb} ${resource} but got '${result}' — RBAC may be over-granted" >&2
-      overall_fail=1
-    fi
-  done
-else
-  echo "  (no denied checks configured — skipping boundary verification)"
+if [ "${DENIED_COUNT}" = "0" ] || [ "${DENIED_COUNT}" = "null" ]; then
+  echo "FAIL: 'denied' list is required for rbac-effective — must specify at least one out-of-scope verb/resource pair to prove the grant is bounded (not cluster-admin)" >&2
+  echo "ASSERTION_RESULT: FAIL"
+  exit 1
 fi
+
+for i in $(seq 0 $((DENIED_COUNT - 1))); do
+  verb=$(yq ".asserts[$IDX].denied[$i].verb" "$SCENARIO")
+  resource=$(yq ".asserts[$IDX].denied[$i].resource" "$SCENARIO")
+  subgroup=$(yq ".asserts[$IDX].denied[$i].subresource // \"\"" "$SCENARIO")
+
+  result=$(auth_check "$verb" "$resource" "$subgroup")
+  echo "  auth can-i ${verb} ${resource} ${subgroup:+--subresource=${subgroup}} → ${result}"
+
+  if [ "${result}" != "no" ]; then
+    echo "FAIL: expected 'no' for ${verb} ${resource} but got '${result}' — RBAC may be over-granted" >&2
+    overall_fail=1
+  fi
+done
 
 # ── Final report ─────────────────────────────────────────────────────────
 if [ "$overall_fail" -eq 0 ]; then

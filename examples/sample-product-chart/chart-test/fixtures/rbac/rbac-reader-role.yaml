@@ -1,0 +1,33 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sample-pod-reader
+  namespace: sample
+  labels:
+    app.kubernetes.io/instance: sample
+    app.kubernetes.io/managed-by: chart-test-swarm
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sample-pod-reader-binding
+  namespace: sample
+  labels:
+    app.kubernetes.io/instance: sample
+    app.kubernetes.io/managed-by: chart-test-swarm
+subjects:
+  - kind: ServiceAccount
+    name: sample
+    namespace: sample
+roleRef:
+  kind: Role
+  name: sample-pod-reader
+  apiGroup: rbac.authorization.k8s.io

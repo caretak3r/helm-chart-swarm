@@ -72,23 +72,26 @@ if [ -z "${COMPLIANT_FIXTURE:-}" ] || [ "${COMPLIANT_FIXTURE}" = "null" ]; then
 fi
 
 # ── SKIP check: platform capability absent ───────────────────────────────
-CRD_FOUND=0
+CAP_FOUND=0
 case "${POLICY_TYPE}" in
   kyverno)
     if kctl get crd clusterpolicies.kyverno.io >/dev/null 2>&1; then
-      CRD_FOUND=1
+      CAP_FOUND=1
       POLICY_NS="${POLICY_NS:-kyverno}"
     fi
     ;;
   gatekeeper)
     if kctl get crd constrainttemplates.templates.gatekeeper.sh >/dev/null 2>&1; then
-      CRD_FOUND=1
+      CAP_FOUND=1
       POLICY_NS="${POLICY_NS:-gatekeeper-system}"
     fi
     ;;
   vap)
-    if kctl get crd validatingadmissionpolicies.admissionregistration.k8s.io >/dev/null 2>&1; then
-      CRD_FOUND=1
+    # ValidatingAdmissionPolicy is a built-in admissionregistration.k8s.io API
+    # resource on supported Kubernetes versions, NOT a CRD. Use api-resources
+    # to detect VAP capability rather than a false-negative CRD lookup.
+    if kctl api-resources --api-group=admissionregistration.k8s.io -o name 2>/dev/null | grep -qFx validatingadmissionpolicies; then
+      CAP_FOUND=1
     fi
     ;;
   *)
@@ -98,10 +101,10 @@ case "${POLICY_TYPE}" in
     ;;
 esac
 
-if [ "$CRD_FOUND" -eq 0 ]; then
-  echo "SKIP: ${POLICY_TYPE} admission platform capability not detected (no relevant CRD found)"
+if [ "$CAP_FOUND" -eq 0 ]; then
+  echo "SKIP: ${POLICY_TYPE} admission platform capability not detected"
   echo "ASSERTION_RESULT: SKIP"
-  echo "{\"reason\":\"platform_capability_absent\",\"detail\":\"No ${POLICY_TYPE} admission CRD found — policy enforcement cannot be verified\"}" | sed 's/^/ASSERTION_DETAIL: /'
+  echo "{\"reason\":\"platform_capability_absent\",\"detail\":\"No ${POLICY_TYPE} admission platform capability found — policy enforcement cannot be verified\"}" | sed 's/^/ASSERTION_DETAIL: /'
   exit 0
 fi
 
@@ -163,16 +166,41 @@ fi
 # ── Phase 2: Violating fixture MUST be denied ────────────────────────────
 echo ""
 echo "==> Phase 2: Testing violating fixture (expect DENY)"
-VIOLATING_DENIED=0
 
-if kctl apply --dry-run=server -f "${VIOLATING_PATH}" 2>/dev/null; then
-  VIOLATING_DENIED=0
-else
-  VIOLATING_DENIED=1
-fi
+# Capture stderr so we can validate the rejection reason, not just the exit code.
+# A non-zero exit alone is insufficient: invalid fixtures, API errors, or
+# unrelated admission failures could also produce a non-zero exit, causing a
+# false-PASS.  We require the stderr to reference a known denial token.
+VIOLATING_STDERR=""
+set +e
+VIOLATING_STDERR=$(kctl apply --dry-run=server -f "${VIOLATING_PATH}" 2>&1)
+VIOLATING_EXIT=$?
+set -e
 
-if [ "$VIOLATING_DENIED" -eq 1 ]; then
-  echo "PASS: violating fixture was DENIED by admission webhook"
+if [ "$VIOLATING_EXIT" -ne 0 ]; then
+  # Build a regex from the policy name and known denial tokens.
+  # Match: 'denied', the webhook service (e.g. 'validate.kyverno.svc'),
+  # or the policy name.
+  deny_pattern="denied|admission webhook"
+  if [ -n "${POLICY_NAME}" ]; then
+    deny_pattern="${deny_pattern}|${POLICY_NAME}"
+  fi
+  # Add engine-specific webhook service patterns
+  case "${POLICY_TYPE}" in
+    kyverno)   deny_pattern="${deny_pattern}|kyverno\.svc" ;;
+    gatekeeper) deny_pattern="${deny_pattern}|gatekeeper" ;;
+    vap)       deny_pattern="${deny_pattern}|validatingadmissionpolicy" ;;
+  esac
+
+  if echo "${VIOLATING_STDERR}" | grep -qiE "${deny_pattern}"; then
+    echo "PASS: violating fixture was DENIED by admission webhook"
+  else
+    echo "FAIL: violating fixture apply failed (exit ${VIOLATING_EXIT}) but stderr does not match an admission denial pattern — may be an unrelated error" >&2
+    echo "  stderr: ${VIOLATING_STDERR}" >&2
+    echo "ASSERTION_RESULT: FAIL"
+    echo "{\"violating_unrelated_error\":true,\"exit_code\":${VIOLATING_EXIT},\"policy_type\":\"${POLICY_TYPE}\"}" | sed 's/^/ASSERTION_DETAIL: /'
+    exit 1
+  fi
 else
   echo "FAIL: policy present but violating object was ADMITTED — enforcement not working" >&2
   echo "ASSERTION_RESULT: FAIL"

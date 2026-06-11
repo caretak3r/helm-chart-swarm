@@ -104,7 +104,7 @@ SCRIPT
 # FAIL: pod on non-target node (wrong label)
 # ═══════════════════════════════════════════════════════════════════════
 
-@test "scheduled-on-target FAILs when pod is on a non-target node" {
+@test "scheduled-on-target FAILs when pod is on a non-target node (dot-key)" {
   cat > "$STUB_BIN/kubectl" <<'SCRIPT'
 #!/usr/bin/env bash
 case "$*" in
@@ -112,8 +112,8 @@ case "$*" in
     echo '{"items":[{"metadata":{"name":"test-pod-1"},"status":{"phase":"Running"},"spec":{"nodeName":"worker-1"}}]}'
     exit 0
     ;;
-  *"get node worker-1"*"-o jsonpath={.metadata.labels.node-role.kubernetes.io/worker}"*)
-    echo ""
+  *"get node worker-1"*"-o json"*)
+    echo '{"metadata":{"labels":{"other-label":"value"}}}'
     exit 0
     ;;
   *) exit 0 ;;
@@ -140,8 +140,8 @@ case "$*" in
     echo '{"items":[{"metadata":{"name":"test-pod-1"},"status":{"phase":"Running"},"spec":{"nodeName":"worker-1"}}]}'
     exit 0
     ;;
-  *"get node worker-1"*"-o jsonpath={.metadata.labels.disktype}"*)
-    echo "hdd"
+  *"get node worker-1"*"-o json"*)
+    echo '{"metadata":{"labels":{"disktype":"hdd"}}}'
     exit 0
     ;;
   *) exit 0 ;;
@@ -168,12 +168,12 @@ case "$*" in
     echo '{"items":[{"metadata":{"name":"test-pod-1"},"status":{"phase":"Running"},"spec":{"nodeName":"worker-1"}},{"metadata":{"name":"test-pod-2"},"status":{"phase":"Running"},"spec":{"nodeName":"worker-2"}}]}'
     exit 0
     ;;
-  *"get node worker-1"*"-o jsonpath={.metadata.labels.disktype}"*)
-    echo "ssd"
+  *"get node worker-1"*"-o json"*)
+    echo '{"metadata":{"labels":{"disktype":"ssd"}}}'
     exit 0
     ;;
-  *"get node worker-2"*"-o jsonpath={.metadata.labels.disktype}"*)
-    echo "ssd"
+  *"get node worker-2"*"-o json"*)
+    echo '{"metadata":{"labels":{"disktype":"ssd"}}}'
     exit 0
     ;;
   *) exit 0 ;;
@@ -225,8 +225,8 @@ case "$*" in
     echo '{"items":[{"metadata":{"name":"p1"},"status":{"phase":"Running"},"spec":{"nodeName":"w1"}}]}'
     exit 0
     ;;
-  *"get node w1"*"-o jsonpath={.metadata.labels.disktype}"*)
-    echo "ssd"
+  *"get node w1"*"-o json"*)
+    echo '{"metadata":{"labels":{"disktype":"ssd"}}}'
     exit 0
     ;;
   *) exit 0 ;;
@@ -274,6 +274,35 @@ SCRIPT
   local depth
   depth=$(yq '.scheduled-on-target' "$ASSERTS_DIR/registry.yaml")
   [ "$depth" = "L3" ]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# PASS: dot/slash label key (Issue 5 — JSONPath safe via jq)
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "scheduled-on-target PASSes with dot-key label (node-role.kubernetes.io/control-plane=)" {
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"get pods -l"*)
+    echo '{"items":[{"metadata":{"name":"p1"},"status":{"phase":"Running"},"spec":{"nodeName":"cp-1"}}]}'
+    exit 0
+    ;;
+  *"get node cp-1"*"-o json"*)
+    echo '{"metadata":{"labels":{"node-role.kubernetes.io/control-plane":""}}}'
+    exit 0
+    ;;
+  *) exit 0 ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/sot-pass-dotkey.yaml"
+  make_scenario "sot-dotkey" "node-role.kubernetes.io/control-plane=" > "$s"
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: PASS"* ]]
+  [[ "$output" == *"on target nodes"* ]]
 }
 
 # ═══════════════════════════════════════════════════════════════════════

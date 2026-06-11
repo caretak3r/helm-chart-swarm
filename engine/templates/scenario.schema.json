@@ -420,10 +420,10 @@
             "type":             { "const": "rbac-effective" },
             "namespace":        { "type": "string", "description": "Product namespace." },
             "service_account":  { "type": "string", "description": "ServiceAccount name (default: release name)." },
-            "granted":          { "type": "array", "items": { "type": "object", "properties": { "verb": {"type": "string"}, "resource": {"type": "string"}, "subresource": {"type": "string"} }, "required": ["verb", "resource"], "additionalProperties": false }, "description": "Verb/resource pairs that SHOULD return 'yes'." },
-            "denied":           { "type": "array", "items": { "type": "object", "properties": { "verb": {"type": "string"}, "resource": {"type": "string"}, "subresource": {"type": "string"} }, "required": ["verb", "resource"], "additionalProperties": false }, "description": "Verb/resource pairs that SHOULD return 'no' (boundary check)." }
+            "granted":          { "type": "array", "minItems": 1, "items": { "type": "object", "properties": { "verb": {"type": "string"}, "resource": {"type": "string"}, "subresource": {"type": "string"} }, "required": ["verb", "resource"], "additionalProperties": false }, "description": "Verb/resource pairs that SHOULD return 'yes'." },
+            "denied":           { "type": "array", "minItems": 1, "items": { "type": "object", "properties": { "verb": {"type": "string"}, "resource": {"type": "string"}, "subresource": {"type": "string"} }, "required": ["verb", "resource"], "additionalProperties": false }, "description": "Verb/resource pairs that SHOULD return 'no' (boundary check)." }
           },
-          "required": ["namespace", "granted"]
+          "required": ["namespace", "granted", "denied"]
         },
         {
           "description": "L3 behavioral assert: proves pods actually land on the targeted node via nodeName verification. SKIPs when no scheduling config or no pods.",

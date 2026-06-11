@@ -113,14 +113,26 @@ for i in $(seq 0 $((pod_count - 1))); do
     continue
   fi
 
-  # Check if this node carries the target label
-  node_label_value=""
-  node_label_value=$(kctl get node "${node_name}" -o jsonpath="{.metadata.labels.${TARGET_KEY}}" 2>/dev/null || echo "")
+  # Check if this node carries the target label.
+  # Use jq against -o json instead of interpolating TARGET_KEY into a JSONPath
+  # expression.  Common Kubernetes label keys contain dots and slashes
+  # (e.g. node-role.kubernetes.io/worker) that break kubectl JSONPath
+  # interpolation (--jsonpath="{.metadata.labels.${TARGET_KEY}}").
+  # We use has($key) to distinguish "label absent" from "label present with
+  # empty value" (e.g. node-role.kubernetes.io/control-plane=).
+  node_has_label="false"
+  node_has_label=$(kctl get node "${node_name}" -o json 2>/dev/null | jq -r --arg key "${TARGET_KEY}" '.metadata.labels | has($key)' 2>/dev/null || echo "false")
 
-  if [ -z "${node_label_value}" ]; then
+  if [ "${node_has_label}" != "true" ]; then
     echo "FAIL: pod ${pod_name} is on node ${node_name} which does NOT have label ${TARGET_KEY}" >&2
     mismatch_count=$((mismatch_count + 1))
-  elif [ -n "${TARGET_VALUE}" ] && [ "${node_label_value}" != "${TARGET_VALUE}" ]; then
+    continue
+  fi
+
+  node_label_value=""
+  node_label_value=$(kctl get node "${node_name}" -o json 2>/dev/null | jq -r --arg key "${TARGET_KEY}" '.metadata.labels[$key] // ""' 2>/dev/null || echo "")
+
+  if [ -n "${TARGET_VALUE}" ] && [ "${node_label_value}" != "${TARGET_VALUE}" ]; then
     echo "FAIL: pod ${pod_name} is on node ${node_name} where ${TARGET_KEY}=${node_label_value} (expected: ${TARGET_VALUE})" >&2
     mismatch_count=$((mismatch_count + 1))
   else

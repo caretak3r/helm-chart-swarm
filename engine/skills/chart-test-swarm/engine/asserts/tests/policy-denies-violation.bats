@@ -285,6 +285,94 @@ SCRIPT
 }
 
 # ═══════════════════════════════════════════════════════════════════════
+# SKIP: VAP capability check uses api-resources (not CRD lookup)
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "policy-denies-violation SKIPs when VAP api-resources returns no match (Issue 6)" {
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"api-resources"*"admissionregistration"*)
+    # VAP not available — api-resources returns only webhook configs
+    echo "validatingwebhookconfigurations"
+    exit 0
+    ;;
+  *) exit 0 ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/pdv-skip-vap.yaml"
+  make_scenario "pdv-vap-skip" "vap" > "$s"
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: SKIP"* ]]
+}
+
+@test "policy-denies-violation detects VAP via api-resources (not CRD) PASS" {
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"api-resources"*"admissionregistration"*)
+    echo "validatingadmissionpolicies"
+    echo "validatingadmissionpolicybindings"
+    exit 0
+    ;;
+  *"apply --dry-run=server"*"-f"*"test-violating"*)
+    echo "Error from server: admission webhook denied the request" >&2
+    exit 1
+    ;;
+  *"apply --dry-run=server"*"-f"*"test-compliant"*)
+    echo "pod/test-compliant created (server dry run)"
+    exit 0
+    ;;
+  *"wait pod"*) exit 0 ;;
+  *) exit 0 ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/pdv-vap-pass.yaml"
+  make_scenario "pdv-vap-pass" "vap" > "$s"
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: PASS"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# FAIL: stderr lacks denial pattern (Issue 2 — no false-PASS on unrelated error)
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "policy-denies-violation FAILs when violating exit non-zero but stderr lacks denial" {
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"get crd clusterpolicies"*)
+    exit 0
+    ;;
+  *"apply --dry-run=server"*"-f"*"test-violating"*)
+    # Non-zero exit but entirely unrelated error (API error, bad YAML, etc.)
+    echo "Error from server (BadRequest): the object provided is invalid" >&2
+    exit 1
+    ;;
+  *"apply --dry-run=server"*"-f"*"test-compliant"*)
+    echo "pod/test-compliant created (server dry run)"
+    exit 0
+    ;;
+  *"wait pod"*) exit 0 ;;
+  *) exit 0 ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/pdv-fail-unrelated-error.yaml"
+  make_scenario > "$s"
+  run_assert "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: FAIL"* || "$output" == *"unrelated error"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
 # Generalization: no hardcoded consumer names
 # ═══════════════════════════════════════════════════════════════════════
 
