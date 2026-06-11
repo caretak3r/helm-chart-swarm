@@ -55,29 +55,38 @@ render_helm_template() {
 }
 
 check_pdb_selector_matches() {
-  # Given a JSON matchLabels set from a PDB spec.selector, check if any
-  # release workload's selector.matchLabels is a superset or matches.
+  # Given a JSON matchLabels set from a PDB spec.selector, check if the
+  # PDB selector matches the release workload's pod labels.
+  #
+  # Kubernetes selector semantics: EVERY label in the PDB selector
+  # MUST match a label on the pod. The PDB selector can be a subset
+  # of the workload labels — it does NOT need to contain every
+  # workload label.
+  #
+  # Args: $1 = PDB selector matchLabels JSON, $2 = workload pod labels JSON
+  # Returns 0 if the PDB selector matches; 1 otherwise.
   local pdb_sel_json="$1"
-  local release_labels_json="$2"
+  local workload_labels_json="$2"
 
   if [ "$pdb_sel_json" = "{}" ] || [ "$pdb_sel_json" = "null" ]; then
+    # Empty PDB selector matches nothing
     return 1
   fi
-  if [ "$release_labels_json" = "{}" ] || [ "$release_labels_json" = "null" ]; then
+  if [ "$workload_labels_json" = "{}" ] || [ "$workload_labels_json" = "null" ]; then
     return 1
   fi
 
-  # Check if for every key in release_labels, the PDB selector contains that key
+  # For every key in the PDB selector, verify it exists AND matches in workload labels
   local all_match=true
-  while IFS='=' read -r rkey rval; do
-    if [ -z "$rkey" ]; then continue; fi
-    local pdb_val
-    pdb_val=$(printf '%s' "$pdb_sel_json" | jq -r --arg k "$rkey" '.[$k] // ""' 2>/dev/null || echo "")
-    if [ "$pdb_val" != "$rval" ]; then
+  while IFS='=' read -r pdb_key pdb_val; do
+    if [ -z "$pdb_key" ]; then continue; fi
+    local wl_val
+    wl_val=$(printf '%s' "$workload_labels_json" | jq -r --arg k "$pdb_key" '.[$k] // ""' 2>/dev/null || echo "")
+    if [ "$wl_val" != "$pdb_val" ]; then
       all_match=false
       break
     fi
-  done < <(printf '%s' "$release_labels_json" | jq -r 'to_entries[] | "\(.key)=\(.value)"')
+  done < <(printf '%s' "$pdb_sel_json" | jq -r 'to_entries[] | "\(.key)=\(.value)"')
 
   if [ "$all_match" = "true" ]; then
     return 0
@@ -158,9 +167,21 @@ check_rendered_pdb() {
 }
 
 check_live_pdb() {
+  local release_sel="app.kubernetes.io/instance=${RELEASE}"
+
+  # Get all PDBs in namespace
   local pdb_yaml
   pdb_yaml=$(kubectl "${kubectl_args[@]}" get pdb -n "$NS" -o yaml 2>/dev/null || echo "items: []")
   local pdb_count; pdb_count=$(printf '%s' "$pdb_yaml" | yq '.items | length' 2>/dev/null || echo "0")
+
+  # Get release workload pod template labels for selector matching
+  local workload_labels="{}"
+  local dep_yaml
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "$release_sel" -o yaml 2>/dev/null || echo "items: []")
+  local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
+  if [ "$dep_count" -gt 0 ]; then
+    workload_labels=$(printf '%s' "$dep_yaml" | yq '.items[0].spec.template.metadata.labels // {}' -o json 2>/dev/null || echo "{}")
+  fi
 
   if [ "$EXPECT_PRESENT" = "true" ]; then
     if [ "$pdb_count" -eq 0 ]; then
@@ -168,30 +189,47 @@ check_live_pdb() {
       return 1
     fi
 
-    # Check if any PDB selects the release workload
-    local di=0 found_release_pdb=0
+    # Check each PDB: it must have the release instance label AND its
+    # spec.selector must actually match release workload pod labels.
+    local di=0 found_matching_pdb=0
     while [ "$di" -lt "$pdb_count" ]; do
-      local pdb_name pdb_sel
+      local pdb_name
       pdb_name=$(printf '%s' "$pdb_yaml" | yq ".items[$di].metadata.name // \"\"" 2>/dev/null || echo "")
-      # Check for release scope via labels
+
+      # Check release scope via metadata labels
       local pdb_labels
       pdb_labels=$(printf '%s' "$pdb_yaml" | yq ".items[$di].metadata.labels // {}" -o json 2>/dev/null || echo "{}")
       local instance_label
       instance_label=$(printf '%s' "$pdb_labels" | jq -r '.["app.kubernetes.io/instance"] // ""' 2>/dev/null || echo "")
-      if [ "$instance_label" = "$RELEASE" ]; then
-        found_release_pdb=1
+
+      if [ "$instance_label" != "$RELEASE" ]; then
+        di=$((di + 1)); continue
+      fi
+
+      # PDB has the release instance label — now verify spec.selector matches
+      local pdb_sel
+      pdb_sel=$(printf '%s' "$pdb_yaml" | yq ".items[$di].spec.selector.matchLabels // {}" -o json 2>/dev/null || echo "{}")
+
+      if check_pdb_selector_matches "$pdb_sel" "$workload_labels"; then
+        found_matching_pdb=1
         echo "PASS: PodDisruptionBudget $pdb_name selects release workload $RELEASE"
         break
+      else
+        echo "  PodDisruptionBudget/$pdb_name: spec.selector does not match release workload labels" >&2
       fi
       di=$((di + 1))
     done
 
-    if [ "$found_release_pdb" -eq 0 ]; then
-      echo "FAIL: no PodDisruptionBudget selects release $RELEASE in namespace $NS" >&2
+    if [ "$found_matching_pdb" -eq 0 ]; then
+      if [ "$pdb_count" -gt 0 ]; then
+        echo "FAIL: PodDisruptionBudget(s) present but none select the release $RELEASE workload" >&2
+      else
+        echo "FAIL: no PodDisruptionBudget selects release $RELEASE in namespace $NS" >&2
+      fi
       return 1
     fi
   else
-    # expect_present=false
+    # expect_present=false: check if any PDB is release-scoped
     local di=0 found_any=0
     while [ "$di" -lt "$pdb_count" ]; do
       local pdb_labels

@@ -98,12 +98,35 @@ check_rendered_hpa() {
     if [ "$kind_val" = "HorizontalPodAutoscaler" ]; then
       hpa_found=$((hpa_found + 1))
       if [ "$EXPECT_PRESENT" = "true" ]; then
-        # Check scaleTargetRef points at a release workload
+        # Check scaleTargetRef points at a release workload.
+        # Must validate BOTH target_kind (is a workload kind) AND
+        # target_name (exact match against release workload names,
+        # no substring matching).
         local target_kind target_name
         target_kind=$(yq "select(di == $di) | .spec.scaleTargetRef.kind // \"\"" "$rendered_file" 2>/dev/null || echo "")
         target_name=$(yq "select(di == $di) | .spec.scaleTargetRef.name // \"\"" "$rendered_file" 2>/dev/null || echo "")
 
-        if ! printf '%b' "$release_workload_names" | grep -qF "$target_name"; then
+        # Validate target_kind is a valid workload kind
+        case "$target_kind" in
+          Deployment|StatefulSet|ReplicaSet|DaemonSet) ;;
+          *)
+            echo "FAIL: HorizontalPodAutoscaler $name_val scaleTargetRef.kind '$target_kind' is not a recognized workload kind" >&2
+            return 1
+            ;;
+        esac
+
+        # Exact-match target_name against the collected release workload names.
+        # grep -qF can match substrings; we use exact line matching.
+        local matched=false
+        while IFS= read -r wl_name; do
+          if [ -z "$wl_name" ]; then continue; fi
+          if [ "$wl_name" = "$target_name" ]; then
+            matched=true
+            break
+          fi
+        done < <(printf '%b' "$release_workload_names")
+
+        if [ "$matched" != "true" ]; then
           echo "FAIL: HorizontalPodAutoscaler $name_val scaleTargetRef ($target_kind/$target_name) does not point at a release workload" >&2
           return 1
         fi
@@ -175,9 +198,19 @@ check_live_hpa() {
         target_kind=$(printf '%s' "$hpa_yaml" | yq ".items[$di].spec.scaleTargetRef.kind // \"\"" 2>/dev/null || echo "")
         target_name=$(printf '%s' "$hpa_yaml" | yq ".items[$di].spec.scaleTargetRef.name // \"\"" 2>/dev/null || echo "")
 
-        # Verify the target is a real workload
-        if ! kubectl "${kubectl_args[@]}" get "$target_kind" "$target_name" -n "$NS" &>/dev/null; then
-          echo "FAIL: HPA $hpa_name scaleTargetRef ($target_kind/$target_name) not found" >&2
+        # Validate target_kind is a recognized workload kind
+        case "$target_kind" in
+          Deployment|StatefulSet|ReplicaSet|DaemonSet) ;;
+          *)
+            echo "FAIL: HPA $hpa_name scaleTargetRef.kind '$target_kind' is not a recognized workload kind" >&2
+            return 1
+            ;;
+        esac
+
+        # Verify the target is a release-scoped workload (not just any object).
+        # The target object must exist AND carry the release instance label.
+        if ! kubectl "${kubectl_args[@]}" get "$target_kind" "$target_name" -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" &>/dev/null; then
+          echo "FAIL: HPA $hpa_name scaleTargetRef ($target_kind/$target_name) does not point at a release workload" >&2
           return 1
         fi
 

@@ -178,9 +178,12 @@ check_rendered_probes() {
 check_live_probes() {
   local fail_count=0 workload_count=0
 
-  # Check rendered probes on live objects via kubectl
+  # Build release selector
+  local release_sel="app.kubernetes.io/instance=${RELEASE}"
+
+  # Step 1 (L1): Check probe field presence on live Deployment specs
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "$release_sel" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
 
   local i=0
@@ -211,6 +214,14 @@ check_live_probes() {
             fail_count=$((fail_count + 1))
           fi
         fi
+        if [ "$CHECK_STARTUP" = "true" ]; then
+          local sprobe
+          sprobe=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.containers[$ci].startupProbe // null" 2>/dev/null || echo "null")
+          if [ "$sprobe" = "null" ] || [ -z "$sprobe" ]; then
+            echo "  Deployment/$dname container/$ctr_name: missing startupProbe" >&2
+            fail_count=$((fail_count + 1))
+          fi
+        fi
       else
         # expect_present=false
         if [ "$CHECK_READINESS" = "true" ]; then
@@ -229,6 +240,14 @@ check_live_probes() {
             fail_count=$((fail_count + 1))
           fi
         fi
+        if [ "$CHECK_STARTUP" = "true" ]; then
+          local sprobe
+          sprobe=$(printf '%s' "$dep_yaml" | yq ".items[$i].spec.template.spec.containers[$ci].startupProbe // null" 2>/dev/null || echo "null")
+          if [ "$sprobe" != "null" ] && [ -n "$sprobe" ]; then
+            echo "  Deployment/$dname container/$ctr_name: unexpected startupProbe present" >&2
+            fail_count=$((fail_count + 1))
+          fi
+        fi
       fi
       ci=$((ci + 1))
     done
@@ -241,15 +260,36 @@ check_live_probes() {
   fi
 
   if [ "$fail_count" -gt 0 ]; then
-    echo "FAIL: $fail_count live probe check(s) failed across $workload_count workload(s)" >&2
+    echo "FAIL: $fail_count live probe field check(s) failed across $workload_count workload(s)" >&2
     return 1
   fi
 
-  if [ "$EXPECT_PRESENT" = "true" ]; then
-    echo "PASS: probes present on $workload_count live workload(s)"
-  else
-    echo "PASS: no probes present on $workload_count live workload(s)"
+  # Step 2 (L2): Verify release pods actually reach Ready=True.
+  # This proves the readinessProbe transitions to passing, not just that
+  # the probe field exists in the pod template.
+  echo "Verifying pods are Ready via readiness probe transition..."
+  local pod_count
+  pod_count=$(kubectl "${kubectl_args[@]}" get pods -n "$NS" -l "$release_sel" -o name 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$pod_count" -eq 0 ]; then
+    echo "FAIL: no release pods found in ns/$NS with selector $release_sel" >&2
+    return 1
   fi
+  echo "  Found $pod_count release-scoped pod(s), polling for Ready=True..."
+
+  # Poll for all pods Ready=True using wait_with_backoff
+  local retries=30
+  local timeout_sec=300
+  local probe_cmd="ready=\$(kubectl ${kubectl_args[*]} get pods -n \"$NS\" -l \"$release_sel\" -o jsonpath='{range .items[*]}{.status.conditions[?(@.type==\"Ready\")].status}{\"\\n\"}{end}' 2>/dev/null || echo ''); total=\$(kubectl ${kubectl_args[*]} get pods -n \"$NS\" -l \"$release_sel\" --no-headers 2>/dev/null | wc -l | tr -d ' '); ready_count=0; for s in \$ready; do [ \"\$s\" = 'True' ] && ready_count=\$((ready_count + 1)); done; [ \"\$ready_count\" -gt 0 ] && [ \"\$ready_count\" -eq \"\$total\" ]"
+
+  if wait_with_backoff "$probe_cmd" "$retries" "$timeout_sec"; then
+    echo "PASS: release pods Ready in ns/$NS — readiness probe transition verified"
+    kubectl "${kubectl_args[@]}" -n "$NS" get pods -l "$release_sel" 2>/dev/null || true
+  else
+    echo "FAIL: release pods did not reach Ready=True within timeout" >&2
+    kubectl "${kubectl_args[@]}" -n "$NS" get pods -l "$release_sel" 2>/dev/null || true
+    return 1
+  fi
+
   return 0
 }
 
