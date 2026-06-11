@@ -101,6 +101,10 @@ case "$*" in
     echo "200"
     exit 0
     ;;
+  *"api-resources"*)
+    echo "networkpolicies"
+    exit 0
+    ;;
   *"get crd"*)
     exit 0
     ;;
@@ -139,6 +143,10 @@ case "$*" in
     ;;
   *"run ct-npe-denied"*)
     echo "000"
+    exit 0
+    ;;
+  *"api-resources"*)
+    echo "networkpolicies"
     exit 0
     ;;
   *"get crd"*)
@@ -181,6 +189,10 @@ case "$*" in
     echo "000"
     exit 0
     ;;
+  *"api-resources"*)
+    echo "networkpolicies"
+    exit 0
+    ;;
   *"get crd networkpolicies"*|*"get crd ciliumnetwork"*|*"get crd networkpolicies.crd"*)
     exit 0
     ;;
@@ -211,10 +223,14 @@ SCRIPT
 # ═══════════════════════════════════════════════════════════════════════
 
 @test "network-policy-enforced FAILs when no release-scoped Service exists" {
-  # CRD exists but no service
+  # Capability exists (api-resources returns networkpolicies) but no service
   cat > "$STUB_BIN/kubectl" <<'SCRIPT'
 #!/usr/bin/env bash
 case "$*" in
+  *"api-resources"*)
+    echo "networkpolicies"
+    exit 0
+    ;;
   *"get crd"*)
     exit 0
     ;;
@@ -248,6 +264,10 @@ case "$*" in
     ;;
   *"run ct-npe-denied"*)
     echo "000"
+    exit 0
+    ;;
+  *"api-resources"*)
+    echo "networkpolicies"
     exit 0
     ;;
   *"get crd"*)
@@ -285,6 +305,10 @@ case "$*" in
     echo "200"
     exit 0
     ;;
+  *"api-resources"*)
+    echo "networkpolicies"
+    exit 0
+    ;;
   *"get crd"*)
     exit 0
     ;;
@@ -306,6 +330,78 @@ SCRIPT
   run_assert "$s"
   [ $status -ne 0 ]
   [[ "$output" == *"ASSERTION_RESULT: FAIL"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# SKIP: built-in NetworkPolicy API absent
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "network-policy-enforced SKIPs when api-resources has no networkpolicies (no CNI CRDs either)" {
+  # Stub kubectl: api-resources returns no networkpolicies, CRD checks also fail
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"api-resources"*)
+    echo "ingresses"
+    exit 0
+    ;;
+  *)
+    exit 1
+    ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/npe-skip-noapi.yaml"
+  make_scenario > "$s"
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: SKIP"* ]]
+  [[ "$output" == *"platform_capability_absent"* ]]
+}
+
+@test "network-policy-enforced detects built-in NetworkPolicy API (api-resources)" {
+  # Stub: api-resources returns networkpolicies, so capability is found
+  # even though kubectl get crd networkpolicies would fail
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"run ct-npe-allowed"*)
+    echo "200"
+    exit 0
+    ;;
+  *"run ct-npe-denied"*)
+    echo "000"
+    exit 0
+    ;;
+  *"api-resources"*)
+    echo "networkpolicies"
+    exit 0
+    ;;
+  *"get crd networkpolicies"*)
+    # Built-in NetworkPolicy is NOT a CRD — this would fail on a real cluster
+    exit 1
+    ;;
+  *"get svc test-release"*)
+    echo "10.0.0.1"
+    exit 0
+    ;;
+  *"get svc -l"*)
+    echo ""
+    exit 0
+    ;;
+  *) exit 0 ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/npe-builtin-api.yaml"
+  make_scenario > "$s"
+  run_assert "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"ASSERTION_RESULT: PASS"* ]]
+  [[ "$output" == *"allowed=reachable"* ]]
+  [[ "$output" == *"denied=blocked"* ]]
 }
 
 # ═══════════════════════════════════════════════════════════════════════

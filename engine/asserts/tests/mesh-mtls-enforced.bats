@@ -114,13 +114,14 @@ EOF
 # ═══════════════════════════════════════════════════════════════════════
 
 @test "mesh-mtls-enforced FAILs when plaintext non-mesh probe returns 200 under STRICT" {
-  # Stub kubectl: CRD exists, svc resolves, non-mesh exec returns 200 (bad),
-  # mesh exec returns 200 — the plaintext 200 must be caught as FAIL.
+  # Stub kubectl: CRD exists, STRICT PeerAuthentication exists, svc resolves,
+  # non-mesh exec returns 200 (bad), mesh exec returns 200 — the plaintext
+  # 200 must be caught as FAIL. sidecar injection check returns 2 containers.
   cat > "$STUB_BIN/kubectl" <<'SCRIPT'
 #!/usr/bin/env bash
 # Pattern: if the command contains 'exec ct-mme-nonmesh', respond with 200 (plaintext succeeds!)
-# if it contains 'exec ct-mme-mesh', respond with 200
-# For CRD, svc, ns, pod create/wait: succeed
+# if it contains 'exec ct-mme-mesh', respond with 200 for probe and sidecar stats
+# For CRD, PeerAuthentication, svc, ns, pod create/wait: succeed
 case "$*" in
   *"exec ct-mme-nonmesh"*)
     echo "200"
@@ -128,6 +129,18 @@ case "$*" in
     ;;
   *"exec ct-mme-mesh"*)
     echo "200"
+    exit 0
+    ;;
+  *"pilot-agent request GET stats"*)
+    echo "ssl.handshake: 42"
+    exit 0
+    ;;
+  *"get peerauthentication"*)
+    echo '{"items":[{"spec":{"mtls":{"mode":"STRICT"}}}]}'
+    exit 0
+    ;;
+  *"get pod ct-mme-mesh -o jsonpath"*)
+    echo "ct-mme-mesh istio-proxy"
     exit 0
     ;;
   *"get crd"*)
@@ -160,8 +173,9 @@ SCRIPT
 # ═══════════════════════════════════════════════════════════════════════
 
 @test "mesh-mtls-enforced PASSes when plaintext rejected and mesh probe succeeds" {
-  # Stub kubectl: CRD exists, svc resolves, non-mesh exec returns 000,
-  # mesh exec returns 200.
+  # Stub kubectl: CRD exists, STRICT PeerAuthentication exists, svc resolves,
+  # non-mesh exec returns 000, mesh exec returns 200, sidecar injection
+  # confirmed (2 containers), Envoy stats show SSL handshakes.
   cat > "$STUB_BIN/kubectl" <<'SCRIPT'
 #!/usr/bin/env bash
 case "$*" in
@@ -170,7 +184,21 @@ case "$*" in
     exit 0
     ;;
   *"exec ct-mme-mesh"*)
+    # Mesh probe returns 200
     echo "200"
+    exit 0
+    ;;
+  *"pilot-agent request GET stats"*)
+    echo "ssl.handshake: 42"
+    echo "ssl.handshake_total: 128"
+    exit 0
+    ;;
+  *"get peerauthentication"*)
+    echo '{"items":[{"spec":{"mtls":{"mode":"STRICT"}}}]}'
+    exit 0
+    ;;
+  *"get pod ct-mme-mesh -o jsonpath"*)
+    echo "ct-mme-mesh istio-proxy"
     exit 0
     ;;
   *"get crd"*)
@@ -205,10 +233,14 @@ SCRIPT
 # ═══════════════════════════════════════════════════════════════════════
 
 @test "mesh-mtls-enforced FAILs when no release-scoped Service exists" {
-  # Stub kubectl: CRD exists but no service
+  # Stub kubectl: CRD exists, STRICT PeerAuthentication exists but no service
   cat > "$STUB_BIN/kubectl" <<'SCRIPT'
 #!/usr/bin/env bash
 case "$*" in
+  *"get peerauthentication"*)
+    echo '{"items":[{"spec":{"mtls":{"mode":"STRICT"}}}]}'
+    exit 0
+    ;;
   *"get crd"*)
     exit 0
     ;;
@@ -279,6 +311,18 @@ case "$*" in
     echo "200"
     exit 0
     ;;
+  *"pilot-agent request GET stats"*)
+    echo "ssl.handshake: 42"
+    exit 0
+    ;;
+  *"get peerauthentication"*)
+    echo '{"items":[{"spec":{"mtls":{"mode":"STRICT"}}}]}'
+    exit 0
+    ;;
+  *"get pod ct-mme-mesh -o jsonpath"*)
+    echo "ct-mme-mesh istio-proxy"
+    exit 0
+    ;;
   *"get crd"*)
     exit 0
     ;;
@@ -314,6 +358,18 @@ case "$*" in
     echo "200"
     exit 0
     ;;
+  *"pilot-agent request GET stats"*)
+    echo "ssl.handshake: 0"
+    exit 0
+    ;;
+  *"get peerauthentication"*)
+    echo '{"items":[{"spec":{"mtls":{"mode":"STRICT"}}}]}'
+    exit 0
+    ;;
+  *"get pod ct-mme-mesh -o jsonpath"*)
+    echo "ct-mme-mesh istio-proxy"
+    exit 0
+    ;;
   *"get crd"*)
     exit 0
     ;;
@@ -335,6 +391,118 @@ SCRIPT
   run_assert "$s"
   [ $status -ne 0 ]
   [[ "$output" == *"ASSERTION_RESULT: FAIL"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# FAIL: CRD exists but no STRICT PeerAuthentication policy
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "mesh-mtls-enforced FAILs when Istio CRD exists but no STRICT PeerAuthentication" {
+  # Stub kubectl: CRD exists, but PeerAuthentication has PERMISSIVE mode, not STRICT
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"get peerauthentication"*)
+    echo '{"items":[{"spec":{"mtls":{"mode":"PERMISSIVE"}}}]}'
+    exit 0
+    ;;
+  *"get crd"*)
+    exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/mme-fail-nostrict.yaml"
+  make_scenario > "$s"
+  run_assert "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"no STRICT"* ]] || [[ "$output" == *"FAIL"* ]]
+}
+
+@test "mesh-mtls-enforced FAILs when Istio CRD exists but no PeerAuthentication at all" {
+  # Stub kubectl: CRD exists, but no PeerAuthentication resources present
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"get peerauthentication"*)
+    echo '{"items":[]}'
+    exit 0
+    ;;
+  *"get crd"*)
+    exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/mme-fail-nopa.yaml"
+  make_scenario > "$s"
+  run_assert "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"no STRICT"* ]] || [[ "$output" == *"FAIL"* ]]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# FAIL: sidecar not injected into in-mesh probe pod
+# ═══════════════════════════════════════════════════════════════════════
+
+@test "mesh-mtls-enforced FAILs when in-mesh probe has no sidecar (only 1 container)" {
+  # Stub: CRD exists, STRICT PeerAuthentication exists, non-mesh blocked,
+  # mesh probe succeeds, BUT only 1 container (no sidecar) — must FAIL
+  cat > "$STUB_BIN/kubectl" <<'SCRIPT'
+#!/usr/bin/env bash
+case "$*" in
+  *"exec ct-mme-nonmesh"*)
+    echo "000"
+    exit 0
+    ;;
+  *"exec ct-mme-mesh"*)
+    echo "200"
+    exit 0
+    ;;
+  *"pilot-agent request GET stats"*)
+    echo "ssl.handshake: 42"
+    exit 0
+    ;;
+  *"get peerauthentication"*)
+    echo '{"items":[{"spec":{"mtls":{"mode":"STRICT"}}}]}'
+    exit 0
+    ;;
+  *"get pod ct-mme-mesh -o jsonpath"*)
+    # Only 1 container — no sidecar!
+    echo "ct-mme-mesh"
+    exit 0
+    ;;
+  *"get crd"*)
+    exit 0
+    ;;
+  *"get svc test-release"*)
+    echo "10.0.0.1"
+    exit 0
+    ;;
+  *"get svc -l"*)
+    echo ""
+    exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+SCRIPT
+  chmod +x "$STUB_BIN/kubectl"
+
+  local s="$TEST_TMPDIR/mme-fail-nosidecar.yaml"
+  make_scenario > "$s"
+  run_assert "$s"
+  [ $status -ne 0 ]
+  [[ "$output" == *"no sidecar"* ]] || [[ "$output" == *"FAIL"* ]]
 }
 
 # ═══════════════════════════════════════════════════════════════════════

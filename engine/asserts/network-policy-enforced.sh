@@ -53,20 +53,24 @@ fi
 kctl() { kubectl "${kubectl_args[@]}" "$@"; }
 
 # ── SKIP check: platform capability absent ───────────────────────────────
-# Check if the cluster has any network policy CRD installed.
-CRD_FOUND=0
-if kctl get crd networkpolicies.networking.k8s.io >/dev/null 2>&1; then
-  CRD_FOUND=1
+# NetworkPolicy is a BUILT-IN networking.k8s.io/v1 API resource, NOT a CRD.
+# Detecting it via `kubectl get crd` always returns NotFound, causing false
+# SKIP on clusters enforcing standard NetworkPolicy.  Use `kubectl
+# api-resources` for built-in APIs and fall back to CRD checks only for
+# CNI-specific custom resources (Cilium, Calico).
+POLICY_CAPABILITY_FOUND=0
+if kctl api-resources --api-group=networking.k8s.io 2>/dev/null | grep -q 'networkpolicies'; then
+  POLICY_CAPABILITY_FOUND=1
 elif kctl get crd ciliumnetworkpolicies.cilium.io >/dev/null 2>&1; then
-  CRD_FOUND=1
+  POLICY_CAPABILITY_FOUND=1
 elif kctl get crd networkpolicies.crd.projectcalico.org >/dev/null 2>&1; then
-  CRD_FOUND=1
+  POLICY_CAPABILITY_FOUND=1
 fi
 
-if [ "$CRD_FOUND" -eq 0 ]; then
-  echo "SKIP: NetworkPolicy platform capability not detected (no NetworkPolicy/CiliumNetworkPolicy CRD)"
+if [ "$POLICY_CAPABILITY_FOUND" -eq 0 ]; then
+  echo "SKIP: NetworkPolicy platform capability not detected (no networking.k8s.io NetworkPolicy API, CiliumNetworkPolicy CRD, or Calico NetworkPolicy CRD found)"
   echo "ASSERTION_RESULT: SKIP"
-  echo 'ASSERTION_DETAIL: {"reason":"platform_capability_absent","detail":"No NetworkPolicy, CiliumNetworkPolicy, or Calico NetworkPolicy CRD found"}'
+  echo 'ASSERTION_DETAIL: {"reason":"platform_capability_absent","detail":"No NetworkPolicy API, CiliumNetworkPolicy, or Calico NetworkPolicy capability found"}'
   exit 0
 fi
 
