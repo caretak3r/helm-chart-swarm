@@ -159,17 +159,35 @@ PROBE_POD="ct-tcv-$$"
 CA_BASE64=""
 CA_BASE64=$(base64 < "$TMPDIR/ca.crt" | tr -d '\n' 2>/dev/null || echo "")
 
-# Use $() capture (not temp-file redirect) so kubectl's stdout is captured
-# correctly by the subshell.  The `|| echo "000"` fallback ensures a value
-# is always available; grep+tail then extracts the last 3-digit code to handle
-# the kubectl double-output case ("200200" → "200").
-CURL_RAW=""
-CURL_RAW=$(kctl -n "${NS}" run "${PROBE_POD}" --rm -i --restart=Never --quiet \
+# Launch probe pod without -i (avoids stdin-attachment races that lose stdout).
+# Capture output via kubectl logs after the pod completes — more reliable than -i --rm.
+# Pre-delete any stale pod with the same name.
+kctl -n "${NS}" delete pod "${PROBE_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+kctl -n "${NS}" run "${PROBE_POD}" --restart=Never \
   --image="${CURL_IMAGE}" --pod-running-timeout="${PTIMEOUT}" -- \
-  sh -c "echo '${CA_BASE64}' | base64 -d > /tmp/ca.crt && \
+  sh -c "echo '${CA_BASE64}' | base64 -d > /tmp/ca.crt 2>/dev/null && \
     curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
     --resolve '${TLS_HOST}:${TLS_PORT}:${SVC_IP}' \
-    'https://${TLS_HOST}:${TLS_PORT}/'" 2>/dev/null || echo "000")
+    'https://${TLS_HOST}:${TLS_PORT}/'" >/dev/null 2>&1 || true
+
+# Poll until the pod reaches a terminal phase (up to 90s)
+_wait_s=0
+while [ "$_wait_s" -lt 90 ]; do
+  _phase=$(kctl -n "${NS}" get pod "${PROBE_POD}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
+  if [ "$_phase" = "Succeeded" ] || [ "$_phase" = "Failed" ]; then
+    break
+  fi
+  sleep 2
+  _wait_s=$((_wait_s + 2))
+done
+
+# Retrieve pod logs (curl wrote the HTTP code to stdout)
+CURL_RAW=""
+CURL_RAW=$(kctl -n "${NS}" logs "${PROBE_POD}" 2>/dev/null || echo "")
+[ -z "$CURL_RAW" ] && CURL_RAW="000"
+
+# Cleanup probe pod
+kctl -n "${NS}" delete pod "${PROBE_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
 
 HTTP_CODE=""
 HTTP_CODE=$(printf '%s' "$CURL_RAW" | grep -oE '[0-9]{3}' | tail -1 || true)

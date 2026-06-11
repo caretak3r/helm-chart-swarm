@@ -107,7 +107,11 @@ for DEPLOY in $(kctl -n "${NS}" get deploy -o jsonpath='{.items[*].metadata.name
       -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
     _all_injected=1
     for POD in $PODS; do
-      CONTAINERS=$(kctl -n "${NS}" get pod "$POD" -o jsonpath='{.spec.containers[*].name}' 2>/dev/null || echo "")
+      # Check both spec.containers (classic sidecar) and spec.initContainers
+      # (native sidecar, k8s 1.28+ with restartPolicy: Always).
+      CONTAINERS=$(kctl -n "${NS}" get pod "$POD" \
+        -o jsonpath='{.spec.containers[*].name}{" "}{.spec.initContainers[*].name}' \
+        2>/dev/null || echo "")
       if ! echo "$CONTAINERS" | grep -q "istio-proxy"; then
         _all_injected=0
         echo "  Attempt ${_attempt}: Pod ${POD} missing istio-proxy — re-deleting pod to trigger injection"
@@ -125,7 +129,9 @@ for DEPLOY in $(kctl -n "${NS}" get deploy -o jsonpath='{.items[*].metadata.name
     --field-selector=status.phase=Running \
     -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
   for POD in $PODS; do
-    CONTAINERS=$(kctl -n "${NS}" get pod "$POD" -o jsonpath='{.spec.containers[*].name}' 2>/dev/null || echo "")
+    CONTAINERS=$(kctl -n "${NS}" get pod "$POD" \
+      -o jsonpath='{.spec.containers[*].name}{" "}{.spec.initContainers[*].name}' \
+      2>/dev/null || echo "")
     if echo "$CONTAINERS" | grep -q "istio-proxy"; then
       echo "  ✓ Pod $POD has istio-proxy sidecar"
     else
@@ -220,7 +226,10 @@ if [ -z "$PRODUCT_POD" ]; then
 else
   PROBE_POD="$PRODUCT_POD"
   # Make sure the pod has a sidecar
-  PROBE_CONTAINERS=$(kctl -n "${NS}" get pod "$PROBE_POD" -o jsonpath='{.spec.containers[*].name}' 2>/dev/null || echo "")
+  # Check both spec.containers and spec.initContainers (native sidecar support)
+  PROBE_CONTAINERS=$(kctl -n "${NS}" get pod "$PROBE_POD" \
+    -o jsonpath='{.spec.containers[*].name}{" "}{.spec.initContainers[*].name}' \
+    2>/dev/null || echo "")
   if ! echo "$PROBE_CONTAINERS" | grep -q "istio-proxy"; then
     echo "WARN: Product pod ${PROBE_POD} has no sidecar; creating dedicated probe pod"
     kctl -n "${NS}" run ct-egress-probe --restart=Never \

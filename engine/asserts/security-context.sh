@@ -103,11 +103,21 @@ check_rendered_security_context() {
             local expected_pval
             expected_pval=$(printf '%s' "$POD_SC_JSON" | jq -r --arg k "$pkey" '.[$k]')
             local actual_pval
+            local _raw_pval
             # Handle nested keys like seccompProfile.type
+            # Avoid // operator: yq treats boolean false as absent with //
             if echo "$pkey" | grep -q '\.'; then
-              actual_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext | $pkey // \"__ABSENT__\"" "$rendered_file" 2>/dev/null || echo "__ABSENT__")
+              _raw_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext | $pkey" "$rendered_file" 2>/dev/null || echo "null")
             else
-              actual_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext[\"$pkey\"] // \"__ABSENT__\"" "$rendered_file" 2>/dev/null || echo "__ABSENT__")
+              _raw_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext[\"$pkey\"]" "$rendered_file" 2>/dev/null || echo "null")
+            fi
+            if [ -z "$_raw_pval" ] || [ "$_raw_pval" = "null" ]; then
+              actual_pval="__ABSENT__"
+            elif echo "$_raw_pval" | grep -q '^- '; then
+              # Single-element YAML list: normalize "- VALUE\n" to "VALUE"
+              actual_pval=$(echo "$_raw_pval" | head -1 | sed 's/^- //')
+            else
+              actual_pval="$_raw_pval"
             fi
             if [ "$actual_pval" != "$expected_pval" ]; then
               echo "  $kind_val/$name_val: pod securityContext.$pkey expected=$expected_pval actual=$actual_pval" >&2
@@ -136,11 +146,21 @@ check_rendered_security_context() {
               local expected_cval
               expected_cval=$(printf '%s' "$CTR_SC_JSON" | jq -r --arg k "$ckey" '.[$k]')
               local actual_cval
+              local _raw_cval
               # Handle nested keys like capabilities.drop
+              # Avoid // operator: yq treats boolean false as absent with //
               if echo "$ckey" | grep -q '\.'; then
-                actual_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext | $ckey // \"__ABSENT__\"" "$rendered_file" 2>/dev/null || echo "__ABSENT__")
+                _raw_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext | $ckey" "$rendered_file" 2>/dev/null || echo "null")
               else
-                actual_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext[\"$ckey\"] // \"__ABSENT__\"" "$rendered_file" 2>/dev/null || echo "__ABSENT__")
+                _raw_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext[\"$ckey\"]" "$rendered_file" 2>/dev/null || echo "null")
+              fi
+              if [ -z "$_raw_cval" ] || [ "$_raw_cval" = "null" ]; then
+                actual_cval="__ABSENT__"
+              elif echo "$_raw_cval" | grep -q '^- '; then
+                # Single-element YAML list: normalize "- VALUE\n" to "VALUE"
+                actual_cval=$(echo "$_raw_cval" | head -1 | sed 's/^- //')
+              else
+                actual_cval="$_raw_cval"
               fi
               if [ "$actual_cval" != "$expected_cval" ]; then
                 echo "  $kind_val/$name_val container/$ctr_name: securityContext.$ckey expected=$expected_cval actual=$actual_cval" >&2

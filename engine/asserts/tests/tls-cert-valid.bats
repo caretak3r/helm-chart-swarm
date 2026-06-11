@@ -281,8 +281,17 @@ case "\$*" in
     echo "TLS Secret exists"
     exit 0
     ;;
+  *"delete pod"*)
+    exit 0
+    ;;
   *"run"*)
-    echo "60 60"
+    exit 0
+    ;;
+  *"get pod"*"jsonpath"*)
+    echo "Succeeded"
+    ;;
+  *"logs"*)
+    echo "000"
     ;;
   *"get svc"*)
     echo "10.0.0.1"
@@ -349,7 +358,16 @@ case "\$*" in
     echo "TLS Secret exists"
     exit 0
     ;;
+  *"delete pod"*)
+    exit 0
+    ;;
   *"run"*)
+    exit 0
+    ;;
+  *"get pod"*"jsonpath"*)
+    echo "Succeeded"
+    ;;
+  *"logs"*)
     echo "200"
     ;;
   *"get svc"*)
