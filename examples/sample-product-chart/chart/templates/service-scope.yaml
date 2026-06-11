@@ -7,6 +7,9 @@ metadata:
     {{- include "sample-product.labels" . | nindent 4 }}
     {{- include "sample-product.scopeSelectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: scope
+    {{- include "sample-product.extraLabels" . | nindent 4 }}
+  annotations:
+    {{- include "sample-product.extraAnnotations" . | nindent 4 }}
 spec:
   type: ClusterIP
   selector:

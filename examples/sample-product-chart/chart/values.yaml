@@ -20,6 +20,54 @@ tls:
   # -- Whether to run the wait-for-tls initContainer that polls for cert files. Disable for CSI volumes that are populated asynchronously.
   waitForCerts: true
 
+# -- Extra labels to add to all resources.
+extraLabels: {}
+# -- Extra annotations to add to all resources.
+extraAnnotations: {}
+
+# -- Pod-level security context applied to all pod specs.
+podSecurityContext: {}
+# -- Container-level security context applied to all containers.
+securityContext: {}
+# -- Priority class name applied to all workload pod specs.
+priorityClassName: ""
+# -- Node selector applied to all workload pod specs.
+nodeSelector: {}
+# -- Tolerations applied to all workload pod specs.
+tolerations: []
+# -- Affinity rules applied to all workload pod specs.
+affinity: {}
+# -- Topology spread constraints applied to all workload pod specs.
+topologySpreadConstraints: []
+# -- Container resources (applied to all Deployment templates).
+resources: {}
+# -- Image pull secrets for all pod specs.
+imagePullSecrets: []
+# -- Service account configuration.
+serviceAccount:
+  # -- Create a ServiceAccount. When true, also creates RBAC resources.
+  create: false
+  # -- ServiceAccount name.
+  name: ""
+  # -- Annotations for the ServiceAccount.
+  annotations: {}
+# -- RBAC configuration (requires serviceAccount.create: true).
+rbac:
+  # -- Create Role and RoleBinding.
+  create: false
+  # -- RBAC rules for the Role.
+  rules: []
+# -- Network policy configuration.
+networkPolicy:
+  # -- Create a NetworkPolicy.
+  enabled: false
+  # -- Policy types (Ingress, Egress).
+  policyTypes: ["Ingress"]
+  # -- Ingress rules.
+  ingress: []
+  # -- Egress rules.
+  egress: []
+
 # -- Scope component (API server). Creates a separate Deployment + Service on port 8080.
 scope:
   enabled: false
@@ -58,6 +106,9 @@ gatewayRoute:
     namespace: ""
     sectionName: ""
   hostname: ""
+
+# -- Scheme enforcement (http-and-https, https-only, http-only).
+scheme: "http-and-https"
 
 # -- Service mesh integration.
 mesh:

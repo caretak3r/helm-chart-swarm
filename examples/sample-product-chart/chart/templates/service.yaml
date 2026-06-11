@@ -2,14 +2,22 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}
+  labels:
+    {{- include "sample-product.labels" . | nindent 4 }}
+    {{- include "sample-product.selectorLabels" . | nindent 4 }}
+    {{- include "sample-product.extraLabels" . | nindent 4 }}
+  annotations:
+    {{- include "sample-product.extraAnnotations" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   selector:
     {{- include "sample-product.selectorLabels" . | nindent 4 }}
   ports:
+    {{- if ne .Values.scheme "https-only" }}
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.targetPort | default 80 }}
       name: http
+    {{- end }}
     {{- if .Values.tls.enabled }}
     - port: {{ .Values.tls.servicePort }}
       targetPort: {{ .Values.tls.servicePort }}

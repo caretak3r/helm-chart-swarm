@@ -22,6 +22,17 @@ Create a default fully qualified app name.
 {{- end }}
 
 {{/*
+Create the name of the service account to use.
+*/}}
+{{- define "sample-product.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "sample-product.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
 Common labels shared across all resources.
 */}}
 {{- define "sample-product.labels" -}}
@@ -30,6 +41,28 @@ app.kubernetes.io/name: {{ include "sample-product.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Extra labels merged into resource metadata.labels (applied to all resources).
+*/}}
+{{- define "sample-product.extraLabels" -}}
+{{- with .Values.extraLabels }}
+{{- range $k, $v := . }}
+{{ $k }}: {{ $v | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Extra annotations merged into resource metadata.annotations (applied to all resources).
+*/}}
+{{- define "sample-product.extraAnnotations" -}}
+{{- with .Values.extraAnnotations }}
+{{- range $k, $v := . }}
+{{ $k }}: {{ $v | quote }}
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{/*

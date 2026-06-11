@@ -7,6 +7,9 @@ metadata:
     {{- include "sample-product.labels" . | nindent 4 }}
     {{- include "sample-product.scopeSelectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: scope
+    {{- include "sample-product.extraLabels" . | nindent 4 }}
+  annotations:
+    {{- include "sample-product.extraAnnotations" . | nindent 4 }}
 spec:
   replicas: {{ .Values.scope.replicaCount }}
   selector:
@@ -18,12 +21,51 @@ spec:
         {{- include "sample-product.scopePodLabels" . | nindent 8 }}
       annotations:
         {{- include "sample-product.meshAnnotations" . | nindent 8 }}
+        {{- include "sample-product.extraAnnotations" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "sample-product.serviceAccountName" . }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: scope
           image: "{{ .Values.scope.image.repository }}:{{ .Values.scope.image.tag }}"
           ports:
             - containerPort: {{ .Values.scope.service.port }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           readinessProbe:
             httpGet:
               path: /
@@ -32,8 +74,4 @@ spec:
             httpGet:
               path: /
               port: {{ .Values.scope.service.port }}
-          {{- with .Values.resources }}
-          resources:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
 {{- end }}

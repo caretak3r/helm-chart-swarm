@@ -6,6 +6,9 @@ metadata:
     {{- include "sample-product.labels" . | nindent 4 }}
     {{- include "sample-product.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: skywatcher
+    {{- include "sample-product.extraLabels" . | nindent 4 }}
+  annotations:
+    {{- include "sample-product.extraAnnotations" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -17,7 +20,38 @@ spec:
         {{- include "sample-product.skywatcherPodLabels" . | nindent 8 }}
       annotations:
         {{- include "sample-product.meshAnnotations" . | nindent 8 }}
+        {{- include "sample-product.extraAnnotations" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "sample-product.serviceAccountName" . }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- if .Values.tls.enabled }}
       {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
       {{- $volumeType := .Values.tls.volumeType | default "secret" }}
@@ -43,10 +77,20 @@ spec:
         - name: app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
+            {{- if ne .Values.scheme "https-only" }}
             - containerPort: {{ .Values.service.containerPort | default 80 }}
+            {{- end }}
             {{- if .Values.tls.enabled }}
             - containerPort: {{ .Values.tls.servicePort }}
             {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.tls.enabled }}
           {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
           volumeMounts:
@@ -58,9 +102,9 @@ spec:
               readOnly: true
           {{- end }}
           readinessProbe:
-            httpGet: { path: /, port: {{ .Values.service.containerPort | default 80 }} }
+            httpGet: { path: /, port: {{ if eq .Values.scheme "https-only" }}{{ .Values.tls.servicePort }}{{ else }}{{ .Values.service.containerPort | default 80 }}{{ end }} }
           livenessProbe:
-            httpGet: { path: /, port: {{ .Values.service.containerPort | default 80 }} }
+            httpGet: { path: /, port: {{ if eq .Values.scheme "https-only" }}{{ .Values.tls.servicePort }}{{ else }}{{ .Values.service.containerPort | default 80 }}{{ end }} }
       {{- if .Values.tls.enabled }}
       {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
       {{- $volumeType := .Values.tls.volumeType | default "secret" }}

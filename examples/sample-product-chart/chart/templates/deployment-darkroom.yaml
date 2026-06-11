@@ -7,6 +7,9 @@ metadata:
     {{- include "sample-product.labels" . | nindent 4 }}
     {{- include "sample-product.darkroomSelectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: darkroom
+    {{- include "sample-product.extraLabels" . | nindent 4 }}
+  annotations:
+    {{- include "sample-product.extraAnnotations" . | nindent 4 }}
 spec:
   replicas: {{ .Values.darkroom.replicaCount }}
   selector:
@@ -18,7 +21,38 @@ spec:
         {{- include "sample-product.darkroomPodLabels" . | nindent 8 }}
       annotations:
         {{- include "sample-product.meshAnnotations" . | nindent 8 }}
+        {{- include "sample-product.extraAnnotations" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "sample-product.serviceAccountName" . }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: darkroom
           image: "{{ .Values.darkroom.image.repository }}:{{ .Values.darkroom.image.tag }}"
@@ -29,6 +63,10 @@ spec:
           {{- end }}
           {{- with .Values.resources }}
           resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.securityContext }}
+          securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
       {{- if .Values.darkroom.pvc.enabled }}
