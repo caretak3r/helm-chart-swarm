@@ -112,7 +112,7 @@ probe_service() {
   raw_code=$(kctl -n "${NS}" run "${pod_name}" --rm -i --restart=Never --quiet \
     --image="${CURL_IMAGE}" --pod-running-timeout="${PTIMEOUT}" \
     ${label_arg:+$label_arg} -- \
-    curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
+    curl -s -o /dev/null -w '%{http_code}\n' --max-time 15 \
       "http://${SVC_IP}:${PORT}/" 2>/dev/null || echo "000")
 
   local code

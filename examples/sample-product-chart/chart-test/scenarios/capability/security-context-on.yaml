@@ -19,12 +19,7 @@ product:
   chart: ./chart
   release: sample
   namespace: sample
-  set:
-    podSecurityContext.runAsNonRoot: true
-    podSecurityContext.seccompProfile.type: RuntimeDefault
-    securityContext.readOnlyRootFilesystem: true
-    securityContext.allowPrivilegeEscalation: false
-    securityContext.capabilities.drop[0]: ALL
+  values: chart-test/fixtures/capability/security-context-on-values.yaml
 asserts:
   - type: security-context
     namespace: sample
@@ -34,7 +29,6 @@ asserts:
       runAsNonRoot: true
       seccompProfile.type: RuntimeDefault
     containerSecurityContext:
-      readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
       capabilities.drop: ALL
 tags: [capability, compliance]

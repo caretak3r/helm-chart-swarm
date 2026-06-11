@@ -1,7 +1,7 @@
 replicaCount: 1
 image:
-  repository: nginx
-  tag: "1.27-alpine"
+  repository: public.ecr.aws/nginx/nginx
+  tag: "1.29-alpine"
 service:
   type: ClusterIP
   port: 80
@@ -73,8 +73,8 @@ scope:
   enabled: false
   replicaCount: 1
   image:
-    repository: nginx
-    tag: "1.27-alpine"
+    repository: public.ecr.aws/nginx/nginx
+    tag: "1.29-alpine"
   service:
     port: 8080
 
@@ -83,8 +83,8 @@ darkroom:
   enabled: false
   replicaCount: 1
   image:
-    repository: nginx
-    tag: "1.27-alpine"
+    repository: public.ecr.aws/nginx/nginx
+    tag: "1.29-alpine"
   pvc:
     enabled: false
     claimName: ""

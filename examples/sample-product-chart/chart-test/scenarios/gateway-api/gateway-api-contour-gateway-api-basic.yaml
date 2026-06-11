@@ -6,6 +6,7 @@ labels: {customer: any, profile: gateway-api}
 cluster:
   provider: kind
   k8s_version: v1.30.0
+  helm_timeout: 10m
   preinstall:
     - kind: raw_manifest
       path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml

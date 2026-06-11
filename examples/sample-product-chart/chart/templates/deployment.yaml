@@ -102,9 +102,9 @@ spec:
               readOnly: true
           {{- end }}
           readinessProbe:
-            httpGet: { path: /, port: {{ if eq .Values.scheme "https-only" }}{{ .Values.tls.servicePort }}{{ else }}{{ .Values.service.containerPort | default 80 }}{{ end }} }
+            httpGet: { path: /, port: {{ .Values.service.containerPort | default 80 }} }
           livenessProbe:
-            httpGet: { path: /, port: {{ if eq .Values.scheme "https-only" }}{{ .Values.tls.servicePort }}{{ else }}{{ .Values.service.containerPort | default 80 }}{{ end }} }
+            httpGet: { path: /, port: {{ .Values.service.containerPort | default 80 }} }
       {{- if .Values.tls.enabled }}
       {{- $mountPath := .Values.tls.mountPath | default "/etc/tls" }}
       {{- $volumeType := .Values.tls.volumeType | default "secret" }}

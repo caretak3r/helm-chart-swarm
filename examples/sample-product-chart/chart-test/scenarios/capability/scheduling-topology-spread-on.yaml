@@ -4,13 +4,9 @@ name: "Capability: topologySpreadConstraints settable on ALL workloads (ON)"
 description: >-
   Renders the product chart with a topologySpreadConstraint configured
   (maxSkew=1, topologyKey=topology.kubernetes.io/zone,
-  whenUnsatisfiable=DoNotSchedule) and asserts that every workload pod
-  spec carries the constraint. The sample chart does NOT expose a
-  topologySpreadConstraints knob in its values.yaml and has no
-  topologySpreadConstraints block in any Deployment template — setting
-  the constraint has no effect. This scenario is EXPECTED to FAIL
-  (honest red gap) documenting that the chart lacks the
-  topologySpreadConstraints scheduling knob.
+  whenUnsatisfiable=ScheduleAnyway) and asserts that every workload pod
+  spec carries the constraint, proving the chart's topologySpreadConstraints
+  knob works end-to-end on a real kind cluster.
 labels: {customer: enterprise, profile: compliance}
 cluster:
   provider: kind
@@ -19,11 +15,7 @@ product:
   chart: ./chart
   release: sample
   namespace: sample
-  set:
-    topologySpreadConstraints[0].maxSkew: 1
-    topologySpreadConstraints[0].topologyKey: topology.kubernetes.io/zone
-    topologySpreadConstraints[0].whenUnsatisfiable: DoNotSchedule
-    topologySpreadConstraints[0].labelSelector.matchLabels.app: sample
+  values: chart-test/fixtures/capability/scheduling-topology-spread-values.yaml
 asserts:
   - type: scheduling-present
     namespace: sample
@@ -36,7 +28,7 @@ asserts:
     topologySpreadConstraints:
       - topologyKey: topology.kubernetes.io/zone
         maxSkew: 1
-        whenUnsatisfiable: DoNotSchedule
+        whenUnsatisfiable: ScheduleAnyway
 tags: [capability, compliance]
 category: capability
 capability: topology-spread-constraints

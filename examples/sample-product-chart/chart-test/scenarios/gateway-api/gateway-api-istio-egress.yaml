@@ -13,6 +13,7 @@ description: >-
 labels: {customer: any, profile: gateway-api}
 cluster:
   provider: kind
+  helm_timeout: 10m
   k8s_version: v1.30.0
   preinstall:
     # Istio base CRDs

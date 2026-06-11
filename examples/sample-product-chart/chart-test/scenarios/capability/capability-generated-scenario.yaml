@@ -1,0 +1,38 @@
+---
+id: capability-generated-scenario
+name: 'Capability: generated-scenario'
+description: "Addon-less capability/compliance test for generated-scenario. Scaffolded by chart-test-swarm new \u2014 customize product overrides and assertion parameters as needed."
+labels:
+  customer: enterprise
+  profile: compliance
+cluster:
+  provider: kind
+  k8s_version: v1.30.0
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  values: chart-test/fixtures/capability/generated-scenario-values.yaml
+asserts:
+- type: helm-status-deployed
+  release: sample
+  namespace: sample
+- type: pods-ready
+  namespace: sample
+  timeout: 3m
+- type: labels-present
+  namespace: sample
+  source: rendered
+  labels:
+    app.kubernetes.io/name: sample-product
+tags:
+- capability
+- compliance
+category: capability
+capability: generated-scenario
+tier: capability
+mechanisms:
+- capability:generated-scenario
+generated_by:
+  by: chart-test-swarm-new
+  at: '2026-06-11T10:03:16Z'

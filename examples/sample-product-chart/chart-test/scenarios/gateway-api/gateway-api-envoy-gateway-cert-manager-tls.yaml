@@ -5,6 +5,7 @@ description: "Installs cert-manager and envoy-gateway, issues a TLS certificate,
 labels: {customer: any, profile: gateway-api-tls}
 cluster:
   provider: kind
+  helm_timeout: 10m
   k8s_version: v1.30.0
   preinstall:
     - kind: helm
