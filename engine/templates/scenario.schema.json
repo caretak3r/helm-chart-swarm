@@ -166,12 +166,12 @@
     "assertion": {
       "type": "object",
       "required": ["type"],
-      "unevaluatedProperties": false,
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present", "probes-present", "volume-mounts-present", "pdb-present", "hpa-present", "init-containers", "host-network", "lifecycle-hooks", "dns-config", "network-policy-enforced", "mesh-mtls-enforced", "tls-cert-valid", "ingress-routes-traffic", "gateway-routes-traffic", "policy-denies-violation", "rbac-effective", "scheduled-on-target"] },
+        "type":    { "type": "string", "description": "Assert type identifier. Known types are validated by oneOf branches; consumer-custom types pass through to depth enforcement." },
         "timeout": { "type": "string", "default": "5m", "description": "Per-assert timeout (e.g. 30s, 5m). Used as the overall wait ceiling by wait_with_backoff." },
         "retries": { "type": "integer", "minimum": 0, "default": 0, "description": "Number of retry attempts after the initial probe. 0 means a single attempt. Must be a non-negative integer." }
       },
+      "unevaluatedProperties": false,
       "oneOf": [
         {
           "properties": {
@@ -552,6 +552,14 @@
             "nameservers":      { "type": "array", "items": { "type": "string" }, "description": "Expected dnsConfig.nameservers entries. Checked when expect_present=true." }
           },
           "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Consumer-custom or unknown assert type — structural validation deferred to depth enforcement and the consumer assert script. Accepts any properties via additionalProperties.",
+          "properties": {
+            "type": { "not": { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present", "probes-present", "volume-mounts-present", "pdb-present", "hpa-present", "init-containers", "host-network", "lifecycle-hooks", "dns-config", "network-policy-enforced", "mesh-mtls-enforced", "tls-cert-valid", "ingress-routes-traffic", "gateway-routes-traffic", "policy-denies-violation", "rbac-effective", "scheduled-on-target"] } }
+          },
+          "required": ["type"],
+          "additionalProperties": true
         }
       ]
     }

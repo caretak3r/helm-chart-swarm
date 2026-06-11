@@ -57,6 +57,29 @@ done
 [ -f "$SCHEMA" ] || { echo "ERROR: schema not found: $SCHEMA" >&2; exit 1; }
 [ -d "$SEARCH_ROOT" ] || { echo "ERROR: search root not found: $SEARCH_ROOT" >&2; exit 1; }
 
+# ── Helper: find consumer project root for a scenario file ──────────
+# Walks up from the scenario file until it finds a 'chart-test/'
+# subdirectory; returns the directory that CONTAINS 'chart-test/'
+# (the consumer project root). This correctly handles nested scenario
+# layouts (e.g. chart-test/scenarios/capability/minimal.yaml) as well
+# as flat layouts (chart-test/scenarios/test.yaml).
+# Falls back to the legacy fixed-depth calculation when 'chart-test/'
+# is not found anywhere in the path hierarchy.
+find_project_dir() {
+  local scenario_file="$1"
+  local d
+  d="$(cd "$(dirname "$scenario_file")" && pwd)"
+  while [ "$d" != "/" ]; do
+    if [ -d "$d/chart-test" ]; then
+      echo "$d"
+      return
+    fi
+    d="$(dirname "$d")"
+  done
+  # Fallback: legacy fixed-depth assumption (flat layout)
+  echo "$(dirname "$(dirname "$(dirname "$scenario_file")")")"
+}
+
 # Ensure check-jsonschema is available — install via uv if not present.
 if ! command -v check-jsonschema >/dev/null 2>&1; then
   echo "==> Installing check-jsonschema via uv..."
@@ -148,7 +171,7 @@ else
   echo "── Validating consumer registry depth values ──"
   declare -A _SEEN_CONSUMER_REGISTRIES=()
   for _cr_f in "${SCENARIOS[@]}"; do
-    _cr_project_dir="$(dirname "$(dirname "$(dirname "$_cr_f")")")"
+    _cr_project_dir="$(find_project_dir "$_cr_f")"
     _consumer_reg="${_cr_project_dir}/chart-test/asserts/registry.yaml"
     if [ -f "$_consumer_reg" ] && [ -z "${_SEEN_CONSUMER_REGISTRIES[$_consumer_reg]:-}" ]; then
       _SEEN_CONSUMER_REGISTRIES["$_consumer_reg"]=1
@@ -171,7 +194,7 @@ else
   echo "── Checking scenario assert types vs merged depth registry ──"
   for f in "${SCENARIOS[@]}"; do
     rel="${f#"$ROOT_DIR"/}"
-    _pd="$(dirname "$(dirname "$(dirname "$f")")")"
+    _pd="$(find_project_dir "$f")"
     _creg="${_pd}/chart-test/asserts/registry.yaml"
     while IFS= read -r t; do
       [ -z "$t" ] && continue

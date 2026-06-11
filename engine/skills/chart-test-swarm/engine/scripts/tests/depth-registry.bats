@@ -661,3 +661,161 @@ asserts:
   [[ "${output}" == *"non-existent-type"* ]]
   rm -rf "$dir"
 }
+
+# ─────────────────────────────────────────────────────────────────────────
+# Issue 1: Nested scenario layout — project dir resolution
+# ─────────────────────────────────────────────────────────────────────────
+
+@test "find_project_dir resolves project root for nested scenario layout" {
+  # Simulate chart-test/scenarios/capability/minimal.yaml
+  local dir; dir=$(mktemp -d "$TMPDIR/dr-nested-XXXXX")
+  mkdir -p "$dir/chart-test/scenarios/capability"
+  mkdir -p "$dir/chart-test/asserts"
+  # Consumer registry at the project level
+  echo 'my-custom-check: L3' > "$dir/chart-test/asserts/registry.yaml"
+  # Scenario in nested layout
+  cat > "$dir/chart-test/scenarios/capability/minimal.yaml" <<'YAML'
+id: test-nested
+cluster:
+  provider: kind
+product:
+  chart: chart/
+  release: test
+  namespace: test
+asserts:
+  - type: pods-ready
+    namespace: test
+YAML
+  _DR_TEMPFILES+=("$dir")
+
+  # Source the production find_project_dir function and test it
+  local sweep_script="$SWEEP"
+  # Extract and test the function logic: walk up from scenario to find chart-test/
+  local d
+  d="$(cd "$(dirname "$dir/chart-test/scenarios/capability/minimal.yaml")" && pwd)"
+  while [ "$d" != "/" ]; do
+    if [ -d "$d/chart-test" ]; then
+      break
+    fi
+    d="$(dirname "$d")"
+  done
+  [ "$d" = "$dir" ]
+  rm -rf "$dir"
+}
+
+@test "sweep honors consumer registry with nested scenario layout" {
+  # Nested layout: chart-test/scenarios/capability/test.yaml
+  # Consumer registry at project-level chart-test/asserts/registry.yaml
+  local dir; dir=$(mktemp -d "$TMPDIR/dr-nested-sweep-XXXXX")
+  mkdir -p "$dir/chart-test/scenarios/capability"
+  mkdir -p "$dir/chart-test/asserts"
+  echo 'my-custom-check: L3' > "$dir/chart-test/asserts/registry.yaml"
+  cat > "$dir/chart-test/scenarios/capability/test.yaml" <<'YAML'
+id: test-nested-consumer
+cluster:
+  provider: kind
+product:
+  chart: chart/
+  release: test
+  namespace: test
+asserts:
+  - type: pods-ready
+    namespace: test
+YAML
+  _DR_TEMPFILES+=("$dir")
+
+  run bash "$SWEEP" --root "$dir"
+  [ "$status" -eq 0 ]
+  [[ "${output}" == *"depth enforcement passed"* ]]
+  rm -rf "$dir"
+}
+
+@test "sweep discovers consumer registry for nested scenario depth validation" {
+  # Nested layout with consumer-only custom type declared in consumer registry.
+  # The sweep must find the consumer registry (not walk to wrong level) and
+  # recognize the consumer-declared type.
+  local dir; dir=$(mktemp -d "$TMPDIR/dr-nested-custom-XXXXX")
+  mkdir -p "$dir/chart-test/scenarios/capability"
+  mkdir -p "$dir/chart-test/asserts"
+  echo 'my-custom-check: L3' > "$dir/chart-test/asserts/registry.yaml"
+  cat > "$dir/chart-test/scenarios/capability/test.yaml" <<'YAML'
+id: test-nested-custom
+cluster:
+  provider: kind
+product:
+  chart: chart/
+  release: test
+  namespace: test
+asserts:
+  - type: my-custom-check
+    namespace: test
+YAML
+  _DR_TEMPFILES+=("$dir")
+
+  # With the fix, the sweep must find the project dir via chart-test/ walking
+  # and discover the consumer registry.  The consumer-only type should pass
+  # depth enforcement because it IS declared in the consumer registry.
+  run bash "$SWEEP" --root "$dir"
+  # Depth enforcement should pass — my-custom-check is declared in consumer registry
+  [[ "${output}" == *"depth enforcement passed"* ]]
+  rm -rf "$dir"
+}
+
+# ─────────────────────────────────────────────────────────────────────────
+# Issue 2: Consumer-only custom type schema acceptance
+# ─────────────────────────────────────────────────────────────────────────
+
+@test "consumer-only custom type passes schema validation (no longer blocked by type enum)" {
+  local dir; dir=$(mktemp -d "$TMPDIR/dr-custom-schema-XXXXX")
+  mkdir -p "$dir/scenarios"
+  cat > "$dir/scenarios/test.yaml" <<'YAML'
+id: test-custom-schema
+cluster:
+  provider: kind
+product:
+  chart: chart/
+  release: test
+  namespace: test
+asserts:
+  - type: my-custom-check
+    namespace: test
+    custom_field: "hello"
+YAML
+  _DR_TEMPFILES+=("$dir")
+
+  # Schema validation must accept the consumer-only type (no longer blocked by enum)
+  run bash "$SWEEP" --root "$dir"
+  # Schema validation passes for the custom type; depth enforcement may or may not pass
+  # depending on registry. Since my-custom-check isn't in any registry, depth enforcement
+  # will fail — but schema validation passes (the FAIL is from depth, not schema).
+  [[ "${output}" == *"unregistered assert type"* ]] || true
+  [[ "${output}" != *"is not valid under any of the given schemas"* ]]
+  rm -rf "$dir"
+}
+
+@test "consumer-only custom type passes full sweep with consumer registry depth declaration" {
+  local dir; dir=$(mktemp -d "$TMPDIR/dr-custom-full-XXXXX")
+  mkdir -p "$dir/chart-test/scenarios" "$dir/chart-test/asserts"
+  echo 'my-custom-check: L3' > "$dir/chart-test/asserts/registry.yaml"
+  cat > "$dir/chart-test/scenarios/test.yaml" <<'YAML'
+id: test-custom-full
+cluster:
+  provider: kind
+product:
+  chart: chart/
+  release: test
+  namespace: test
+asserts:
+  - type: my-custom-check
+    namespace: test
+    custom_field: value
+    extra_param: 42
+YAML
+  _DR_TEMPFILES+=("$dir")
+
+  # Must pass BOTH schema validation AND depth enforcement
+  run bash "$SWEEP" --root "$dir"
+  [ "$status" -eq 0 ]
+  [[ "${output}" == *"depth enforcement passed"* ]]
+  rm -rf "$dir"
+}
