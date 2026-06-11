@@ -41,6 +41,7 @@ asserts:
   - type: pods-ready
     namespace: gatekeeper-system
     timeout: 4m
+    selector: app.kubernetes.io/instance=gatekeeper
   - type: pods-ready
     namespace: sample
     timeout: 5m

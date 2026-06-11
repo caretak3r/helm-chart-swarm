@@ -109,11 +109,16 @@ probe_service() {
   fi
 
   local raw_code
+  # NOTE: Use `|| raw_code="000"` NOT `|| echo "000"` inside $().
+  # When curl fails (non-zero exit), the pod exits non-zero, kubectl exits
+  # non-zero, and `|| echo "000"` inside $() would APPEND "000" to the
+  # already-captured curl output (e.g., "000\n" from %{http_code}\n), producing
+  # "000\n000" which causes compare failures.  The assignment form overwrites.
   raw_code=$(kctl -n "${NS}" run "${pod_name}" --rm -i --restart=Never --quiet \
     --image="${CURL_IMAGE}" --pod-running-timeout="${PTIMEOUT}" \
     ${label_arg:+$label_arg} -- \
-    curl -s -o /dev/null -w '%{http_code}\n' --max-time 15 \
-      "http://${SVC_IP}:${PORT}/" 2>/dev/null || echo "000")
+    curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
+      "http://${SVC_IP}:${PORT}/" 2>/dev/null) || raw_code="000"
 
   local code
   code=$(parse_http_code "$raw_code" 2>/dev/null || echo "$raw_code")

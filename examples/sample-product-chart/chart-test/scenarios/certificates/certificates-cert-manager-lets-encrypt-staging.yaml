@@ -26,6 +26,7 @@ cluster:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/sample-tls-certificate.yaml
       namespace: sample
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

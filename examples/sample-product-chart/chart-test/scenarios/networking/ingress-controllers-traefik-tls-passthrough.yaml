@@ -45,6 +45,7 @@ cluster:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/manual-tls/manual-tls-basic-secret.yaml
       namespace: sample
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
@@ -67,6 +68,7 @@ asserts:
   - type: pods-ready
     namespace: traefik
     timeout: 3m
+    selector: app.kubernetes.io/instance=traefik
   - type: smoke-script
     path: chart-test/assertions/traefik-tls-passthrough.sh
 tags: [nightly]

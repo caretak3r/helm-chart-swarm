@@ -204,11 +204,15 @@ echo "==> Probing through gateway with Host: ${GW_HOST}"
 PROBE_POD="ct-grt-$$"
 curl_raw=""
 
+# NOTE: Use `|| curl_raw="000"` NOT `|| echo "000"` inside $().
+# When curl fails (non-zero exit), kubectl exits non-zero and `|| echo "000"`
+# inside $() would APPEND "000" to the already-captured curl output, producing
+# e.g. "000000". The assignment form `|| var="val"` overwrites with the fallback.
 curl_raw=$(kctl -n "${NS}" run "${PROBE_POD}" --rm -i --restart=Never --quiet \
   --image="${CURL_IMAGE}" --pod-running-timeout="${PTIMEOUT}" -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${GW_HOST}" \
-    "http://${GW_SVC_IP}:80/" 2>/dev/null || echo "000")
+    "http://${GW_SVC_IP}:80/" 2>/dev/null) || curl_raw="000"
 
 # Use anchored HTTP status-code parser
 HTTP_CODE=""

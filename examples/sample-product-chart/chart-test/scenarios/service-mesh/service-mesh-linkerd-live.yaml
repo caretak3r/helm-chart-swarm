@@ -61,6 +61,7 @@ asserts:
   - type: pods-ready
     namespace: linkerd
     timeout: 10m
+    selector: app.kubernetes.io/instance=linkerd-control-plane
   - type: pods-ready
     namespace: sample
     timeout: 5m

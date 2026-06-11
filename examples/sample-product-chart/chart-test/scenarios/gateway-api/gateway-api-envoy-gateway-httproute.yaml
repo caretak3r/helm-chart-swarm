@@ -18,6 +18,9 @@ cluster:
           envoyGateway:
             provider:
               type: Kubernetes
+              kubernetes:
+                envoyService:
+                  type: NodePort
       wait: helm-deployed
       wait_timeout: 5m
     - kind: raw_manifest
@@ -27,7 +30,7 @@ product:
   release: sample
   namespace: sample
   set:
-    image.repository: "nginx"
+    image.repository: "public.ecr.aws/nginx/nginx"
     image.tag: "1.27-alpine"
     gatewayRoute.enabled: "true"
     gatewayRoute.parentRef.name: "sample-gw"

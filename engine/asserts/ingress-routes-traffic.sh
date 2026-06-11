@@ -120,11 +120,17 @@ echo "==> Probing through ${CTRL_NS}/${CTRL_POD} with Host: ${INGRESS_HOST}"
 PROBE_POD="ct-irt-$$"
 curl_raw=""
 
+# NOTE: Use `|| curl_raw="000"` NOT `|| echo "000"` inside $().
+# When curl fails (non-zero exit), the pod exits non-zero, kubectl exits
+# non-zero, and the `|| echo "000"` inside $() would APPEND "000" to the
+# already-captured curl output (e.g., "000" from %{http_code}), producing
+# "000000" which parse_http_code rejects.  The assignment form `|| var="val"`
+# overwrites the captured output with the fallback.
 curl_raw=$(kctl -n "${NS}" run "${PROBE_POD}" --rm -i --restart=Never --quiet \
   --image="${CURL_IMAGE}" --pod-running-timeout="${PTIMEOUT}" -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${INGRESS_HOST}" \
-    "http://${CTRL_IP}:${CTRL_PORT}/" 2>/dev/null || echo "000")
+    "http://${CTRL_IP}:${CTRL_PORT}/" 2>/dev/null) || curl_raw="000"
 
 # Use anchored HTTP status-code parser
 HTTP_CODE=""

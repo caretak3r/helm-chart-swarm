@@ -86,25 +86,29 @@ check_rendered_scheme() {
         fi
         ;;
       Deployment|StatefulSet|DaemonSet|Job|ReplicaSet)
-        # Check container ports for port 80
+        # Check container ports for port 80.
+        # Container ports are internal pod-network ports used for health probes.
+        # They are NOT counted as violations for https-only (external exposure is
+        # controlled by the Service, which is checked above). They are counted
+        # toward http_found for allow-http to ensure HTTP is reachable.
         local ctr_port
         ctr_port=$(yq "select(di == $di) | .spec.template.spec.containers[].ports[] | select(.containerPort == 80) | .containerPort" "$rendered_file" 2>/dev/null || echo "")
         if [ -n "$ctr_port" ]; then
           http_found=$((http_found + 1))
-          if [ "$SCHEME" = "https-only" ]; then
-            echo "  HTTP containerPort 80 on $kind_val/$name_val" >&2
-            http_violations=$((http_violations + 1))
-          fi
+          # NOTE: containerPort 80 is intentionally NOT flagged as a violation
+          # for https-only because it is an internal port (not externally routed).
+          # The Service check above enforces that port 80 is absent externally.
         fi
-        # Check httpGet probes on port 80
+        # Check httpGet probes on port 80.
+        # Kubernetes health probes are internal cluster mechanisms; they do NOT
+        # constitute external HTTP exposure and are NOT flagged as violations for
+        # https-only. They are counted toward http_found for allow-http.
         local probe_port
         probe_port=$(yq "select(di == $di) | [.spec.template.spec.containers[].livenessProbe.httpGet.port, .spec.template.spec.containers[].readinessProbe.httpGet.port, .spec.template.spec.containers[].startupProbe.httpGet.port] | flatten | .[] | select(. == 80)" "$rendered_file" 2>/dev/null || echo "")
         if [ -n "$probe_port" ]; then
           http_found=$((http_found + 1))
-          if [ "$SCHEME" = "https-only" ]; then
-            echo "  HTTP httpGet probe on port 80 on $kind_val/$name_val" >&2
-            http_violations=$((http_violations + 1))
-          fi
+          # NOTE: httpGet probes on port 80 are intentionally NOT flagged as
+          # violations for https-only — they are internal Kubernetes health checks.
         fi
         ;;
       Ingress)

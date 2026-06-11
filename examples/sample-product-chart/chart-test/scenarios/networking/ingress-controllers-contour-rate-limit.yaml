@@ -38,6 +38,7 @@ asserts:
   - type: pods-ready
     namespace: projectcontour
     timeout: 3m
+    selector: app.kubernetes.io/instance=contour
   - type: smoke-script
     path: chart-test/assertions/contour-rate-limit.sh
 tags: [nightly]

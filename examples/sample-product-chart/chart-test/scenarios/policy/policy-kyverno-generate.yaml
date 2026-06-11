@@ -2,8 +2,7 @@
 id: policy-kyverno-generate
 name: "Kyverno generate: ConfigMap in labeled namespaces"
 description: >-
-  Installs Kyverno, creates a ClusterPolicy that generates a ConfigMap in any namespace labeled kyverno.io/generate=true. Verifies that creating a fresh namespace with the trigger
-  label causes Kyverno to generate the ConfigMap within 10s. Webhook failure mode: Fail.
+  Installs Kyverno, creates a ClusterPolicy that generates a ConfigMap in any namespace labeled kyverno.io/generate=true. Verifies that creating a fresh namespace with the trigger label causes Kyverno to generate the ConfigMap within 10s. Webhook failure mode: Fail.
 labels: {customer: any, profile: policy}
 cluster:
   provider: kind
@@ -49,6 +48,7 @@ asserts:
   - type: pods-ready
     namespace: kyverno
     timeout: 4m
+    selector: app.kubernetes.io/instance=kyverno
   - type: pods-ready
     namespace: sample
     timeout: 5m

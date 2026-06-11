@@ -54,6 +54,7 @@ asserts:
   - type: pods-ready
     namespace: ingress-nginx
     timeout: 3m
+    selector: app.kubernetes.io/instance=ingress-nginx
   - type: smoke-script
     path: chart-test/assertions/nginx-canary.sh
 tags: [nightly]

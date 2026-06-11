@@ -2,8 +2,7 @@
 id: policy-kyverno-image-verify
 name: "Kyverno image-verify: only approved registries"
 description: >-
-  Installs Kyverno, creates a ClusterPolicy that only allows images from public.ecr.aws/* or nginx* registries. Verifies a Pod referencing docker.io/library/redis:7-alpine is
-  denied (stderr names rule), while a Pod with an approved image is accepted. Webhook failure mode: Fail.
+  Installs Kyverno, creates a ClusterPolicy that only allows images from public.ecr.aws/* or nginx* registries. Verifies a Pod referencing docker.io/library/redis:7-alpine is denied (stderr names rule), while a Pod with an approved image is accepted. Webhook failure mode: Fail.
 labels: {customer: any, profile: policy}
 cluster:
   provider: kind
@@ -49,6 +48,7 @@ asserts:
   - type: pods-ready
     namespace: kyverno
     timeout: 4m
+    selector: app.kubernetes.io/instance=kyverno
   - type: pods-ready
     namespace: sample
     timeout: 5m

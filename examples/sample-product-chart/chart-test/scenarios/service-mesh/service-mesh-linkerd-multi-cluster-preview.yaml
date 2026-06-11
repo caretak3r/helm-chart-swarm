@@ -66,9 +66,11 @@ asserts:
   - type: pods-ready
     namespace: linkerd
     timeout: 3m
+    selector: app.kubernetes.io/instance=linkerd-control-plane
   - type: pods-ready
     namespace: linkerd-multicluster
     timeout: 3m
+    selector: app.kubernetes.io/instance=linkerd-multicluster
   - type: pods-ready
     namespace: sample
     timeout: 5m

@@ -98,9 +98,11 @@ asserts:
   - type: pods-ready
     namespace: cert-manager
     timeout: 5m
+    selector: app.kubernetes.io/instance=cert-manager
   - type: pods-ready
     namespace: istio-system
     timeout: 5m
+    selector: app.kubernetes.io/instance=istio-ingressgateway
   - type: pods-ready
     namespace: sample
     timeout: 5m

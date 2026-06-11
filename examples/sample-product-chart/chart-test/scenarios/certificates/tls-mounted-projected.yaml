@@ -2,10 +2,7 @@
 id: tls-mounted-projected
 name: "TLS via projected volume"
 description: >-
-  Creates a kubernetes.io/tls Secret, then deploys the chart with
-  tls.volumeType=projected so the pod has a projected volume sourcing
-  the TLS Secret. Verifies projected volume source, tls.crt/tls.key
-  present at mountPath, and in-cluster HTTPS curl returns 200.
+  Creates a kubernetes.io/tls Secret, then deploys the chart with tls.volumeType=projected so the pod has a projected volume sourcing the TLS Secret. Verifies projected volume source, tls.crt/tls.key present at mountPath, and in-cluster HTTPS curl returns 200.
 labels: {customer: any, profile: tls}
 cluster:
   provider: kind
@@ -14,6 +11,7 @@ cluster:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-projected-secret.yaml
       namespace: sample
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

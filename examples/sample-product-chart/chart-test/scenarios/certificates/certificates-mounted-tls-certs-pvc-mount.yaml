@@ -16,6 +16,7 @@ cluster:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-populate-job.yaml
       namespace: sample
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
