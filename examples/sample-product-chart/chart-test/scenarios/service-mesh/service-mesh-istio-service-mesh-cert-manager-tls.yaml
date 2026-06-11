@@ -2,9 +2,7 @@
 id: service-mesh-istio-service-mesh-cert-manager-tls
 name: "Istio Service Mesh + cert-manager TLS Gateway"
 description: >-
-  Cross-feature compose: installs cert-manager + istio (base + istiod + gateway), creates a cert-manager self-signed ClusterIssuer and Certificate that issues a TLS Secret, then
-  creates an Istio Gateway with a TLS listener referencing that Secret via credentialName. Verifies: istioctl analyze clean, HTTPS through gateway returns 200 with the
-  cert-manager-issued certificate.
+  Cross-feature compose: installs cert-manager + istio (base + istiod + gateway), creates a cert-manager self-signed ClusterIssuer and Certificate that issues a TLS Secret, then creates an Istio Gateway with a TLS listener referencing that Secret via credentialName. Verifies: istioctl analyze clean, HTTPS through gateway returns 200 with the cert-manager-issued certificate.
 labels: {customer: any, profile: mesh-tls}
 cluster:
   provider: kind
@@ -74,6 +72,7 @@ cluster:
               targetPort: 443
       wait: pods-ready
       wait_timeout: 3m
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

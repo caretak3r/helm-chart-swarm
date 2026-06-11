@@ -5,6 +5,7 @@ labels: {profile: full-stack}
 cluster:
   provider: kind
   k8s_version: v1.30.0
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

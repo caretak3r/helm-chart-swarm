@@ -2,8 +2,7 @@
 id: service-mesh-linkerd-basic-mesh
 name: "Linkerd — Basic Mesh (Sidecar Injection)"
 description: >-
-  Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace with linkerd.io/inject=enabled, deploys the product chart with scope.enabled=true, and
-  verifies every product pod has a linkerd-proxy sidecar alongside the app container (2-container pods), with linkerd check --proxy returning healthy.
+  Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace with linkerd.io/inject=enabled, deploys the product chart with scope.enabled=true, and verifies every product pod has a linkerd-proxy sidecar alongside the app container (2-container pods), with linkerd check --proxy returning healthy.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
@@ -30,6 +29,7 @@ cluster:
         url: "https://helm.linkerd.io/stable"
       values: chart-test/fixtures/service-mesh/linkerd-control-plane-values.yaml
       wait: none
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

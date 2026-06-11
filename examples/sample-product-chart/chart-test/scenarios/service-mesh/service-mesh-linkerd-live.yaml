@@ -2,14 +2,7 @@
 id: service-mesh-linkerd-live
 name: "Linkerd — Live mTLS Sidecar Mesh"
 description: >-
-  Installs linkerd-crds + linkerd-control-plane (with a preinstalled trust
-  anchor / issuer cert via raw_manifest), annotates the product namespace
-  with linkerd.io/inject=enabled, deploys the chart, and proves: (1) linkerd
-  control-plane pods Ready and proxy-injector webhook present, (2) every
-  product pod has a linkerd-proxy container alongside the app container,
-  (3) linkerd check --proxy -n sample exits 0 confirming the data plane
-  is healthy. Emits a PASS artifact bundle with a 2-container pod manifest,
-  linkerd.io/inject-annotated namespace, and versions.json.
+  Installs linkerd-crds + linkerd-control-plane (with a preinstalled trust anchor / issuer cert via raw_manifest), annotates the product namespace with linkerd.io/inject=enabled, deploys the chart, and proves: (1) linkerd control-plane pods Ready and proxy-injector webhook present, (2) every product pod has a linkerd-proxy container alongside the app container, (3) linkerd check --proxy -n sample exits 0 confirming the data plane is healthy. Emits a PASS artifact bundle with a 2-container pod manifest, linkerd.io/inject-annotated namespace, and versions.json.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
@@ -47,6 +40,7 @@ cluster:
     # Step 4: Annotate the product namespace for linkerd injection (before product chart install)
     - kind: raw_manifest
       path: chart-test/fixtures/service-mesh/linkerd-inject-namespace.yaml
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

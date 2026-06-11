@@ -2,14 +2,7 @@
 id: service-mesh-istio-sidecar-live
 name: "Istio Sidecar Mesh — Live mTLS Verification"
 description: >-
-  Installs istio/base + istio/istiod, pre-labels the product namespace
-  istio-injection=enabled via raw_manifest, deploys the chart with
-  mesh.inject=true, and proves: (1) istiod is Ready and the sidecar injector
-  webhook is present, (2) every product pod has exactly 2 containers including
-  istio-proxy, (3) in-mesh traffic to the product Service returns HTTP 200 and
-  the connection is mTLS — confirmed via istio-proxy stats reporting non-zero
-  inbound SSL handshakes. Emits a PASS artifact bundle with 2-container pod
-  manifest, applied-overrides recording inject: true, and versions.json.
+  Installs istio/base + istio/istiod, pre-labels the product namespace istio-injection=enabled via raw_manifest, deploys the chart with mesh.inject=true, and proves: (1) istiod is Ready and the sidecar injector webhook is present, (2) every product pod has exactly 2 containers including istio-proxy, (3) in-mesh traffic to the product Service returns HTTP 200 and the connection is mTLS — confirmed via istio-proxy stats reporting non-zero inbound SSL handshakes. Emits a PASS artifact bundle with 2-container pod manifest, applied-overrides recording inject: true, and versions.json.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
@@ -47,6 +40,7 @@ cluster:
       wait_timeout: 5m
     - kind: raw_manifest
       path: chart-test/fixtures/service-mesh/istio-inject-namespace.yaml
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

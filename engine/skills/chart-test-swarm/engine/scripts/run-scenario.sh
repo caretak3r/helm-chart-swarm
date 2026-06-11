@@ -845,7 +845,8 @@ PCHART="$(resolve_path "$PRODUCT_CHART")"
 [ -e "$PCHART" ] || [[ "$PRODUCT_CHART" == oci://* ]] || [[ "$PRODUCT_CHART" == *://* ]] \
   || fail product-install "chart not found at $PCHART (and not an OCI/URL ref)"
 
-helm_args=(upgrade --install "$PRODUCT_RELEASE" "$PCHART" --namespace "$PRODUCT_NS" --create-namespace --wait --timeout 5m)
+HELM_TIMEOUT=$(yq '.cluster.helm_timeout // "5m"' "$SCENARIO")
+helm_args=(upgrade --install "$PRODUCT_RELEASE" "$PCHART" --namespace "$PRODUCT_NS" --create-namespace --wait --timeout "$HELM_TIMEOUT")
 if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
   vpath="$(resolve_path "$PRODUCT_VALUES")"
   [ -f "$vpath" ] || fail product-install "product values file missing: $vpath"

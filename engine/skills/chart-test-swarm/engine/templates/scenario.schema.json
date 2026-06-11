@@ -31,6 +31,7 @@
           "type": "array",
           "items": { "$ref": "#/$defs/preinstall_item" }
         },
+        "helm_timeout": { "type": "string", "default": "5m", "description": "Timeout for helm install --wait of the product chart. Increase to 10m for clusters with service-mesh sidecar injection (Istio/Linkerd) or other slow-starting addons." },
         "cni": {
           "type": "object",
           "additionalProperties": false,

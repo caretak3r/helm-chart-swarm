@@ -24,6 +24,7 @@ cluster:
       release: istiod
       namespace: istio-system
       wait: pods-ready
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

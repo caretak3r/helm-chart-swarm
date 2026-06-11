@@ -2,8 +2,7 @@
 id: service-mesh-istio-service-mesh-sidecar-injection
 name: "Istio Service Mesh — Sidecar Injection"
 description: >-
-  Installs istio/base + istio/istiod, enables mesh injection on the product namespace, deploys the product chart with mesh.inject=true and scope.enabled=true, and verifies every
-  product pod has exactly 2 containers including istio-proxy and in-mesh HTTP reaches the product Service with 200.
+  Installs istio/base + istio/istiod, enables mesh injection on the product namespace, deploys the product chart with mesh.inject=true and scope.enabled=true, and verifies every product pod has exactly 2 containers including istio-proxy and in-mesh HTTP reaches the product Service with 200.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
@@ -36,6 +35,7 @@ cluster:
               memory: "384Mi"
       wait: pods-ready
       wait_timeout: 5m
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
