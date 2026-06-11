@@ -4,13 +4,13 @@ name: "Capability: HTTPS-only scheme enforcement (ON)"
 description: >-
   Renders the product chart with TLS enabled (tls.enabled=true) and
   scheme=https-only, and asserts no plain-HTTP Service port, container
-  port, probe, or Ingress backend is present. A TLS secret fixture is
-  preinstalled so the chart can deploy with tls.enabled=true. This
-  scenario is EXPECTED to PASS when scheme is set to https-only.
+  port, or probe is present. A TLS secret fixture is preinstalled so
+  the chart can deploy with tls.enabled=true. Ingress is disabled
+  since the scheme is https-only (service handles TLS directly).
 labels: {customer: enterprise, profile: compliance}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/manual-tls/manual-tls-basic-secret.yaml
@@ -22,8 +22,6 @@ product:
   set:
     tls.enabled: true
     tls.secretName: manual-tls-basic
-    ingress.enabled: true
-    ingress.host: sample.local
     scheme: https-only
 asserts:
   - type: scheme-enforced

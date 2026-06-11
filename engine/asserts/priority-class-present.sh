@@ -38,7 +38,9 @@ cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$render
 trap cleanup EXIT
 
 render_helm_template() {
-  rendered_file=$(mktemp /tmp/cap-pc-rendered.XXXXXX.yaml)
+  rendered_file="$(mktemp /tmp/cap-pc-rendered-XXXXXX)"
+  mv "$rendered_file" "${rendered_file}.yaml"
+  rendered_file="${rendered_file}.yaml"
   local chart release product_ns values_file set_json
   chart=$(yq '.product.chart' "$SCENARIO")
   release=$(yq '.product.release' "$SCENARIO")

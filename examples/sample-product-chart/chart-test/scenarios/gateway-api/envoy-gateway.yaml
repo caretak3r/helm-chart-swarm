@@ -6,7 +6,7 @@ description: >-
 labels: {customer: none, profile: gateway-api}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - chart: oci://docker.io/envoyproxy/gateway-helm
       version: v1.1.2

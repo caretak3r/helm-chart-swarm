@@ -4,7 +4,7 @@ description: "Product chart bundles postgres via subchart; verify both come up t
 labels: {profile: full-stack}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   helm_timeout: 10m
 product:
   chart: ./chart

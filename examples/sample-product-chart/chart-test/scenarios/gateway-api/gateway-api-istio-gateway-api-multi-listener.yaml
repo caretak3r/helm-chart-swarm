@@ -6,7 +6,7 @@ labels: {customer: any, profile: gateway-api-multilistener}
 cluster:
   provider: kind
   helm_timeout: 10m
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: istio/base

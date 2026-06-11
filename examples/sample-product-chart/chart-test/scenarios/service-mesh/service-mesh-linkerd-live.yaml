@@ -6,7 +6,7 @@ description: >-
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     # Step 1: Install Linkerd CRDs (required before control-plane)
     - kind: helm

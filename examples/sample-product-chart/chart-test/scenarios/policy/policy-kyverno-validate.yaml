@@ -7,7 +7,7 @@ description: >-
 labels: {customer: any, profile: policy}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: kyverno/kyverno
