@@ -79,14 +79,14 @@ echo "OK: kind=$have_kind k3d=$have_k3d kubectl=yes helm=yes yq=yes jq=yes"
 CUSTOM_ASSERT_LINTER="$SCRIPT_DIR/check-custom-assertions.sh"
 if [ -x "$CUSTOM_ASSERT_LINTER" ]; then
   echo "==> Linting consumer asserts"
-  # Lint the sample product chart's consumer asserts as a representative project.
-  # The linter is a no-op when there are no consumer asserts, so this is safe
-  # for repos without a consumer project.
-  SAMPLE_PROJECT="$ROOT_DIR/examples/sample-product-chart"
-  if [ -d "$SAMPLE_PROJECT" ]; then
-    PROJECT_DIR="$SAMPLE_PROJECT" bash "$CUSTOM_ASSERT_LINTER" || {
-      echo "WARN: consumer assert linting found violations" >&2
-      # Non-fatal for preflight — violations don't block tool availability.
-    }
+  # CONSUMER_PROJECT_DIR can be set to override the default sample project
+  # (used for testing). Otherwise use the sample product chart as a
+  # representative project.
+  CONSUMER_PROJECT_DIR="${CONSUMER_PROJECT_DIR:-$ROOT_DIR/examples/sample-product-chart}"
+  if [ -d "$CONSUMER_PROJECT_DIR" ]; then
+    if ! PROJECT_DIR="$CONSUMER_PROJECT_DIR" bash "$CUSTOM_ASSERT_LINTER"; then
+      echo "ERROR: consumer assert linting found violations" >&2
+      exit 1
+    fi
   fi
 fi

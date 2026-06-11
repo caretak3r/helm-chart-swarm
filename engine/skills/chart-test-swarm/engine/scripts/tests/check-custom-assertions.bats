@@ -252,12 +252,54 @@ bad-check: L1' \
 }
 
 # ── VAL-PLUGGABLE-027: Lint gate invokes check-custom-assertions.sh ──
-@test "VAL-PLUGGABLE-027: verify.sh invokes check-custom-assertions.sh" {
+@test "VAL-PLUGGABLE-027: verify.sh references check-custom-assertions.sh" {
   local verify_script="$SCRIPTS_DIR/verify.sh"
   [ -f "$verify_script" ]
   # Read verify.sh and confirm it contains a reference to check-custom-assertions.sh
   run grep -q "check-custom-assertions.sh" "$verify_script"
   [ "$status" -eq 0 ]
+}
+
+@test "VAL-PLUGGABLE-027: verify.sh fails on malformed consumer assert (no DEPTH header)" {
+  local verify_script="$SCRIPTS_DIR/verify.sh"
+  [ -f "$verify_script" ]
+
+  # Create a temp consumer project with a malformed assert (no DEPTH header)
+  local dir; dir=$(mktemp -d "$TMPDIR/cca-gate-XXXXX")
+  _CCA_TEMPFILES+=("$dir")
+  mkdir -p "$dir/chart-test/asserts"
+  # Registry declares the type
+  printf 'bad-assert: L1\n' > "$dir/chart-test/asserts/registry.yaml"
+  # Assert script has no DEPTH header — malformed
+  printf '#!/usr/bin/env bash\necho "no header here"\nexit 0\n' > "$dir/chart-test/asserts/bad-assert.sh"
+  chmod +x "$dir/chart-test/asserts/bad-assert.sh"
+
+  # Run verify.sh with CONSUMER_PROJECT_DIR pointing at the malformed project
+  run env CONSUMER_PROJECT_DIR="$dir" bash "$verify_script" 2>&1
+  # Must exit non-zero — the malformed assert must cause the lint gate to fail
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"ERROR:"*"consumer assert"* ]] || [[ "$output" == *"violation"* ]]
+}
+
+@test "VAL-PLUGGABLE-027: verify.sh passes on well-formed consumer asserts" {
+  local verify_script="$SCRIPTS_DIR/verify.sh"
+  [ -f "$verify_script" ]
+
+  # Create a temp consumer project with a well-formed assert
+  local dir; dir=$(mktemp -d "$TMPDIR/cca-gate-XXXXX")
+  _CCA_TEMPFILES+=("$dir")
+  mkdir -p "$dir/chart-test/asserts"
+  # Registry declares the type
+  printf 'good-assert: L2\n' > "$dir/chart-test/asserts/registry.yaml"
+  # Well-formed assert with DEPTH header matching registry
+  printf '#!/usr/bin/env bash\n# DEPTH: L2\necho "ok"\nexit 0\n' > "$dir/chart-test/asserts/good-assert.sh"
+  chmod +x "$dir/chart-test/asserts/good-assert.sh"
+
+  # Run verify.sh with CONSUMER_PROJECT_DIR pointing at the well-formed project
+  run env CONSUMER_PROJECT_DIR="$dir" bash "$verify_script" 2>&1
+  # Must exit 0 — well-formed asserts pass the lint gate
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"OK"* ]]
 }
 
 # ── Consumer registry layering in linter ──
