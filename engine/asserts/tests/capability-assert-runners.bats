@@ -933,6 +933,60 @@ EOF
   [ -x "$ASSERTS_DIR/security-context.sh" ]
 }
 
+@test "security-context: PASS with dotted-key podSecurityContext (seccompProfile.type)" {
+  # Regression: yq path expressions for dotted keys (e.g. seccompProfile.type) require
+  # a leading dot after a pipe — without it, yq v4 emits a lexer error and the value
+  # silently appears as __ABSENT__.  This test proves the fix.
+  local s="$TEST_TMPDIR/secctx-dotted-pod.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-dotted-pod
+name: security-context dotted pod key PASS
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  values: chart-test/fixtures/capability/security-context-on-values.yaml
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+    expect_present: true
+    podSecurityContext:
+      seccompProfile.type: RuntimeDefault
+EOF
+  run_assert "security-context.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "security-context: PASS with dotted-key containerSecurityContext (capabilities.drop)" {
+  # Regression: same yq leading-dot fix for container-level dotted keys.
+  local s="$TEST_TMPDIR/secctx-dotted-ctr.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-dotted-ctr
+name: security-context dotted container key PASS
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  values: chart-test/fixtures/capability/security-context-on-values.yaml
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+    expect_present: true
+    containerSecurityContext:
+      capabilities.drop: ALL
+EOF
+  run_assert "security-context.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
 # ═══════════════════════════════════════════════════════════════════════
 # network-policy
 # ═══════════════════════════════════════════════════════════════════════

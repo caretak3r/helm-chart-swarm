@@ -106,8 +106,10 @@ check_rendered_security_context() {
             local _raw_pval
             # Handle nested keys like seccompProfile.type
             # Avoid // operator: yq treats boolean false as absent with //
+            # NOTE: yq v4 requires a leading dot for path traversal after a pipe;
+            #       "$pkey" without dot causes lexer error -> use ".$pkey" for dotted keys
             if echo "$pkey" | grep -q '\.'; then
-              _raw_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext | $pkey" "$rendered_file" 2>/dev/null || echo "null")
+              _raw_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext | .$pkey" "$rendered_file" 2>/dev/null || echo "null")
             else
               _raw_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext[\"$pkey\"]" "$rendered_file" 2>/dev/null || echo "null")
             fi
@@ -149,8 +151,10 @@ check_rendered_security_context() {
               local _raw_cval
               # Handle nested keys like capabilities.drop
               # Avoid // operator: yq treats boolean false as absent with //
+              # NOTE: yq v4 requires a leading dot for path traversal after a pipe;
+              #       "$ckey" without dot causes lexer error -> use ".$ckey" for dotted keys
               if echo "$ckey" | grep -q '\.'; then
-                _raw_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext | $ckey" "$rendered_file" 2>/dev/null || echo "null")
+                _raw_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext | .$ckey" "$rendered_file" 2>/dev/null || echo "null")
               else
                 _raw_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext[\"$ckey\"]" "$rendered_file" 2>/dev/null || echo "null")
               fi
