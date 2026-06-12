@@ -59,14 +59,39 @@ echo "NGINX pod IP: ${NGINX_IP}"
 # Extract ca.crt from the Secret
 CA_CRT_B64=$(kctl -n "${NS}" get secret "${SECRET_NAME}" -o jsonpath='{.data.ca\.crt}')
 
-echo "==> Probing HTTPS with --cacert (expect 200 with cert chain rooted at ClusterIssuer CA)"
-RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-curl-tls --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
-  sh -c "echo '${CA_CRT_B64}' | base64 -d > /tmp/ca.crt && \
-    curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
-    --resolve '${HOST}:443:${NGINX_IP}' \
-    'https://${HOST}/'" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+echo "==> Probing HTTPS with --cacert (expect 200, retry up to 2m for nginx endpoint sync)"
+HTTP_CODE="000"
+_PROBE_POD="ct-nginx-tls-$$"
+kctl -n "${NS}" delete pod "${_PROBE_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+
+for _attempt in $(seq 1 24); do
+  # Run probe pod without -i to avoid stdin-attachment races that lose stdout.
+  kctl -n "${NS}" run "${_PROBE_POD}" --restart=Never \
+    --image="quay.io/curl/curl:8.20.0" --pod-running-timeout=90s -- \
+    sh -c "echo '${CA_CRT_B64}' | base64 -d > /tmp/ca.crt 2>/dev/null && \
+      curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
+      --resolve '${HOST}:443:${NGINX_IP}' \
+      'https://${HOST}/'" >/dev/null 2>&1 || true
+
+  # Poll until pod reaches terminal phase (up to 60s).
+  _wait_s=0
+  while [ "$_wait_s" -lt 60 ]; do
+    _phase=$(kctl -n "${NS}" get pod "${_PROBE_POD}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
+    [ "$_phase" = "Succeeded" ] || [ "$_phase" = "Failed" ] && break
+    sleep 3; _wait_s=$((_wait_s + 3))
+  done
+
+  _RAW=$(kctl -n "${NS}" logs "${_PROBE_POD}" 2>/dev/null || echo "")
+  [ -z "$_RAW" ] && _RAW="000"
+  kctl -n "${NS}" delete pod "${_PROBE_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+
+  HTTP_CODE=$(printf '%s' "$_RAW" | grep -oE '[0-9]{3}' | tail -1 || true)
+  [ -z "$HTTP_CODE" ] && HTTP_CODE="000"
+
+  [ "$HTTP_CODE" = "200" ] && break
+  echo "attempt ${_attempt}/24: HTTP ${HTTP_CODE} — waiting 5s for nginx endpoint sync"
+  sleep 5
+done
 
 echo "HTTPS response: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
