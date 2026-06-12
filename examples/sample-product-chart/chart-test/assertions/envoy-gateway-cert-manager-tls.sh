@@ -46,16 +46,17 @@ for i in $(seq 1 30); do
   sleep 6
 done
 
-echo "==> Waiting for Gateway listener https Programmed=True (5m max)"
+echo "==> Waiting for Gateway listener https Programmed=True (10m max)"
 # The HTTPS listener must have the TLS cert resolved before Programming
-for i in $(seq 1 50); do
+# Envoy Gateway proxy pod + Service creation + address assignment can take 8-10m on kind
+for i in $(seq 1 100); do
   programmed=$(kctl -n "${NS}" get gateway sample-gw -o jsonpath='{.status.listeners[?(@.name=="https")].conditions[?(@.type=="Programmed")].status}' 2>/dev/null || echo "")
   if [ "$programmed" = "True" ]; then
     echo "PASS: Gateway listener https Programmed=True"
     break
   fi
-  if [ "$i" -eq 50 ]; then
-    echo "FAIL: Gateway listener https not Programmed after 5m" >&2
+  if [ "$i" -eq 100 ]; then
+    echo "FAIL: Gateway listener https not Programmed after 10m" >&2
     kctl -n "${NS}" get gateway sample-gw -o yaml >&2
     exit 1
   fi
