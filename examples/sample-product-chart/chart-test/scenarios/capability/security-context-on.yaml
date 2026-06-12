@@ -2,7 +2,11 @@
 id: security-context-on
 name: "Capability: pod/container securityContext knobs set (ON)"
 description: >-
-  Renders the product chart with pod-security and container-security knobs set (podSecurityContext.seccompProfile.type=RuntimeDefault, securityContext.allowPrivilegeEscalation=false, securityContext.capabilities.drop[0]=ALL) and asserts pod-level and container-level securityContext fields appear with the configured values. The sample chart DOES expose podSecurityContext and securityContext values via its templates.
+  Renders the product chart with pod-security and container-security knobs set
+  (podSecurityContext.seccompProfile.type=RuntimeDefault,
+  securityContext.allowPrivilegeEscalation=false, securityContext.capabilities.drop[0]=ALL) and
+  asserts pod-level and container-level securityContext fields appear with the configured values.
+  The sample chart DOES expose podSecurityContext and securityContext values via its templates.
 labels: {customer: enterprise, profile: compliance}
 cluster:
   provider: kind

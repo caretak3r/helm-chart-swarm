@@ -2,7 +2,10 @@
 id: tls-mounted-pvc
 name: "TLS via persistentVolumeClaim"
 description: >-
-  Creates a PVC, populates it with TLS certs via a Job, then deploys the chart with tls.volumeType=persistentVolumeClaim and tls.pvcClaimName pointing at the pre-populated PVC. Verifies the pod mount, cert files at mountPath, and in-cluster HTTPS curl returns 200. Artifact bundle records the exact volumeType=persistentVolumeClaim.
+  Creates a PVC, populates it with TLS certs via a Job, then deploys the chart with
+  tls.volumeType=persistentVolumeClaim and tls.pvcClaimName pointing at the pre-populated PVC.
+  Verifies the pod mount, cert files at mountPath, and in-cluster HTTPS curl returns 200. Artifact
+  bundle records the exact volumeType=persistentVolumeClaim.
 labels: {customer: any, profile: tls}
 cluster:
   provider: kind

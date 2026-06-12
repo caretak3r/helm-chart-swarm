@@ -2,7 +2,9 @@
 id: service-mesh-istio-service-mesh-telemetry-v2
 name: "Istio Service Mesh — Telemetry v2"
 description: >-
-  Installs istio/base + istio/istiod, deploys the product chart with mesh.inject=true, applies a Telemetry resource in the product namespace to configure Envoy access logging and metrics, and verifies proxy stats are accessible and telemetry configuration is active.
+  Installs istio/base + istio/istiod, deploys the product chart with mesh.inject=true, applies a
+  Telemetry resource in the product namespace to configure Envoy access logging and metrics, and
+  verifies proxy stats are accessible and telemetry configuration is active.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind

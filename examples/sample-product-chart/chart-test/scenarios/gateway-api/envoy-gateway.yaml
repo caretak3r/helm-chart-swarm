@@ -1,7 +1,9 @@
 id: envoy-gateway
 name: "Envoy Gateway (Gateway API)"
 description: >-
-  Installs Envoy Gateway controller via OCI helm chart (CRDs are bundled in the chart's crds/ directory and installed automatically by Helm before templates). Verifies chart coexists with a running gateway controller.
+  Installs Envoy Gateway controller via OCI helm chart (CRDs are bundled in the chart's crds/
+  directory and installed automatically by Helm before templates). Verifies chart coexists with a
+  running gateway controller.
 labels: {customer: none, profile: gateway-api}
 cluster:
   provider: kind

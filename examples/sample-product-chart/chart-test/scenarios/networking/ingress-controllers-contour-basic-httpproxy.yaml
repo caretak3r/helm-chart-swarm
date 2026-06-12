@@ -2,7 +2,11 @@
 id: ingress-controllers-contour-basic-httpproxy
 name: "Contour basic HTTPProxy (gap-probe)"
 description: >-
-  Installs Contour, creates an HTTPProxy for the product Service via fixture, and verifies HTTP routing through the envoy pod IP with Host header matching and HTTPProxy status valid. Then runs a gap-probe: the chart does NOT natively emit a Contour HTTPProxy CRD — the HTTPProxy was created by the fixture, not by a chart template. This is an honest gap (red cell); do NOT over-engineer the chart.
+  Installs Contour, creates an HTTPProxy for the product Service via fixture, and verifies HTTP
+  routing through the envoy pod IP with Host header matching and HTTPProxy status valid. Then runs
+  a gap-probe: the chart does NOT natively emit a Contour HTTPProxy CRD — the HTTPProxy was
+  created by the fixture, not by a chart template. This is an honest gap (red cell); do NOT
+  over-engineer the chart.
 labels: {customer: any, profile: ingress}
 cluster:
   provider: kind

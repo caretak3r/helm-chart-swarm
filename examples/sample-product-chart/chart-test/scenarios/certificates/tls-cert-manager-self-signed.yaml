@@ -2,7 +2,10 @@
 id: tls-cert-manager-self-signed
 name: "cert-manager self-signed Issuer -> CA Cert -> CA Issuer -> leaf Cert"
 description: >-
-  Installs cert-manager with CRDs, applies a self-signed Issuer, a CA Certificate bootstrapping a CA Secret, a CA Issuer backed by that Secret, and a leaf Certificate for the product Service FQDN. Deploys chart with tls.enabled=true and tls.secretName pointing at the issued Secret. Verifies HTTPS 200 with --cacert and SAN match.
+  Installs cert-manager with CRDs, applies a self-signed Issuer, a CA Certificate bootstrapping a
+  CA Secret, a CA Issuer backed by that Secret, and a leaf Certificate for the product Service
+  FQDN. Deploys chart with tls.enabled=true and tls.secretName pointing at the issued Secret.
+  Verifies HTTPS 200 with --cacert and SAN match.
 labels: {customer: any, profile: tls}
 cluster:
   provider: kind

@@ -14,25 +14,25 @@ product:
   namespace: sample
   values: chart-test/fixtures/capability/generated-scenario-values.yaml
 asserts:
-- type: helm-status-deployed
-  release: sample
-  namespace: sample
-- type: pods-ready
-  namespace: sample
-  timeout: 3m
-- type: labels-present
-  namespace: sample
-  source: rendered
-  labels:
-    app.kubernetes.io/name: sample-product
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 3m
+  - type: labels-present
+    namespace: sample
+    source: rendered
+    labels:
+      app.kubernetes.io/name: sample-product
 tags:
-- capability
-- compliance
+  - capability
+  - compliance
 category: capability
 capability: generated-scenario
 tier: capability
 mechanisms:
-- capability:generated-scenario
+  - capability:generated-scenario
 generated_by:
   by: chart-test-swarm-new
   at: '2026-06-11T10:03:16Z'

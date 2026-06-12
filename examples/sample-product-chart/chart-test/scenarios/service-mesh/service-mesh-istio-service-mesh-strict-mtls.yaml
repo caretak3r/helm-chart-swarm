@@ -2,7 +2,10 @@
 id: service-mesh-istio-service-mesh-strict-mtls
 name: "Istio Service Mesh — strict mTLS"
 description: >-
-  Installs istio/base + istio/istiod, enables mesh injection, deploys the product chart with scope.enabled=true, creates a PeerAuthentication with mode=STRICT in the product namespace, and verifies: (a) plain HTTP from a non-mesh pod is rejected, (b) in-mesh probe pod still reaches the product Service with 200 via auto-upgraded mTLS.
+  Installs istio/base + istio/istiod, enables mesh injection, deploys the product chart with
+  scope.enabled=true, creates a PeerAuthentication with mode=STRICT in the product namespace, and
+  verifies: (a) plain HTTP from a non-mesh pod is rejected, (b) in-mesh probe pod still reaches
+  the product Service with 200 via auto-upgraded mTLS.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind

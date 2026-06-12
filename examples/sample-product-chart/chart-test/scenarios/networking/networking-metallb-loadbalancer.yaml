@@ -2,7 +2,9 @@
 id: networking-metallb-loadbalancer
 name: "MetalLB LoadBalancer (service.type=LoadBalancer)"
 description: >-
-  Installs MetalLB, configures an IPAddressPool + L2Advertisement whose CIDR is inside the kind Docker bridge subnet, deploys the product chart with service.type=LoadBalancer, and verifies that MetalLB assigns an external IP from the pool and the LB endpoint serves HTTP 200.
+  Installs MetalLB, configures an IPAddressPool + L2Advertisement whose CIDR is inside the kind
+  Docker bridge subnet, deploys the product chart with service.type=LoadBalancer, and verifies
+  that MetalLB assigns an external IP from the pool and the LB endpoint serves HTTP 200.
 labels: {customer: any, profile: loadbalancer}
 cluster:
   provider: kind

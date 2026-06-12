@@ -2,7 +2,9 @@
 id: policy-kyverno-engine-deny
 name: "Kyverno policy-denies-violation: engine-level assert"
 description: >-
-  Installs Kyverno, creates a ClusterPolicy that requires app.kubernetes.io/name label on Deployments, then exercises the engine-level policy-denies-violation L3 behavioral assert to verify violating fixtures are denied and compliant fixtures are accepted.
+  Installs Kyverno, creates a ClusterPolicy that requires app.kubernetes.io/name label on
+  Deployments, then exercises the engine-level policy-denies-violation L3 behavioral assert to
+  verify violating fixtures are denied and compliant fixtures are accepted.
 labels: {customer: any, profile: policy}
 cluster:
   provider: kind

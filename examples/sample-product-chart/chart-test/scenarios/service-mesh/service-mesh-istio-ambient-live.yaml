@@ -2,7 +2,14 @@
 id: service-mesh-istio-ambient-live
 name: "Istio Ambient Mesh — Live mTLS Verification (ztunnel/HBONE)"
 description: >-
-  Installs istio/base + istio/istiod (profile=ambient) + istio/cni (profile=ambient) + istio/ztunnel, annotates the product namespace istio.io/dataplane-mode=ambient via raw_manifest, deploys the chart with mesh.inject=false (NO sidecar), and proves: (1) ztunnel DaemonSet pods are Ready in istio-system, (2) the product namespace carries the ambient annotation and every product pod has exactly 1 container (no istio-proxy), (3) in-mesh traffic to the product Service returns HTTP 200 and the connection is mTLS over HBONE — confirmed via ztunnel metrics/logs. Emits a PASS artifact bundle with 1-container pod manifest, ambient-annotated namespace manifest, applied-overrides recording inject: false, and versions.json.
+  Installs istio/base + istio/istiod (profile=ambient) + istio/cni (profile=ambient) +
+  istio/ztunnel, annotates the product namespace istio.io/dataplane-mode=ambient via raw_manifest,
+  deploys the chart with mesh.inject=false (NO sidecar), and proves: (1) ztunnel DaemonSet pods
+  are Ready in istio-system, (2) the product namespace carries the ambient annotation and every
+  product pod has exactly 1 container (no istio-proxy), (3) in-mesh traffic to the product Service
+  returns HTTP 200 and the connection is mTLS over HBONE — confirmed via ztunnel metrics/logs.
+  Emits a PASS artifact bundle with 1-container pod manifest, ambient-annotated namespace
+  manifest, applied-overrides recording inject: false, and versions.json.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind

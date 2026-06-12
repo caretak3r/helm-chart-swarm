@@ -2,7 +2,9 @@
 id: networking-traefik-ingress
 name: "Traefik Ingress (className=traefik)"
 description: >-
-  Installs Traefik, deploys the product chart with ingress.enabled=true and ingress.className=traefik, and verifies end-to-end routing through the Traefik data path via the chart's built-in Ingress resource.
+  Installs Traefik, deploys the product chart with ingress.enabled=true and
+  ingress.className=traefik, and verifies end-to-end routing through the Traefik data path via the
+  chart's built-in Ingress resource.
 labels: {customer: any, profile: ingress}
 cluster:
   provider: kind

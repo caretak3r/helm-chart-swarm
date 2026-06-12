@@ -2,7 +2,11 @@
 id: networking-kong-ingress
 name: "Kong Ingress (className=kong)"
 description: >-
-  Installs Kong Ingress Controller, deploys the product chart with ingress.enabled=true and ingress.className=kong, and verifies end-to-end routing through the Kong proxy data path via the chart's built-in Ingress resource. Also includes a KongPlugin gap-probe documenting that the sample chart exposes no konghq.com/plugins annotation or KongPlugin CRD knob, which is an honest gap (red cell) — do NOT over-engineer the chart.
+  Installs Kong Ingress Controller, deploys the product chart with ingress.enabled=true and
+  ingress.className=kong, and verifies end-to-end routing through the Kong proxy data path via the
+  chart's built-in Ingress resource. Also includes a KongPlugin gap-probe documenting that the
+  sample chart exposes no konghq.com/plugins annotation or KongPlugin CRD knob, which is an honest
+  gap (red cell) — do NOT over-engineer the chart.
 labels: {customer: any, profile: ingress}
 cluster:
   provider: kind
