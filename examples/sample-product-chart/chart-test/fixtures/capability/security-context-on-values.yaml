@@ -10,3 +10,4 @@ securityContext:
       - NET_BIND_SERVICE
       - SETUID
       - SETGID
+      - CHOWN
