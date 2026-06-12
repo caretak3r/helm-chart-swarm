@@ -41,9 +41,10 @@ SVC_MIRROR_STATUS=$(kctl get crd services.k8s.io -o jsonpath='{.status.condition
 echo "  services.k8s.io Established: ${SVC_MIRROR_STATUS}"
 
 echo "==> Authoring a preview Link resource for a logical target cluster"
-cat <<EOF | kctl apply -f - 2>/dev/null || {
-  echo "WARN: could not create preview Link (may be namespace restriction)"
-}
+# NOTE: Do not combine <<HEREDOC with || { ... } on the same command line — bash reads
+# the heredoc body first, which consumes the { } block, causing a syntax error.
+# Use the pattern: cmd <<'DELIM' || fallback_cmd  (fallback on the same line as cmd).
+kctl apply -f - 2>/dev/null <<'LINK_EOF' || echo "WARN: could not create preview Link (may be namespace restriction)"
 apiVersion: multicluster.linkerd.io/v1alpha1
 kind: Link
 metadata:
@@ -59,7 +60,7 @@ spec:
     path: /ready
     port: 4191
     period: 30s
-EOF
+LINK_EOF
 
 echo "  Verifying Link resource was created"
 LINK_COUNT=$(kctl -n linkerd-multicluster get link -o name 2>/dev/null | wc -l | tr -d ' ')
