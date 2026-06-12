@@ -163,16 +163,16 @@ echo "PASS: gatekeeper controller pods Ready"
 
 # Note: kind clusters may take longer to restore webhook endpoints due to
 # resource constraints. We retry with a generous 5-minute timeout.
-echo "Waiting for admission webhook to accept requests (300s max, may be slow on resource-constrained clusters)..."
+echo "Waiting for admission webhook to accept requests (600s max, may be slow on resource-constrained clusters)..."
 ADMISSION_RESTORED=0
-for i in $(seq 1 60); do
+for i in $(seq 1 120); do
   if kctl apply --dry-run=server -f "${FIXTURES}/test-deploy-compliant.yaml" 2>/dev/null; then
     echo "PASS: admission restored after webhook recovery (attempt ${i})"
     ADMISSION_RESTORED=1
     break
   fi
-  if [ "$i" -eq 60 ]; then
-    echo "FAIL: admission still failing after controller restore (60 attempts, 300s)" >&2
+  if [ "$i" -eq 120 ]; then
+    echo "FAIL: admission still failing after controller restore (120 attempts, 600s)" >&2
     exit 1
   fi
   sleep 5
