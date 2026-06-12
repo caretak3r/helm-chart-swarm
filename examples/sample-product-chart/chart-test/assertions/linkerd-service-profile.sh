@@ -102,10 +102,6 @@ spec:
           isFailure: true
       timeout: 15s
       isRetryable: true
-      retryBudget:
-        retryRatio: 0.2
-        minRetriesPerSecond: 5
-        ttl: 10s
 EOF
 
 echo "==> Verifying ServiceProfile was created"

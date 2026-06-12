@@ -12,11 +12,17 @@ RELEASE="${RELEASE:-sample}"
 kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }
 
 echo "==> Verifying linkerd-multicluster extension is installed"
-kctl -n linkerd-multicluster get deploy linkerd-service-mirror >/dev/null 2>&1 || {
-  echo "FAIL: linkerd-service-mirror deployment not found in linkerd-multicluster namespace" >&2
+# In linkerd 2.16+ (chart 30.x), service-mirror runs inside linkerd-gateway.
+# Accept either linkerd-gateway (new) or linkerd-service-mirror (older charts).
+if kctl -n linkerd-multicluster get deploy linkerd-gateway >/dev/null 2>&1; then
+  echo "  ✓ linkerd-gateway deployment exists (service-mirror integrated)"
+elif kctl -n linkerd-multicluster get deploy linkerd-service-mirror >/dev/null 2>&1; then
+  echo "  ✓ linkerd-service-mirror deployment exists"
+else
+  echo "FAIL: neither linkerd-gateway nor linkerd-service-mirror found in linkerd-multicluster namespace" >&2
+  kctl -n linkerd-multicluster get deploy 2>&1 >&2 || true
   exit 1
-}
-echo "  ✓ linkerd-service-mirror deployment exists"
+fi
 
 echo "==> Verifying multicluster CRDs are established"
 # Link CRD
