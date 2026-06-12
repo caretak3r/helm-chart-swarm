@@ -51,12 +51,26 @@ fi
 echo "Per-Ingress Service ClusterIP: ${SVC_IP}:${SVC_PORT}"
 
 echo "==> Probing per-Ingress Service with Host: ${HOST} (in-cluster)"
-RAW=$(kctl -n "${NS}" run ct-cilium-ingress --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
-  curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
-    -H "Host: ${HOST}" \
-    "http://${SVC_IP}:${SVC_PORT}/" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "${RAW}" | grep -oE '[0-9]{3}' | tail -1)
+# Cilium's ingress data-plane may take time to sync after service creation.
+# Retry for up to 2 minutes (24 x 5s) to handle Cilium endpoint programming lag.
+HTTP_CODE="000"
+PROBE_ATTEMPTS=24
+PROBE_SLEEP=5
+for probe_i in $(seq 1 "${PROBE_ATTEMPTS}"); do
+  RAW=$(kctl -n "${NS}" run "ct-cilium-ingress-${probe_i}" --rm -i --restart=Never --quiet \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
+    curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
+      -H "Host: ${HOST}" \
+      "http://${SVC_IP}:${SVC_PORT}/" 2>/dev/null || echo "000")
+  HTTP_CODE=$(echo "${RAW}" | grep -oE '[0-9]{3}' | tail -1)
+  if [ "${HTTP_CODE}" = "200" ]; then
+    break
+  fi
+  if [ "${probe_i}" -lt "${PROBE_ATTEMPTS}" ]; then
+    echo "  Probe attempt ${probe_i}/${PROBE_ATTEMPTS}: HTTP ${HTTP_CODE} (Cilium endpoint may be syncing, retrying in ${PROBE_SLEEP}s)..."
+    sleep "${PROBE_SLEEP}"
+  fi
+done
 
 echo "HTTP response (Host: ${HOST}): ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
