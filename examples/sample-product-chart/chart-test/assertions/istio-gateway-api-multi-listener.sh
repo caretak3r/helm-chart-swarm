@@ -115,7 +115,7 @@ echo "==> Probing HTTP backend via gateway (retry up to 2m)"
 HTTP_CODE="000"
 for attempt in $(seq 1 20); do
   RAW_HTTP_CODE=$(kctl -n "${NS}" run "ct-http-${attempt}" --rm -i --restart=Never --quiet \
-    --image=curlimages/curl:8.6.0 --timeout=30s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
     curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
       -H "Host: sample.sample.svc.cluster.local" \
       "http://${GW_SVC_IP}:80/" 2>/dev/null) || true
@@ -138,7 +138,7 @@ echo "==> Probing HTTPS backend via gateway (retry up to 2m)"
 HTTPS_CODE="000"
 for attempt in $(seq 1 20); do
   RAW_HTTPS_CODE=$(kctl -n "${NS}" run "ct-https-${attempt}" --rm -i --restart=Never --quiet \
-    --image=curlimages/curl:8.6.0 --timeout=30s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
     curl -s -o /dev/null -w '%{http_code}' --insecure --max-time 15 \
       --resolve "sample.sample.svc.cluster.local:443:${GW_SVC_IP}" \
       "https://sample.sample.svc.cluster.local:443/" 2>/dev/null) || true

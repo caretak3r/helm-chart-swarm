@@ -37,7 +37,7 @@ TLS_PORT=$(kctl -n "${NS}" get svc "${RELEASE}" -o jsonpath='{.spec.ports[?(@.na
 DOMAIN="${RELEASE}.${NS}.svc"
 
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-curl --rm -i --restart=Never --quiet \
-  --image=curlimages/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   sh -c "curl -s -o /dev/null -w '%{http_code}' -k \
     --resolve '${DOMAIN}:${TLS_PORT}:${SVC_IP}' \
     'https://${DOMAIN}:${TLS_PORT}/'" 2>/dev/null || echo "000")

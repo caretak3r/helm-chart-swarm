@@ -218,7 +218,7 @@ fi
 if [ -z "$PRODUCT_POD" ]; then
   echo "WARN: No Running product pod found; using a dedicated probe pod"
   kctl -n "${NS}" run ct-egress-probe --restart=Never \
-    --image=curlimages/curl:8.6.0 --timeout=60s \
+    --image=quay.io/curl/curl:8.20.0 --timeout=60s \
     --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
     sleep 300 2>/dev/null || true
   kctl -n "${NS}" wait pod ct-egress-probe --for=condition=Ready --timeout=2m || true
@@ -233,7 +233,7 @@ else
   if ! echo "$PROBE_CONTAINERS" | grep -q "istio-proxy"; then
     echo "WARN: Product pod ${PROBE_POD} has no sidecar; creating dedicated probe pod"
     kctl -n "${NS}" run ct-egress-probe --restart=Never \
-      --image=curlimages/curl:8.6.0 --timeout=60s \
+      --image=quay.io/curl/curl:8.20.0 --timeout=60s \
       --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
       sleep 300 2>/dev/null || true
     kctl -n "${NS}" wait pod ct-egress-probe --for=condition=Ready --timeout=2m || true

@@ -146,7 +146,7 @@ echo "==> Probing CORS preflight (OPTIONS request)"
 CORS_HEADER=""
 for attempt in $(seq 1 20); do
   CORS_HEADER=$(kctl -n "${NS}" run "ct-cors-${attempt}" --rm -i --restart=Never --quiet \
-    --image=curlimages/curl:8.6.0 --timeout=30s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
     curl -s -I -X OPTIONS --max-time 15 \
       -H "Host: sample.sample.svc.cluster.local" \
       -H "Origin: http://example.com" \

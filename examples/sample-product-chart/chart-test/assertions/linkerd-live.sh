@@ -265,7 +265,7 @@ LINKERD_CLI_URL="https://github.com/linkerd/linkerd2/releases/download/${LINKERD
 kctl -n "${NS}" delete pod ct-linkerd-live-check --ignore-not-found --timeout=30s 2>/dev/null || true
 
 kctl -n "${NS}" run ct-linkerd-live-check --restart=Never \
-  --image=curlimages/curl:8.6.0 \
+  --image=quay.io/curl/curl:8.20.0 \
   --overrides='{
     "metadata":{"annotations":{"linkerd.io/inject":"disabled"}},
     "spec":{"serviceAccountName":"ct-linkerd-check"}

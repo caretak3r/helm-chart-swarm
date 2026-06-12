@@ -101,7 +101,7 @@ echo "==> Test 1: /api/v2/foo → expect X-Route: v2 (more specific prefix wins)
 X_ROUTE=""
 for attempt in $(seq 1 20); do
   RESPONSE=$(kctl -n "${NS}" run "ct-probe-v2-${attempt}" --rm -i --restart=Never --quiet \
-    --image=curlimages/curl:8.6.0 --timeout=30s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
     curl -s -D /dev/stderr -o /dev/null --max-time 15 \
       -H "Host: sample.test.local" \
       "http://${GW_SVC_IP}:80/api/v2/foo" 2>&1) || true
@@ -128,7 +128,7 @@ echo "==> Test 2: /api/foo → expect X-Route: v1 (less specific prefix wins for
 X_ROUTE=""
 for attempt in $(seq 1 20); do
   RESPONSE=$(kctl -n "${NS}" run "ct-probe-v1-${attempt}" --rm -i --restart=Never --quiet \
-    --image=curlimages/curl:8.6.0 --timeout=30s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
     curl -s -D /dev/stderr -o /dev/null --max-time 15 \
       -H "Host: sample.test.local" \
       "http://${GW_SVC_IP}:80/api/foo" 2>&1) || true

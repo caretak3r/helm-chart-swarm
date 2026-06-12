@@ -44,14 +44,45 @@ echo "PASS: chart pods Ready"
 echo "==> Verifying HTTPS reachable from in-cluster curl"
 SVC_IP=$(kctl -n "${NS}" get svc "${RELEASE}" -o jsonpath='{.spec.clusterIP}')
 TLS_PORT=$(kctl -n "${NS}" get svc "${RELEASE}" -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
+TLS_PORT="${TLS_PORT:-443}"
 DOMAIN="${RELEASE}.${NS}.svc"
+CURL_IMAGE="quay.io/curl/curl:8.20.0"
+PROBE_POD="ct-mtb-$$"
 
-RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-curl --rm -i --restart=Never --quiet \
-  --image=curlimages/curl:8.6.0 --timeout=30s -- \
+# Pre-delete any stale probe pod.
+kctl -n "${NS}" delete pod "${PROBE_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+
+# Run probe pod without -i to avoid stdin-attachment races that lose stdout.
+# Use -k (insecure) because the cert is self-signed without a CA in the secret.
+kctl -n "${NS}" run "${PROBE_POD}" --restart=Never \
+  --image="${CURL_IMAGE}" --pod-running-timeout=90s -- \
   sh -c "curl -s -o /dev/null -w '%{http_code}' -k \
+    --max-time 15 \
     --resolve '${DOMAIN}:${TLS_PORT}:${SVC_IP}' \
-    'https://${DOMAIN}:${TLS_PORT}/'" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+    'https://${DOMAIN}:${TLS_PORT}/'" >/dev/null 2>&1 || true
+
+# Poll until the pod reaches a terminal phase (up to 120s).
+_wait_s=0
+while [ "$_wait_s" -lt 120 ]; do
+  _phase=$(kctl -n "${NS}" get pod "${PROBE_POD}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
+  if [ "$_phase" = "Succeeded" ] || [ "$_phase" = "Failed" ]; then
+    break
+  fi
+  sleep 3
+  _wait_s=$((_wait_s + 3))
+done
+
+# Retrieve pod logs (curl wrote the HTTP code to stdout).
+CURL_RAW=""
+CURL_RAW=$(kctl -n "${NS}" logs "${PROBE_POD}" 2>/dev/null || echo "")
+[ -z "$CURL_RAW" ] && CURL_RAW="000"
+
+# Cleanup probe pod.
+kctl -n "${NS}" delete pod "${PROBE_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+
+HTTP_CODE=""
+HTTP_CODE=$(printf '%s' "$CURL_RAW" | grep -oE '[0-9]{3}' | tail -1 || true)
+[ -z "$HTTP_CODE" ] && HTTP_CODE="000"
 
 echo "HTTPS response: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
