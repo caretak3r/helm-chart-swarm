@@ -59,13 +59,38 @@ echo "==> Getting Kong proxy (gateway) pod IP"
 KONG_IP=$(kctl -n "${KONG_NS}" get pod -l app.kubernetes.io/instance=kong,app.kubernetes.io/name=gateway -o jsonpath='{.items[0].status.podIP}')
 echo "Kong proxy pod IP: ${KONG_IP}"
 
-echo "==> Probing HTTP with matching Host header (expect 200) on Kong proxy port 8000"
-RAW_HTTP=$(kctl -n "${NS}" run ct-kong-host --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
-  curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
+echo "==> Probing HTTP with matching Host header (expect 200, retry up to 2m for Kong route sync)"
+HTTP_CODE="000"
+_PROBE_POD="ct-kong-host-$$"
+kctl -n "${NS}" delete pod "${_PROBE_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+
+for _attempt in $(seq 1 24); do
+  # Run probe pod without -i to avoid stdin-attachment races that lose stdout.
+  kctl -n "${NS}" run "${_PROBE_POD}" --restart=Never \
+    --image="quay.io/curl/curl:8.20.0" --pod-running-timeout=90s -- \
+    curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${HOST}" \
-    "http://${KONG_IP}:8000/" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "${RAW_HTTP}" | grep -oE '[0-9]{3}' | tail -1)
+    "http://${KONG_IP}:8000/" >/dev/null 2>&1 || true
+
+  # Poll until pod reaches terminal phase (up to 60s).
+  _wait_s=0
+  while [ "$_wait_s" -lt 60 ]; do
+    _phase=$(kctl -n "${NS}" get pod "${_PROBE_POD}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
+    [ "$_phase" = "Succeeded" ] || [ "$_phase" = "Failed" ] && break
+    sleep 3; _wait_s=$((_wait_s + 3))
+  done
+
+  _RAW=$(kctl -n "${NS}" logs "${_PROBE_POD}" 2>/dev/null || echo "")
+  [ -z "$_RAW" ] && _RAW="000"
+  kctl -n "${NS}" delete pod "${_PROBE_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+
+  HTTP_CODE=$(printf '%s' "$_RAW" | grep -oE '[0-9]{3}' | tail -1 || true)
+  [ -z "$HTTP_CODE" ] && HTTP_CODE="000"
+
+  [ "$HTTP_CODE" = "200" ] && break
+  echo "attempt ${_attempt}/24: HTTP ${HTTP_CODE} — waiting 5s for Kong route sync"
+  sleep 5
+done
 
 echo "HTTP response (with Host): ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
@@ -76,12 +101,30 @@ else
 fi
 
 echo "==> Probing HTTP with non-matching Host header (expect 404) on Kong proxy port 8000"
-RAW_NO_HOST=$(kctl -n "${NS}" run ct-kong-no-host --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
+_NO_HOST_POD="ct-kong-no-host-$$"
+kctl -n "${NS}" delete pod "${_NO_HOST_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+
+# Run probe pod without -i to avoid stdin-attachment races.
+kctl -n "${NS}" run "${_NO_HOST_POD}" --restart=Never \
+  --image="quay.io/curl/curl:8.20.0" --pod-running-timeout=90s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
-    -H "Host: wrong.test.local" \
-    "http://${KONG_IP}:8000/" 2>/dev/null || echo "000")
-NO_HOST_CODE=$(echo "${RAW_NO_HOST}" | grep -oE '[0-9]{3}' | tail -1)
+  -H "Host: wrong.test.local" \
+  "http://${KONG_IP}:8000/" >/dev/null 2>&1 || true
+
+# Poll until pod reaches terminal phase (up to 60s).
+_no_host_wait=0
+while [ "$_no_host_wait" -lt 60 ]; do
+  _nh_phase=$(kctl -n "${NS}" get pod "${_NO_HOST_POD}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
+  [ "$_nh_phase" = "Succeeded" ] || [ "$_nh_phase" = "Failed" ] && break
+  sleep 3; _no_host_wait=$((_no_host_wait + 3))
+done
+
+_NO_HOST_RAW=$(kctl -n "${NS}" logs "${_NO_HOST_POD}" 2>/dev/null || echo "")
+[ -z "$_NO_HOST_RAW" ] && _NO_HOST_RAW="000"
+kctl -n "${NS}" delete pod "${_NO_HOST_POD}" --now --ignore-not-found >/dev/null 2>&1 || true
+
+NO_HOST_CODE=$(printf '%s' "$_NO_HOST_RAW" | grep -oE '[0-9]{3}' | tail -1 || true)
+[ -z "$NO_HOST_CODE" ] && NO_HOST_CODE="000"
 
 echo "HTTP response (non-matching Host): ${NO_HOST_CODE}"
 if [ "${NO_HOST_CODE}" = "404" ]; then
