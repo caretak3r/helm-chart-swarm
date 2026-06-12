@@ -49,7 +49,7 @@ RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe-tls --rm -i --restart=Never --quiet
   sh -c "curl -sk -o /dev/null -w '%{http_code}' --max-time 15 \
     --resolve '${HOST}:8443:${TRAEFIK_IP}' \
     'https://${HOST}:8443/'" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTPS response: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then

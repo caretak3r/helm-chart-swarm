@@ -67,7 +67,7 @@ kctl -n "${CTRL_NS}" wait pod ct-nonmesh --for=condition=Ready --timeout=60s || 
 RAW_NONMESH_CODE=$(kctl -n "${CTRL_NS}" exec ct-nonmesh -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-NONMESH_CODE=$(echo "$RAW_NONMESH_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+NONMESH_CODE=$(echo "$RAW_NONMESH_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response from non-mesh probe: ${NONMESH_CODE}"
 if [ "${NONMESH_CODE}" = "200" ]; then
@@ -91,7 +91,7 @@ kctl -n "${NS}" wait pod ct-mesh-probe --for=condition=Ready --timeout=2m || {
 RAW_MESH_CODE=$(kctl -n "${NS}" exec ct-mesh-probe -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-MESH_CODE=$(echo "$RAW_MESH_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+MESH_CODE=$(echo "$RAW_MESH_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response from in-mesh probe: ${MESH_CODE}"
 if [ "${MESH_CODE}" = "200" ]; then

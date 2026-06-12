@@ -94,7 +94,7 @@ SW_CODE=$(kctl -n "${NS}" run ct-igw-sw --restart=Never --rm -i \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: skywatcher.${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-SW_CODE=$(echo "$SW_CODE" | grep -oE '[0-9]{3}' | tail -1)
+SW_CODE=$(echo "$SW_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  Skywatcher HTTP code: ${SW_CODE}"
 
 echo "==> Probing api host through gateway"
@@ -103,7 +103,7 @@ API_CODE=$(kctl -n "${NS}" run ct-igw-api --restart=Never --rm -i \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: api.${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-API_CODE=$(echo "$API_CODE" | grep -oE '[0-9]{3}' | tail -1)
+API_CODE=$(echo "$API_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  API HTTP code: ${API_CODE}"
 
 FAILURES=0

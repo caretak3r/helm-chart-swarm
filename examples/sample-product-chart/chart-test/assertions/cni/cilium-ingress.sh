@@ -62,7 +62,7 @@ for probe_i in $(seq 1 "${PROBE_ATTEMPTS}"); do
     curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
       -H "Host: ${HOST}" \
       "http://${SVC_IP}:${SVC_PORT}/" 2>/dev/null || echo "000")
-  HTTP_CODE=$(echo "${RAW}" | grep -oE '[0-9]{3}' | tail -1)
+  HTTP_CODE=$(echo "${RAW}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
   if [ "${HTTP_CODE}" = "200" ]; then
     break
   fi

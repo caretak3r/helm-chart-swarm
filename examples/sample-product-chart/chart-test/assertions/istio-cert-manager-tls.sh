@@ -200,7 +200,7 @@ RAW_HTTPS_CODE=$(kctl -n "${NS}" exec "${CURL_POD}" -- \
     --cacert /tmp/ca.crt \
     --resolve '${GW_HOST}:${GW_PORT}:${GW_SVC_IP}' \
     'https://${GW_HOST}:${GW_PORT}/'" 2>/dev/null || echo "000")
-HTTPS_CODE=$(echo "${RAW_HTTPS_CODE}" | grep -oE '[0-9]{3}' | tail -1)
+HTTPS_CODE=$(echo "${RAW_HTTPS_CODE}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTPS response through Gateway: ${HTTPS_CODE}"
 if [ "${HTTPS_CODE}" = "200" ]; then

@@ -46,7 +46,7 @@ for i in $(seq 1 "${LIMIT}"); do
     curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
       -H "Host: ${HOST}" \
       "http://${ENVOY_IP}:8080/" 2>/dev/null || echo "000")
-  CODE=$(echo "${RAW_CODE}" | grep -oE '[0-9]{3}' | tail -1)
+  CODE=$(echo "${RAW_CODE}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
   echo "  req ${i}: HTTP ${CODE}"
   if [ "${CODE}" != "200" ]; then
     ALL_OK=0
@@ -67,7 +67,7 @@ for i in $(seq 1 $((${LIMIT} * 3))); do
     curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
       -H "Host: ${HOST}" \
       "http://${ENVOY_IP}:8080/" 2>/dev/null || echo "000")
-  CODE=$(echo "${RAW_CODE}" | grep -oE '[0-9]{3}' | tail -1)
+  CODE=$(echo "${RAW_CODE}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
   if [ "${CODE}" = "429" ]; then
     GOT_429=1
     echo "  req ${i}: HTTP 429 (rate limited)"

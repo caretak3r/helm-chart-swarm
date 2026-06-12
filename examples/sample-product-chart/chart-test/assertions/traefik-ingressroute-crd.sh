@@ -50,7 +50,7 @@ RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe-crd --rm -i --restart=Never --quiet
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${HOST}" \
     "http://${TRAEFIK_IP}:8000/" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then

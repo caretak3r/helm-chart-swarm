@@ -217,7 +217,7 @@ NOAUTH_CODE=$(kctl -n "${NS}" run ct-jwt-noauth --restart=Never --rm -i \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-NOAUTH_CODE=$(echo "$NOAUTH_CODE" | grep -oE '[0-9]{3}' | tail -1)
+NOAUTH_CODE=$(echo "$NOAUTH_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  HTTP code (no auth): ${NOAUTH_CODE}"
 
 if [ "${NOAUTH_CODE}" = "401" ] || [ "${NOAUTH_CODE}" = "403" ]; then
@@ -234,7 +234,7 @@ AUTH_CODE=$(kctl -n "${NS}" run ct-jwt-auth --restart=Never --rm -i \
     -H 'Host: ${RELEASE}.test.local' \
     -H 'Authorization: Bearer ${VALID_JWT}' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-AUTH_CODE=$(echo "$AUTH_CODE" | grep -oE '[0-9]{3}' | tail -1)
+AUTH_CODE=$(echo "$AUTH_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  HTTP code (with valid JWT): ${AUTH_CODE}"
 
 if [ "${AUTH_CODE}" = "200" ]; then

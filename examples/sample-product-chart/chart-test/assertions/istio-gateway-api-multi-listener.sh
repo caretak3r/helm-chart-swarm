@@ -119,7 +119,8 @@ for attempt in $(seq 1 20); do
     curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
       -H "Host: sample.sample.svc.cluster.local" \
       "http://${GW_SVC_IP}:80/" 2>/dev/null) || true
-  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
+  [ -z "$HTTP_CODE" ] && HTTP_CODE="000"
   if [ "${HTTP_CODE}" = "200" ]; then
     echo "HTTP response: ${HTTP_CODE} (attempt ${attempt})"
     break
@@ -142,7 +143,8 @@ for attempt in $(seq 1 20); do
     curl -s -o /dev/null -w '%{http_code}' --insecure --max-time 15 \
       --resolve "sample.sample.svc.cluster.local:443:${GW_SVC_IP}" \
       "https://sample.sample.svc.cluster.local:443/" 2>/dev/null) || true
-  HTTPS_CODE=$(echo "$RAW_HTTPS_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+  HTTPS_CODE=$(echo "$RAW_HTTPS_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
+  [ -z "$HTTPS_CODE" ] && HTTPS_CODE="000"
   if [ "${HTTPS_CODE}" = "200" ]; then
     echo "HTTPS response: ${HTTPS_CODE} (attempt ${attempt})"
     break

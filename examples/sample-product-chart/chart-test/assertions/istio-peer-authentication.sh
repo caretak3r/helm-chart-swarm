@@ -77,7 +77,7 @@ echo "==> Phase 1a: Non-mesh probe under PERMISSIVE (expect 200)"
 RAW_NM1=$(kctl -n "${CTRL_NS}" exec ct-nonmesh -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-NM1=$(echo "$RAW_NM1" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+NM1=$(echo "$RAW_NM1" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "Non-mesh HTTP under PERMISSIVE: ${NM1}"
 if [ "${NM1}" = "200" ]; then
   echo "PASS: non-mesh traffic allowed under PERMISSIVE"
@@ -90,7 +90,7 @@ echo "==> Phase 1b: In-mesh probe under PERMISSIVE (expect 200)"
 RAW_M1=$(kctl -n "${NS}" exec ct-mesh-probe -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-M1=$(echo "$RAW_M1" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+M1=$(echo "$RAW_M1" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "In-mesh HTTP under PERMISSIVE: ${M1}"
 if [ "${M1}" = "200" ]; then
   echo "PASS: in-mesh traffic allowed under PERMISSIVE"
@@ -131,7 +131,7 @@ echo "==> Phase 2a: Non-mesh probe under STRICT (expect rejection)"
 RAW_NM2=$(kctl -n "${CTRL_NS}" exec ct-nonmesh -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-NM2=$(echo "$RAW_NM2" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+NM2=$(echo "$RAW_NM2" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "Non-mesh HTTP under STRICT: ${NM2}"
 if [ "${NM2}" = "200" ]; then
   echo "FAIL: plain HTTP from non-mesh pod succeeded under STRICT" >&2
@@ -144,7 +144,7 @@ echo "==> Phase 2b: In-mesh probe under STRICT (expect 200)"
 RAW_M2=$(kctl -n "${NS}" exec ct-mesh-probe -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-M2=$(echo "$RAW_M2" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+M2=$(echo "$RAW_M2" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "In-mesh HTTP under STRICT: ${M2}"
 if [ "${M2}" = "200" ]; then
   echo "PASS: in-mesh traffic still works under STRICT via auto-upgraded mTLS"

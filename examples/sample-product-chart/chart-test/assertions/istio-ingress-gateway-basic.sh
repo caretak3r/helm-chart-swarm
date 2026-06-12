@@ -88,7 +88,7 @@ HTTP_CODE=$(kctl -n "${NS}" run ct-igw-probe --restart=Never --rm -i \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$HTTP_CODE" | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "$HTTP_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response through gateway: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then

@@ -64,7 +64,7 @@ RAW=$(kctl -n "${NS}" run ct-cilium-ebpf --rm -i --restart=Never --quiet \
   --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${SVC_IP}:${SVC_PORT}/" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "${RAW}" | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "${RAW}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "ClusterIP probe HTTP code: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then

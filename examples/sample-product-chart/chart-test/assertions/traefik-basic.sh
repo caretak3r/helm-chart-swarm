@@ -35,7 +35,7 @@ RAW_HTTP=$(kctl -n "${NS}" run ct-probe --rm -i --restart=Never --quiet \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${HOST}" \
     "http://${TRAEFIK_IP}:8000/" 2>/dev/null) || RAW_HTTP="000"
-HTTP_CODE=$(echo "${RAW_HTTP}" | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "${RAW_HTTP}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response (with Host): ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
@@ -51,7 +51,7 @@ RAW_NO_HOST=$(kctl -n "${NS}" run ct-probe-no-host --rm -i --restart=Never --qui
   --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${TRAEFIK_IP}:8000/" 2>/dev/null) || RAW_NO_HOST="000"
-NO_HOST_CODE=$(echo "${RAW_NO_HOST}" | grep -oE '[0-9]{3}' | tail -1)
+NO_HOST_CODE=$(echo "${RAW_NO_HOST}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response (without Host): ${NO_HOST_CODE}"
 if [ "${NO_HOST_CODE}" = "404" ]; then

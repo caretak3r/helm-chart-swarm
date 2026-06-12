@@ -101,7 +101,7 @@ for attempt in $(seq 1 20); do
       curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
         --resolve '${DOMAIN}:443:${GW_SVC_IP}' \
         'https://${DOMAIN}:443/'" 2>/dev/null) || true
-  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
   if [ "${HTTP_CODE}" = "200" ]; then
     echo "HTTPS response: ${HTTP_CODE} (attempt ${attempt})"
     break

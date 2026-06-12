@@ -133,7 +133,7 @@ RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-sp-probe --restart=Never \
   curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
 
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "HTTP response: ${HTTP_CODE}"
 
 if [ "${HTTP_CODE}" = "200" ]; then
