@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # NGINX Ingress canary smoke assertion.
 # Verifies: two Ingresses for the same host (one with canary annotations + weight 20),
-#           100 curl probes show 10-30 routed to canary backend.
+#           100 curl probes show 7-33 routed to canary backend (3-sigma statistical bounds).
 # Receives: RELEASE, NAMESPACE, KUBECONFIG, KUBE_CONTEXT, PROJECT_DIR
 set -euo pipefail
 
@@ -10,8 +10,11 @@ NGINX_NS="ingress-nginx"
 HOST="sample.test.local"
 PROBE_COUNT=100
 CANARY_WEIGHT=20
-MIN_CANARY=10
-MAX_CANARY=30
+# Statistical bounds: binomial(n=100, p=0.20).
+# MIN_CANARY=7 -> P(X<7) ~0.7%; MAX_CANARY=33 -> P(X>33) ~0.5%.
+# Wider than ±1σ to prevent ~5% false-failures on an otherwise-correct 20% split.
+MIN_CANARY=7
+MAX_CANARY=33
 
 kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }
 
@@ -47,7 +50,7 @@ echo "==> Getting nginx controller pod IP"
 NGINX_IP=$(kctl -n "${NGINX_NS}" get pod -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].status.podIP}')
 echo "NGINX pod IP: ${NGINX_IP}"
 
-echo "==> Running ${PROBE_COUNT} canary probes (expect ${MIN_CANARY}-${MAX_CANARY} canary hits)"
+echo "==> Running ${PROBE_COUNT} canary probes (expect ${MIN_CANARY}-${MAX_CANARY} canary hits for ${CANARY_WEIGHT}% weight)"
 CANARY_COUNT=0
 STABLE_COUNT=0
 
