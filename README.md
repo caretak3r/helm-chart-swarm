@@ -43,7 +43,7 @@ integration + capability + gap-probe scenarios for end-to-end validation.
 | `build-dashboard.sh` | Generate the static HTML dashboard |
 | `aggregate.sh` | Merge results across multiple runs |
 | `benchmark-scenarios.sh` | Per-feature regression tracking |
-| `sweep-scenarios.sh` | Run a parameter sweep over scenario variants |
+| `sweep-scenarios.sh` | Run a parameter sweep over scenario variants; also enforces JSON-schema validation **and** assertion-depth consistency (every referenced assert type must have a declared depth in the registry and a matching `# DEPTH: Lx` script header) |
 | `orphan-audit.sh` | Detect leaked clusters and artifacts |
 
 Artifact bundles include `scenario.yaml`, `applied-overrides.yaml`,
@@ -64,11 +64,89 @@ integration category:
 | Gateway API | envoy-gateway, istio-gateway-api, contour-gateway-api |
 | Service mesh | istio-service-mesh, istio-ingress-gateway, linkerd |
 | Policy | opa-gatekeeper, kyverno |
-| Capability compliance | labels-present, annotations-present, scheme-enforced, rbac-objects, security-context, network-policy, resources-present, imagepullsecrets-present, serviceaccount-annotations, scheduling-present, priority-class-present |
+| Capability compliance | labels-present, annotations-present, scheme-enforced, rbac-objects, security-context, network-policy, resources-present, imagepullsecrets-present, serviceaccount-annotations, scheduling-present, priority-class-present, probes-present, volume-mounts-present, pdb-present, hpa-present, init-containers, host-network, lifecycle-hooks, dns-config |
+| Behavioral (L3) | network-policy-enforced, mesh-mtls-enforced, tls-cert-valid, ingress-routes-traffic, gateway-routes-traffic, policy-denies-violation, rbac-effective, scheduled-on-target |
 
 All assertions use the `RAW_`+`grep -oE` pattern for `kubectl v1.36`
 compatibility. TLS fixtures use `REPLACE_AT_RUNTIME` placeholders with
 runtime certificate generation.
+
+### Assertion depth taxonomy (L0–L3)
+
+Every engine assert is classified by depth in `engine/asserts/registry.yaml`,
+which maps each assert `type` to a level:
+
+| Depth | Meaning |
+|-------|---------|
+| L0 | Render-only / static analysis of `helm template` output, or engine-delegates-to-consumer (e.g. `smoke-script`); no live cluster needed |
+| L1 | Presence / static-live: queries the live Kubernetes API for object presence, without checking behavioral semantics |
+| L2 | Readiness / exec: validates objects are in their intended operational state (readiness, connectivity, process execution) |
+| L3 | Behavioral / traffic / enforcement: exercises real traffic and proves actual behavior beyond mere presence |
+
+Each assert script carries a `# DEPTH: Lx` header that **must** match its
+registry entry. `engine/scripts/sweep-scenarios.sh` enforces this
+header/registry consistency (and blocks scenarios that reference an
+assert type with no declared depth) alongside JSON-schema validation.
+
+### Behavioral (L3) assertions
+
+L3 asserts *prove* behavior rather than just presence. They are
+env-var parameterized (no hardcoded consumer names) and **SKIP** (a
+non-failing status) when the required platform capability is genuinely
+absent:
+
+- `network-policy-enforced` — denied traffic is actually blocked while the allowed path still works
+- `mesh-mtls-enforced` — STRICT mTLS is negotiated and plaintext is rejected (verified via Envoy / ztunnel / pilot-agent evidence)
+- `tls-cert-valid` — a real certificate is served, valid, with SAN matching the host
+- `ingress-routes-traffic` — a request through the Ingress returns the expected response (fails on 503/404)
+- `gateway-routes-traffic` — a Gateway API route serves traffic through the data plane
+- `policy-denies-violation` — the admission policy actually denies a violating object and admits a compliant one
+- `rbac-effective` — `kubectl auth can-i` confirms permissions are granted **and** bounded (an out-of-scope action returns "no")
+- `scheduled-on-target` — pods actually land on the targeted node
+
+### New capability (config) assertions
+
+These follow the capability-assert shape (`namespace` + `expect_present`
++ `source` + type-specific knobs) with positive **and** negative
+coverage:
+
+- `probes-present` (L1 + L2 live Ready)
+- `volume-mounts-present` (L1 + L2 exec/stat the mountPath; enforces mounts have matching backing volumes)
+- `pdb-present` (L1; Kubernetes selector semantics)
+- `hpa-present` (L1, optional L2; verifies `scaleTargetRef` points at a release workload with exact match + min/max replicas)
+- `init-containers`, `host-network` (hostNetwork / hostPort), `lifecycle-hooks` (preStop/postStart), `dns-config` (dnsPolicy/dnsConfig)
+
+Capability detection for standard Ingress, NetworkPolicy, and
+ValidatingAdmissionPolicy uses `kubectl api-resources` / API-group
+lookups (these are built-in API resources, **not** CRDs), avoiding false
+SKIPs from a `kubectl get crd` check.
+
+### Structured assertion output contract
+
+Asserts may print `ASSERTION_RESULT: PASS|FAIL|SKIP` and an optional
+`ASSERTION_DETAIL: <single-line JSON>` on their own lines.
+`run-scenario.sh` uses the **last** `ASSERTION_RESULT:` line
+(line-prefix match, whitespace-tolerant); when absent it falls back to
+exit-code semantics (0 = PASS, non-zero = FAIL). `result.yaml` now
+additively records `depth_level` per assert plus an optional detail
+block — all changes are backward-compatible.
+
+**SKIP is a first-class, non-failing status.** It flows end-to-end:
+`run-scenario.sh` (a SKIP does not fail the scenario; a FAIL still
+dominates a PASS/SKIP/FAIL mix), `dispatch-swarm.sh` (tallies SKIP
+distinctly from INTERRUPTED), and the Python collector
+`engine/testgrid/src/testgrid/collect.py` (SKIP is a known status,
+never normalized to UNKNOWN, and preserved in `status_counts`).
+
+### Consumer pluggability
+
+Engine asserts and the depth registry are extensible per consumer
+project, with the consumer winning on conflict:
+
+- **Assert resolver** — a project's `chart-test/asserts/<type>.sh` (if present and executable) overrides the engine assert; consumer-only NEW types resolve and run; engine asserts are the fallback
+- **Registry layering** — a project `chart-test/asserts/registry.yaml` layers over the engine registry, and sweep depth enforcement consults the merged registry
+- **Lint gate** — `engine/scripts/check-custom-assertions.sh` (wired into the `verify.sh` lint gate, fail-closed) validates consumer asserts: executable bit, valid `# DEPTH:` header, type declared in a registry, and header depth matching the registry
+- **Primer/template layering** — consumer-provided primers layer over engine defaults in the CLI (`new_cmd.py`), with the consumer winning
 
 ## Dashboard
 
@@ -186,6 +264,12 @@ directory with no machine-specific paths.
 - JSON schema validation
 - Edit from dashboard writes to project file only
 - Version history logging
+
+The project override
+`examples/sample-product-chart/chart-test/versions.yaml` pins
+`kubernetes.kind: v1.36.1`, with workload images bumped to
+`nginx:1.29-alpine` and `quay.io/curl/curl:8.20.0`. Engine defaults in
+`engine/defaults/versions.yaml` remain read-only.
 
 ## Catalog + Support Matrix
 
