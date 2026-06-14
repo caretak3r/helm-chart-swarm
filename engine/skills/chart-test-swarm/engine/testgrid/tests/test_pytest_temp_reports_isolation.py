@@ -142,8 +142,11 @@ class TestListRunsSkipsTestPrefix:
         reports = tmp_path / "reports"
         reports.mkdir()
 
-        # Create a real run dir
+        # Create a real run dir with run-meta.yaml (required by M3 discovery)
         (reports / "run-20260520-101500").mkdir()
+        (reports / "run-20260520-101500" / "run-meta.yaml").write_text(
+            "run_id: run-20260520-101500\n"
+        )
         (reports / "run-20260520-101500" / "scenarios-snapshot.yaml").write_text("scenarios: []")
 
         # Create test-prefixed dirs (what run-stub.sh produces)
@@ -166,9 +169,11 @@ class TestListRunsSkipsTestPrefix:
         reports = tmp_path / "reports"
         reports.mkdir()
 
-        (reports / "run-20260520-101500").mkdir()
-        (reports / "run-20260520-101501").mkdir()
-        (reports / "run-f11-2-real-20260601-222435").mkdir()
+        for dir_name in ("run-20260520-101500", "run-20260520-101501",
+                         "run-f11-2-real-20260601-222435"):
+            d = reports / dir_name
+            d.mkdir()
+            (d / "run-meta.yaml").write_text(f"run_id: {dir_name}\n")
 
         runs = list_runs(reports)
         assert "run-20260520-101500" in runs

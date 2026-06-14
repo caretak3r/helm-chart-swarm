@@ -538,14 +538,73 @@ def discover_integrations(integrations_dir: Path) -> dict[str, list[str]]:
 def list_runs(reports_dir: Path) -> list[str]:
     """List valid run directories under *reports_dir*.
 
-    Returns sorted directory names matching ``run-*`` but EXCLUDING
-    ``run-test-*`` — those are stub artifacts left by the integration
-    test suite and must never appear in the dashboard build.
+    Discovers ANY immediate child directory containing a valid
+    ``run-meta.yaml`` (parseable YAML with a ``run_id``), regardless of
+    directory-name prefix.  Runs are de-duplicated by their ``run_id``
+    so that a real directory and a symlink pointing at it collapse to
+    EXACTLY ONE entry.
+
+    Tie-break (deterministic):
+      1. Real directories are preferred over symlinks.
+      2. Within the same kind (both real or both symlinks), the shorter
+         directory name wins.
+      3. If names have equal length, the lexicographically smaller name
+         wins (by ``sorted()`` stability of ``iterdir()``).
+
+    * ``run-test-*`` directories are ALWAYS excluded — they are stub
+      artifacts left by the integration test suite.
+    * Directories without a valid/parseable ``run-meta.yaml`` or
+      without a ``run_id`` are silently skipped without error.
+    * Symlinked directories are followed (``p.is_dir()`` resolves
+      symlinks).
     """
     if not reports_dir.is_dir():
         return []
-    return sorted(
-        p.name
-        for p in reports_dir.iterdir()
-        if p.is_dir() and p.name.startswith("run-") and not p.name.startswith("run-test-")
-    )
+
+    # run_id -> (dir_name, is_symlink)
+    deduped: dict[str, tuple[str, bool]] = {}
+
+    for p in sorted(reports_dir.iterdir()):
+        # Follow symlinks via p.is_dir()
+        if not p.is_dir():
+            continue
+
+        # run-test-* stub directories are always excluded
+        if p.name.startswith("run-test-"):
+            continue
+
+        # Require a valid run-meta.yaml with a non-empty run_id
+        meta_path = p / "run-meta.yaml"
+        if not meta_path.is_file():
+            continue
+
+        try:
+            meta = _load_yaml(meta_path) or {}
+        except yaml.YAMLError:
+            # Corrupt YAML — skip without crashing
+            continue
+
+        run_id = str(meta.get("run_id", "") or "").strip()
+        if not run_id:
+            continue
+
+        is_symlink = p.is_symlink()
+
+        if run_id not in deduped:
+            deduped[run_id] = (p.name, is_symlink)
+            continue
+
+        # De-duplicate: keep the best candidate per the tie-break policy
+        existing_name, existing_is_symlink = deduped[run_id]
+
+        # Prefer real dir over symlink
+        if existing_is_symlink and not is_symlink:
+            deduped[run_id] = (p.name, is_symlink)
+        elif not existing_is_symlink and is_symlink:
+            pass  # keep existing real dir
+        else:
+            # Both real or both symlinks — prefer shorter name
+            if len(p.name) < len(existing_name):
+                deduped[run_id] = (p.name, is_symlink)
+
+    return sorted(name for name, _ in deduped.values())
