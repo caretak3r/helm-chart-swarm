@@ -209,9 +209,33 @@ check_live_hpa() {
             ;;
         esac
 
-        # Verify the target is a release-scoped workload (not just any object).
-        # The target object must exist AND carry the release instance label.
-        if ! kubectl "${kubectl_args[@]}" get "$target_kind" "$target_name" -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" &>/dev/null; then
+        # Enumerate all release-scoped workloads in the namespace and
+        # verify the HPA's scaleTargetRef points at one of them (exact
+        # kind + name match, no substring matching).  This mirrors the
+        # rendered-path logic: collect release workload kind+name pairs,
+        # then check the HPA target against that set.
+        local release_workloads_json
+        release_workloads_json=$(kubectl "${kubectl_args[@]}" get deployment,statefulset,daemonset,replicaset \
+          -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o json 2>/dev/null || echo '{"items":[]}')
+
+        local wl_count
+        wl_count=$(printf '%s' "$release_workloads_json" | jq '.items | length' 2>/dev/null || echo "0")
+
+        local target_matched=false
+        local wi=0
+        while [ "$wi" -lt "$wl_count" ]; do
+          local wl_kind wl_name
+          wl_kind=$(printf '%s' "$release_workloads_json" | jq -r ".items[$wi].kind // \"\"" 2>/dev/null || echo "")
+          wl_name=$(printf '%s' "$release_workloads_json" | jq -r ".items[$wi].metadata.name // \"\"" 2>/dev/null || echo "")
+
+          if [ "$wl_kind" = "$target_kind" ] && [ "$wl_name" = "$target_name" ]; then
+            target_matched=true
+            break
+          fi
+          wi=$((wi + 1))
+        done
+
+        if [ "$target_matched" != "true" ]; then
           echo "FAIL: HPA $hpa_name scaleTargetRef ($target_kind/$target_name) does not point at a release workload" >&2
           return 1
         fi
