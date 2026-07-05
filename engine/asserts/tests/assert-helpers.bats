@@ -64,7 +64,7 @@ teardown() {
   run bash -c "
     source '$HELPERS_LIB'
     WAIT_BACKOFF_SLEEP_CMD='true'  # stub sleep as no-op
-    wait_with_backoff 'test \$(cat $counter) -ge 1 || { echo \$(( \$(cat $counter) + 1 )) > $counter; false; }' 3 30
+    wait_with_backoff 3 30 -- bash -c 'test \$(cat \"\$1\") -ge 1 || { echo \$(( \$(cat \"\$1\") + 1 )) > \"\$1\"; false; }' _ '$counter'
   "
   [ $status -eq 0 ]
   local cnt; cnt=$(cat "$counter")
@@ -78,12 +78,13 @@ teardown() {
     source '$HELPERS_LIB'
     WAIT_BACKOFF_SLEEP_CMD='true'
     # Succeeds on 3rd attempt
-    wait_with_backoff '
-      cnt=\$(cat $counter)
+    wait_with_backoff 5 30 -- bash -c '
+      counter=\"\$1\"
+      cnt=\$(cat \"\$counter\")
       cnt=\$((cnt + 1))
-      echo \$cnt > $counter
+      echo \$cnt > \"\$counter\"
       [ \$cnt -ge 3 ]
-    ' 5 30
+    ' _ '$counter'
   "
   [ $status -eq 0 ]
   local cnt; cnt=$(cat "$counter")
@@ -100,12 +101,13 @@ teardown() {
   run bash -c "
     source '$HELPERS_LIB'
     WAIT_BACKOFF_SLEEP_CMD='true'
-    wait_with_backoff '
-      cnt=\$(cat $counter)
+    wait_with_backoff 3 30 -- bash -c '
+      counter=\"\$1\"
+      cnt=\$(cat \"\$counter\")
       cnt=\$((cnt + 1))
-      echo \$cnt > $counter
+      echo \$cnt > \"\$counter\"
       false
-    ' 3 30
+    ' _ '$counter'
   "
   [ $status -ne 0 ]
   local cnt; cnt=$(cat "$counter")
@@ -123,12 +125,13 @@ teardown() {
   run bash -c "
     source '$HELPERS_LIB'
     WAIT_BACKOFF_SLEEP_CMD='true'
-    wait_with_backoff '
-      cnt=\$(cat $counter)
+    wait_with_backoff 0 30 -- bash -c '
+      counter=\"\$1\"
+      cnt=\$(cat \"\$counter\")
       cnt=\$((cnt + 1))
-      echo \$cnt > $counter
+      echo \$cnt > \"\$counter\"
       true
-    ' 0 30
+    ' _ '$counter'
   "
   [ $status -eq 0 ]
   local cnt; cnt=$(cat "$counter")
@@ -141,12 +144,13 @@ teardown() {
   run bash -c "
     source '$HELPERS_LIB'
     WAIT_BACKOFF_SLEEP_CMD='true'
-    wait_with_backoff '
-      cnt=\$(cat $counter)
+    wait_with_backoff 0 30 -- bash -c '
+      counter=\"\$1\"
+      cnt=\$(cat \"\$counter\")
       cnt=\$((cnt + 1))
-      echo \$cnt > $counter
+      echo \$cnt > \"\$counter\"
       false
-    ' 0 30
+    ' _ '$counter'
   "
   [ $status -ne 0 ]
   local cnt; cnt=$(cat "$counter")
@@ -173,12 +177,13 @@ STUB
   run bash -c "
     source '$HELPERS_LIB'
     WAIT_BACKOFF_SLEEP_CMD='$TEST_TMPDIR/sleep_stub.sh'
-    wait_with_backoff '
-      cnt=\$(cat $counter)
+    wait_with_backoff 4 30 -- bash -c '
+      counter=\"\$1\"
+      cnt=\$(cat \"\$counter\")
       cnt=\$((cnt + 1))
-      echo \$cnt > $counter
+      echo \$cnt > \"\$counter\"
       false
-    ' 4 30
+    ' _ '$counter'
   "
   [ $status -ne 0 ]
   # Read the sleep log — should have at least 2 entries and be non-decreasing
@@ -212,12 +217,13 @@ STUB
   run bash -c "
     source '$HELPERS_LIB'
     WAIT_BACKOFF_SLEEP_CMD='true'
-    wait_with_backoff '
-      cnt=\$(cat $counter)
+    wait_with_backoff 3 30 -- bash -c '
+      counter=\"\$1\"
+      cnt=\$(cat \"\$counter\")
       cnt=\$((cnt + 1))
-      echo \$cnt > $counter
+      echo \$cnt > \"\$counter\"
       false
-    ' 3 30
+    ' _ '$counter'
   "
   [ $status -ne 0 ]
   local cnt; cnt=$(cat "$counter")
@@ -371,12 +377,13 @@ STUB
       elapsed=\$((elapsed + t))
       echo \$elapsed > $elapsed_file
     '
-    wait_with_backoff '
-      cnt=\$(cat $counter)
+    wait_with_backoff 10 2 -- bash -c '
+      counter=\"\$1\"
+      cnt=\$(cat \"\$counter\")
       cnt=\$((cnt + 1))
-      echo \$cnt > $counter
+      echo \$cnt > \"\$counter\"
       false
-    ' 10 2
+    ' _ '$counter'
   "
   [ $status -ne 0 ]
   local elapsed; elapsed=$(cat "$elapsed_file")
@@ -550,12 +557,13 @@ EOF
   run bash -c "
     source '$HELPERS_LIB'
     WAIT_BACKOFF_SLEEP_CMD='true'
-    wait_with_backoff '
-      cnt=\$(cat $counter)
+    wait_with_backoff '' 30 -- bash -c '
+      counter=\"\$1\"
+      cnt=\$(cat \"\$counter\")
       cnt=\$((cnt + 1))
-      echo \$cnt > $counter
+      echo \$cnt > \"\$counter\"
       true
-    ' '' 30
+    ' _ '$counter'
   "
   [ $status -eq 0 ]
   local cnt; cnt=$(cat "$counter")

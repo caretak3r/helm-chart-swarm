@@ -801,3 +801,49 @@ EOF
   [ $status -eq 0 ]
   [[ "$output" == *"PASS"* ]]
 }
+
+@test "pods-ready (live) treats selector metacharacters as inert data" {
+  local sentinel="$TEST_TMPDIR/selector-injection-ran"
+
+  cat > "$STUB_BIN/kubectl" <<'STUBEOF'
+#!/usr/bin/env bash
+if [[ "$*" == *"-o name"* ]]; then
+  echo "pod/release-pod-1"
+  exit 0
+fi
+if [[ "$*" == *"-o jsonpath"* ]]; then
+  echo "False"
+  exit 0
+fi
+if [[ "$*" == *"--no-headers"* ]]; then
+  echo "sample   release-pod-1   0/1   Running   0   1m"
+  exit 0
+fi
+echo "NAME  READY  STATUS  RESTARTS  AGE"
+echo "release-pod-1  0/1  Running  0  1m"
+exit 0
+STUBEOF
+  chmod +x "$STUB_BIN/kubectl"
+
+  export WAIT_BACKOFF_SLEEP_CMD="true"
+
+  local s="$TEST_TMPDIR/pods-ready-selector-injection.yaml"
+  cat > "$s" <<EOF
+id: pods-ready-selector-injection
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+asserts:
+  - type: pods-ready
+    namespace: sample
+    selector: "app=demo\"; touch \"$sentinel\"; #"
+    timeout: 30s
+    retries: 0
+EOF
+  run_assert "pods-ready.sh" "$s"
+  [ $status -ne 0 ]
+  [ ! -e "$sentinel" ]
+}

@@ -56,22 +56,11 @@ if [ "$pod_count" -eq 0 ]; then
 fi
 echo "  Found $pod_count release-scoped pod(s)"
 
-# Build a temp probe script for wait_with_backoff eval.
-# The probe checks that ALL release-scoped pods have Ready=True.
-_probe_file=$(mktemp /tmp/ct-pods-ready-probe.XXXXXX)
-# Cleanup on exit (append to existing trap)
-trap 'rm -f "$_probe_file"' EXIT
-
-# Write kubectl args (if any) and selector into the probe file as env vars
-printf 'KUBECTL_ARGS="%s"\n' "${kubectl_args[*]}" > "$_probe_file"
-printf 'NS="%s"\n' "$NS" >> "$_probe_file"
-printf 'SEL="%s"\n' "$SEL" >> "$_probe_file"
-
-# Probe: source the env file, then check pod readiness
-probe_cmd="source $_probe_file 2>/dev/null; ready=\$(kubectl \$KUBECTL_ARGS get pods -n \"\$NS\" -l \"\$SEL\" -o jsonpath='{range .items[*]}{.status.conditions[?(@.type==\"Ready\")].status}{\"\\n\"}{end}' 2>/dev/null || echo ''); total=\$(kubectl \$KUBECTL_ARGS get pods -n \"\$NS\" -l \"\$SEL\" --no-headers 2>/dev/null | wc -l | tr -d ' '); ready_count=0; for s in \$ready; do [ \"\$s\" = 'True' ] && ready_count=\$((ready_count + 1)); done; [ \"\$ready_count\" -gt 0 ] && [ \"\$ready_count\" -eq \"\$total\" ]"
-
-# Use wait_with_backoff for retry logic with the shared helper
-if wait_with_backoff "$probe_cmd" "$RETRIES" "$timeout_sec"; then
+# Use wait_with_backoff for retry logic with the shared helper. Scenario-derived
+# values flow to the static probe as environment data, never as shell text.
+export CTS_PROBE_NAMESPACE="$NS"
+export CTS_PROBE_SELECTOR="$SEL"
+if wait_with_backoff "$RETRIES" "$timeout_sec" -- bash "$SCRIPT_DIR/lib/probe-pods-ready.sh"; then
   echo "PASS: pods Ready in ns/$NS (selector=$SEL)"
   kubectl "${kubectl_args[@]}" -n "$NS" get pods -l "$SEL" 2>/dev/null || true
   exit 0
