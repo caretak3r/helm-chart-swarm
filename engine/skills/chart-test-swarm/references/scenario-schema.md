@@ -2,7 +2,7 @@
 
 The canonical JSON Schema lives at `engine/templates/scenario.schema.json`
 in the bundled engine (a copy of the original at
-`~/Documents/chart-test-swarm/engine/templates/scenario.schema.json`).
+`engine/templates/scenario.schema.json` in the repo root).
 
 See also `docs/scenario-authoring.md` in the canonical engine repo for
 the human-readable walk-through with examples.
