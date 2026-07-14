@@ -50,6 +50,13 @@ jobs:
       - name: Install check-jsonschema
         run: pipx install check-jsonschema
 
+      # recursive-discovery.bats shells out to `uv run --directory engine/testgrid
+      # chart-test-swarm ...`, so the shell suite needs the Python toolchain too.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+
       - name: Verify bash >= 4 (VAL-ENGINE-039 preflight)
         run: |
           bash --version | head -1
