@@ -22,7 +22,7 @@ import os
 import stat
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -34,12 +34,11 @@ from chart_test_swarm.commands.fix_cmd import (
     fix_cmd,
     load_fix_prompt,
     read_recommendations_json,
-    resolve_scenario_path,
     rerun_scenario,
+    resolve_scenario_path,
     update_recommendation_status,
     write_fix_prompt_file,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -701,9 +700,7 @@ class TestFixCmdEndToEnd:
         with (
             patch.dict(os.environ, {"CTS_LLM_CMD": str(llm_stub)}, clear=False),
             patch("chart_test_swarm.commands.fix_cmd._resolve_project_dir", return_value=tmp_path),
-            patch(
-                "chart_test_swarm.commands.fix_cmd.rerun_scenario", return_value="PASS"
-            ) as mock_rerun,
+            patch("chart_test_swarm.commands.fix_cmd.rerun_scenario", return_value="PASS"),
             patch("chart_test_swarm.commands.fix_cmd.rebuild_dashboard") as mock_rebuild,
         ):
             fix_cmd(

@@ -846,7 +846,8 @@ class TestStatusRankOrdering:
         )
 
     def test_status_rank_full_ordering(self) -> None:
-        """FAIL(0) < PARTIAL(1) < UNTESTED(2) < INCONCLUSIVE(3) < INTERRUPTED(4) < AUTHORED(5) < PASS(6)."""
+        """FAIL(0) < PARTIAL(1) < UNTESTED(2) < INCONCLUSIVE(3) < INTERRUPTED(4)
+        < AUTHORED(5) < PASS(6)."""
         from testgrid.collect import STATUS_RANK
 
         assert STATUS_RANK["FAIL"] == 0

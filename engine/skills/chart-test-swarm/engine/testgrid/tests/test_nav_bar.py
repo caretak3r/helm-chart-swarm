@@ -13,8 +13,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from testgrid.collect import Run, Scenario
 from testgrid.render import (
     HomeSummary,

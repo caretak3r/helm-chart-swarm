@@ -1,0 +1,140 @@
+name: Engine CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engine-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# ubuntu-latest only, on purpose. GitHub's macOS runners ship bash 3.2, which has
+# no mapfile and no associative arrays; the engine's VAL-ENGINE-039 preflight
+# aborts on it. A macOS leg would fail for reasons that say nothing about the code.
+jobs:
+  bats:
+    name: bats (engine shell suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The suite is hermetic: no cluster is created and CTS_BATS_REAL_CLUSTERS is
+      # deliberately left unset. kind/helm/kubectl/yq are still needed as *binaries* —
+      # several tests shell out to `kind version -q` and `helm template` and would
+      # silently skip themselves if the binary were missing.
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+
+      - uses: azure/setup-helm@v4
+      - uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+      - name: Install yq
+        run: |
+          sudo curl -fsSL -o /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Verify bash >= 4 (VAL-ENGINE-039 preflight)
+        run: |
+          bash --version | head -1
+          major="$(bash -c 'echo "${BASH_VERSINFO[0]}"')"
+          [ "$major" -ge 4 ] || { echo "bash $major is too old; engine needs >= 4"; exit 1; }
+
+      - name: Show tool versions
+        run: |
+          bats --version
+          kind version
+          helm version --short
+          yq --version
+          jq --version
+
+      - name: Run bats
+        run: bats -r engine/scripts/tests
+
+  pytest:
+    name: pytest (testgrid)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      - name: Run pytest
+        working-directory: engine/testgrid
+        run: uv run pytest
+
+  mypy:
+    name: mypy (testgrid)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      # pyproject sets [tool.mypy] strict but no `files`, so bare `uv run mypy`
+      # exits with "Missing target module". Point it at the package explicitly.
+      - name: Run mypy
+        working-directory: engine/testgrid
+        run: uv run mypy src
+
+  ruff:
+    name: ruff (testgrid)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      - name: Run ruff
+        working-directory: engine/testgrid
+        run: uv run ruff check
+
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Wider than the README's glob, which covered only engine/scripts/*.sh and
+      # engine/asserts/*.sh. It now also covers engine/scripts/lib/*.sh (home of
+      # prefix-check.sh, the cluster safety guard), init.sh, and the skill's own
+      # scripts. engine/skills/chart-test-swarm/engine/** is intentionally absent:
+      # it is a generated copy of engine/, so we lint the canonical source and let
+      # the bundle-drift job prove the copy matches.
+      - name: Run shellcheck
+        run: |
+          shellcheck --version
+          shellcheck \
+            engine/scripts/*.sh \
+            engine/scripts/lib/*.sh \
+            engine/asserts/*.sh \
+            engine/skills/chart-test-swarm/scripts/*.sh \
+            init.sh
+
+  helm-lint:
+    name: helm lint (sample chart)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Run helm lint
+        run: helm lint examples/sample-product-chart/chart
+
+  bundle-drift:
+    name: bundle drift (vendored engine)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # engine/skills/chart-test-swarm/engine/ is a vendored copy of engine/. If it
+      # drifts, the shipped skill serves stale code. --check diffs without writing.
+      - name: Check vendored engine is in sync
+        run: engine/skills/chart-test-swarm/scripts/sync-engine.sh --check

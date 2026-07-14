@@ -43,13 +43,12 @@ if [ -d "$CHART_DIR/templates/tests" ] && [ -n "$(ls -A "$CHART_DIR/templates/te
 fi
 
 # Per-template analysis
-templates_json="[]"
 pod_kinds=()
 templates_buf="["
 first=1
 while IFS= read -r f; do
   [ -f "$f" ] || continue
-  rel="${f#$CHART_DIR/}"
+  rel="${f#"$CHART_DIR"/}"
 
   # Extract the first `kind:` value (skip Helm conditionals)
   kind=$(grep -E '^kind:' "$f" | head -1 | awk '{print $2}' | tr -d '"')
