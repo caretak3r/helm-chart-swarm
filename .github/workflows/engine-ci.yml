@@ -40,6 +40,16 @@ jobs:
             https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
+      # Real test dependencies, not conveniences. cloud-authored-dispatch-guards.bats
+      # shells out to `rg` and `check-jsonschema` and hard-fails with exit 127 when
+      # they are absent. They are present on a typical brew dev box, which is why the
+      # suite passed locally and could never have passed on a clean machine.
+      - name: Install ripgrep
+        run: sudo apt-get install -y ripgrep
+
+      - name: Install check-jsonschema
+        run: pipx install check-jsonschema
+
       - name: Verify bash >= 4 (VAL-ENGINE-039 preflight)
         run: |
           bash --version | head -1
@@ -53,6 +63,8 @@ jobs:
           helm version --short
           yq --version
           jq --version
+          rg --version | head -1
+          check-jsonschema --version
 
       - name: Run bats
         run: bats -r engine/scripts/tests
@@ -110,6 +122,16 @@ jobs:
       # scripts. engine/skills/chart-test-swarm/engine/** is intentionally absent:
       # it is a generated copy of engine/, so we lint the canonical source and let
       # the bundle-drift job prove the copy matches.
+      # ubuntu-latest ships shellcheck 0.9.0, which raises SC2317 ("command appears
+      # to be unreachable") on every line of a trap handler — a false positive fixed
+      # in 0.10.0. Pin a modern release rather than suppress a rule that is telling
+      # the truth everywhere except inside traps.
+      - name: Install shellcheck 0.11.0
+        run: |
+          curl -fsSL https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz \
+            | tar -xJ
+          sudo install -m755 shellcheck-v0.11.0/shellcheck /usr/local/bin/shellcheck
+
       - name: Run shellcheck
         run: |
           shellcheck --version
