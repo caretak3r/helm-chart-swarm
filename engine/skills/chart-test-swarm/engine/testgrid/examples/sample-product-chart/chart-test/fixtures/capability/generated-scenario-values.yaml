@@ -1,8 +1,0 @@
-# Fixture values scaffolded by chart-test-swarm new.
-# The chartTestSwarm.enabled gate ensures helm-test pods only inject
-# when the test framework is active.
-chartTestSwarm:
-  enabled: true
-
-# Capability: generated-scenario
-# Add product values overrides below (e.g. extraLabels.team: platform)

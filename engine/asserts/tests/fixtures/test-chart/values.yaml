@@ -1,0 +1,12 @@
+pdb:
+  enabled: false
+  minAvailable: 1
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetKind: Deployment
+  targetName: ""
+volumes:
+  enabled: false
+  mountPath: /data
