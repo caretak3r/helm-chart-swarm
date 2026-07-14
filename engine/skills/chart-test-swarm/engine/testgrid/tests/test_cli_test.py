@@ -14,7 +14,6 @@ import re
 from pathlib import Path
 from textwrap import dedent
 
-import pytest
 from typer.testing import CliRunner
 
 from chart_test_swarm.main import app
@@ -180,7 +179,7 @@ def _setup_llm_mock(
     """
     call_count_file = tmp_path / "llm-call-count.txt"
 
-    content = dedent(f"""\
+    content = dedent("""\
         #!/usr/bin/env bash
         # Mock LLM — reads stdin, writes output
         cat > /dev/null  # consume stdin
@@ -962,7 +961,7 @@ class TestTeardownOnError:
         llm = _setup_llm_mock(tmp_path)
         env = _build_env(scripts, llm, REPORTS_DIR=str(tmp_path / "reports"))
 
-        result = runner.invoke(
+        runner.invoke(
             app,
             [
                 "test",
@@ -1045,7 +1044,9 @@ class TestHistoryJson:
         proj = _setup_stub_project(tmp_path, ["scenario-history.yaml"])
         llm = _setup_llm_mock(
             tmp_path,
-            output="CHANGED FILE: templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\n",
+            output=(
+                "CHANGED FILE: templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\n"
+            ),
         )
         env = _build_env(scripts, llm, REPORTS_DIR=str(tmp_path / "reports"))
 
@@ -1070,9 +1071,13 @@ class TestHistoryJson:
         rec_id = "rec-scenario-history"
         hist_file = reports_dir / "fixes" / rec_id / "history.json"
 
+        fixes_dir = reports_dir / "fixes"
+        fixes_contents = (
+            list(fixes_dir.rglob("*")) if fixes_dir.exists() else "fixes dir does not exist"
+        )
         assert hist_file.is_file(), (
             f"Expected history.json at {hist_file}, but file not found.\n"
-            f"Contents of fixes dir: {list((reports_dir / 'fixes').rglob('*')) if (reports_dir / 'fixes').exists() else 'fixes dir does not exist'}"
+            f"Contents of fixes dir: {fixes_contents}"
         )
 
         hist = json.loads(hist_file.read_text())

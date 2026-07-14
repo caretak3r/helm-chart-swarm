@@ -105,6 +105,9 @@ _has_modern_bash() {
   if ! _has_modern_bash; then
     skip "Requires modern bash for script execution"
   fi
+  if [ "${CTS_BATS_REAL_CLUSTERS:-0}" != "1" ]; then
+    skip "CTS_BATS_REAL_CLUSTERS=1 not set: skipping real-cluster test"
+  fi
 
   local cluster="chart-test-swarm-egcrd1"
   local tmp_reports="${BATS_TMPDIR:-/tmp}/reports-egcrd-$$"
@@ -159,6 +162,9 @@ _has_modern_bash() {
 @test "envoy-gateway helm release is deployed and Gateway API CRDs are present" {
   if ! _has_modern_bash; then
     skip "Requires modern bash for script execution"
+  fi
+  if [ "${CTS_BATS_REAL_CLUSTERS:-0}" != "1" ]; then
+    skip "CTS_BATS_REAL_CLUSTERS=1 not set: skipping real-cluster test"
   fi
 
   local cluster="chart-test-swarm-egcrd2"

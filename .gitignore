@@ -7,3 +7,10 @@
 # Test artifact run dirs (run-stub.sh output) — never commit these
 engine/testgrid/reports/run-test-*
 reports/run-test-*
+
+# Run dirs the bats suite writes into the sample project. Narrow on purpose:
+# the rest of reports/ holds tracked catalog fixtures.
+examples/sample-product-chart/chart-test/reports/run-bats-*
+
+# Python bytecode from running the testgrid suite
+__pycache__/
