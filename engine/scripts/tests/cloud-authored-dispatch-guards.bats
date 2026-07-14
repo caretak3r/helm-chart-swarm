@@ -12,6 +12,15 @@ _has_modern_bash() {
     [ "${BASH_VERSINFO[0]:-0}" -ge 4 ]
 }
 
+# The engine needs bash >= 4. On macOS that means brew's bash, since /bin/bash is
+# 3.2; on Linux the bash already on PATH is fine. Same idiom as help-banner.bats
+# and versions-sigint.bats — do not hardcode the brew path, it does not exist in CI.
+if [ -x /opt/homebrew/bin/bash ]; then
+    BASH_CMD=/opt/homebrew/bin/bash
+else
+    BASH_CMD=bash
+fi
+
 setup() {
     TESTS_DIR="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
     SCRIPTS_DIR="$(cd "$TESTS_DIR/.." && pwd)"
@@ -68,7 +77,7 @@ setup() {
     [ -f "$cloud_scen" ]
 
     # Run the script; it should exit 0 with a skip message
-    output=$(/opt/homebrew/bin/bash "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen" 2>&1) || true
+    output=$("$BASH_CMD" "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen" 2>&1) || true
 
     # Must contain the skip message
     echo "$output" | grep -qi "authored only"
@@ -86,7 +95,7 @@ setup() {
     before=$(echo "$before" | tr -d '[:space:]')
     [ "${before:-0}" -ge 0 ]
 
-    run /opt/homebrew/bin/bash "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen"
+    run "$BASH_CMD" "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen"
     [ "$status" -eq 0 ]
 
     # After: no new chart-test-swarm-* clusters
@@ -101,7 +110,7 @@ setup() {
     cloud_scen="$SCEN_DIR/cloud-native/cloud-native-aks-agic.yaml"
     [ -f "$cloud_scen" ]
 
-    run /opt/homebrew/bin/bash "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen"
+    run "$BASH_CMD" "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen"
     [ "$status" -eq 0 ]
 
     # No minikube profile with chart-test-swarm- prefix created
@@ -117,7 +126,7 @@ setup() {
     [ -f "$cloud_scen" ]
 
     # Run with tracing enabled, capture stderr (where set -x goes)
-    output=$(/opt/homebrew/bin/bash -x "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen" 2>&1) || true
+    output=$("$BASH_CMD" -x "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen" 2>&1) || true
 
     # Simpler check: the trace should not contain 'kind create' or 'minikube start' or 'kubectl --context'
     echo "$output" | grep -qE 'kind (create|delete)' && false || true
@@ -130,7 +139,7 @@ setup() {
 @test "VAL-CLOUDX-009: dispatch --dry-run with suite 'all' lists zero cloud-authored ids" {
     [ -f "$PROJECT_DIR/chart-test-swarm.yaml" ]
 
-    run /opt/homebrew/bin/bash "$ENGINE_DIR/scripts/dispatch-swarm.sh" "$PROJECT_DIR" all 2 --dry-run
+    run "$BASH_CMD" "$ENGINE_DIR/scripts/dispatch-swarm.sh" "$PROJECT_DIR" all 2 --dry-run
     [ "$status" -eq 0 ]
 
     # Verify: none of the cloud-native ids appear in the dry-run output
@@ -152,7 +161,7 @@ setup() {
     done
     [ "$cloud_count" -ge 6 ]
 
-    CTS_INCLUDE_CLOUD_NATIVE=1 run /opt/homebrew/bin/bash "$ENGINE_DIR/scripts/dispatch-swarm.sh" "$PROJECT_DIR" all 2 --dry-run
+    CTS_INCLUDE_CLOUD_NATIVE=1 run "$BASH_CMD" "$ENGINE_DIR/scripts/dispatch-swarm.sh" "$PROJECT_DIR" all 2 --dry-run
     [ "$status" -eq 0 ]
 
     # With opt-in, cloud-authored ids should appear (as authored-only)
@@ -176,7 +185,7 @@ setup() {
     cloud_scen="$SCEN_DIR/cloud-native/cloud-native-eks-alb-ingress.yaml"
     [ -f "$cloud_scen" ]
 
-    CTS_INCLUDE_CLOUD_NATIVE=1 run /opt/homebrew/bin/bash "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen"
+    CTS_INCLUDE_CLOUD_NATIVE=1 run "$BASH_CMD" "$ENGINE_DIR/scripts/run-scenario.sh" "$cloud_scen"
     [ "$status" -eq 0 ]
     echo "$output" | grep -qi "authored only"
     echo "$output" | grep -qi "skipping cluster operations"
@@ -362,7 +371,7 @@ EOF
         cloud_scens="${cloud_scens}${f}"$'\n'
     done
 
-    CTS_SCENARIOS="$cloud_scens" run /opt/homebrew/bin/bash "$ENGINE_DIR/scripts/dispatch-swarm.sh" "$PROJECT_DIR" pr-subset 2
+    CTS_SCENARIOS="$cloud_scens" run "$BASH_CMD" "$ENGINE_DIR/scripts/dispatch-swarm.sh" "$PROJECT_DIR" pr-subset 2
     # All-cloud-native dispatch should exit 0 with skip message
     [ "$status" -eq 0 ]
     echo "$output" | grep -qi "cloud-native"

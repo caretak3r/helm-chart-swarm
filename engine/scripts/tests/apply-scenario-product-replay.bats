@@ -162,6 +162,9 @@ _has_modern_bash() {
   if ! _has_modern_bash; then
     skip "Requires modern bash for script execution"
   fi
+  if [ "${CTS_BATS_REAL_CLUSTERS:-0}" != "1" ]; then
+    skip "CTS_BATS_REAL_CLUSTERS=1 not set: skipping real-cluster test"
+  fi
 
   local cluster="chart-test-swarm-replay1"
 
@@ -240,6 +243,9 @@ _has_modern_bash() {
   if ! _has_modern_bash; then
     skip "Requires modern bash for script execution"
   fi
+  if [ "${CTS_BATS_REAL_CLUSTERS:-0}" != "1" ]; then
+    skip "CTS_BATS_REAL_CLUSTERS=1 not set: skipping real-cluster test"
+  fi
 
   # Test that --preinstall-only exits after preinstalls without installing product
   local cluster="chart-test-swarm-preonly1"
@@ -281,6 +287,9 @@ _has_modern_bash() {
 @test "apply-scenario.sh without --preinstall-only installs product.chart" {
   if ! _has_modern_bash; then
     skip "Requires modern bash for script execution"
+  fi
+  if [ "${CTS_BATS_REAL_CLUSTERS:-0}" != "1" ]; then
+    skip "CTS_BATS_REAL_CLUSTERS=1 not set: skipping real-cluster test"
   fi
 
   local cluster="chart-test-swarm-fullapply1"
