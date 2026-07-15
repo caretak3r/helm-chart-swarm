@@ -18,7 +18,7 @@ SUITE         ?= pr-subset
 SCENARIO      ?=
 RUN           ?=
 NUM_AGENTS    ?= 2
-CLUSTER_NAME  ?= chart-test-swarm
+CLUSTER_NAME  ?= chart-test-swarm-default
 
 REQUIRED_SCRIPTS := verify.sh cluster-up.sh cluster-down.sh
 

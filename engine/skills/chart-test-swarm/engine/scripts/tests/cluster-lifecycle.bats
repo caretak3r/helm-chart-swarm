@@ -155,6 +155,15 @@ _has_modern_bash() {
   [[ "$default" =~ ^chart-test-swarm-[a-z0-9-]+$ ]]
 }
 
+@test "Makefile default CLUSTER_NAME is accepted by cts_check_cluster_name" {
+  # Extract the Makefile's OWN default rather than hardcoding it, so the
+  # Makefile and the prefix guard can never drift apart again.
+  default=$(grep -E '^CLUSTER_NAME[[:space:]]*\?=' "$ROOT_DIR/Makefile" | head -1 | sed 's/^CLUSTER_NAME[[:space:]]*?=[[:space:]]*//')
+  [ -n "$default" ]
+  run /bin/bash -c ". '$LIB_DIR/prefix-check.sh'; cts_check_cluster_name '$default'"
+  [ "$status" -eq 0 ]
+}
+
 # --- Minikube provider acceptance ---
 
 @test "cluster-up accepts PROVIDER=minikube with valid prefixed name (dry-run)" {
