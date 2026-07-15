@@ -191,6 +191,26 @@ def call_llm(fix_prompt: str, *, timeout: int = 120) -> str:
 
 # ── Step 3: Apply LLM suggestion to chart ───────────────────────────────────
 
+_EXECUTABLE_BASENAME_SUFFIXES = {
+    ".app",
+    ".bat",
+    ".bash",
+    ".cmd",
+    ".com",
+    ".exe",
+    ".fish",
+    ".js",
+    ".ksh",
+    ".pl",
+    ".ps1",
+    ".py",
+    ".rb",
+    ".sh",
+    ".zsh",
+}
+_DENIED_CHART_TEST_DIRS = {"asserts", "assertions"}
+_ALLOWED_SUFFIXES = {".yaml", ".yml", ".tpl"}
+
 
 def apply_llm_suggestion(chart_dir: Path, llm_output: str) -> str:
     """Apply the LLM-suggested change to the chart directory.
@@ -239,17 +259,80 @@ def _write_chart_file(chart_dir: Path, relative_path: str, content: str) -> None
     """Write *content* to *chart_dir* / *relative_path*.
 
     Raises ``ValueError`` if the resolved target path escapes *chart_dir*
-    (path traversal protection).
+    (path traversal protection) or if the path is outside the non-executable
+    chart template/values surface.
     """
-    target = (chart_dir / relative_path).resolve()
-    if not target.is_relative_to(chart_dir.resolve()):
+    chart_root = chart_dir.resolve()
+    target = (chart_root / relative_path).resolve()
+    if not target.is_relative_to(chart_root):
         raise ValueError(
             f"Refusing to write {relative_path}: resolved path "
-            f"{target} escapes chart directory {chart_dir.resolve()}"
+            f"{target} escapes chart directory {chart_root}"
         )
+    _validate_chart_write_path(relative_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
+    os.chmod(target, 0o644)
     _debug(f"Wrote chart file: {target}")
+
+
+def _validate_chart_write_path(relative_path: str) -> None:
+    """Validate that *relative_path* is an allowed non-executable chart file."""
+    rel_path = Path(relative_path)
+    parts = rel_path.parts
+    if not parts:
+        raise ValueError("Refusing to write empty chart path")
+
+    if _is_under_denied_chart_test_dir(parts):
+        raise ValueError(
+            f"Refusing to write {relative_path}: writes into executable chart-test dir"
+        )
+
+    if _basename_looks_executable(rel_path.name):
+        raise ValueError(f"Refusing to write {relative_path}: executable or script-like file type")
+
+    if not _is_allowed_chart_surface(rel_path):
+        raise ValueError(
+            f"Refusing to write {relative_path}: outside allowed chart template/values surface"
+        )
+
+
+def _is_under_denied_chart_test_dir(parts: tuple[str, ...]) -> bool:
+    """Return ``True`` for paths under chart-test/asserts or chart-test/assertions."""
+    return len(parts) >= 2 and parts[0] == "chart-test" and parts[1] in _DENIED_CHART_TEST_DIRS
+
+
+def _basename_looks_executable(name: str) -> bool:
+    """Return ``True`` when the basename has a script/executable suffix."""
+    suffix = Path(name).suffix.lower()
+    if suffix in _EXECUTABLE_BASENAME_SUFFIXES:
+        return True
+
+    pathext = os.environ.get("PATHEXT", "")
+    pathext_suffixes = {
+        ext.lower()
+        for pathsep_part in pathext.split(os.pathsep)
+        for ext in pathsep_part.split(";")
+        if ext
+    }
+    return suffix in pathext_suffixes
+
+
+def _is_allowed_chart_surface(rel_path: Path) -> bool:
+    """Return ``True`` when *rel_path* is in the chart metadata/template/values surface."""
+    parts = rel_path.parts
+    name = rel_path.name
+    suffix = rel_path.suffix.lower()
+
+    if suffix == ".tpl":
+        return True
+
+    if len(parts) == 1:
+        if name == "Chart.yaml":
+            return True
+        return name.startswith("values") and suffix in _ALLOWED_SUFFIXES - {".tpl"}
+
+    return parts[0] == "templates"
 
 
 def _git_diff(chart_dir: Path) -> str:
@@ -613,9 +696,21 @@ class FixContext:
     ) -> None:
         self.rec_id = rec_id
         self.reports_dir = reports_dir
-        self.project_dir = project_dir
+        self.project_dir = project_dir.resolve()
         self.fix_prompt_data = fix_prompt_data
-        self.chart_dir = project_dir / fix_prompt_data.get("chart_path", "chart")
+        chart_rel = fix_prompt_data.get("chart_path", "chart")
+        if os.path.isabs(chart_rel):
+            _die(
+                f"ERROR: chart_path must be relative, got absolute: {chart_rel}",
+                code=23,
+            )
+        chart_dir = (self.project_dir / chart_rel).resolve()
+        if not chart_dir.is_relative_to(self.project_dir):
+            _die(
+                f"ERROR: chart_path escapes project dir: {chart_rel}",
+                code=23,
+            )
+        self.chart_dir = chart_dir
         self.scenario_path = fix_prompt_data.get("scenario_path", "")
 
 

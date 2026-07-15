@@ -188,6 +188,9 @@ class TestApplyLlmSuggestion:
         diff = apply_llm_suggestion(chart_dir, llm_output)
         # At minimum the function should return a diff string (possibly empty if no git)
         assert isinstance(diff, str)
+        assert (chart_dir / "templates" / "deployment.yaml").read_text(
+            encoding="utf-8"
+        ) == "{{- include ... }}\n"
 
     def test_apply_returns_diff_string(self, tmp_path: Path) -> None:
         """apply_llm_suggestion returns a diff string (may be empty if no git)."""
@@ -195,6 +198,71 @@ class TestApplyLlmSuggestion:
         chart_dir.mkdir()
         diff = apply_llm_suggestion(chart_dir, "some output")
         assert isinstance(diff, str)
+
+    def test_allowed_template_and_values_edits_apply(self, tmp_path: Path) -> None:
+        """Allowed template and values edits are still written."""
+        chart_dir = tmp_path / "chart"
+        (chart_dir / "templates").mkdir(parents=True)
+        llm_output = "\n".join(
+            [
+                "CHANGED FILE: templates/deployment.yaml",
+                "apiVersion: apps/v1",
+                "CHANGED FILE: values.yaml",
+                "replicaCount: 2",
+            ]
+        )
+
+        diff = apply_llm_suggestion(chart_dir, llm_output)
+
+        assert isinstance(diff, str)
+        assert (chart_dir / "templates" / "deployment.yaml").read_text(
+            encoding="utf-8"
+        ) == "apiVersion: apps/v1\n"
+        assert (chart_dir / "values.yaml").read_text(encoding="utf-8") == "replicaCount: 2\n"
+
+    def test_executable_assert_write_rejected_without_writing(self, tmp_path: Path) -> None:
+        """LLM output must not create executable chart-test assertion scripts."""
+        chart_dir = tmp_path / "chart"
+        chart_dir.mkdir()
+        llm_output = "\n".join(
+            [
+                "CHANGED FILE: chart-test/asserts/evil.sh",
+                "#!/bin/sh",
+                "echo pwned",
+                "CHANGED FILE: root-evil.sh",
+                "#!/bin/sh",
+                "echo pwned",
+            ]
+        )
+
+        with pytest.raises(ValueError, match="chart-test dir"):
+            apply_llm_suggestion(chart_dir, llm_output)
+
+        assert not (chart_dir / "chart-test" / "asserts" / "evil.sh").exists()
+        assert not (chart_dir / "root-evil.sh").exists()
+
+    def test_root_shell_script_write_rejected_without_writing(self, tmp_path: Path) -> None:
+        """LLM output must not create script-like files at the chart root."""
+        chart_dir = tmp_path / "chart"
+        chart_dir.mkdir()
+        llm_output = "CHANGED FILE: evil.sh\n#!/bin/sh\necho pwned"
+
+        with pytest.raises(ValueError, match="executable or script-like"):
+            apply_llm_suggestion(chart_dir, llm_output)
+
+        assert not (chart_dir / "evil.sh").exists()
+
+    def test_written_allowed_file_has_non_executable_mode(self, tmp_path: Path) -> None:
+        """Allowed writes are chmodded to 0644 so no executable bit survives."""
+        chart_dir = tmp_path / "chart"
+        chart_dir.mkdir()
+        values_path = chart_dir / "values.yaml"
+        values_path.write_text("replicaCount: 1\n", encoding="utf-8")
+        values_path.chmod(0o755)
+
+        apply_llm_suggestion(chart_dir, "CHANGED FILE: values.yaml\nreplicaCount: 2")
+
+        assert stat.S_IMODE(values_path.stat().st_mode) == 0o644
 
 
 # ---------------------------------------------------------------------------
@@ -592,6 +660,40 @@ class TestChartPathResolution:
         assert "examples/sample-product-chart/examples" not in str(ctx.chart_dir)
         assert str(ctx.chart_dir).endswith("/chart")
         assert ctx.chart_dir == chart_dir
+
+    def test_absolute_chart_path_rejected(self, tmp_path: Path) -> None:
+        """FixContext rejects absolute chart_path before it can relocate the write root."""
+        project_dir = tmp_path / "project"
+        project_dir.mkdir()
+        fix_prompt_data = _make_fix_prompt_json()
+        fix_prompt_data["chart_path"] = str(tmp_path / "elsewhere" / "chart")
+
+        with pytest.raises(SystemExit) as exc_info:
+            FixContext(
+                rec_id="rec-absolute",
+                reports_dir=tmp_path / "reports",
+                project_dir=project_dir,
+                fix_prompt_data=fix_prompt_data,
+            )
+
+        assert exc_info.value.code == 23
+
+    def test_escaping_chart_path_rejected(self, tmp_path: Path) -> None:
+        """FixContext rejects chart_path values that resolve outside project_dir."""
+        project_dir = tmp_path / "project"
+        project_dir.mkdir()
+        fix_prompt_data = _make_fix_prompt_json()
+        fix_prompt_data["chart_path"] = "../outside-chart"
+
+        with pytest.raises(SystemExit) as exc_info:
+            FixContext(
+                rec_id="rec-escape",
+                reports_dir=tmp_path / "reports",
+                project_dir=project_dir,
+                fix_prompt_data=fix_prompt_data,
+            )
+
+        assert exc_info.value.code == 23
 
 
 # ---------------------------------------------------------------------------
