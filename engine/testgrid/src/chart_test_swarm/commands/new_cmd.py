@@ -540,9 +540,7 @@ def _scaffold_integration(
         integrations_root, consumer_primers_root, category, integration
     )
     if resolved_primer is None:
-        available = _primers_for_category_merged(
-            integrations_root, consumer_primers_root, category
-        )
+        available = _primers_for_category_merged(integrations_root, consumer_primers_root, category)
         if available:
             _die(
                 f"ERROR: no primer found for {category}/{integration}.\n"

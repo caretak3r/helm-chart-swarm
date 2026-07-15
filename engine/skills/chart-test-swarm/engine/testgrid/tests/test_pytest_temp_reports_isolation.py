@@ -169,8 +169,11 @@ class TestListRunsSkipsTestPrefix:
         reports = tmp_path / "reports"
         reports.mkdir()
 
-        for dir_name in ("run-20260520-101500", "run-20260520-101501",
-                         "run-f11-2-real-20260601-222435"):
+        for dir_name in (
+            "run-20260520-101500",
+            "run-20260520-101501",
+            "run-f11-2-real-20260601-222435",
+        ):
             d = reports / dir_name
             d.mkdir()
             (d / "run-meta.yaml").write_text(f"run_id: {dir_name}\n")

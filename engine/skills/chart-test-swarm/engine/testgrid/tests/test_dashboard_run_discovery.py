@@ -96,9 +96,7 @@ class TestNonRunPrefixedDirDiscovered:
         (d / "run-meta.yaml").write_text("run_id:\n")
 
         runs = list_runs(reports)
-        assert "empty-run-id" not in runs, (
-            "Directories with empty run_id must be skipped"
-        )
+        assert "empty-run-id" not in runs, "Directories with empty run_id must be skipped"
 
     def test_dir_with_corrupt_yaml_skipped(self, tmp_path: Path) -> None:
         """A dir with a corrupt/unparseable run-meta.yaml is skipped without crash."""
