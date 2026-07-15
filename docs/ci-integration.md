@@ -59,9 +59,18 @@ Two patterns:
 
 ## When to fail the CI job
 
-Default: a `FAIL` status on any scenario fails the workflow.
+Default: any `FAIL` or `PARTIAL` scenario fails the workflow. `aggregate.sh`
+enforces this — it writes the CSV and dashboard, then exits non-zero if any
+scenario failed. The shipped `github-pr.yml` / `github-nightly.yml` templates
+end on `aggregate.sh`, so a failing scenario fails the job with no extra wiring.
 
-To bypass for a transitional `customer-replica` scenario you haven't
-fixed yet, tag the scenario `expected-fail` and adjust the aggregate
-step's exit code policy in the workflow (TODO: aggregate currently
-exits 0 regardless; this is a Phase 2 polish item).
+To exempt a transitional scenario you haven't fixed yet, tag it `expected-fail`
+in its scenario YAML:
+
+```yaml
+tags: [pr-subset, expected-fail]
+```
+
+A `FAIL` on an `expected-fail` scenario is reported but does not fail the job;
+any other `FAIL`/`PARTIAL` still does. To see every result without failing the
+job (report-only), set `CTS_AGGREGATE_STRICT=0` in the aggregate step's env.
