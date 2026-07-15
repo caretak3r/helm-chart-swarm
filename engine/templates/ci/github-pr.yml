@@ -16,6 +16,9 @@ jobs:
     env:
       ENGINE_REPO: yourorg/chart-test-swarm
       ENGINE_REF:  v0.1.0
+      # One explicit reports root, shared by dispatch/aggregate/dashboard and the
+      # upload step below. Absolute so it is stable regardless of working-directory.
+      REPORTS_DIR: ${{ github.workspace }}/reports
     steps:
       - name: Checkout consumer chart
         uses: actions/checkout@v4
@@ -36,7 +39,7 @@ jobs:
           curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
       - name: Install uv (for dashboard build)
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
 
       - name: Preflight
         working-directory: engine
@@ -49,20 +52,12 @@ jobs:
           SUITE:      pr-subset
           NUM_AGENTS: 1                       # PR runs serialize for cost
         run: |
-          # In CI, replace the manual "spawn agents" step with a single
-          # serial executor that runs every scenario in the suite.
           RUN_ID="run-$(date +%Y%m%d-%H%M%S)"
-          bash engine/scripts/dispatch-swarm.sh "$PROJECT" "$SUITE" "$NUM_AGENTS" "$RUN_ID"
-          # Single-agent path: run each scenario the dispatcher assigned, write result.yaml
-          for f in $(find consumer/chart-test/scenarios -type f \( -name '*.yaml' -o -name '*.yml' \)); do
-            sid=$(yq '.id' "$f")
-            tags=$(yq -o=json '.tags // []' "$f")
-            if echo "$tags" | jq -e 'index("pr-subset")' >/dev/null; then
-              bash engine/scripts/run-scenario.sh "$f" || true
-            fi
-          done
-          # Synthesize a per-agent result.yaml from the per-scenario reports
-          # (CI shim — production path uses real agents). See docs/ci-integration.md.
+          # --run executes every matched scenario on fresh kind clusters and writes
+          # per-scenario result.yaml under $REPORTS_DIR/$RUN_ID/. No LLM agents in CI.
+          bash engine/scripts/dispatch-swarm.sh "$PROJECT" "$SUITE" "$NUM_AGENTS" "$RUN_ID" --run
+          # Roll results into scenario-matrix.csv + dashboard. Strict by default:
+          # any FAIL/PARTIAL not tagged 'expected-fail' exits non-zero and fails the job.
           bash engine/scripts/aggregate.sh "$RUN_ID"
           echo "RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
 
@@ -72,5 +67,5 @@ jobs:
         with:
           name: chart-test-swarm-${{ env.RUN_ID }}
           path: |
-            engine/reports/${{ env.RUN_ID }}
-            engine/engine/testgrid/dist/${{ env.RUN_ID }}
+            reports/${{ env.RUN_ID }}
+            reports/dist

@@ -66,15 +66,23 @@ if [ -f "$SNAPSHOT" ]; then
   done < <(yq '.scenarios[].id' "$SNAPSHOT")
 fi
 
-# Collect agent results into a single JSON stream:
+# Collect results into a single JSON stream:
 #   { scenario_id, status, agent, asserts_passed, asserts_total, fail_stage, notes }
+# Two producers write here: the LLM swarm (agent-N/result.yaml) and direct
+# `dispatch-swarm.sh --run` / `run-scenario.sh` execution (scenario-<id>-<ts>/
+# result.yaml, one scenario per file). Collect both so CI — which has no agents —
+# is not silently empty.
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 : > "$TMP"
 
-for rfile in "$RUN_DIR"/agent-*/result.yaml; do
+for rfile in "$RUN_DIR"/agent-*/result.yaml "$RUN_DIR"/scenario-*/result.yaml; do
   [ -f "$rfile" ] || continue
-  agent_n=$(basename "$(dirname "$rfile")" | sed 's/agent-//')
+  _dname=$(basename "$(dirname "$rfile")")
+  case "$_dname" in
+    agent-*) agent_n="${_dname#agent-}" ;;   # swarm: agent index
+    *)       agent_n=0 ;;                     # direct --run execution: no agent
+  esac
 
   # Two shapes: {agent, results: [...]} OR a single-scenario doc
   has_results=$(yq '.results | length' "$rfile" 2>/dev/null || echo 0)
@@ -253,3 +261,41 @@ echo "==> Wrote $LESSONS"
 bash "$SCRIPT_DIR/build-dashboard.sh" "$RUN_ID" || true
 
 echo "==> Aggregate complete: $RUN_DIR/"
+
+# ---- Strict exit policy ----
+# Contract (docs/ci-integration.md): a FAIL/PARTIAL scenario fails the workflow.
+# A scenario tagged 'expected-fail' (or 'expected: fail') in the snapshot is
+# exempt. Report-only mode: CTS_AGGREGATE_STRICT=0 (always exit 0). Default strict.
+STRICT="${CTS_AGGREGATE_STRICT:-1}"
+
+# Expected-fail scenario IDs from the snapshot (tags contains 'expected-fail',
+# or an explicit 'expected: fail' field).
+EXPECTED_FAIL=$(
+  [ -f "$SNAPSHOT" ] && yq -r '
+    .scenarios[]
+    | select(((.tags // []) | contains(["expected-fail"])) or (.expected == "fail"))
+    | .id
+  ' "$SNAPSHOT" 2>/dev/null | sort -u
+)
+
+# FAIL/PARTIAL scenario IDs: status column (2) is a fixed enum, never quoted, so
+# a comma-split on the first two fields is safe even with pathological notes.
+_FAILED=$(awk -F, 'NR>1 && ($2=="FAIL" || $2=="PARTIAL") {print $1}' "$CSV" | sort -u)
+
+# Drop any that are expected-fail-tagged.
+if [ -n "$EXPECTED_FAIL" ]; then
+  UNEXPECTED=$(comm -23 <(printf '%s\n' "$_FAILED") <(printf '%s\n' "$EXPECTED_FAIL"))
+else
+  UNEXPECTED="$_FAILED"
+fi
+
+if [ -n "$UNEXPECTED" ]; then
+  n=$(printf '%s\n' "$UNEXPECTED" | grep -c .)
+  echo "==> $n unexpected FAIL/PARTIAL (not expected-fail-tagged):" >&2
+  printf '%s\n' "$UNEXPECTED" | sed 's/^/      /' >&2
+  if [ "$STRICT" != "0" ]; then
+    echo "==> aggregate: strict mode — failing the job (set CTS_AGGREGATE_STRICT=0 to report-only)" >&2
+    exit 1
+  fi
+  echo "==> aggregate: report-only mode (CTS_AGGREGATE_STRICT=0) — not failing" >&2
+fi

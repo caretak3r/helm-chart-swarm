@@ -14,6 +14,9 @@ jobs:
     env:
       ENGINE_REPO: yourorg/chart-test-swarm
       ENGINE_REF:  v0.1.0
+      # One explicit reports root, shared by dispatch/aggregate/dashboard, the
+      # gh-pages publish, and the upload step. Absolute for working-directory safety.
+      REPORTS_DIR: ${{ github.workspace }}/reports
     steps:
       - name: Checkout consumer chart
         uses: actions/checkout@v4
@@ -34,7 +37,7 @@ jobs:
           curl -L  https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
           curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v5
 
       - name: Preflight
         working-directory: engine
@@ -48,22 +51,20 @@ jobs:
           NUM_AGENTS: 4
         run: |
           RUN_ID="run-$(date +%Y%m%d-%H%M%S)"
-          bash engine/scripts/dispatch-swarm.sh "$PROJECT" "$SUITE" "$NUM_AGENTS" "$RUN_ID"
-          for f in $(find consumer/chart-test/scenarios -type f \( -name '*.yaml' -o -name '*.yml' \)); do
-            tags=$(yq -o=json '.tags // []' "$f")
-            if echo "$tags" | jq -e 'index("nightly")' >/dev/null; then
-              bash engine/scripts/run-scenario.sh "$f" || true
-            fi
-          done
+          # --run executes every matched scenario on fresh kind clusters and writes
+          # per-scenario result.yaml under $REPORTS_DIR/$RUN_ID/. No LLM agents in CI.
+          bash engine/scripts/dispatch-swarm.sh "$PROJECT" "$SUITE" "$NUM_AGENTS" "$RUN_ID" --run
+          # Roll results into scenario-matrix.csv + dashboard. Strict by default:
+          # any FAIL/PARTIAL not tagged 'expected-fail' exits non-zero and fails the job.
           bash engine/scripts/aggregate.sh "$RUN_ID"
           echo "RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
 
       - name: Publish dashboard to gh-pages
         if: success()
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir:  engine/engine/testgrid/dist
+          publish_dir:  reports/dist
           keep_files:   true
 
       - name: Upload reports
@@ -71,4 +72,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chart-test-swarm-${{ env.RUN_ID }}
-          path: engine/reports/${{ env.RUN_ID }}
+          path: reports/${{ env.RUN_ID }}

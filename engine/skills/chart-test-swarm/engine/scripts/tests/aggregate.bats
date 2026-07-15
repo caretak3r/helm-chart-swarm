@@ -65,7 +65,8 @@ results:
         notes: "crash loop on container y"
 YAML
 
-  REPORTS_DIR="$REPORTS_DIR" run bash "$AGGREGATE" "run-test-001"
+  # Report-only: this test exercises CSV round-trip, not the exit policy.
+  CTS_AGGREGATE_STRICT=0 REPORTS_DIR="$REPORTS_DIR" run bash "$AGGREGATE" "run-test-001"
   echo "exit=$status" >&2
   echo "output=$output" >&2
 
@@ -194,7 +195,8 @@ results:
         notes: "CrashLoopBackOff"
 YAML
 
-  REPORTS_DIR="$REPORTS_DIR" run bash "$AGGREGATE" "run-test-001"
+  # Report-only: this test exercises multi-result handling, not the exit policy.
+  CTS_AGGREGATE_STRICT=0 REPORTS_DIR="$REPORTS_DIR" run bash "$AGGREGATE" "run-test-001"
   echo "exit=$status" >&2
   [ "$status" -eq 0 ]
 
@@ -216,4 +218,105 @@ assert rows['scenario-x']['status'] == 'PASS', f'Expected PASS, got {rows[\"scen
 assert rows['scenario-y']['status'] == 'FAIL', f'Expected FAIL, got {rows[\"scenario-y\"][\"status\"]}'
 print('OK')
 " 2>&1
+}
+
+# ---------------------------------------------------------------------------
+# Strict exit policy: an unexpected FAIL fails the job (docs/ci-integration.md)
+# ---------------------------------------------------------------------------
+@test "aggregate.sh strict default: unexpected FAIL exits non-zero" {
+  write_snapshot "scenario-fail"
+  cat > "$RUN_DIR/agent-1/result.yaml" <<'YAML'
+agent: 1
+results:
+  - scenario_id: scenario-fail
+    status: FAIL
+    fail_stage: asserts
+    asserts:
+      - type: pods-ready
+        status: FAIL
+YAML
+
+  REPORTS_DIR="$REPORTS_DIR" run bash "$AGGREGATE" "run-test-001"
+  echo "exit=$status" >&2
+  echo "output=$output" >&2
+  [ "$status" -ne 0 ]
+  # CSV is still written before the strict check fires
+  [ -f "$RUN_DIR/scenario-matrix.csv" ]
+}
+
+# ---------------------------------------------------------------------------
+# expected-fail tag exempts a FAIL from the strict policy
+# ---------------------------------------------------------------------------
+@test "aggregate.sh expected-fail tag: tagged FAIL exits 0" {
+  cat > "$RUN_DIR/scenarios-snapshot.yaml" <<'YAML'
+scenarios:
+  - id: scenario-xfail
+    name: "Transitional scenario"
+    tags: [pr-subset, expected-fail]
+    mechanisms: [test]
+    asserts:
+      - type: pods-ready
+YAML
+  cat > "$RUN_DIR/agent-1/result.yaml" <<'YAML'
+agent: 1
+results:
+  - scenario_id: scenario-xfail
+    status: FAIL
+    fail_stage: asserts
+    asserts:
+      - type: pods-ready
+        status: FAIL
+YAML
+
+  REPORTS_DIR="$REPORTS_DIR" run bash "$AGGREGATE" "run-test-001"
+  echo "exit=$status" >&2
+  echo "output=$output" >&2
+  [ "$status" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# All-PASS run exits 0 under strict default
+# ---------------------------------------------------------------------------
+@test "aggregate.sh strict default: all-PASS exits 0" {
+  write_snapshot "scenario-pass"
+  cat > "$RUN_DIR/agent-1/result.yaml" <<'YAML'
+agent: 1
+results:
+  - scenario_id: scenario-pass
+    status: PASS
+    asserts:
+      - type: pods-ready
+        status: PASS
+YAML
+
+  REPORTS_DIR="$REPORTS_DIR" run bash "$AGGREGATE" "run-test-001"
+  echo "exit=$status" >&2
+  [ "$status" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# Collects direct-execution output: scenario-<id>-<ts>/result.yaml (no agents).
+# This is the path CI takes via `dispatch-swarm.sh --run` / `run-scenario.sh`.
+# ---------------------------------------------------------------------------
+@test "aggregate.sh collects scenario-*/result.yaml from direct --run execution" {
+  write_snapshot "scenario-direct"
+  rmdir "$RUN_DIR/agent-1" 2>/dev/null || true   # no agents in the --run path
+  mkdir -p "$RUN_DIR/scenario-direct-20260101-000000"
+  cat > "$RUN_DIR/scenario-direct-20260101-000000/result.yaml" <<'YAML'
+scenario_id: scenario-direct
+status: PASS
+asserts:
+  - type: pods-ready
+    status: PASS
+YAML
+
+  REPORTS_DIR="$REPORTS_DIR" run bash "$AGGREGATE" "run-test-001"
+  echo "exit=$status" >&2
+  echo "output=$output" >&2
+  [ "$status" -eq 0 ]
+
+  # scenario-direct must appear as PASS, not UNTESTED
+  row=$(awk -F, '$1=="scenario-direct" {print $2}' "$RUN_DIR/scenario-matrix.csv")
+  echo "row status=$row" >&2
+  [ "$row" = "PASS" ]
 }
