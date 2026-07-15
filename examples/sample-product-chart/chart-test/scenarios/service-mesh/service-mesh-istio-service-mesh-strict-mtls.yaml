@@ -2,12 +2,14 @@
 id: service-mesh-istio-service-mesh-strict-mtls
 name: "Istio Service Mesh — strict mTLS"
 description: >-
-  Installs istio/base + istio/istiod, enables mesh injection, deploys the product chart with scope.enabled=true, creates a PeerAuthentication with mode=STRICT in the product
-  namespace, and verifies: (a) plain HTTP from a non-mesh pod is rejected, (b) in-mesh probe pod still reaches the product Service with 200 via auto-upgraded mTLS.
+  Installs istio/base + istio/istiod, enables mesh injection, deploys the product chart with
+  scope.enabled=true, creates a PeerAuthentication with mode=STRICT in the product namespace, and
+  verifies: (a) plain HTTP from a non-mesh pod is rejected, (b) in-mesh probe pod still reaches
+  the product Service with 200 via auto-upgraded mTLS.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: istio/base
@@ -36,6 +38,7 @@ cluster:
               memory: "384Mi"
       wait: pods-ready
       wait_timeout: 5m
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
@@ -61,6 +64,11 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/istio-strict-mtls.sh
+  - type: mesh-mtls-enforced
+    namespace: sample
+    port: 80
+    mesh_type: "istio"
+    control_namespace: "sample-plain"
 tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'mesh:istio-service-mesh']
 category: service-mesh

@@ -305,7 +305,7 @@ class TestGettingStartedPrerequisitesSection:
         # Should have two occurrences of "Kubernetes (kind/k3d)" - one for kind, one for k3d
         display_name_count = html.count("Kubernetes (kind/k3d)")
         assert display_name_count >= 2, (
-            "Expected at least 2 occurrences of 'Kubernetes (kind/k3d)', "
+            f"Expected at least 2 occurrences of 'Kubernetes (kind/k3d)', "
             f"found {display_name_count}"
         )
 

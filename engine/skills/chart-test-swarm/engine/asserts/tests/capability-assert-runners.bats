@@ -142,11 +142,11 @@ asserts:
     namespace: sample
     source: rendered
     labels:
-      app.kubernetes.io/instance: test-release
+      cost-center: astro
     kinds:
       - Service
 EOF
-  # Service in sample chart has no labels, so this should FAIL
+  # extraLabels is empty by default, so the Service lacks cost-center and this should FAIL
   run_assert "labels-present.sh" "$s"
   [ $status -ne 0 ]
   [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"missing"* ]]
@@ -454,10 +454,10 @@ EOF
   check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
 }
 
-@test "schema rejects unknown assertion type" {
-  local s="$TEST_TMPDIR/schema-bad-type.yaml"
+@test "schema allows unknown assertion type (consumer-custom passthrough)" {
+  local s="$TEST_TMPDIR/schema-custom-type.yaml"
   cat > "$s" <<'EOF'
-id: schema-bad-type
+id: schema-custom-type
 cluster:
   provider: kind
 product:
@@ -468,8 +468,10 @@ asserts:
   - type: unknown-type
     namespace: sample
 EOF
+  # Unknown types validate via the consumer-custom catch-all branch;
+  # undeclared types are rejected later by registry/depth enforcement in sweep.
   run check-jsonschema --schemafile "$SCHEMA_FILE" "$s"
-  [ $status -ne 0 ]
+  [ $status -eq 0 ]
 }
 
 @test "schema rejects labels-present without required namespace" {
@@ -833,7 +835,7 @@ EOF
   [[ "$output" == *"PASS"* ]]
 }
 
-@test "security-context: FAIL (expect_present=true) when chart lacks securityContext knobs" {
+@test "security-context: FAIL (expect_present=true) when rendered output lacks securityContext" {
   local s="$TEST_TMPDIR/secctx-on-fail.yaml"
   cat > "$s" <<'EOF'
 id: secctx-on-fail
@@ -844,9 +846,6 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    podSecurityContext.runAsNonRoot: true
-    securityContext.readOnlyRootFilesystem: true
 asserts:
   - type: security-context
     namespace: sample
@@ -857,7 +856,7 @@ asserts:
     containerSecurityContext:
       readOnlyRootFilesystem: true
 EOF
-  # Chart has no securityContext templates, so setting values has no effect
+  # securityContext values are unset by default, so rendered output lacks them
   run_assert "security-context.sh" "$s"
   [ $status -ne 0 ]
   [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"missing"* ]]
@@ -933,6 +932,60 @@ EOF
   [ -x "$ASSERTS_DIR/security-context.sh" ]
 }
 
+@test "security-context: PASS with dotted-key podSecurityContext (seccompProfile.type)" {
+  # Regression: yq path expressions for dotted keys (e.g. seccompProfile.type) require
+  # a leading dot after a pipe — without it, yq v4 emits a lexer error and the value
+  # silently appears as __ABSENT__.  This test proves the fix.
+  local s="$TEST_TMPDIR/secctx-dotted-pod.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-dotted-pod
+name: security-context dotted pod key PASS
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  values: chart-test/fixtures/capability/security-context-on-values.yaml
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+    expect_present: true
+    podSecurityContext:
+      seccompProfile.type: RuntimeDefault
+EOF
+  run_assert "security-context.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
+@test "security-context: PASS with dotted-key containerSecurityContext (capabilities.drop)" {
+  # Regression: same yq leading-dot fix for container-level dotted keys.
+  local s="$TEST_TMPDIR/secctx-dotted-ctr.yaml"
+  cat > "$s" <<'EOF'
+id: secctx-dotted-ctr
+name: security-context dotted container key PASS
+cluster:
+  provider: kind
+product:
+  chart: chart
+  release: test-release
+  namespace: sample
+  values: chart-test/fixtures/capability/security-context-on-values.yaml
+asserts:
+  - type: security-context
+    namespace: sample
+    source: rendered
+    expect_present: true
+    containerSecurityContext:
+      capabilities.drop: ALL
+EOF
+  run_assert "security-context.sh" "$s"
+  [ $status -eq 0 ]
+  [[ "$output" == *"PASS"* ]]
+}
+
 # ═══════════════════════════════════════════════════════════════════════
 # network-policy
 # ═══════════════════════════════════════════════════════════════════════
@@ -961,7 +1014,7 @@ EOF
   [[ "$output" == *"PASS"* ]]
 }
 
-@test "network-policy: FAIL (expect_present=true) when chart lacks NetworkPolicy template" {
+@test "network-policy: FAIL (expect_present=true) when rendered output lacks NetworkPolicy" {
   local s="$TEST_TMPDIR/netpol-on-fail.yaml"
   cat > "$s" <<'EOF'
 id: netpol-on-fail
@@ -972,15 +1025,13 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    networkPolicy.enabled: true
 asserts:
   - type: network-policy
     namespace: sample
     source: rendered
     expect_present: true
 EOF
-  # Chart has no NetworkPolicy template, so setting networkPolicy.enabled has no effect
+  # networkPolicy.enabled defaults to false, so no NetworkPolicy is rendered
   run_assert "network-policy.sh" "$s"
   [ $status -ne 0 ]
   [[ "$output" == *"FAIL"* ]] || [[ "$output" == *"expected NetworkPolicy"* ]]
@@ -1056,7 +1107,7 @@ EOF
 # resources-present
 # ═══════════════════════════════════════════════════════════════════════
 
-@test "resources-present: FAIL (expect_present=true) when chart lacks resources on skywatcher" {
+@test "resources-present: FAIL (expect_present=true) when rendered output lacks resources on skywatcher" {
   local s="$TEST_TMPDIR/res-fail.yaml"
   cat > "$s" <<'EOF'
 id: res-fail
@@ -1067,11 +1118,6 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    resources.requests.cpu: 100m
-    resources.requests.memory: 128Mi
-    resources.limits.cpu: 500m
-    resources.limits.memory: 256Mi
 asserts:
   - type: resources-present
     namespace: sample
@@ -1187,7 +1233,7 @@ EOF
 # imagepullsecrets-present
 # ═══════════════════════════════════════════════════════════════════════
 
-@test "imagepullsecrets-present: FAIL (expect_present=true) when chart lacks imagePullSecrets" {
+@test "imagepullsecrets-present: FAIL (expect_present=true) when rendered output lacks imagePullSecrets" {
   local s="$TEST_TMPDIR/ips-fail.yaml"
   cat > "$s" <<'EOF'
 id: ips-fail
@@ -1198,8 +1244,6 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    imagePullSecrets[0].name: regcred
 asserts:
   - type: imagepullsecrets-present
     namespace: sample
@@ -1438,7 +1482,7 @@ EOF
 # scheduling-present
 # ═══════════════════════════════════════════════════════════════════════
 
-@test "scheduling-present: FAIL (expect_present=true) when chart lacks nodeSelector knob" {
+@test "scheduling-present: FAIL (expect_present=true) when rendered output lacks nodeSelector" {
   local s="$TEST_TMPDIR/sched-ns-on.yaml"
   cat > "$s" <<'EOF'
 id: sched-ns-on
@@ -1449,8 +1493,6 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    nodeSelector.disktype: ssd
 asserts:
   - type: scheduling-present
     namespace: sample
@@ -1494,7 +1536,7 @@ EOF
   [[ "$output" == *"PASS"* ]]
 }
 
-@test "scheduling-present: FAIL (expect_present=true) when chart lacks tolerations knob" {
+@test "scheduling-present: FAIL (expect_present=true) when rendered output lacks tolerations" {
   local s="$TEST_TMPDIR/sched-tol-on.yaml"
   cat > "$s" <<'EOF'
 id: sched-tol-on
@@ -1505,11 +1547,6 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    tolerations[0].key: dedicated
-    tolerations[0].operator: Equal
-    tolerations[0].value: gpu
-    tolerations[0].effect: NoSchedule
 asserts:
   - type: scheduling-present
     namespace: sample
@@ -1530,7 +1567,7 @@ EOF
   [[ "$output" == *"missing tolerations"* ]]
 }
 
-@test "scheduling-present: FAIL (expect_present=true) when chart lacks affinity knob" {
+@test "scheduling-present: FAIL (expect_present=true) when rendered output lacks affinity" {
   local s="$TEST_TMPDIR/sched-aff-on.yaml"
   cat > "$s" <<'EOF'
 id: sched-aff-on
@@ -1541,8 +1578,6 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    affinity.nodeAffinity: dummy
 asserts:
   - type: scheduling-present
     namespace: sample
@@ -1560,7 +1595,7 @@ EOF
   [[ "$output" == *"missing affinity"* ]]
 }
 
-@test "scheduling-present: FAIL (expect_present=true) when chart lacks topologySpreadConstraints knob" {
+@test "scheduling-present: FAIL (expect_present=true) when rendered output lacks topologySpreadConstraints" {
   local s="$TEST_TMPDIR/sched-tsc-on.yaml"
   cat > "$s" <<'EOF'
 id: sched-tsc-on
@@ -1571,10 +1606,6 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    topologySpreadConstraints[0].maxSkew: 1
-    topologySpreadConstraints[0].topologyKey: topology.kubernetes.io/zone
-    topologySpreadConstraints[0].whenUnsatisfiable: DoNotSchedule
 asserts:
   - type: scheduling-present
     namespace: sample
@@ -1667,7 +1698,7 @@ EOF
 # priority-class-present
 # ═══════════════════════════════════════════════════════════════════════
 
-@test "priority-class-present: FAIL (expect_present=true) when chart lacks priorityClassName knob" {
+@test "priority-class-present: FAIL (expect_present=true) when rendered output lacks priorityClassName" {
   local s="$TEST_TMPDIR/pc-on.yaml"
   cat > "$s" <<'EOF'
 id: pc-on
@@ -1678,8 +1709,6 @@ product:
   chart: chart
   release: test-release
   namespace: sample
-  set:
-    priorityClassName: high-priority
 asserts:
   - type: priority-class-present
     namespace: sample

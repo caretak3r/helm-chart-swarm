@@ -30,6 +30,11 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/cni/cilium-network-policy.sh
+  - type: network-policy-enforced
+    namespace: sample
+    port: 80
+    allowed_label: "access=allowed"
+    expected_status: 200
 tags: [nightly]
 mechanisms: ['addon:cilium']
 category: cni

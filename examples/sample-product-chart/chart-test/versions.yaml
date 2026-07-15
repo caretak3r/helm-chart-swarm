@@ -2,6 +2,9 @@
 # Values here take precedence over engine/defaults/versions.yaml.
 # Engine defaults fill gaps for any keys not specified here.
 
+kubernetes:
+  kind: "v1.36.1"
+
 cni:
   cilium:
     chart: "cilium"

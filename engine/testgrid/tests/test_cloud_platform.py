@@ -249,8 +249,8 @@ class TestCloudStatusRank:
     """Validate STATUS_RANK includes AUTHORED in correct position."""
 
     def test_authored_between_untested_and_pass(self) -> None:
-        """STATUS_RANK ordering per VAL-DASH-022:
-        FAIL(0) < PARTIAL(1) < UNTESTED(2) < INCONCLUSIVE(3) < AUTHORED(4) < PASS(5)."""
+        """STATUS_RANK ordering: FAIL(0) < PARTIAL(1) < UNTESTED(2)
+        < INCONCLUSIVE(3) < INTERRUPTED(4) < SKIP(5) < AUTHORED(6) < PASS(7)."""
         from testgrid.collect import STATUS_RANK
 
         assert "AUTHORED" in STATUS_RANK, "STATUS_RANK missing AUTHORED key"
@@ -262,7 +262,7 @@ class TestCloudStatusRank:
 
     def test_authored_rollup_below_pass(self) -> None:
         """When rolling up AUTHORED + PASS scenarios, the worst is AUTHORED
-        (AUTHORED rank 4 < PASS rank 5)."""
+        (AUTHORED rank 6 < PASS rank 7)."""
         from testgrid.collect import STATUS_RANK, Scenario
 
         scenarios = [
@@ -277,7 +277,7 @@ class TestCloudStatusRank:
 
     def test_authored_rollup_above_fail(self) -> None:
         """When rolling up AUTHORED + FAIL scenarios, the worst is FAIL
-        (FAIL rank 0 < AUTHORED rank 4)."""
+        (FAIL rank 0 < AUTHORED rank 6)."""
         from testgrid.collect import STATUS_RANK, Scenario
 
         scenarios = [

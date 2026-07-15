@@ -45,11 +45,11 @@ echo "Backend cert subject: ${BACKEND_SUBJECT}"
 
 echo "==> Probing HTTPS through Traefik (expect 200, backend cert)"
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe-tls --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   sh -c "curl -sk -o /dev/null -w '%{http_code}' --max-time 15 \
     --resolve '${HOST}:8443:${TRAEFIK_IP}' \
     'https://${HOST}:8443/'" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTPS response: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
@@ -61,7 +61,7 @@ fi
 
 echo "==> Verifying served cert matches backend cert (not Traefik default)"
 RAW_SERVED_SUBJECT=$(kctl -n "${NS}" run ct-probe-cert --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   sh -c "curl -skv --resolve '${HOST}:8443:${TRAEFIK_IP}' 'https://${HOST}:8443/' -o /dev/null 2>&1 | grep 'subject:' | head -1" 2>/dev/null || echo "subject: unknown")
 SERVED_SUBJECT=$(echo "$RAW_SERVED_SUBJECT" | tail -1)
 

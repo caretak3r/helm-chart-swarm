@@ -2,24 +2,19 @@
 id: scheme-https-only
 name: "Capability: HTTPS-only scheme enforcement (ON)"
 description: >-
-  Renders the product chart with TLS enabled (tls.enabled=true) and
-  asserts no plain-HTTP Service port, container port, probe, or Ingress
-  backend is present. The sample chart does NOT support suppressing the
-  HTTP port — when TLS is enabled it merely ADDS an HTTPS port (443)
-  alongside the always-present HTTP port 80 on the Service, containerPort
-  80 on the Deployment, probes targeting port 80, and the Ingress backend
-  pointing at service.port (80). This scenario is EXPECTED to FAIL (honest
-  red gap) documenting that the chart lacks an HTTPS-only / http-disable
-  knob. A TLS secret fixture is preinstalled so the chart can deploy with
-  tls.enabled=true.
+  Renders the product chart with TLS enabled (tls.enabled=true) and scheme=https-only, and asserts
+  no plain-HTTP Service port, container port, or probe is present. A TLS secret fixture is
+  preinstalled so the chart can deploy with tls.enabled=true. Ingress is disabled since the scheme
+  is https-only (service handles TLS directly).
 labels: {customer: enterprise, profile: compliance}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/manual-tls/manual-tls-basic-secret.yaml
       namespace: sample
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
@@ -27,8 +22,7 @@ product:
   set:
     tls.enabled: true
     tls.secretName: manual-tls-basic
-    ingress.enabled: true
-    ingress.host: sample.local
+    scheme: https-only
 asserts:
   - type: scheme-enforced
     namespace: sample

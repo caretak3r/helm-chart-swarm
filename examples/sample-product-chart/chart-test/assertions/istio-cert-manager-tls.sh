@@ -180,7 +180,7 @@ echo "==> Testing HTTPS through Istio Gateway with TLS"
 # Create a dedicated long-running pod for curl tests (avoids sidecar attach timeout)
 CURL_POD="ct-gw-tls-probe"
 kctl -n "${NS}" delete pod "${CURL_POD}" --ignore-not-found --grace-period=0 --force 2>/dev/null || true
-kctl -n "${NS}" run "${CURL_POD}" --restart=Never --image=quay.io/curl/curl:8.6.0 -- sleep 300
+kctl -n "${NS}" run "${CURL_POD}" --restart=Never --image=quay.io/curl/curl:8.20.0 -- sleep 300
 kctl -n "${NS}" wait pod "${CURL_POD}" --for=condition=Ready --timeout=2m
 echo "PASS: test pod ${CURL_POD} ready"
 
@@ -200,7 +200,7 @@ RAW_HTTPS_CODE=$(kctl -n "${NS}" exec "${CURL_POD}" -- \
     --cacert /tmp/ca.crt \
     --resolve '${GW_HOST}:${GW_PORT}:${GW_SVC_IP}' \
     'https://${GW_HOST}:${GW_PORT}/'" 2>/dev/null || echo "000")
-HTTPS_CODE=$(echo "${RAW_HTTPS_CODE}" | grep -oE '[0-9]{3}' | tail -1)
+HTTPS_CODE=$(echo "${RAW_HTTPS_CODE}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTPS response through Gateway: ${HTTPS_CODE}"
 if [ "${HTTPS_CODE}" = "200" ]; then

@@ -10,7 +10,7 @@ set -euo pipefail
 NS="${NAMESPACE:-sample}"
 RELEASE="${RELEASE:-sample}"
 SVC_PORT=80
-CURL_IMAGE="quay.io/curl/curl:8.6.0"
+CURL_IMAGE="quay.io/curl/curl:8.20.0"
 TIMEOUT=15
 
 kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }
@@ -32,7 +32,7 @@ ALLOWED_RAW=$(kctl -n "${NS}" run ct-cnp-allowed --rm -i --restart=Never --quiet
   --labels="access=allowed" -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time "${TIMEOUT}" \
     "http://${SVC_IP}:${SVC_PORT}/" 2>/dev/null || echo "000")
-ALLOWED_CODE=$(echo "${ALLOWED_RAW}" | grep -oE '[0-9]{3}' | tail -1)
+ALLOWED_CODE=$(echo "${ALLOWED_RAW}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "ALLOWED client HTTP code: ${ALLOWED_CODE}"
 if [ "${ALLOWED_CODE}" = "200" ]; then
@@ -51,7 +51,7 @@ DENIED_RAW=$(kctl -n "${NS}" run ct-cnp-denied --rm -i --restart=Never --quiet \
   -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time "${TIMEOUT}" \
     "http://${SVC_IP}:${SVC_PORT}/" 2>/dev/null || echo "000")
-DENIED_CODE=$(echo "${DENIED_RAW}" | grep -oE '[0-9]{3}' | tail -1)
+DENIED_CODE=$(echo "${DENIED_RAW}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "DENIED client HTTP code: ${DENIED_CODE}"
 

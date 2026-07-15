@@ -65,7 +65,7 @@ echo "==> Testing proxy injection with linkerd check --proxy (from outside the m
 kctl -n "${NS}" delete pod ct-linkerd-check --ignore-not-found --timeout=30s 2>/dev/null || true
 
 kctl -n "${NS}" run ct-linkerd-check --restart=Never \
-  --image=curlimages/curl:8.6.0 \
+  --image=quay.io/curl/curl:8.20.0 \
   --overrides='{"metadata":{"annotations":{"linkerd.io/inject":"disabled"}}}' -- \
   sh -c "
     echo '==> Downloading linkerd CLI...'
@@ -105,7 +105,7 @@ echo "==> Probing product Service from an in-mesh test pod"
 PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 
 kctl -n "${NS}" run ct-mesh-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   --overrides='{"metadata":{"annotations":{"linkerd.io/inject":"enabled"}}}' -- \
   sleep 300 2>/dev/null || true
 
@@ -120,7 +120,7 @@ echo "  Probe pod containers: ${PROBE_CONTAINERS}"
 RAW_HTTP_CODE=$(kctl -n "${NS}" exec ct-mesh-probe -c ct-mesh-probe -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response from in-mesh probe: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then

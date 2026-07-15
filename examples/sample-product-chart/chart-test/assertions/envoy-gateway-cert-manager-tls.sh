@@ -46,16 +46,17 @@ for i in $(seq 1 30); do
   sleep 6
 done
 
-echo "==> Waiting for Gateway listener https Programmed=True (5m max)"
+echo "==> Waiting for Gateway listener https Programmed=True (10m max)"
 # The HTTPS listener must have the TLS cert resolved before Programming
-for i in $(seq 1 50); do
+# Envoy Gateway proxy pod + Service creation + address assignment can take 8-10m on kind
+for i in $(seq 1 100); do
   programmed=$(kctl -n "${NS}" get gateway sample-gw -o jsonpath='{.status.listeners[?(@.name=="https")].conditions[?(@.type=="Programmed")].status}' 2>/dev/null || echo "")
   if [ "$programmed" = "True" ]; then
     echo "PASS: Gateway listener https Programmed=True"
     break
   fi
-  if [ "$i" -eq 50 ]; then
-    echo "FAIL: Gateway listener https not Programmed after 5m" >&2
+  if [ "$i" -eq 100 ]; then
+    echo "FAIL: Gateway listener https not Programmed after 10m" >&2
     kctl -n "${NS}" get gateway sample-gw -o yaml >&2
     exit 1
   fi
@@ -96,12 +97,12 @@ echo "==> Probing HTTPS backend via gateway (retry up to 2m)"
 HTTP_CODE="000"
 for attempt in $(seq 1 20); do
   RAW_HTTP_CODE=$(kctl -n "${NS}" run "ct-https-${attempt}" --rm -i --restart=Never --quiet \
-    --image=curlimages/curl:8.6.0 --timeout=30s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
     sh -c "echo '${CA_CRT_B64}' | base64 -d > /tmp/ca.crt && \
       curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt --max-time 15 \
         --resolve '${DOMAIN}:443:${GW_SVC_IP}' \
         'https://${DOMAIN}:443/'" 2>/dev/null) || true
-  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
   if [ "${HTTP_CODE}" = "200" ]; then
     echo "HTTPS response: ${HTTP_CODE} (attempt ${attempt})"
     break

@@ -13,7 +13,8 @@ description: >-
 labels: {customer: any, profile: gateway-api}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  helm_timeout: 10m
+  k8s_version: v1.36.1
   preinstall:
     # Istio base CRDs
     - kind: helm
@@ -83,7 +84,7 @@ product:
   release: sample
   namespace: sample
   set:
-    image.repository: "nginx"
+    image.repository: "public.ecr.aws/nginx/nginx"
     image.tag: "1.27-alpine"
     mesh.inject: "true"
 asserts:

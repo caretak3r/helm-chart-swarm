@@ -5,7 +5,7 @@ description: "Installs cert-manager, creates a self-signed ClusterIssuer, issues
 labels: {customer: any, profile: tls}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: jetstack/cert-manager
@@ -24,6 +24,7 @@ cluster:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/sample-tls-certificate.yaml
       namespace: sample
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
@@ -41,6 +42,12 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/cert-manager-self-signed.sh
+  - type: tls-cert-valid
+    namespace: sample
+    tls_secret: "sample-tls"
+    tls_host: "sample.sample.svc"
+    port: 443
+    expected_status: 200
 tags: [nightly]
 mechanisms: ['addon:cert-manager']
 category: certificates

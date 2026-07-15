@@ -15,7 +15,7 @@
       "fix_prompt": "# Fix Recommendation: c3fail-deliberate\n\n**Scenario:** `c3fail-deliberate`\n**Category:** schema-missing\n**Failure type:** helm-status-deployed\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nAssert 'helm-status-deployed': jq: parse error: Invalid numeric literal at line 1, column 6\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `c3fail-deliberate`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-9844d27b8bcc",
@@ -32,7 +32,7 @@
       "fix_prompt": "# Fix Recommendation: c3sig-slow\n\n**Scenario:** `c3sig-slow`\n**Category:** schema-missing\n**Failure type:** cluster-up\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: see examples/sample-product-chart/chart-test/reports/scenario-c3sig-slow-20260529-150454/artifacts/logs/cluster-up.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `c3sig-slow`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-7a114b2abd83",
@@ -49,7 +49,7 @@
       "fix_prompt": "# Fix Recommendation: ingress-controllers-contour-rate-limit\n\n**Scenario:** `ingress-controllers-contour-rate-limit`\n**Category:** schema-missing\n**Failure type:** smoke-script\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nAssert 'smoke-script': exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-rate-limit.sh (RELEASE=sample NAMESPACE=sample)\n==> Waiting for envoy pod Ready (3m max)\nerror: no matching resources found\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `ingress-controllers-contour-rate-limit`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-f67c9fb8c903",
@@ -69,7 +69,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-service-mesh-sidecar-injection\n\n**Scenario:** `service-mesh-istio-service-mesh-sidecar-injection`\n**Category:** schema-missing\n**Failure type:** smoke-script\n**Affected objects:** Pod, Service\n\n## Failure Detail\n\nAssert 'smoke-script': exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/istio-sidecar-injection.sh (RELEASE=sample NAMESPACE=sample)\n==> Labeling namespace sample for istio injection\nnamespace/sample labeled\n==> Restarting deployments to pick up sidecar injection\n  Restarting deployment/sample\ndeployment.apps/sample restarted\n  Waiting for rollout of deployment/sample to complete (3m max)\nWaiting for deployment \"sample\" rollout to finish: 1 old replicas are pending termination...\nWaiting for deployment \"sample\" rollout to finish: 1 old replicas are pending termination...\ndeployment \"sample\" successfully rolled out\nPASS: all deployments rolled out\n==> Waiting 5s for old pods to terminate\n==> Verifying istio-proxy sidecar injected into every product pod\n  Pod sample-cff994cb6-tjl8j (deploy/sample) containers (2): app istio-proxy\n    ✓ istio-proxy sidecar present\nPASS: every Running product pod has exactly 2 containers including istio-proxy\n==> Probing product Service over the mesh from an in-mesh pod\nHTTP response from in-mesh probe: 000\nFAIL: expected HTTP 200 from in-mesh probe, got 000\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-service-mesh-sidecar-injection`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-2561b8d75211",
@@ -150,7 +150,7 @@
       "fix_prompt": "# Fix Recommendation: labels-on\n\n**Scenario:** `labels-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `labels-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-65c6d6a35e23",
@@ -168,7 +168,7 @@
       "fix_prompt": "# Fix Recommendation: labels-on\n\n**Scenario:** `labels-on`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-bats-f17-3-containers-34814/scenario-labels-on-20260603-011404/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `labels-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-f2d4f9885aae",
@@ -185,7 +185,7 @@
       "fix_prompt": "# Fix Recommendation: labels-on\n\n**Scenario:** `labels-on`\n**Category:** schema-missing\n**Failure type:** cluster-up\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-bats-f17-3-no-cloud-48006/scenario-labels-on-20260603-011932/artifacts/logs/cluster-up.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `labels-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-a126a56713fb",
@@ -203,7 +203,7 @@
       "fix_prompt": "# Fix Recommendation: annotations-on\n\n**Scenario:** `annotations-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `annotations-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-0ae9539f4461",
@@ -221,7 +221,7 @@
       "fix_prompt": "# Fix Recommendation: rbac-on\n\n**Scenario:** `rbac-on`\n**Category:** chart-fix\n**Failure type:** rbac-objects\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nAssert 'rbac-objects': FAIL: expected RBAC objects but found 0\n\n## Suggested Fix\n\nAdd RBAC templates to `examples/sample-product-chart/chart/templates/`: `serviceaccount.yaml`, `role.yaml` (or `clusterrole.yaml`), and `rolebinding.yaml` (or `clusterrolebinding.yaml`). Gate them behind `rbac.create` and `serviceAccount.create` values in `examples/sample-product-chart/chart/values.yaml`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-e63adff8ecbf",
@@ -239,7 +239,7 @@
       "fix_prompt": "# Fix Recommendation: scheme-https-only\n\n**Scenario:** `scheme-https-only`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `scheme-https-only`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-8b99add371a8",
@@ -259,7 +259,7 @@
       "fix_prompt": "# Fix Recommendation: ingress-controllers-contour-basic-httpproxy\n\n**Scenario:** `ingress-controllers-contour-basic-httpproxy`\n**Category:** gap-probe\n**Failure type:** smoke-script\n**Affected objects:** HTTPProxy\n\n## Failure Detail\n\nAssert 'smoke-script': exec: /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/assertions/contour-basic.sh (RELEASE=sample NAMESPACE=sample)\n==> Waiting for envoy pod Ready (3m max)\npod/contour-envoy-vxvcj condition met\nPASS: envoy pod Ready\n==> Waiting for contour controller pod Ready (3m max)\npod/contour-contour-5847f7c7f9-vxwnb condition met\nPASS: contour controller pod Ready\n==> Waiting for product pod Ready (3m max)\npod/sample-69469cb4c6-wr6ns condition met\nPASS: product pods Ready\n==> Getting envoy pod IP (probe via pod IP)\nenvoy pod IP: 10.244.0.7\n==> Verifying HTTPProxy exists and status is valid\nHTTPProxy status: valid\nPASS: HTTPProxy status is valid\n==> Probing HTTP with Host header (expect 200) on envoy container port 8080\nHTTP response (with Host): 200\nPASS: HTTP 200 with Host header\n==> Probing HTTP without Host header (expect 404) on envoy container port 8080\nHTTP response (without Host): 404\nPASS: HTTP 404 without Host header (envoy default)\nPASS: Contour basic HTTPProxy integration verified\n==> GAP-PROBE: Checking if chart natively emits an HTTPProxy CRD\nGAP-PROBE: No HTTPProxy emitted by the chart template found\n  The HTTPProxy 'sample-basic' was created by the raw_manifest fixture,\n  not by a Helm-managed chart template. The chart has no contour\n  HTTPProxy template — this is an honest gap (red cell).\nFAIL: Chart does not natively emit Contour HTTPProxy CRD — honest gap\n\n## Suggested Fix\n\nThis is an **honest gap**: the chart does not natively emit the CRD or object required by scenario `ingress-controllers-contour-basic-httpproxy`. If you wish to close this gap, add chart template(s) to `examples/sample-product-chart/chart/templates/` that emit the required objects (e.g. HTTPProxy, ConstraintTemplate, or similar).\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-4fc14fbb402c",
@@ -280,7 +280,7 @@
       "fix_prompt": "# Fix Recommendation: policy-opa-gatekeeper-required-labels\n\n**Scenario:** `policy-opa-gatekeeper-required-labels`\n**Category:** gap-probe\n**Failure type:** smoke-script\n**Affected objects:** Deployment, Ingress\n\n## Failure Detail\n\nAssert 'smoke-script': PASS: compliant Deployment accepted\n==> Phase 3a: Non-compliant Ingress (missing app.kubernetes.io/name)\nError from server (Forbidden): error when creating \"/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-ingress-noncompliant.yaml\": admission webhook \"validation.gatekeeper.sh\" denied the request: [require-app-name-label] Missing required label(s): {\"app.kubernetes.io/name\"}\nPASS: non-compliant Ingress rejected (missing required label)\n==> Phase 3b: Compliant Ingress (has app.kubernetes.io/name)\ningress.networking.k8s.io/test-compliant-ingress created\nPASS: compliant Ingress applied\nNOTE: compliant Ingress may not yet have address (NGINX controller processes async)\n==> Phase 4: Webhook failure mode — verify Fail policy + outage behavior\nPASS: webhook gatekeeper-validating-webhook-configuration failurePolicy=Fail\nScaling gatekeeper-controller-manager to 0 in gatekeeper-system (original replicas: 3)...\ndeployment.apps/gatekeeper-controller-manager scaled\npod/gatekeeper-controller-manager-64bbbfbdbb-bqbvq condition met\npod/gatekeeper-controller-manager-64bbbfbdbb-fjpnx condition met\npod/gatekeeper-controller-manager-64bbbfbdbb-xn75d condition met\nPASS: gatekeeper controller scaled to 0\nAttempting kubectl apply with webhook unavailable...\nError from server (InternalError): error when creating \"/Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/fixtures/policy/test-deploy-compliant.yaml\": Internal error occurred: failed calling webhook \"validation.gatekeeper.sh\": failed to call webhook: Post \"https://gatekeeper-webhook-service.gatekeeper-system.svc:443/v1/admit?timeout=3s\": dial tcp 10.96.91.237:443: connect: connection refused\nPASS: admission correctly blocked during webhook outage (Fail policy)\nRestoring gatekeeper-controller-manager to 3 in gatekeeper-system...\ndeployment.apps/gatekeeper-controller-manager scaled\nWaiting for gatekeeper controller pods to be Ready again...\npod/gatekeeper-controller-manager-64bbbfbdbb-cbpzc condition met\npod/gatekeeper-controller-manager-64bbbfbdbb-g6j4d condition met\npod/gatekeeper-controller-manager-64bbbfbdbb-ttx4k condition met\nPASS: gatekeeper controller pods Ready\nWaiting for admission webhook to accept requests (180s max, may be slow on resource-constrained clusters)...\ndeployment.apps/test-compliant created (server dry run)\nPASS: admission restored after webhook recovery (attempt 1)\nPASS: OPA Gatekeeper required-labels + nginx-ingress cross-feature compose verified\n==> Phase 5: GAP-PROBE — Does the chart's own Ingress pass the required-labels constraint?\nRendering chart Ingress with ingress.enabled=true for gap-probe dry-run...\nGAP-PROBE: Chart Ingress does NOT have app.kubernetes.io/name label\n  The chart's Ingress template uses selectorLabels (just 'app: <release>')\n  instead of the full common labels (which include 'app.kubernetes.io/name').\n  This is an honest gap — the Ingress would be denied in a cluster with\n  the K8sRequiredLabels constraint active before chart installation.\nError from server (Forbidden): error when creating \"STDIN\": admission webhook \"validation.gatekeeper.sh\" denied the request: [require-app-name-label] Missing required label(s): {\"app.kubernetes.io/name\"}\nGAP-PROBE confirmed: Chart Ingress denied by required-labels constraint (honest gap, red cell)\nFAIL: Chart Ingress does not carry app.kubernetes.io/name label — honest gap (red cell)\n\n## Suggested Fix\n\nThis is an **honest gap**: the chart does not natively emit the CRD or object required by scenario `policy-opa-gatekeeper-required-labels`. If you wish to close this gap, add chart template(s) to `examples/sample-product-chart/chart/templates/` that emit the required objects (e.g. HTTPProxy, ConstraintTemplate, or similar).\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-4cf76f257e28",
@@ -297,7 +297,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-linkerd-live\n\n**Scenario:** `service-mesh-linkerd-live`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-linkerd-live`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-08T14:01:47.166119+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-924739bf3439",
@@ -314,7 +314,7 @@
       "fix_prompt": "# Fix Recommendation: imagepullsecrets-on\n\n**Scenario:** `imagepullsecrets-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `imagepullsecrets-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-d50a24c38af3",
@@ -333,7 +333,7 @@
       "fix_prompt": "# Fix Recommendation: network-policy-on\n\n**Scenario:** `network-policy-on`\n**Category:** chart-fix\n**Failure type:** network-policy\n**Affected objects:** NetworkPolicy\n\n## Failure Detail\n\nAssert 'network-policy': FAIL: expected NetworkPolicy but found 0\n\n## Suggested Fix\n\nAdd a `NetworkPolicy` template to `examples/sample-product-chart/chart/templates/` that allows only required ingress/egress traffic. Gate it behind a `networkPolicy.enabled` value.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T13:00:16.059788+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-d71d7c5bdcb3",
@@ -350,7 +350,7 @@
       "fix_prompt": "# Fix Recommendation: priority-class-on\n\n**Scenario:** `priority-class-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `priority-class-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-44e55fcc1316",
@@ -367,7 +367,7 @@
       "fix_prompt": "# Fix Recommendation: resources-on\n\n**Scenario:** `resources-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `resources-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-ae768e99c4cf",
@@ -384,7 +384,7 @@
       "fix_prompt": "# Fix Recommendation: scheduling-affinity-on\n\n**Scenario:** `scheduling-affinity-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `scheduling-affinity-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-2e80b1ad279a",
@@ -401,7 +401,7 @@
       "fix_prompt": "# Fix Recommendation: scheduling-nodeselector-on\n\n**Scenario:** `scheduling-nodeselector-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `scheduling-nodeselector-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-79e3aa1d6741",
@@ -418,7 +418,7 @@
       "fix_prompt": "# Fix Recommendation: scheduling-tolerations-on\n\n**Scenario:** `scheduling-tolerations-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `scheduling-tolerations-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-9af66c57d299",
@@ -435,7 +435,7 @@
       "fix_prompt": "# Fix Recommendation: scheduling-topology-spread-on\n\n**Scenario:** `scheduling-topology-spread-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `scheduling-topology-spread-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-a66e265e1f8e",
@@ -452,7 +452,7 @@
       "fix_prompt": "# Fix Recommendation: security-context-on\n\n**Scenario:** `security-context-on`\n**Category:** schema-missing\n**Failure type:** unknown\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: result.yaml had parse errors; status from aggregate\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `security-context-on`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-d1fcd7593113",
@@ -472,7 +472,7 @@
       "fix_prompt": "# Fix Recommendation: serviceaccount-annotations-on\n\n**Scenario:** `serviceaccount-annotations-on`\n**Category:** chart-fix\n**Failure type:** serviceaccount-annotations\n**Affected objects:** Service, ServiceAccount\n\n## Failure Detail\n\nAssert 'serviceaccount-annotations': FAIL: no ServiceAccount found in rendered output — chart lacks ServiceAccount template (documented gap)\n\n## Suggested Fix\n\nFix the 'serviceaccount-annotations' capability gap in `examples/sample-product-chart/chart/templates/`. Review the assertion notes above and update chart templates to satisfy the assertion requirements.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T13:09:35.296276+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-8eb14df67e98",
@@ -489,7 +489,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-ingress-gateway-multi-host\n\n**Scenario:** `service-mesh-istio-ingress-gateway-multi-host`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-ingress-gateway-multi-host-20260609-102026/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-ingress-gateway-multi-host`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T14:26:07.811439+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-0b4506b2012c",
@@ -506,7 +506,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-ingress-gateway-request-authentication\n\n**Scenario:** `service-mesh-istio-ingress-gateway-request-authentication`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-ingress-gateway-request-authentication-20260609-102606/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-ingress-gateway-request-authentication`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T14:32:15.918204+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-6e2be3d49446",
@@ -523,7 +523,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-service-mesh-cert-manager-tls\n\n**Scenario:** `service-mesh-istio-service-mesh-cert-manager-tls`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-cert-manager-tls-20260609-103144/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-service-mesh-cert-manager-tls`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T14:38:24.022046+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-426c0fb62960",
@@ -540,7 +540,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-service-mesh-peer-authentication\n\n**Scenario:** `service-mesh-istio-service-mesh-peer-authentication`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-peer-authentication-20260609-103742/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-service-mesh-peer-authentication`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T14:43:30.660572+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-39d68f581b9c",
@@ -557,7 +557,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-service-mesh-sidecar-injection\n\n**Scenario:** `service-mesh-istio-service-mesh-sidecar-injection`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-sidecar-injection-20260609-104316/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-service-mesh-sidecar-injection`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T14:49:38.734964+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-c8b02e60d19c",
@@ -574,7 +574,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-service-mesh-strict-mtls\n\n**Scenario:** `service-mesh-istio-service-mesh-strict-mtls`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-strict-mtls-20260609-104851/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-service-mesh-strict-mtls`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T14:54:45.434504+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-ffeb0caf5765",
@@ -591,7 +591,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-service-mesh-telemetry-v2\n\n**Scenario:** `service-mesh-istio-service-mesh-telemetry-v2`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-service-mesh-telemetry-v2-20260609-105426/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-service-mesh-telemetry-v2`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:00:53.368820+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-a72a382f74de",
@@ -608,7 +608,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-istio-sidecar-live\n\n**Scenario:** `service-mesh-istio-sidecar-live`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-istio-sidecar-live-20260609-110001/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-istio-sidecar-live`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:05:59.999566+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-33fef05e513c",
@@ -625,7 +625,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-linkerd-basic-mesh\n\n**Scenario:** `service-mesh-linkerd-basic-mesh`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-basic-mesh-20260609-110535/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-linkerd-basic-mesh`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:12:07.734263+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-71d1b26cc1d1",
@@ -642,7 +642,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-linkerd-live\n\n**Scenario:** `service-mesh-linkerd-live`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-live-20260609-111107/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-linkerd-live`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:17:14.270913+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-fbe8143b50f9",
@@ -659,7 +659,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-linkerd-mtls-rotation\n\n**Scenario:** `service-mesh-linkerd-mtls-rotation`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-mtls-rotation-20260609-111638/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-linkerd-mtls-rotation`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:22:20.736867+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-d6d8e49fd879",
@@ -676,7 +676,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-linkerd-multi-cluster-preview\n\n**Scenario:** `service-mesh-linkerd-multi-cluster-preview`\n**Category:** schema-missing\n**Failure type:** preinstall\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-multi-cluster-preview-20260609-112208/artifacts/logs/preinstall.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-linkerd-multi-cluster-preview`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:23:22.076670+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-8b6665986455",
@@ -693,7 +693,7 @@
       "fix_prompt": "# Fix Recommendation: service-mesh-linkerd-service-profile\n\n**Scenario:** `service-mesh-linkerd-service-profile`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-service-mesh-linkerd-service-profile-20260609-112237/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `service-mesh-linkerd-service-profile`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:28:28.896581+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     },
     {
       "id": "rec-0c6f803ed607",
@@ -710,7 +710,7 @@
       "fix_prompt": "# Fix Recommendation: subchart-postgres-internal\n\n**Scenario:** `subchart-postgres-internal`\n**Category:** schema-missing\n**Failure type:** product-install\n**Affected objects:** all chart objects\n\n## Failure Detail\n\nFailure message: helm install failed; see /Users/rohit/Documents/chart-test-swarm/examples/sample-product-chart/chart-test/reports/run-full-bench-20260609-085346/scenario-subchart-postgres-internal-20260609-112806/artifacts/logs/product-install.log\n\n## Suggested Fix\n\nReview the scenario values and chart schema for `subchart-postgres-internal`. Add missing values.yaml entries or chart template defaults in `examples/sample-product-chart/chart/`.\n\n**Chart path:** `examples/sample-product-chart/chart`\n**Only modify files under `examples/sample-product-chart/chart/`.**\n",
       "dismissed_reason": "",
       "created_at": "2026-06-09T15:33:35.561141+00:00",
-      "updated_at": "2026-06-10T11:40:01.253624+00:00"
+      "updated_at": "2026-06-10T14:19:39.033956+00:00"
     }
   ]
 }

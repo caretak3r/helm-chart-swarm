@@ -2,23 +2,19 @@
 id: scheduling-nodeselector-on
 name: "Capability: nodeSelector settable on ALL workloads (ON)"
 description: >-
-  Renders the product chart with nodeSelector.disktype=ssd configured and
-  asserts that every workload pod spec carries nodeSelector with the
-  configured value. The sample chart does NOT expose a nodeSelector knob
-  in its values.yaml and has no nodeSelector block in any Deployment
-  template — setting nodeSelector has no effect. This scenario is
-  EXPECTED to FAIL (honest red gap) documenting that the chart lacks
-  the nodeSelector scheduling knob on its workloads.
+  Renders the product chart with nodeSelector.kubernetes.io/os=linux configured
+  and asserts that every workload pod spec carries nodeSelector with the
+  configured value, proving the chart's nodeSelector knob works end-to-end
+  on a real kind cluster.
 labels: {customer: enterprise, profile: compliance}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
 product:
   chart: ./chart
   release: sample
   namespace: sample
-  set:
-    nodeSelector.disktype: ssd
+  values: chart-test/fixtures/capability/scheduling-nodeselector-values.yaml
 asserts:
   - type: scheduling-present
     namespace: sample
@@ -29,7 +25,7 @@ asserts:
     check_affinity: false
     check_topologySpreadConstraints: false
     nodeSelector:
-      disktype: ssd
+      kubernetes.io/os: linux
 tags: [capability, compliance]
 category: capability
 capability: node-selector

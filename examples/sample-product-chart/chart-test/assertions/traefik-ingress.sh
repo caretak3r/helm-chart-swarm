@@ -54,11 +54,11 @@ echo "Traefik pod IP: ${TRAEFIK_IP}"
 
 echo "==> Probing HTTP with matching Host header (expect 200) on container port 8000"
 RAW_HTTP=$(kctl -n "${NS}" run ct-probe-host --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: ${HOST}" \
     "http://${TRAEFIK_IP}:8000/" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "${RAW_HTTP}" | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "${RAW_HTTP}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response (with Host): ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
@@ -70,11 +70,11 @@ fi
 
 echo "==> Probing HTTP with non-matching Host header (expect 404) on container port 8000"
 RAW_NO_HOST=$(kctl -n "${NS}" run ct-probe-no-host --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H "Host: wrong.test.local" \
     "http://${TRAEFIK_IP}:8000/" 2>/dev/null || echo "000")
-NO_HOST_CODE=$(echo "${RAW_NO_HOST}" | grep -oE '[0-9]{3}' | tail -1)
+NO_HOST_CODE=$(echo "${RAW_NO_HOST}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response (non-matching Host): ${NO_HOST_CODE}"
 if [ "${NO_HOST_CODE}" = "404" ]; then

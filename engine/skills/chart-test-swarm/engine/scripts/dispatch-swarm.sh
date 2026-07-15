@@ -496,6 +496,30 @@ if [ "$_EXECUTE_RUN" -eq 1 ]; then
   }
   trap _exec_cleanup INT TERM
 
+  # Write (or refresh) the run-level result.yaml with the current counters.
+  # Called after every scenario so the dashboard sees live progress mid-run.
+  # The format is byte-compatible with the prior final-only write so collect.py
+  # parses it unchanged.  total: always reflects COUNT (the full planned count)
+  # so the dashboard can display "X of COUNT done".
+  _write_run_result_yaml() {
+    {
+      echo "run_id: $_dispatch_run_id"
+      echo "suite: $SUITE"
+      echo "timestamp_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      echo "total: $COUNT"
+      echo "pass: $_RUN_PASS"
+      echo "fail: $_RUN_FAIL"
+      echo "skip: $_RUN_SKIP"
+      echo "scenarios:"
+      for entry in "${_SCENARIO_RESULTS[@]}"; do
+        _e_id="${entry%%=*}"
+        _e_status="${entry#*=}"
+        echo "  - id: $_e_id"
+        echo "    status: $_e_status"
+      done
+    } > "$RUN_DIR/result.yaml"
+  }
+
   for f in "${MATCHED[@]}"; do
     _RUN_IDX=$((_RUN_IDX + 1))
     _sid=$(yq '.id' "$f")
@@ -550,6 +574,10 @@ if [ "$_EXECUTE_RUN" -eq 1 ]; then
 
     _SCENARIO_RESULTS+=("${_sid}=${_scen_status}")
 
+    # Refresh result.yaml after every scenario so the dashboard reflects live
+    # progress (--watch mode polls result.yaml; writing mid-loop gives live counts).
+    _write_run_result_yaml
+
     # Ensure cluster is torn down regardless of result
     if kind get clusters 2>/dev/null | grep -qx "$_cluster_name"; then
       echo "==> Ensuring cluster $_cluster_name is removed..."
@@ -563,24 +591,11 @@ if [ "$_EXECUTE_RUN" -eq 1 ]; then
     fi
   done
 
-  # ---- Write run-level result.yaml ──────────────────────────────────
-  # Summarize all scenario results at the run level.
-  {
-    echo "run_id: $_dispatch_run_id"
-    echo "suite: $SUITE"
-    echo "timestamp_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    echo "total: $COUNT"
-    echo "pass: $_RUN_PASS"
-    echo "fail: $_RUN_FAIL"
-    echo "skip: $_RUN_SKIP"
-    echo "scenarios:"
-    for entry in "${_SCENARIO_RESULTS[@]}"; do
-      _e_id="${entry%%=*}"
-      _e_status="${entry#*=}"
-      echo "  - id: $_e_id"
-      echo "    status: $_e_status"
-    done
-  } > "$RUN_DIR/result.yaml"
+  # ---- Write final run-level result.yaml ──────────────────────────────────
+  # The mid-loop calls to _write_run_result_yaml already wrote partial snapshots;
+  # this final call ensures the completed run's result.yaml is up to date even
+  # if the loop exited early (e.g., due to _exec_interrupted).
+  _write_run_result_yaml
 
   echo ""
   echo "============================================================"

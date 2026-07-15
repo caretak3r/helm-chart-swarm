@@ -2,13 +2,15 @@
 id: service-mesh-linkerd-multi-cluster-preview
 name: "Linkerd — Multi-Cluster Preview"
 description: >-
-  Installs linkerd-crds + linkerd-control-plane + linkerd-multicluster extension via Helm, verifies the multicluster Link and ServiceMirror CRDs are established, and authors a
-  preview Link resource targeting a logical target cluster. No real cross-cluster traffic — this variant validates that the multicluster extension installs cleanly and that the CRD
-  scaffolding is functional.
+  Installs linkerd-crds + linkerd-control-plane + linkerd-multicluster extension via Helm,
+  verifies the multicluster Link and ServiceMirror CRDs are established, and authors a preview
+  Link resource targeting a logical target cluster. No real cross-cluster traffic — this variant
+  validates that the multicluster extension installs cleanly and that the CRD scaffolding is
+  functional.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: linkerd/linkerd-crds
@@ -33,7 +35,7 @@ cluster:
       wait: none
     - kind: helm
       chart: linkerd/linkerd-multicluster
-      version: 1.14.2
+      version: 30.11.11
       release: linkerd-multicluster
       namespace: linkerd-multicluster
       repo:
@@ -42,6 +44,7 @@ cluster:
       values: {}
       wait: pods-ready
       wait_timeout: 3m
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
@@ -67,9 +70,11 @@ asserts:
   - type: pods-ready
     namespace: linkerd
     timeout: 3m
+    selector: linkerd.io/control-plane-component
   - type: pods-ready
     namespace: linkerd-multicluster
     timeout: 3m
+    selector: app=linkerd-gateway
   - type: pods-ready
     namespace: sample
     timeout: 5m

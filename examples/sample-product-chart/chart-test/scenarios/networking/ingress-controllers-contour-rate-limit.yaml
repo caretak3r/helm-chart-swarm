@@ -5,7 +5,7 @@ description: "Installs Contour, creates an HTTPProxy with local rateLimitPolicy 
 labels: {customer: any, profile: ingress}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: projectcontour/contour
@@ -38,6 +38,7 @@ asserts:
   - type: pods-ready
     namespace: projectcontour
     timeout: 3m
+    selector: app.kubernetes.io/instance=contour
   - type: smoke-script
     path: chart-test/assertions/contour-rate-limit.sh
 tags: [nightly]

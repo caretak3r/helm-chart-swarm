@@ -5,7 +5,8 @@ description: "Installs Gateway API CRDs and envoy-gateway controller, deploys a 
 labels: {customer: any, profile: gateway-api}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  helm_timeout: 10m
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: oci://docker.io/envoyproxy/gateway-helm
@@ -17,6 +18,9 @@ cluster:
           envoyGateway:
             provider:
               type: Kubernetes
+              kubernetes:
+                envoyService:
+                  type: NodePort
       wait: helm-deployed
       wait_timeout: 5m
     - kind: raw_manifest
@@ -29,7 +33,7 @@ product:
   release: sample
   namespace: sample
   set:
-    image.repository: "nginx"
+    image.repository: "public.ecr.aws/nginx/nginx"
     image.tag: "1.27-alpine"
 asserts:
   - type: helm-status-deployed

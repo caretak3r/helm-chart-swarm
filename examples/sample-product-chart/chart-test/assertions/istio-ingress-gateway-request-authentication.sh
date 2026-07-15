@@ -160,11 +160,11 @@ INVALID_JWT=$(jwt_sign "https://wrong-issuer.local")
 
 echo "==> Test 1: Request WITHOUT Bearer token → should pass (no deny rule)"
 NOAUTH_CODE=$(kctl -n "${NS}" run ct-ra-noauth --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-NOAUTH_CODE=$(echo "$NOAUTH_CODE" | grep -oE '[0-9]{3}' | tail -1)
+NOAUTH_CODE=$(echo "$NOAUTH_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  HTTP code (no auth): ${NOAUTH_CODE}"
 if [ "${NOAUTH_CODE}" = "200" ]; then
   echo "  ✓ Request without token passes through (no enforcement)"
@@ -175,12 +175,12 @@ fi
 
 echo "==> Test 2: Request WITH valid JWT → should succeed"
 AUTH_CODE=$(kctl -n "${NS}" run ct-ra-valid --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     -H 'Authorization: Bearer ${VALID_JWT}' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-AUTH_CODE=$(echo "$AUTH_CODE" | grep -oE '[0-9]{3}' | tail -1)
+AUTH_CODE=$(echo "$AUTH_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  HTTP code (valid JWT): ${AUTH_CODE}"
 if [ "${AUTH_CODE}" = "200" ]; then
   echo "  ✓ Request with valid JWT succeeds"
@@ -193,12 +193,12 @@ echo "==> Test 3: Request WITH invalid JWT (wrong issuer) → should be rejected
 # RequestAuthentication validates JWTs even without AuthorizationPolicy.
 # Invalid tokens (wrong issuer) are rejected with 401.
 INV_CODE=$(kctl -n "${NS}" run ct-ra-invalid --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     -H 'Authorization: Bearer ${INVALID_JWT}' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-INV_CODE=$(echo "$INV_CODE" | grep -oE '[0-9]{3}' | tail -1)
+INV_CODE=$(echo "$INV_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  HTTP code (invalid JWT): ${INV_CODE}"
 if [ "${INV_CODE}" = "401" ]; then
   echo "  ✓ Invalid JWT correctly rejected (RequestAuthentication validates)"

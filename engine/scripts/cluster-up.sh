@@ -232,7 +232,23 @@ case "$PROVIDER" in
 esac
 
 # Set context for the duration of this script's execution (NOT the global default).
-kubectl config use-context "$CONTEXT" >/dev/null
+# Retry up to 5 times with a short sleep — kind occasionally writes the kubeconfig
+# entry just before exiting, and a subsequent immediate use-context call can race
+# the file-system flush on macOS APFS.  Retrying is safe and idempotent.
+_ctx_switched=0
+for _ctx_try in 1 2 3 4 5; do
+  if kubectl config use-context "$CONTEXT" >/dev/null 2>&1; then
+    _ctx_switched=1
+    break
+  fi
+  echo "==> kubectl config use-context '$CONTEXT' failed (attempt $_ctx_try/5) — retrying in 1s..." >&2
+  sleep 1
+done
+if [ "$_ctx_switched" -eq 0 ]; then
+  echo "ERROR: unable to switch to kube context '$CONTEXT' after 5 attempts" >&2
+  kubectl config get-contexts 2>&1 >&2 || true
+  exit 1
+fi
 echo "==> Cluster nodes:"
 kubectl get nodes
 echo "==> OK: $CONTEXT ready"

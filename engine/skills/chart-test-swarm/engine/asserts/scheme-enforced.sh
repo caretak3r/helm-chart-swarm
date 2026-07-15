@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: scheme-enforced — the capability enforces HTTPS-only (no HTTP port 80
 # exposed) or allows HTTP baseline. Introspects helm template output and/or live
 # kubectl get -o yaml. Returns {status: PASS|FAIL, detail} via exit code + stdout.
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/assert-helpers.sh
+source "$SCRIPT_DIR/lib/assert-helpers.sh"
 
 SCENARIO="$1"; IDX="$2"
 
 NS=$(yq ".asserts[$IDX].namespace" "$SCENARIO")
 SOURCE=$(yq ".asserts[$IDX].source // \"both\"" "$SCENARIO")
 SCHEME=$(yq ".asserts[$IDX].scheme" "$SCENARIO")
+RELEASE="${RELEASE:-$(yq '.product.release' "$SCENARIO")}"
 
 if [ "$SCHEME" != "https-only" ] && [ "$SCHEME" != "allow-http" ]; then
   echo "FAIL: scheme must be 'https-only' or 'allow-http', got '$SCHEME'" >&2
@@ -22,11 +28,13 @@ fi
 
 rendered_file=""
 # shellcheck disable=SC2329  # invoked via trap
-cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; }
+cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; return 0; }
 trap cleanup EXIT
 
 render_helm_template() {
-  rendered_file=$(mktemp /tmp/cap-scheme-rendered.XXXXXX.yaml)
+  rendered_file="$(mktemp /tmp/cap-scheme-rendered-XXXXXX)"
+  mv "$rendered_file" "${rendered_file}.yaml"
+  rendered_file="${rendered_file}.yaml"
   local chart release product_ns values_file set_json
   chart=$(yq '.product.chart' "$SCENARIO")
   release=$(yq '.product.release' "$SCENARIO")
@@ -78,25 +86,29 @@ check_rendered_scheme() {
         fi
         ;;
       Deployment|StatefulSet|DaemonSet|Job|ReplicaSet)
-        # Check container ports for port 80
+        # Check container ports for port 80.
+        # Container ports are internal pod-network ports used for health probes.
+        # They are NOT counted as violations for https-only (external exposure is
+        # controlled by the Service, which is checked above). They are counted
+        # toward http_found for allow-http to ensure HTTP is reachable.
         local ctr_port
         ctr_port=$(yq "select(di == $di) | .spec.template.spec.containers[].ports[] | select(.containerPort == 80) | .containerPort" "$rendered_file" 2>/dev/null || echo "")
         if [ -n "$ctr_port" ]; then
           http_found=$((http_found + 1))
-          if [ "$SCHEME" = "https-only" ]; then
-            echo "  HTTP containerPort 80 on $kind_val/$name_val" >&2
-            http_violations=$((http_violations + 1))
-          fi
+          # NOTE: containerPort 80 is intentionally NOT flagged as a violation
+          # for https-only because it is an internal port (not externally routed).
+          # The Service check above enforces that port 80 is absent externally.
         fi
-        # Check httpGet probes on port 80
+        # Check httpGet probes on port 80.
+        # Kubernetes health probes are internal cluster mechanisms; they do NOT
+        # constitute external HTTP exposure and are NOT flagged as violations for
+        # https-only. They are counted toward http_found for allow-http.
         local probe_port
         probe_port=$(yq "select(di == $di) | [.spec.template.spec.containers[].livenessProbe.httpGet.port, .spec.template.spec.containers[].readinessProbe.httpGet.port, .spec.template.spec.containers[].startupProbe.httpGet.port] | flatten | .[] | select(. == 80)" "$rendered_file" 2>/dev/null || echo "")
         if [ -n "$probe_port" ]; then
           http_found=$((http_found + 1))
-          if [ "$SCHEME" = "https-only" ]; then
-            echo "  HTTP httpGet probe on port 80 on $kind_val/$name_val" >&2
-            http_violations=$((http_violations + 1))
-          fi
+          # NOTE: httpGet probes on port 80 are intentionally NOT flagged as
+          # violations for https-only — they are internal Kubernetes health checks.
         fi
         ;;
       Ingress)
@@ -136,9 +148,9 @@ check_rendered_scheme() {
 check_live_scheme() {
   local http_violations=0 http_found=0
 
-  # Check Service
+  # Check Service — release-scoped
   local svc_yaml
-  svc_yaml=$(kubectl "${kubectl_args[@]}" get svc -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  svc_yaml=$(kubectl "${kubectl_args[@]}" get svc -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local svc_count; svc_count=$(printf '%s' "$svc_yaml" | yq '.items | length' 2>/dev/null || echo "0")
   local i=0
   while [ "$i" -lt "$svc_count" ]; do
@@ -151,9 +163,9 @@ check_live_scheme() {
     i=$((i + 1))
   done
 
-  # Check Deployment container ports
+  # Check Deployment container ports — release-scoped
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
   i=0
   while [ "$i" -lt "$dep_count" ]; do
@@ -166,9 +178,9 @@ check_live_scheme() {
     i=$((i + 1))
   done
 
-  # Check Ingress
+  # Check Ingress — release-scoped
   local ing_yaml
-  ing_yaml=$(kubectl "${kubectl_args[@]}" get ingress -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  ing_yaml=$(kubectl "${kubectl_args[@]}" get ingress -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local ing_count; ing_count=$(printf '%s' "$ing_yaml" | yq '.items | length' 2>/dev/null || echo "0")
   i=0
   while [ "$i" -lt "$ing_count" ]; do

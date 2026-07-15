@@ -63,8 +63,8 @@ class TestVersionsYamlFormat:
     """
 
     def test_engine_defaults_kubernetes_kind_is_full_patch_format(self) -> None:
-        """kubernetes.kind must be full patch format (vMAJOR.MINOR.PATCH) for
-        the kind --image flag."""
+        """kubernetes.kind must be in full patch format
+        (vMAJOR.MINOR.PATCH) for kind --image flag."""
         config = load_engine_defaults()
         kind_ver = config["kubernetes"]["kind"]
         # Must start with 'v' and have exactly three version components

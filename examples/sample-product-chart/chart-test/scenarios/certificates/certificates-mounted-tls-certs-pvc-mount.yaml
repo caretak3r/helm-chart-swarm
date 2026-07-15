@@ -5,7 +5,7 @@ description: "Creates a PVC, populates it with TLS certs via a Job, then install
 labels: {customer: any, profile: tls}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-pvc.yaml
@@ -16,6 +16,7 @@ cluster:
     - kind: raw_manifest
       path: chart-test/fixtures/certificates/mounted-tls/mounted-tls-populate-job.yaml
       namespace: sample
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

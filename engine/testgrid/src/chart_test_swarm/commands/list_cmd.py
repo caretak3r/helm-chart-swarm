@@ -72,21 +72,67 @@ def _resolve_scenarios_dir(explicit: str | None = None) -> Path:
     return root_dir / "examples" / "sample-product-chart" / "chart-test" / "scenarios"
 
 
+# ── Helpers for consumer-primer layering ──────────────────────────────────
+
+
+def _resolve_consumer_primers_root(project_dir: str | None = None) -> Path | None:
+    """Resolve the consumer-provided primers root directory.
+
+    Consumer primers live at ``$PROJECT_DIR/chart-test/primers/``, mirroring
+    the engine's ``references/integrations/<category>/<integration>.md``
+    structure.  Returns ``None`` when *project_dir* is not provided or the
+    ``chart-test/primers/`` directory does not exist.
+    """
+    if not project_dir:
+        return None
+    primers_root = Path(project_dir).resolve() / "chart-test" / "primers"
+    if not primers_root.is_dir():
+        return None
+    return primers_root
+
+
+def _collect_primer_entries(root: Path) -> list[tuple[str, str]]:
+    """Collect (category, integration) tuples from a primer tree."""
+    entries: list[tuple[str, str]] = []
+    if not root.is_dir():
+        return entries
+    for category_dir in sorted(root.iterdir()):
+        if not category_dir.is_dir():
+            continue
+        category = category_dir.name
+        for primer_file in sorted(category_dir.iterdir()):
+            if not primer_file.is_file():
+                continue
+            if primer_file.suffix != ".md":
+                continue
+            integration = primer_file.stem
+            entries.append((category, integration))
+    return entries
+
+
 # ── list integrations ──────────────────────────────────────────────────────
 
 
 def list_integrations(
     *,
     root: str | None = None,
+    project_dir: str | None = None,
 ) -> None:
     """Walk the integrations directory and print one line per primer.
 
     Output format: ``{category}  {integration}`` (tab-separated, sorted).
+    When *project_dir* is provided, consumer primers from
+    ``chart-test/primers/`` are merged with engine primers (consumer
+    preferred — consumer entries appear first and engine duplicates are
+    removed).
+
     Exits non-zero if zero categories are found.
     """
     integrations_root = _resolve_integrations_root(root)
+    consumer_root = _resolve_consumer_primers_root(project_dir)
 
     _debug(f"Integrations root: {integrations_root}")
+    _debug(f"Consumer primers root: {consumer_root}")
 
     if not integrations_root.is_dir():
         _die(
@@ -95,36 +141,32 @@ def list_integrations(
             code=1,
         )
 
-    # Collect (category, integration) tuples
-    entries: list[tuple[str, str]] = []
+    # Collect engine entries
+    engine_entries = _collect_primer_entries(integrations_root)
 
-    # Use sorted() on iterdir() for deterministic output
-    for category_dir in sorted(integrations_root.iterdir()):
-        if not category_dir.is_dir():
-            continue  # skip stray files
+    # Collect consumer entries (only when a consumer tree exists)
+    consumer_entries: list[tuple[str, str]] = []
+    if consumer_root is not None:
+        consumer_entries = _collect_primer_entries(consumer_root)
 
-        category = category_dir.name
+    # Merge: consumer-preferred (consumer entries first, then engine entries
+    # that are not duplicated by a consumer entry)
+    consumer_set = set(consumer_entries)
+    merged = list(consumer_entries)  # already sorted from _collect_primer_entries
+    for entry in engine_entries:
+        if entry not in consumer_set:
+            merged.append(entry)
 
-        for primer_file in sorted(category_dir.iterdir()):
-            if not primer_file.is_file():
-                continue
-            if primer_file.suffix != ".md":
-                continue
-
-            integration = primer_file.stem  # filename without .md
-            entries.append((category, integration))
-
-    if not entries:
+    if not merged:
         _die(
             "ERROR: no integrations found — the integrations tree appears empty.\n"
             f"       Searched: {integrations_root}",
             code=1,
         )
 
-    # Print sorted: first by category, then by integration
-    entries.sort()
-
-    for category, integration in entries:
+    # Print merged list (already sorted: consumer entries first, then
+    # non-overlapping engine entries, both alphabetically within group)
+    for category, integration in merged:
         print(f"{category}\t{integration}")
 
 

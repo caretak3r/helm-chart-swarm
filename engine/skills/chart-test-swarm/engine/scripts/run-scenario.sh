@@ -512,15 +512,22 @@ capture_gateway_crds_version() {
 } > "$RESULT"
 
 emit_assert() {
-  # $1=type $2=status $3=notes
+  # $1=type $2=status $3=notes [$4=depth_level] [$5=detail]
   local t="$1" s="$2" n="$3"
+  local depth="${4:-}"
+  local detail="${5:-}"
   {
     echo "  - type: $t"
     echo "    status: $s"
+    [ -n "$depth" ] && echo "    depth_level: $depth"
+    [ -n "$detail" ] && echo "    detail: $detail"
     printf '    notes: |\n'
     printf '      %s\n' "${n//$'\n'/$'\n      '}"
   } >> "$RESULT"
 }
+
+# ── Source the output-contract helpers (lookup_depth / parse_assert_log) ──
+. "$SCRIPT_DIR/lib/output-contract.sh"
 
 fail() {
   local stage="$1" msg="$2"
@@ -838,7 +845,8 @@ PCHART="$(resolve_path "$PRODUCT_CHART")"
 [ -e "$PCHART" ] || [[ "$PRODUCT_CHART" == oci://* ]] || [[ "$PRODUCT_CHART" == *://* ]] \
   || fail product-install "chart not found at $PCHART (and not an OCI/URL ref)"
 
-helm_args=(upgrade --install "$PRODUCT_RELEASE" "$PCHART" --namespace "$PRODUCT_NS" --create-namespace --wait --timeout 5m)
+HELM_TIMEOUT=$(yq '.cluster.helm_timeout // "5m"' "$SCENARIO")
+helm_args=(upgrade --install "$PRODUCT_RELEASE" "$PCHART" --namespace "$PRODUCT_NS" --create-namespace --wait --timeout "$HELM_TIMEOUT")
 if [ -n "$PRODUCT_VALUES" ] && [ "$PRODUCT_VALUES" != "null" ]; then
   vpath="$(resolve_path "$PRODUCT_VALUES")"
   [ -f "$vpath" ] || fail product-install "product values file missing: $vpath"
@@ -867,26 +875,55 @@ for i in $(seq 0 $((acount - 1))); do
   echo ""
   echo "==> assert[$i] type=$atype"
 
-  if [ ! -x "$ASSERTS_DIR/${atype}.sh" ]; then
-    emit_assert "$atype" FAIL "no runner at $ASSERTS_DIR/${atype}.sh"
-    overall=FAIL
-    continue
-  fi
+  # ── Resolve depth_level from the registry before dispatch ─────────
+  depth=$(lookup_depth "$atype")
 
-  # Export everything an assert might need.
+  # ── Consumer-first assert resolution (Area E, architecture §3.E.1) ─
+  # Single source of truth: resolve_assert_script() in output-contract.sh.
+  # Prefer $PROJECT_DIR/chart-test/asserts/<type>.sh when present AND
+  # executable; otherwise fall back to the engine assert.
+  resolved_line=$(resolve_assert_script "$atype" "${PROJECT_DIR:-}/chart-test/asserts" "$ASSERTS_DIR")
+  resolved=""
+
+  case "$resolved_line" in
+    RESOLVED:*)
+      resolved="${resolved_line#RESOLVED:}"
+      ;;
+    FAIL:*)
+      # No runnable script — consumer non-executable (VAL-PLUGGABLE-006)
+      # or engine assert missing.
+      emit_assert "$atype" FAIL "${resolved_line#FAIL:}" "$depth"
+      overall=FAIL
+      continue
+      ;;
+  esac
+
+  # Export everything an assert might need (VAL-PLUGGABLE-007).
   export RELEASE="$PRODUCT_RELEASE"
   export NAMESPACE="$PRODUCT_NS"
   export PROJECT_DIR
   export ASSERT_INDEX="$i"
   export SCENARIO
 
-  if PROJECT_DIR="$PROJECT_DIR" bash "$ASSERTS_DIR/${atype}.sh" "$SCENARIO" "$i" \
-       > "$alog" 2>&1; then
-    notes="$(tail -n 20 "$alog" | sed 's/[[:cntrl:]]//g')"
-    emit_assert "$atype" PASS "$notes"
-  else
-    notes="$(tail -n 40 "$alog" | sed 's/[[:cntrl:]]//g')"
-    emit_assert "$atype" FAIL "$notes"
+  set +e
+  PROJECT_DIR="$PROJECT_DIR" bash "$resolved" "$SCENARIO" "$i" \
+       > "$alog" 2>&1
+  _assert_ec=$?
+  set -e
+
+  # ── Parse structured output contract, with exit-code fallback ─────
+  # Consumer assert exit-code contract preserved (VAL-PLUGGABLE-008):
+  # exit 0 → PASS, non-zero → FAIL (unless overridden by ASSERTION_RESULT).
+  parse_assert_log "$alog" "$_assert_ec"
+
+  # ── Capture notes (PASS → tail 20, FAIL/SKIP → tail 40) ───────────
+  notes="$(tail -n 20 "$alog" | sed 's/[[:cntrl:]]//g')"
+  [ "$_PARSED_RESULT" != "PASS" ] && notes="$(tail -n 40 "$alog" | sed 's/[[:cntrl:]]//g')"
+
+  emit_assert "$atype" "$_PARSED_RESULT" "$notes" "$depth" "${_PARSED_DETAIL:-}"
+
+  # SKIP is non-failing (VAL-CROSS-003): only FAIL flips overall.
+  if [ "$_PARSED_RESULT" = "FAIL" ]; then
     overall=FAIL
   fi
 done

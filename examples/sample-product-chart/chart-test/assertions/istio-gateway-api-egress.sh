@@ -65,6 +65,24 @@ fi
 echo "==> Labeling namespace ${NS} for istio injection"
 kctl label namespace "${NS}" istio-injection=enabled --overwrite || true
 
+# Wait for istio's MutatingWebhookConfiguration to be registered and ready.
+# istiod may be newly running and its webhook may not be registered yet.
+echo "==> Waiting for istio-sidecar-injector MutatingWebhookConfiguration (up to 60s)"
+for _wi in $(seq 1 20); do
+  if kctl get mutatingwebhookconfigurations.admissionregistration.k8s.io \
+       istio-sidecar-injector >/dev/null 2>&1; then
+    echo "PASS: istio-sidecar-injector webhook registered"
+    break
+  fi
+  if [ "$_wi" -eq 20 ]; then
+    echo "FAIL: istio-sidecar-injector MutatingWebhookConfiguration not found after 60s" >&2
+    exit 1
+  fi
+  sleep 3
+done
+# Extra settle time for the webhook server to begin serving requests
+sleep 10
+
 echo "==> Restarting deployments to pick up sidecar injection"
 for DEPLOY in $(kctl -n "${NS}" get deploy -o jsonpath='{.items[*].metadata.name}'); do
   echo "  Restarting deployment/${DEPLOY}"
@@ -74,22 +92,50 @@ for DEPLOY in $(kctl -n "${NS}" get deploy -o jsonpath='{.items[*].metadata.name
 done
 echo "PASS: all deployments rolled out with sidecar injection"
 
-echo "==> Waiting 5s for old pods to terminate"
-sleep 5
+echo "==> Waiting 10s for old pods to terminate"
+sleep 10
 
 echo "==> Verifying istio-proxy sidecar injected into product pods"
 for DEPLOY in $(kctl -n "${NS}" get deploy -o jsonpath='{.items[*].metadata.name}'); do
   SELECTOR=$(kctl -n "${NS}" get deploy "${DEPLOY}" -o jsonpath='{.spec.selector.matchLabels}' | \
     jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
+  # Retry up to 3 times if pod is missing sidecar (webhook race condition)
+  _inject_ok=0
+  for _attempt in 1 2 3; do
+    PODS=$(kctl -n "${NS}" get pods -l "${SELECTOR}" \
+      --field-selector=status.phase=Running \
+      -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
+    _all_injected=1
+    for POD in $PODS; do
+      # Check both spec.containers (classic sidecar) and spec.initContainers
+      # (native sidecar, k8s 1.28+ with restartPolicy: Always).
+      CONTAINERS=$(kctl -n "${NS}" get pod "$POD" \
+        -o jsonpath='{.spec.containers[*].name}{" "}{.spec.initContainers[*].name}' \
+        2>/dev/null || echo "")
+      if ! echo "$CONTAINERS" | grep -q "istio-proxy"; then
+        _all_injected=0
+        echo "  Attempt ${_attempt}: Pod ${POD} missing istio-proxy — re-deleting pod to trigger injection"
+        kctl -n "${NS}" delete pod "${POD}" --grace-period=0 --force 2>/dev/null || true
+        sleep 15
+        break
+      fi
+    done
+    if [ "$_all_injected" -eq 1 ] && [ -n "$PODS" ]; then
+      _inject_ok=1
+      break
+    fi
+  done
   PODS=$(kctl -n "${NS}" get pods -l "${SELECTOR}" \
     --field-selector=status.phase=Running \
-    -o jsonpath='{.items[*].metadata.name}')
+    -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
   for POD in $PODS; do
-    CONTAINERS=$(kctl -n "${NS}" get pod "$POD" -o jsonpath='{.spec.containers[*].name}')
+    CONTAINERS=$(kctl -n "${NS}" get pod "$POD" \
+      -o jsonpath='{.spec.containers[*].name}{" "}{.spec.initContainers[*].name}' \
+      2>/dev/null || echo "")
     if echo "$CONTAINERS" | grep -q "istio-proxy"; then
       echo "  ✓ Pod $POD has istio-proxy sidecar"
     else
-      echo "FAIL: Pod ${POD} missing istio-proxy sidecar" >&2
+      echo "FAIL: Pod ${POD} missing istio-proxy sidecar after retries" >&2
       exit 1
     fi
   done
@@ -172,7 +218,7 @@ fi
 if [ -z "$PRODUCT_POD" ]; then
   echo "WARN: No Running product pod found; using a dedicated probe pod"
   kctl -n "${NS}" run ct-egress-probe --restart=Never \
-    --image=curlimages/curl:8.6.0 --timeout=60s \
+    --image=quay.io/curl/curl:8.20.0 --timeout=60s \
     --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
     sleep 300 2>/dev/null || true
   kctl -n "${NS}" wait pod ct-egress-probe --for=condition=Ready --timeout=2m || true
@@ -180,11 +226,14 @@ if [ -z "$PRODUCT_POD" ]; then
 else
   PROBE_POD="$PRODUCT_POD"
   # Make sure the pod has a sidecar
-  PROBE_CONTAINERS=$(kctl -n "${NS}" get pod "$PROBE_POD" -o jsonpath='{.spec.containers[*].name}' 2>/dev/null || echo "")
+  # Check both spec.containers and spec.initContainers (native sidecar support)
+  PROBE_CONTAINERS=$(kctl -n "${NS}" get pod "$PROBE_POD" \
+    -o jsonpath='{.spec.containers[*].name}{" "}{.spec.initContainers[*].name}' \
+    2>/dev/null || echo "")
   if ! echo "$PROBE_CONTAINERS" | grep -q "istio-proxy"; then
     echo "WARN: Product pod ${PROBE_POD} has no sidecar; creating dedicated probe pod"
     kctl -n "${NS}" run ct-egress-probe --restart=Never \
-      --image=curlimages/curl:8.6.0 --timeout=60s \
+      --image=quay.io/curl/curl:8.20.0 --timeout=60s \
       --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
       sleep 300 2>/dev/null || true
     kctl -n "${NS}" wait pod ct-egress-probe --for=condition=Ready --timeout=2m || true

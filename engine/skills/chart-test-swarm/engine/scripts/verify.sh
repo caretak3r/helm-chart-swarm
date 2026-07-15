@@ -74,3 +74,19 @@ fi
 
 echo "OK: engine scripts present at $SCRIPT_DIR/"
 echo "OK: kind=$have_kind k3d=$have_k3d kubectl=yes helm=yes yq=yes jq=yes"
+
+# ── Consumer assert linting (Area E §3.E.3) ──
+CUSTOM_ASSERT_LINTER="$SCRIPT_DIR/check-custom-assertions.sh"
+if [ -x "$CUSTOM_ASSERT_LINTER" ]; then
+  echo "==> Linting consumer asserts"
+  # CONSUMER_PROJECT_DIR can be set to override the default sample project
+  # (used for testing). Otherwise use the sample product chart as a
+  # representative project.
+  CONSUMER_PROJECT_DIR="${CONSUMER_PROJECT_DIR:-$ROOT_DIR/examples/sample-product-chart}"
+  if [ -d "$CONSUMER_PROJECT_DIR" ]; then
+    if ! PROJECT_DIR="$CONSUMER_PROJECT_DIR" bash "$CUSTOM_ASSERT_LINTER"; then
+      echo "ERROR: consumer assert linting found violations" >&2
+      exit 1
+    fi
+  fi
+fi

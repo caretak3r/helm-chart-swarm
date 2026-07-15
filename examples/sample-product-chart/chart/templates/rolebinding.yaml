@@ -1,0 +1,20 @@
+{{- if and .Values.serviceAccount.create .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "sample-product.serviceAccountName" . }}
+  labels:
+    {{- include "sample-product.labels" . | nindent 4 }}
+    {{- include "sample-product.selectorLabels" . | nindent 4 }}
+    {{- include "sample-product.extraLabels" . | nindent 4 }}
+  annotations:
+    {{- include "sample-product.extraAnnotations" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "sample-product.serviceAccountName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sample-product.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

@@ -1,0 +1,50 @@
+---
+id: rbac-effective-boundary
+name: "RBAC effective: boundary check via kubectl auth can-i"
+description: >-
+  Preinstalls a Role + RoleBinding granting get/list pods and services to the
+  sample ServiceAccount, then exercises the engine-level rbac-effective L3
+  behavioral assert to verify granted permissions return "yes" and out-of-scope
+  (denied) permissions return "no", proving the grant is bounded.
+labels: {customer: enterprise, profile: compliance}
+cluster:
+  provider: kind
+  k8s_version: v1.36.1
+  preinstall:
+    - kind: raw_manifest
+      path: chart-test/fixtures/rbac/rbac-reader-role.yaml
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.29-alpine"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: rbac-effective
+    namespace: sample
+    service_account: sample
+    granted:
+      - verb: get
+        resource: pods
+      - verb: list
+        resource: pods
+      - verb: get
+        resource: services
+    denied:
+      - verb: delete
+        resource: pods
+      - verb: create
+        resource: deployments
+    timeout: 60s
+tags: [nightly, compliance]
+mechanisms: ['assert:rbac-effective', 'capability:rbac']
+category: capability
+capability: rbac-effective
+tier: live

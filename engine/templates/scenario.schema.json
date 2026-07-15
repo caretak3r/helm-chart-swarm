@@ -31,6 +31,7 @@
           "type": "array",
           "items": { "$ref": "#/$defs/preinstall_item" }
         },
+        "helm_timeout": { "type": "string", "default": "5m", "description": "Timeout for helm install --wait of the product chart. Increase to 10m for clusters with service-mesh sidecar injection (Istio/Linkerd) or other slow-starting addons." },
         "cni": {
           "type": "object",
           "additionalProperties": false,
@@ -167,9 +168,11 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":    { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present"] },
-        "timeout": { "type": "string", "default": "5m" }
+        "type":    { "type": "string", "description": "Assert type identifier. Known types are validated by oneOf branches; consumer-custom types pass through to depth enforcement." },
+        "timeout": { "type": "string", "default": "5m", "description": "Per-assert timeout (e.g. 30s, 5m). Used as the overall wait ceiling by wait_with_backoff." },
+        "retries": { "type": "integer", "minimum": 0, "default": 0, "description": "Number of retry attempts after the initial probe. 0 means a single attempt. Must be a non-negative integer." }
       },
+      "unevaluatedProperties": false,
       "oneOf": [
         {
           "properties": {
@@ -332,6 +335,232 @@
             "priority_class_name": { "type": "string", "description": "Expected priorityClassName value. Checked when expect_present=true." }
           },
           "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "L3 behavioral assert: proves NetworkPolicy/CiliumNetworkPolicy enforcement — allowed traffic succeeds AND denied traffic is blocked. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":            { "const": "network-policy-enforced" },
+            "namespace":       { "type": "string", "description": "Product namespace." },
+            "port":            { "type": "integer", "default": 80, "description": "Service port to probe." },
+            "allowed_label":   { "type": "string", "default": "access=allowed", "description": "Label for the allowed probe pod." },
+            "expected_status": { "type": "integer", "default": 200, "description": "Expected HTTP status from the allowed probe." },
+            "curl_image":      { "type": "string", "description": "Curl image for in-cluster probing." },
+            "timeout":         { "type": "string", "description": "Per-assert timeout." },
+            "retries":         { "type": "integer", "minimum": 0, "description": "Retry attempts after initial probe." }
+          },
+          "required": ["namespace", "port", "allowed_label", "expected_status"],
+          "additionalProperties": false
+        },
+        {
+          "description": "L3 behavioral assert: proves service mesh mTLS enforcement — plaintext is rejected AND in-mesh traffic succeeds over auto-upgraded mTLS. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":              { "const": "mesh-mtls-enforced" },
+            "namespace":         { "type": "string", "description": "Product namespace." },
+            "port":              { "type": "integer", "default": 80, "description": "Service port to probe." },
+            "mesh_type":         { "enum": ["istio", "linkerd"], "default": "istio", "description": "Service mesh type." },
+            "control_namespace": { "type": "string", "description": "Non-mesh control namespace for plaintext probe." },
+            "curl_image":        { "type": "string", "description": "Curl image for in-cluster probing." },
+            "timeout":           { "type": "string", "description": "Per-assert timeout." },
+            "retries":           { "type": "integer", "minimum": 0, "description": "Retry attempts after initial probe." }
+          },
+          "required": ["namespace", "port", "mesh_type", "control_namespace"],
+          "additionalProperties": false
+        },
+        {
+          "description": "L3 behavioral assert: proves a valid TLS certificate is served — real cert, not expired, SAN matches host, CA trusted. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":            { "const": "tls-cert-valid" },
+            "namespace":       { "type": "string", "description": "Product namespace." },
+            "tls_secret":      { "type": "string", "description": "TLS Secret name (default: <release>-tls)." },
+            "tls_host":        { "type": "string", "description": "TLS hostname for SAN verification (default: <release>.<namespace>.svc)." },
+            "port":            { "type": "integer", "default": 443, "description": "HTTPS port to probe." },
+            "expected_status": { "type": "integer", "default": 200, "description": "Expected HTTP status from the HTTPS probe." },
+            "curl_image":      { "type": "string", "description": "Curl image for in-cluster probing." },
+            "timeout":         { "type": "string", "description": "Per-assert timeout." },
+            "retries":         { "type": "integer", "minimum": 0, "description": "Retry attempts after initial probe." }
+          },
+          "required": ["namespace", "tls_secret", "tls_host", "port", "expected_status"],
+          "additionalProperties": false
+        },
+        {
+          "description": "L3 behavioral assert: proves an Ingress controller actually routes traffic to the product backend. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":                 { "const": "ingress-routes-traffic" },
+            "namespace":            { "type": "string", "description": "Product namespace." },
+            "ingress_host":         { "type": "string", "description": "Host header for the probe (default: <release>.<namespace>.svc)." },
+            "ingress_name":         { "type": "string", "description": "Ingress object name (default: <release>)." },
+            "controller_namespace": { "type": "string", "description": "Namespace of the ingress controller (default: ingress-nginx)." },
+            "controller_label":     { "type": "string", "description": "Label selector for controller pods (default: app.kubernetes.io/name=ingress-nginx)." },
+            "controller_port":      { "type": "integer", "default": 80, "description": "HTTP port of the controller pod (default: 80; Traefik/Kong use 8000)." },
+            "expected_status":      { "type": "integer", "default": 200, "description": "Expected HTTP status from the ingress probe." },
+            "curl_image":           { "type": "string", "description": "Curl image for in-cluster probing." },
+            "timeout":              { "type": "string", "description": "Per-assert timeout." },
+            "retries":              { "type": "integer", "minimum": 0, "description": "Retry attempts after initial probe." }
+          },
+          "required": ["namespace", "ingress_host", "controller_namespace", "expected_status"],
+          "additionalProperties": false
+        },
+        {
+          "description": "L3 behavioral assert: proves a Gateway API route actually serves traffic through the data plane. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":                 { "const": "gateway-routes-traffic" },
+            "namespace":            { "type": "string", "description": "Product namespace." },
+            "gateway_host":         { "type": "string", "description": "Host header for the probe (default: <release>.<namespace>.svc)." },
+            "gateway_class":        { "type": "string", "description": "GatewayClass name (default: envoy)." },
+            "gateway_name":         { "type": "string", "description": "Gateway name (default: <release>-gw)." },
+            "route_name":           { "type": "string", "description": "HTTPRoute name (default: <release>-route)." },
+            "controller_namespace": { "type": "string", "description": "Namespace of the gateway controller (default: envoy-gateway-system)." },
+            "expected_status":      { "type": "integer", "default": 200, "description": "Expected HTTP status from the gateway probe." },
+            "curl_image":           { "type": "string", "description": "Curl image for in-cluster probing." },
+            "timeout":              { "type": "string", "description": "Per-assert timeout." },
+            "retries":              { "type": "integer", "minimum": 0, "description": "Retry attempts after initial probe." }
+          },
+          "required": ["namespace", "gateway_host", "gateway_class", "gateway_name", "controller_namespace", "expected_status"],
+          "additionalProperties": false
+        },
+        {
+          "description": "L3 behavioral assert: proves an admission policy actually denies a violating object and admits a compliant one. SKIPs when the platform capability is absent.",
+          "properties": {
+            "type":              { "const": "policy-denies-violation" },
+            "namespace":         { "type": "string", "description": "Product namespace." },
+            "policy_type":       { "enum": ["kyverno", "gatekeeper", "vap"], "default": "kyverno", "description": "Admission engine type." },
+            "violating_fixture": { "type": "string", "description": "Path relative to PROJECT_DIR of a fixture that SHOULD be denied by the policy." },
+            "compliant_fixture": { "type": "string", "description": "Path relative to PROJECT_DIR of a fixture that SHOULD be admitted by the policy." },
+            "policy_name":       { "type": "string", "description": "Name of the policy/constraint to check for readiness." },
+            "policy_namespace":  { "type": "string", "description": "Namespace where the admission controller pods run." },
+            "timeout":           { "type": "string", "description": "Per-assert timeout." },
+            "retries":           { "type": "integer", "minimum": 0, "description": "Retry attempts after initial probe." }
+          },
+          "required": ["namespace", "violating_fixture", "compliant_fixture", "policy_type", "policy_name"],
+          "additionalProperties": false
+        },
+        {
+          "description": "L3 behavioral assert: proves RBAC permissions are effectively granted via kubectl auth can-i. SKIPs when the ServiceAccount is absent.",
+          "properties": {
+            "type":             { "const": "rbac-effective" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "service_account":  { "type": "string", "description": "ServiceAccount name (default: release name)." },
+            "granted":          { "type": "array", "minItems": 1, "items": { "type": "object", "properties": { "verb": {"type": "string"}, "resource": {"type": "string"}, "subresource": {"type": "string"} }, "required": ["verb", "resource"], "additionalProperties": false }, "description": "Verb/resource pairs that SHOULD return 'yes'." },
+            "denied":           { "type": "array", "minItems": 1, "items": { "type": "object", "properties": { "verb": {"type": "string"}, "resource": {"type": "string"}, "subresource": {"type": "string"} }, "required": ["verb", "resource"], "additionalProperties": false }, "description": "Verb/resource pairs that SHOULD return 'no' (boundary check)." },
+            "timeout":          { "type": "string", "description": "Per-assert timeout." },
+            "retries":          { "type": "integer", "minimum": 0, "description": "Retry attempts after initial probe." }
+          },
+          "required": ["namespace", "service_account", "granted", "denied"],
+          "additionalProperties": false
+        },
+        {
+          "description": "L3 behavioral assert: proves pods actually land on the targeted node via nodeName verification. SKIPs when no scheduling config or no pods.",
+          "properties": {
+            "type":         { "const": "scheduled-on-target" },
+            "namespace":    { "type": "string", "description": "Product namespace." },
+            "target_label": { "type": "string", "description": "Label key=value that target nodes MUST carry (e.g. 'node-role.kubernetes.io/worker=')." },
+            "timeout":      { "type": "string", "description": "Per-assert timeout." },
+            "retries":      { "type": "integer", "minimum": 0, "description": "Retry attempts after initial probe." }
+          },
+          "required": ["namespace", "target_label"],
+          "additionalProperties": false
+        },
+        {
+          "description": "Addon-less capability assert: probes (readiness, liveness, startup) are rendered on workload containers (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "probes-present" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload container MUST carry the configured probe types. false: no probe blocks on any container." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "check_readiness":  { "type": "boolean", "default": true, "description": "Check readinessProbe on container specs." },
+            "check_liveness":   { "type": "boolean", "default": true, "description": "Check livenessProbe on container specs." },
+            "check_startup":    { "type": "boolean", "default": false, "description": "Check startupProbe on container specs." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: volumeMounts and matching volumes are rendered on workload containers (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "volume-mounts-present" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload container MUST carry volumeMounts with matching volumes. false: no volumeMounts on any container." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "mountPath":        { "type": "string", "description": "Expected mountPath value to verify on volumeMounts." },
+            "volume_name":      { "type": "string", "description": "Expected volume name referenced by the volumeMount at mountPath." },
+            "source_type":      { "type": "string", "description": "Expected volume source type (e.g. configMap, secret, emptyDir, hostPath) for the backing volume." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: a PodDisruptionBudget selects the release workload (expect_present=true) or no PDB exists (expect_present=false).",
+          "properties": {
+            "type":             { "const": "pdb-present" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: at least one PDB MUST exist whose selector matches release workload labels. false: no PDB may exist." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: an HPA targets the release workload with correct min/max replicas (expect_present=true) or no HPA exists (expect_present=false).",
+          "properties": {
+            "type":             { "const": "hpa-present" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: at least one HPA MUST exist whose scaleTargetRef points at a release workload. false: no HPA may exist." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "min_replicas":     { "type": "integer", "description": "Expected minReplicas value. Checked when expect_present=true." },
+            "max_replicas":     { "type": "integer", "description": "Expected maxReplicas value. Checked when expect_present=true." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: initContainers are rendered on workload pod specs (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "init-containers" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload pod spec MUST carry a non-empty initContainers list. false: no initContainers on any workload." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "names":            { "type": "array", "items": { "type": "string" }, "description": "Expected init container names. Checked when expect_present=true." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: hostNetwork is rendered on workload pod specs (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "host-network" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload pod spec MUST have hostNetwork=true. false: no hostNetwork on any workload." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "check_host_port":  { "type": "boolean", "default": false, "description": "Also verify at least one container port declares a hostPort." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: lifecycle hooks (postStart and/or preStop) are rendered on workload containers (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "lifecycle-hooks" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload container MUST carry the configured lifecycle hook types. false: no lifecycle hooks on any container." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "check_postStart":  { "type": "boolean", "default": true, "description": "Check postStart lifecycle hook on container specs." },
+            "check_preStop":    { "type": "boolean", "default": true, "description": "Check preStop lifecycle hook on container specs." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Addon-less capability assert: dnsPolicy and/or dnsConfig are rendered on workload pod specs (expect_present=true) or absent (expect_present=false).",
+          "properties": {
+            "type":             { "const": "dns-config" },
+            "namespace":        { "type": "string", "description": "Product namespace." },
+            "expect_present":   { "type": "boolean", "description": "true: every workload pod spec MUST carry the configured dnsPolicy/dnsConfig. false: no custom DNS settings." },
+            "source":           { "enum": ["rendered", "live", "both"], "default": "both", "description": "Where to inspect." },
+            "dns_policy":       { "type": "string", "description": "Expected dnsPolicy value (e.g. None, ClusterFirstWithHostNet). Checked when expect_present=true." },
+            "nameservers":      { "type": "array", "items": { "type": "string" }, "description": "Expected dnsConfig.nameservers entries. Checked when expect_present=true." }
+          },
+          "required": ["namespace", "expect_present"]
+        },
+        {
+          "description": "Consumer-custom or unknown assert type — structural validation deferred to depth enforcement and the consumer assert script. Accepts any properties via additionalProperties.",
+          "properties": {
+            "type": { "not": { "enum": ["pods-ready", "service-reachable", "helm-status-deployed", "smoke-script", "labels-present", "annotations-present", "scheme-enforced", "rbac-objects", "security-context", "network-policy", "resources-present", "imagepullsecrets-present", "serviceaccount-annotations", "scheduling-present", "priority-class-present", "probes-present", "volume-mounts-present", "pdb-present", "hpa-present", "init-containers", "host-network", "lifecycle-hooks", "dns-config", "network-policy-enforced", "mesh-mtls-enforced", "tls-cert-valid", "ingress-routes-traffic", "gateway-routes-traffic", "policy-denies-violation", "rbac-effective", "scheduled-on-target"] } }
+          },
+          "required": ["type"],
+          "additionalProperties": true
         }
       ]
     }

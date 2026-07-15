@@ -60,14 +60,14 @@ PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 # Non-mesh pod: no sidecar, plain HTTP → should be rejected under STRICT
 # Create a pod in the non-mesh namespace
 kctl -n "${CTRL_NS}" run ct-nonmesh --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   sleep 300 2>/dev/null || true
 kctl -n "${CTRL_NS}" wait pod ct-nonmesh --for=condition=Ready --timeout=60s || true
 
 RAW_NONMESH_CODE=$(kctl -n "${CTRL_NS}" exec ct-nonmesh -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-NONMESH_CODE=$(echo "$RAW_NONMESH_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+NONMESH_CODE=$(echo "$RAW_NONMESH_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response from non-mesh probe: ${NONMESH_CODE}"
 if [ "${NONMESH_CODE}" = "200" ]; then
@@ -80,7 +80,7 @@ fi
 echo "==> In-mesh probe: HTTP from pod with sidecar (expect 200)"
 # Create a dedicated probe pod with sidecar injection
 kctl -n "${NS}" run ct-mesh-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   --overrides='{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}' -- \
   sleep 300 2>/dev/null || true
 echo "  Waiting for in-mesh probe pod to be ready (2m max)"
@@ -91,7 +91,7 @@ kctl -n "${NS}" wait pod ct-mesh-probe --for=condition=Ready --timeout=2m || {
 RAW_MESH_CODE=$(kctl -n "${NS}" exec ct-mesh-probe -- \
   curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-MESH_CODE=$(echo "$RAW_MESH_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+MESH_CODE=$(echo "$RAW_MESH_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTP response from in-mesh probe: ${MESH_CODE}"
 if [ "${MESH_CODE}" = "200" ]; then

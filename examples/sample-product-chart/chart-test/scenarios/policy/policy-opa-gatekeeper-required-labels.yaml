@@ -2,18 +2,16 @@
 id: policy-opa-gatekeeper-required-labels
 name: "OPA Gatekeeper required labels enforcement (gap-probe)"
 description: >-
-  Installs OPA Gatekeeper + NGINX Ingress, creates k8srequiredlabels
-  ConstraintTemplate + Constraint targeting Deployments and Ingresses.
-  Verifies non-compliant resources denied, compliant accepted.
-  Cross-feature compose with M4 nginx-ingress. Then runs a gap-probe:
-  the chart's Ingress template uses selectorLabels (just app: <release>)
-  instead of the full common labels (which include app.kubernetes.io/name),
-  so the chart's Ingress fails the required-labels constraint — an honest
-  gap (red cell); do NOT over-engineer the chart.
+  Installs OPA Gatekeeper + NGINX Ingress, creates k8srequiredlabels ConstraintTemplate +
+  Constraint targeting Deployments and Ingresses. Verifies non-compliant resources denied,
+  compliant accepted. Cross-feature compose with M4 nginx-ingress. Then runs a gap-probe: the
+  chart's Ingress template uses selectorLabels (just app: <release>) instead of the full common
+  labels (which include app.kubernetes.io/name), so the chart's Ingress fails the required-labels
+  constraint — an honest gap (red cell); do NOT over-engineer the chart.
 labels: {customer: any, profile: policy}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: gatekeeper/gatekeeper
@@ -58,6 +56,7 @@ cluster:
       wait_timeout: 3m
     - kind: raw_manifest
       path: chart-test/fixtures/policy/k8srequiredlabels-template.yaml
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
@@ -73,9 +72,11 @@ asserts:
   - type: pods-ready
     namespace: gatekeeper-system
     timeout: 4m
+    selector: app.kubernetes.io/instance=gatekeeper
   - type: pods-ready
     namespace: ingress-nginx
     timeout: 3m
+    selector: app.kubernetes.io/instance=ingress-nginx
   - type: pods-ready
     namespace: sample
     timeout: 5m

@@ -5,7 +5,7 @@ description: "Installs NGINX Ingress controller, creates an Ingress with ingress
 labels: {customer: any, profile: ingress}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: ingress-nginx/ingress-nginx
@@ -51,8 +51,15 @@ asserts:
   - type: pods-ready
     namespace: ingress-nginx
     timeout: 3m
+    selector: app.kubernetes.io/instance=ingress-nginx
   - type: smoke-script
     path: chart-test/assertions/nginx-basic.sh
+  - type: ingress-routes-traffic
+    namespace: sample
+    ingress_name: "sample-basic"
+    ingress_host: "sample.test.local"
+    controller_namespace: "ingress-nginx"
+    expected_status: 200
 tags: [nightly]
 mechanisms: ['addon:nginx-ingress']
 category: networking

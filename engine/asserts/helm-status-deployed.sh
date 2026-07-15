@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: `helm status <release> -n <ns>` reports STATUS=deployed.
 set -euo pipefail
 

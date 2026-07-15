@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: test-chart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: app
+          image: nginx:latest
+          {{- if .Values.volumes.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.volumes.mountPath }}
+          {{- else if .Values.volumes.danglingMount }}
+          volumeMounts:
+            - name: no-such-volume
+              mountPath: /nowhere
+          {{- end }}
+          {{- if .Values.probes }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 1
+            periodSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          {{- end }}
+      {{- if .Values.volumes.enabled }}
+      volumes:
+        - name: data
+          emptyDir: {}
+      {{- end }}

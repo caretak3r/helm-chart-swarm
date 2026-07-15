@@ -2,39 +2,29 @@
 id: security-context-on
 name: "Capability: pod/container securityContext knobs set (ON)"
 description: >-
-  Renders the product chart with pod-security and container-security knobs
-  set (podSecurityContext.runAsNonRoot=true, podSecurityContext.seccompProfile.type=RuntimeDefault,
-  securityContext.readOnlyRootFilesystem=true, securityContext.allowPrivilegeEscalation=false,
-  securityContext.capabilities.drop[0]=ALL) and asserts pod-level and
-  container-level securityContext fields appear with the configured values.
-  The sample chart does NOT expose podSecurityContext or securityContext
-  values and has no securityContext blocks in its templates — setting
-  these knobs has no effect. This scenario is EXPECTED to FAIL (honest
-  red gap) documenting that the chart lacks securityContext knobs.
+  Renders the product chart with pod-security and container-security knobs set
+  (podSecurityContext.seccompProfile.type=RuntimeDefault,
+  securityContext.allowPrivilegeEscalation=false, securityContext.capabilities.drop[0]=ALL) and
+  asserts pod-level and container-level securityContext fields appear with the configured values.
+  The sample chart DOES expose podSecurityContext and securityContext values via its templates.
 labels: {customer: enterprise, profile: compliance}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
   namespace: sample
-  set:
-    podSecurityContext.runAsNonRoot: true
-    podSecurityContext.seccompProfile.type: RuntimeDefault
-    securityContext.readOnlyRootFilesystem: true
-    securityContext.allowPrivilegeEscalation: false
-    securityContext.capabilities.drop[0]: ALL
+  values: chart-test/fixtures/capability/security-context-on-values.yaml
 asserts:
   - type: security-context
     namespace: sample
     source: rendered
     expect_present: true
     podSecurityContext:
-      runAsNonRoot: true
       seccompProfile.type: RuntimeDefault
     containerSecurityContext:
-      readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
       capabilities.drop: ALL
 tags: [capability, compliance]

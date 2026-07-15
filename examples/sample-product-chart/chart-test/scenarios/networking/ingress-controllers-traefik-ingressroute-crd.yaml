@@ -5,7 +5,7 @@ description: "Installs Traefik, uses IngressRoute CRD exclusively for routing (n
 labels: {customer: any, profile: ingress}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: traefik/traefik
@@ -60,6 +60,7 @@ asserts:
   - type: pods-ready
     namespace: traefik
     timeout: 3m
+    selector: app.kubernetes.io/name=traefik
   - type: smoke-script
     path: chart-test/assertions/traefik-ingressroute-crd.sh
 tags: [nightly]

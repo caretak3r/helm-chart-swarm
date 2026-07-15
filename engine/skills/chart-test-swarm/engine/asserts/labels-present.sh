@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: labels-present — every rendered/live object carries the configured
 # extra labels. Introspects helm template output and/or live kubectl get -o yaml.
 # Returns {status: PASS|FAIL, detail} via exit code + stdout.
@@ -26,11 +27,13 @@ label_value() { printf '%s' "$LABELS_JSON" | jq -r --arg k "$1" '.[$k]'; }
 
 rendered_file=""
 # shellcheck disable=SC2329  # invoked via trap
-cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; }
+cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; return 0; }
 trap cleanup EXIT
 
 render_helm_template() {
-  rendered_file=$(mktemp /tmp/cap-lbl-rendered.XXXXXX.yaml)
+  rendered_file="$(mktemp /tmp/cap-lbl-rendered-XXXXXX)"
+  mv "$rendered_file" "${rendered_file}.yaml"
+  rendered_file="${rendered_file}.yaml"
   local chart release product_ns values_file set_json
   chart=$(yq '.product.chart' "$SCENARIO")
   release=$(yq '.product.release' "$SCENARIO")
@@ -51,8 +54,10 @@ render_helm_template() {
 kind_matches_filter() {
   local kind="$1"
   if [ "$KINDS_JSON" = "null" ]; then return 0; fi  # no filter
-  local match; match=$(printf '%s' "$KINDS_JSON" | jq -r --arg k "$kind" 'index($k) // -1')
-  [ "$match" -ge 0 ]
+  # Exact kind match (not substring): check if kind is in the JSON array
+  # using jq 'any(. == $k)' for exact string equality.
+  local match; match=$(printf '%s' "$KINDS_JSON" | jq -r --arg k "$kind" 'any(.[]; . == $k)')
+  [ "$match" = "true" ]
 }
 
 check_rendered_labels() {

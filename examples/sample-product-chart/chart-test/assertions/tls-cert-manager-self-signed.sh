@@ -43,12 +43,12 @@ TLS_PORT=$(kctl -n "${NS}" get svc "${RELEASE}" -o jsonpath='{.spec.ports[?(@.na
 CA_CRT_B64=$(kctl -n "${NS}" get secret chart-test-swarm-ca-tls -o jsonpath='{.data.ca\.crt}')
 
 RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-curl --rm -i --restart=Never --quiet \
-  --image=curlimages/curl:8.6.0 --timeout=30s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
   sh -c "echo '${CA_CRT_B64}' | base64 -d > /tmp/ca.crt && \
     curl -s -o /dev/null -w '%{http_code}' --cacert /tmp/ca.crt \
     --resolve '${DOMAIN}:${TLS_PORT}:${SVC_IP}' \
     'https://${DOMAIN}:${TLS_PORT}/'" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 
 echo "HTTPS response: ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then

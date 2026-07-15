@@ -414,15 +414,11 @@ def run_test_loop(  # noqa: PLR0913, PLR0915
                             fixed += 1
                             failed -= 1  # WAS a failure, now fixed
                             # Update recommendation status
-                            update_recommendation_status(
-                                resolved_reports, rec_id, "PASS"
-                            )
+                            update_recommendation_status(resolved_reports, rec_id, "PASS")
                             break
                         else:
                             print("    ✗ Re-run still FAIL")
-                            update_recommendation_status(
-                                resolved_reports, rec_id, "FAIL"
-                            )
+                            update_recommendation_status(resolved_reports, rec_id, "FAIL")
 
                     if not scenario_fixed and not no_fix:
                         open_count += 1

@@ -1,0 +1,35 @@
+---
+id: scheduling-target-node
+name: "Scheduling: scheduled-on-target L3 behavioral assert"
+description: >-
+  Exercises the engine-level scheduled-on-target L3 behavioral assert by
+  verifying all release pods are scheduled on the kind control-plane node
+  (which carries the node-role.kubernetes.io/control-plane= label). Proves
+  that pod placement matches the target node label.
+labels: {customer: any, profile: scheduling}
+cluster:
+  provider: kind
+  k8s_version: v1.36.1
+product:
+  chart: ./chart
+  release: sample
+  namespace: sample
+  set:
+    image.repository: "public.ecr.aws/nginx/nginx"
+    image.tag: "1.29-alpine"
+asserts:
+  - type: helm-status-deployed
+    release: sample
+    namespace: sample
+  - type: pods-ready
+    namespace: sample
+    timeout: 5m
+  - type: scheduled-on-target
+    namespace: sample
+    target_label: "node-role.kubernetes.io/control-plane="
+    timeout: 2m
+tags: [nightly]
+mechanisms: ['assert:scheduled-on-target']
+category: capability
+capability: scheduling-target
+tier: live

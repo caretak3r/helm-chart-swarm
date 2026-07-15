@@ -2,12 +2,14 @@
 id: service-mesh-istio-service-mesh-peer-authentication
 name: "Istio Service Mesh — PeerAuthentication lifecycle"
 description: >-
-  Installs istio/base + istio/istiod, deploys the product chart with mesh.inject=true, and exercises the PeerAuthentication lifecycle: PERMISSIVE mode allows both mesh and non-mesh
-  traffic; switching to STRICT mode blocks non-mesh traffic while mesh traffic continues via auto-upgraded mTLS.
+  Installs istio/base + istio/istiod, deploys the product chart with mesh.inject=true, and
+  exercises the PeerAuthentication lifecycle: PERMISSIVE mode allows both mesh and non-mesh
+  traffic; switching to STRICT mode blocks non-mesh traffic while mesh traffic continues via
+  auto-upgraded mTLS.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: istio/base
@@ -36,6 +38,7 @@ cluster:
               memory: "384Mi"
       wait: pods-ready
       wait_timeout: 5m
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample

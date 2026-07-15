@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: priority-class-present — validates presence or absence of
 # priorityClassName on workload pod specs.
 # When expect_present=true, asserts that every workload pod spec carries
@@ -9,12 +10,17 @@
 # Returns {status: PASS|FAIL, detail} via exit code + stdout.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/assert-helpers.sh
+source "$SCRIPT_DIR/lib/assert-helpers.sh"
+
 SCENARIO="$1"; IDX="$2"
 
 NS=$(yq ".asserts[$IDX].namespace" "$SCENARIO")
 SOURCE=$(yq ".asserts[$IDX].source // \"both\"" "$SCENARIO")
 EXPECT_PRESENT=$(yq ".asserts[$IDX].expect_present" "$SCENARIO")
 EXPECTED_PC=$(yq ".asserts[$IDX].priority_class_name // \"\"" "$SCENARIO")
+RELEASE="${RELEASE:-$(yq '.product.release' "$SCENARIO")}"
 
 if [ "$EXPECT_PRESENT" != "true" ] && [ "$EXPECT_PRESENT" != "false" ]; then
   echo "FAIL: expect_present must be 'true' or 'false', got '$EXPECT_PRESENT'" >&2
@@ -28,11 +34,13 @@ fi
 
 rendered_file=""
 # shellcheck disable=SC2329  # invoked via trap
-cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; }
+cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; return 0; }
 trap cleanup EXIT
 
 render_helm_template() {
-  rendered_file=$(mktemp /tmp/cap-pc-rendered.XXXXXX.yaml)
+  rendered_file="$(mktemp /tmp/cap-pc-rendered-XXXXXX)"
+  mv "$rendered_file" "${rendered_file}.yaml"
+  rendered_file="${rendered_file}.yaml"
   local chart release product_ns values_file set_json
   chart=$(yq '.product.chart' "$SCENARIO")
   release=$(yq '.product.release' "$SCENARIO")
@@ -120,7 +128,7 @@ check_live_priority_class() {
   local fail_count=0 workload_count=0
 
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
 
   local i=0

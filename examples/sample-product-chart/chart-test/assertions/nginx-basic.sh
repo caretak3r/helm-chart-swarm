@@ -34,15 +34,25 @@ echo "==> Getting nginx controller pod IP"
 NGINX_IP=$(kctl -n "${NGINX_NS}" get pod -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].status.podIP}')
 echo "NGINX pod IP: ${NGINX_IP}"
 
-echo "==> Probing HTTP with Host header (expect 200)"
-RAW_HTTP_CODE=$(kctl -n "${NS}" run ct-probe --rm -i --restart=Never --quiet \
-  --image=quay.io/curl/curl:8.6.0 --timeout=30s -- \
-  curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
-    -H "Host: ${HOST}" \
-    "http://${NGINX_IP}/" 2>/dev/null || echo "000")
-HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+echo "==> Probing HTTP with Host header (expect 200, retry up to 2m for ingress backend ready)"
+# Nginx ingress may take a few seconds to sync endpoints after the product pod becomes Ready.
+# Retry up to 20 times (6s apart = 2m) before declaring failure.
+HTTP_CODE="000"
+for _attempt in $(seq 1 20); do
+  RAW_HTTP_CODE=""
+  RAW_HTTP_CODE=$(kctl -n "${NS}" run "ct-probe-${_attempt}" --rm -i --restart=Never --quiet \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s -- \
+    curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
+      -H "Host: ${HOST}" \
+      "http://${NGINX_IP}/" 2>/dev/null) || RAW_HTTP_CODE="000"
+  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
+  echo "HTTP response (with Host): ${HTTP_CODE} (attempt ${_attempt})"
+  if [ "${HTTP_CODE}" = "200" ]; then
+    break
+  fi
+  [ "$_attempt" -lt 20 ] && sleep 6
+done
 
-echo "HTTP response (with Host): ${HTTP_CODE}"
 if [ "${HTTP_CODE}" = "200" ]; then
   echo "PASS: HTTP 200 with Host header"
 else

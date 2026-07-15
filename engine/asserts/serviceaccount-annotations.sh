@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: serviceaccount-annotations — validates presence or absence of
 # cloud-identity annotations (IRSA, Azure workload identity, GKE WI)
 # on the chart's ServiceAccount.
@@ -10,11 +11,16 @@
 # Returns {status: PASS|FAIL, detail} via exit code + stdout.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/assert-helpers.sh
+source "$SCRIPT_DIR/lib/assert-helpers.sh"
+
 SCENARIO="$1"; IDX="$2"
 
 NS=$(yq ".asserts[$IDX].namespace" "$SCENARIO")
 SOURCE=$(yq ".asserts[$IDX].source // \"both\"" "$SCENARIO")
 EXPECT_PRESENT=$(yq ".asserts[$IDX].expect_present" "$SCENARIO")
+RELEASE="${RELEASE:-$(yq '.product.release' "$SCENARIO")}"
 
 if [ "$EXPECT_PRESENT" != "true" ] && [ "$EXPECT_PRESENT" != "false" ]; then
   echo "FAIL: expect_present must be 'true' or 'false', got '$EXPECT_PRESENT'" >&2
@@ -33,11 +39,13 @@ fi
 
 rendered_file=""
 # shellcheck disable=SC2329  # invoked via trap
-cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; }
+cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; return 0; }
 trap cleanup EXIT
 
 render_helm_template() {
-  rendered_file=$(mktemp /tmp/cap-sa-ann-rendered.XXXXXX.yaml)
+  rendered_file="$(mktemp /tmp/cap-sa-ann-rendered-XXXXXX)"
+  mv "$rendered_file" "${rendered_file}.yaml"
+  rendered_file="${rendered_file}.yaml"
   local chart release product_ns values_file set_json
   chart=$(yq '.product.chart' "$SCENARIO")
   release=$(yq '.product.release' "$SCENARIO")
@@ -141,9 +149,9 @@ check_rendered_sa_annotations() {
 check_live_sa_annotations() {
   local sa_count=0 fail_count=0
 
-  # Get ServiceAccounts excluding the auto-created "default"
+  # Get ServiceAccounts — release-scoped, excluding the auto-created "default"
   local sa_yaml
-  sa_yaml=$(kubectl "${kubectl_args[@]}" get sa -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  sa_yaml=$(kubectl "${kubectl_args[@]}" get sa -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   sa_count=$(printf '%s' "$sa_yaml" | yq '[.items[] | select(.metadata.name != "default")] | length' 2>/dev/null || echo "0")
 
   if [ "$EXPECT_PRESENT" = "true" ] && [ "$sa_count" -eq 0 ]; then

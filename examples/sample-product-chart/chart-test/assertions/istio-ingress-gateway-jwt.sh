@@ -213,11 +213,11 @@ echo "  JWT generated (expires in 1h)"
 
 echo "==> Test 1: Request WITHOUT Bearer token → expect 401 or 403"
 NOAUTH_CODE=$(kctl -n "${NS}" run ct-jwt-noauth --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-NOAUTH_CODE=$(echo "$NOAUTH_CODE" | grep -oE '[0-9]{3}' | tail -1)
+NOAUTH_CODE=$(echo "$NOAUTH_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  HTTP code (no auth): ${NOAUTH_CODE}"
 
 if [ "${NOAUTH_CODE}" = "401" ] || [ "${NOAUTH_CODE}" = "403" ]; then
@@ -229,12 +229,12 @@ fi
 
 echo "==> Test 2: Request WITH valid Bearer token → expect 200"
 AUTH_CODE=$(kctl -n "${NS}" run ct-jwt-auth --restart=Never --rm -i \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s \
   -- sh -c "curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
     -H 'Host: ${RELEASE}.test.local' \
     -H 'Authorization: Bearer ${VALID_JWT}' \
     'http://${GW_POD_IP}:80/'" 2>/dev/null || echo "000")
-AUTH_CODE=$(echo "$AUTH_CODE" | grep -oE '[0-9]{3}' | tail -1)
+AUTH_CODE=$(echo "$AUTH_CODE" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
 echo "  HTTP code (with valid JWT): ${AUTH_CODE}"
 
 if [ "${AUTH_CODE}" = "200" ]; then
@@ -243,7 +243,7 @@ else
   echo "FAIL: expected 200 with valid JWT, got ${AUTH_CODE}" >&2
   # Debug: try with verbose
   kctl -n "${NS}" run ct-jwt-debug --restart=Never --rm -i \
-    --image=quay.io/curl/curl:8.6.0 --timeout=30s \
+    --image=quay.io/curl/curl:8.20.0 --timeout=30s \
     -- sh -c "curl -v --max-time 15 \
       -H 'Host: ${RELEASE}.test.local' \
       -H 'Authorization: Bearer ${VALID_JWT}' \

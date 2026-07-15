@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPTH: L1
 # Assert: security-context — validates presence or absence of pod-level and
 # container-level securityContext fields on workload objects.
 # When expect_present=true, asserts that configured podSecurityContext and
@@ -8,11 +9,16 @@
 # Returns {status: PASS|FAIL, detail} via exit code + stdout.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/assert-helpers.sh
+source "$SCRIPT_DIR/lib/assert-helpers.sh"
+
 SCENARIO="$1"; IDX="$2"
 
 NS=$(yq ".asserts[$IDX].namespace" "$SCENARIO")
 SOURCE=$(yq ".asserts[$IDX].source // \"both\"" "$SCENARIO")
 EXPECT_PRESENT=$(yq ".asserts[$IDX].expect_present" "$SCENARIO")
+RELEASE="${RELEASE:-$(yq '.product.release' "$SCENARIO")}"
 
 if [ "$EXPECT_PRESENT" != "true" ] && [ "$EXPECT_PRESENT" != "false" ]; then
   echo "FAIL: expect_present must be 'true' or 'false', got '$EXPECT_PRESENT'" >&2
@@ -31,11 +37,13 @@ fi
 
 rendered_file=""
 # shellcheck disable=SC2329  # invoked via trap
-cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; }
+cleanup() { [ -n "$rendered_file" ] && [ -f "$rendered_file" ] && rm -f "$rendered_file"; return 0; }
 trap cleanup EXIT
 
 render_helm_template() {
-  rendered_file=$(mktemp /tmp/cap-secctx-rendered.XXXXXX.yaml)
+  rendered_file="$(mktemp /tmp/cap-secctx-rendered-XXXXXX)"
+  mv "$rendered_file" "${rendered_file}.yaml"
+  rendered_file="${rendered_file}.yaml"
   local chart release product_ns values_file set_json
   chart=$(yq '.product.chart' "$SCENARIO")
   release=$(yq '.product.release' "$SCENARIO")
@@ -95,11 +103,23 @@ check_rendered_security_context() {
             local expected_pval
             expected_pval=$(printf '%s' "$POD_SC_JSON" | jq -r --arg k "$pkey" '.[$k]')
             local actual_pval
+            local _raw_pval
             # Handle nested keys like seccompProfile.type
+            # Avoid // operator: yq treats boolean false as absent with //
+            # NOTE: yq v4 requires a leading dot for path traversal after a pipe;
+            #       "$pkey" without dot causes lexer error -> use ".$pkey" for dotted keys
             if echo "$pkey" | grep -q '\.'; then
-              actual_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext | $pkey // \"__ABSENT__\"" "$rendered_file" 2>/dev/null || echo "__ABSENT__")
+              _raw_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext | .$pkey" "$rendered_file" 2>/dev/null || echo "null")
             else
-              actual_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext[\"$pkey\"] // \"__ABSENT__\"" "$rendered_file" 2>/dev/null || echo "__ABSENT__")
+              _raw_pval=$(yq "select(di == $di) | .spec.template.spec.securityContext[\"$pkey\"]" "$rendered_file" 2>/dev/null || echo "null")
+            fi
+            if [ -z "$_raw_pval" ] || [ "$_raw_pval" = "null" ]; then
+              actual_pval="__ABSENT__"
+            elif echo "$_raw_pval" | grep -q '^- '; then
+              # Single-element YAML list: normalize "- VALUE\n" to "VALUE"
+              actual_pval=$(echo "$_raw_pval" | head -1 | sed 's/^- //')
+            else
+              actual_pval="$_raw_pval"
             fi
             if [ "$actual_pval" != "$expected_pval" ]; then
               echo "  $kind_val/$name_val: pod securityContext.$pkey expected=$expected_pval actual=$actual_pval" >&2
@@ -128,11 +148,23 @@ check_rendered_security_context() {
               local expected_cval
               expected_cval=$(printf '%s' "$CTR_SC_JSON" | jq -r --arg k "$ckey" '.[$k]')
               local actual_cval
+              local _raw_cval
               # Handle nested keys like capabilities.drop
+              # Avoid // operator: yq treats boolean false as absent with //
+              # NOTE: yq v4 requires a leading dot for path traversal after a pipe;
+              #       "$ckey" without dot causes lexer error -> use ".$ckey" for dotted keys
               if echo "$ckey" | grep -q '\.'; then
-                actual_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext | $ckey // \"__ABSENT__\"" "$rendered_file" 2>/dev/null || echo "__ABSENT__")
+                _raw_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext | .$ckey" "$rendered_file" 2>/dev/null || echo "null")
               else
-                actual_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext[\"$ckey\"] // \"__ABSENT__\"" "$rendered_file" 2>/dev/null || echo "__ABSENT__")
+                _raw_cval=$(yq "select(di == $di) | .spec.template.spec.containers[$ci].securityContext[\"$ckey\"]" "$rendered_file" 2>/dev/null || echo "null")
+              fi
+              if [ -z "$_raw_cval" ] || [ "$_raw_cval" = "null" ]; then
+                actual_cval="__ABSENT__"
+              elif echo "$_raw_cval" | grep -q '^- '; then
+                # Single-element YAML list: normalize "- VALUE\n" to "VALUE"
+                actual_cval=$(echo "$_raw_cval" | head -1 | sed 's/^- //')
+              else
+                actual_cval="$_raw_cval"
               fi
               if [ "$actual_cval" != "$expected_cval" ]; then
                 echo "  $kind_val/$name_val container/$ctr_name: securityContext.$ckey expected=$expected_cval actual=$actual_cval" >&2
@@ -189,7 +221,7 @@ check_live_security_context() {
   local fail_count=0 workload_count=0
 
   local dep_yaml
-  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -o yaml 2>/dev/null || echo "items: []")
+  dep_yaml=$(kubectl "${kubectl_args[@]}" get deploy -n "$NS" -l "app.kubernetes.io/instance=${RELEASE}" -o yaml 2>/dev/null || echo "items: []")
   local dep_count; dep_count=$(printf '%s' "$dep_yaml" | yq '.items | length' 2>/dev/null || echo "0")
 
   local i=0

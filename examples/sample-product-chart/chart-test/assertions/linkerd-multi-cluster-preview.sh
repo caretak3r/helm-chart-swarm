@@ -12,11 +12,17 @@ RELEASE="${RELEASE:-sample}"
 kctl() { kubectl ${KUBE_CONTEXT:+--context "$KUBE_CONTEXT"} "$@"; }
 
 echo "==> Verifying linkerd-multicluster extension is installed"
-kctl -n linkerd-multicluster get deploy linkerd-service-mirror >/dev/null 2>&1 || {
-  echo "FAIL: linkerd-service-mirror deployment not found in linkerd-multicluster namespace" >&2
+# In linkerd 2.16+ (chart 30.x), service-mirror runs inside linkerd-gateway.
+# Accept either linkerd-gateway (new) or linkerd-service-mirror (older charts).
+if kctl -n linkerd-multicluster get deploy linkerd-gateway >/dev/null 2>&1; then
+  echo "  ✓ linkerd-gateway deployment exists (service-mirror integrated)"
+elif kctl -n linkerd-multicluster get deploy linkerd-service-mirror >/dev/null 2>&1; then
+  echo "  ✓ linkerd-service-mirror deployment exists"
+else
+  echo "FAIL: neither linkerd-gateway nor linkerd-service-mirror found in linkerd-multicluster namespace" >&2
+  kctl -n linkerd-multicluster get deploy 2>&1 >&2 || true
   exit 1
-}
-echo "  ✓ linkerd-service-mirror deployment exists"
+fi
 
 echo "==> Verifying multicluster CRDs are established"
 # Link CRD
@@ -35,9 +41,10 @@ SVC_MIRROR_STATUS=$(kctl get crd services.k8s.io -o jsonpath='{.status.condition
 echo "  services.k8s.io Established: ${SVC_MIRROR_STATUS}"
 
 echo "==> Authoring a preview Link resource for a logical target cluster"
-cat <<EOF | kctl apply -f - 2>/dev/null || {
-  echo "WARN: could not create preview Link (may be namespace restriction)"
-}
+# NOTE: Do not combine <<HEREDOC with || { ... } on the same command line — bash reads
+# the heredoc body first, which consumes the { } block, causing a syntax error.
+# Use the pattern: cmd <<'DELIM' || fallback_cmd  (fallback on the same line as cmd).
+kctl apply -f - 2>/dev/null <<'LINK_EOF' || echo "WARN: could not create preview Link (may be namespace restriction)"
 apiVersion: multicluster.linkerd.io/v1alpha1
 kind: Link
 metadata:
@@ -53,7 +60,7 @@ spec:
     path: /ready
     port: 4191
     period: 30s
-EOF
+LINK_EOF
 
 echo "  Verifying Link resource was created"
 LINK_COUNT=$(kctl -n linkerd-multicluster get link -o name 2>/dev/null | wc -l | tr -d ' ')

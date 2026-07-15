@@ -10,8 +10,8 @@ Covers VAL-REC-001 through VAL-REC-012:
   VAL-REC-007: Deduplication merges same failure across runs into one recommendation
   VAL-REC-008: Fix prompt includes chart context for LLM agent consumption
   VAL-REC-009: Deterministic IDs—same input always produces same recommendation ID
-  VAL-REC-010: Severity assignment—high for security/RBAC, medium for
-               labels/annotations, low for gaps
+  VAL-REC-010: Severity assignment—high for security/RBAC,
+   medium for labels/annotations, low for gaps
   VAL-REC-011: Persistence to recommendations.json survives engine restart
   VAL-REC-012: Dashboard rebuild updates recommendations—new FAILs added, resolved marked
 """

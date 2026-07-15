@@ -5,7 +5,8 @@ description: "Installs Gateway API CRDs + Contour Gateway Provisioner, creates G
 labels: {customer: any, profile: gateway-api}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
+  helm_timeout: 10m
   preinstall:
     - kind: raw_manifest
       path: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
@@ -16,7 +17,7 @@ product:
   release: sample
   namespace: sample
   set:
-    image.repository: "nginx"
+    image.repository: "public.ecr.aws/nginx/nginx"
     image.tag: "1.27-alpine"
     gatewayRoute.enabled: "false"
 asserts:

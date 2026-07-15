@@ -5,7 +5,7 @@ description: "Installs NGINX Ingress with custom default backend Deployment+Serv
 labels: {customer: any, profile: ingress}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: raw_manifest
       path: chart-test/fixtures/ingress-controllers/nginx-default-backend.yaml
@@ -56,6 +56,7 @@ asserts:
   - type: pods-ready
     namespace: ingress-nginx
     timeout: 3m
+    selector: app.kubernetes.io/instance=ingress-nginx
   - type: smoke-script
     path: chart-test/assertions/nginx-default-backend.sh
 tags: [nightly]

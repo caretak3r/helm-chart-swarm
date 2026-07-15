@@ -7,7 +7,8 @@ description: >-
 labels: {customer: any, profile: gateway-api-backendtls}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  helm_timeout: 10m
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: istio/base
@@ -47,7 +48,7 @@ product:
   release: sample
   namespace: sample
   set:
-    image.repository: "nginx"
+    image.repository: "public.ecr.aws/nginx/nginx"
     image.tag: "1.27-alpine"
     gatewayRoute.enabled: "false"
     gatewayRoute.parentRef.name: "sample-gw"

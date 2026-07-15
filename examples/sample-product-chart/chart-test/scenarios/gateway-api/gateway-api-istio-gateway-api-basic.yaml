@@ -5,7 +5,8 @@ description: "Installs istio/base + istio/istiod and Gateway API CRDs, creates G
 labels: {customer: any, profile: gateway-api}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  helm_timeout: 10m
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: istio/base
@@ -41,7 +42,7 @@ product:
   release: sample
   namespace: sample
   set:
-    image.repository: "nginx"
+    image.repository: "public.ecr.aws/nginx/nginx"
     image.tag: "1.27-alpine"
     gatewayRoute.enabled: "true"
     gatewayRoute.parentRef.name: "sample-gw"
@@ -65,6 +66,14 @@ asserts:
     timeout: 5m
   - type: smoke-script
     path: chart-test/assertions/istio-gateway-api-basic.sh
+  - type: gateway-routes-traffic
+    namespace: sample
+    gateway_host: "sample.test.local"
+    gateway_class: "istio"
+    gateway_name: "sample-gw"
+    route_name: "sample-route"
+    controller_namespace: "istio-system"
+    expected_status: 200
 tags: [nightly, curated-live]
 mechanisms: ['addon:istio', 'gateway-api:istio']
 category: gateway-api

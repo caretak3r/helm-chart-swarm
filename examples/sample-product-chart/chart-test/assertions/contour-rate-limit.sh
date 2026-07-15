@@ -42,11 +42,11 @@ echo "==> Sending ${LIMIT} requests at ≤limit rate (expect all 200)"
 ALL_OK=1
 for i in $(seq 1 "${LIMIT}"); do
   RAW_CODE=$(kctl -n "${NS}" run "ct-rl-und-${i}" --rm -i --restart=Never --quiet \
-    --image=quay.io/curl/curl:8.6.0 --timeout=20s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=20s -- \
     curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
       -H "Host: ${HOST}" \
       "http://${ENVOY_IP}:8080/" 2>/dev/null || echo "000")
-  CODE=$(echo "${RAW_CODE}" | grep -oE '[0-9]{3}' | tail -1)
+  CODE=$(echo "${RAW_CODE}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
   echo "  req ${i}: HTTP ${CODE}"
   if [ "${CODE}" != "200" ]; then
     ALL_OK=0
@@ -63,11 +63,11 @@ echo "==> Sending $((${LIMIT} * 3)) requests above limit rate (expect at least o
 GOT_429=0
 for i in $(seq 1 $((${LIMIT} * 3))); do
   RAW_CODE=$(kctl -n "${NS}" run "ct-rl-over-${i}" --rm -i --restart=Never --quiet \
-    --image=quay.io/curl/curl:8.6.0 --timeout=20s -- \
+    --image=quay.io/curl/curl:8.20.0 --timeout=20s -- \
     curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
       -H "Host: ${HOST}" \
       "http://${ENVOY_IP}:8080/" 2>/dev/null || echo "000")
-  CODE=$(echo "${RAW_CODE}" | grep -oE '[0-9]{3}' | tail -1)
+  CODE=$(echo "${RAW_CODE}" | grep -oE '[0-9]{3}' | tail -1 || echo "000")
   if [ "${CODE}" = "429" ]; then
     GOT_429=1
     echo "  req ${i}: HTTP 429 (rate limited)"

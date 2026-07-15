@@ -79,3 +79,67 @@ EOF
     [ "$status" -eq 0 ]
   done < <(find "$SCENARIOS_DIR" -type f -name '*.yaml' | sort)
 }
+
+@test "schema accepts consumer-only custom assert type with arbitrary properties" {
+  tmpscen=$(mktemp "$TMPDIR/scen-custom-XXXXX.yaml")
+  _SCHEMA_TEMPFILES+=("$tmpscen")
+  cat > "$tmpscen" <<'EOF'
+---
+id: test-custom-type
+cluster:
+  provider: kind
+product:
+  chart: chart/
+  release: test
+  namespace: test
+asserts:
+  - type: my-custom-check
+    namespace: test
+    custom_field: "hello"
+    extra_param: 42
+EOF
+  run validate_yaml "$tmpscen"
+  [ "$status" -eq 0 ]
+}
+
+@test "schema rejects consumer-only type with missing required 'type' field" {
+  tmpscen=$(mktemp "$TMPDIR/scen-no-type-XXXXX.yaml")
+  _SCHEMA_TEMPFILES+=("$tmpscen")
+  cat > "$tmpscen" <<'EOF'
+---
+id: test-no-type
+cluster:
+  provider: kind
+product:
+  chart: chart/
+  release: test
+  namespace: test
+asserts:
+  - namespace: test
+EOF
+  run validate_yaml "$tmpscen"
+  [ "$status" -ne 0 ]
+}
+
+@test "schema accepts consumer-only type alongside known types in same scenario" {
+  tmpscen=$(mktemp "$TMPDIR/scen-mixed-custom-XXXXX.yaml")
+  _SCHEMA_TEMPFILES+=("$tmpscen")
+  cat > "$tmpscen" <<'EOF'
+---
+id: test-mixed-custom
+cluster:
+  provider: kind
+product:
+  chart: chart/
+  release: test
+  namespace: test
+asserts:
+  - type: pods-ready
+    namespace: test
+  - type: my-custom-check
+    namespace: test
+    my_param: "value"
+EOF
+  run validate_yaml "$tmpscen"
+  [ "$status" -eq 0 ]
+}

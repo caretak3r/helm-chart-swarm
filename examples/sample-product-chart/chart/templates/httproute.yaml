@@ -4,7 +4,11 @@ kind: HTTPRoute
 metadata:
   name: {{ .Release.Name }}
   labels:
+    {{- include "sample-product.labels" . | nindent 4 }}
     {{- include "sample-product.selectorLabels" . | nindent 4 }}
+    {{- include "sample-product.extraLabels" . | nindent 4 }}
+  annotations:
+    {{- include "sample-product.extraAnnotations" . | nindent 4 }}
 spec:
   parentRefs:
     - name: {{ .Values.gatewayRoute.parentRef.name }}

@@ -165,7 +165,7 @@ PRODUCT_SVC="${RELEASE}.${NS}.svc.cluster.local"
 echo "==> VAL-MSH-007: Creating in-mesh probe pod (ambient-enrolled, no sidecar)"
 # The probe pod must also be in the ambient namespace to route through ztunnel
 kctl -n "${NS}" run ct-ambient-live-probe --restart=Never \
-  --image=quay.io/curl/curl:8.6.0 --timeout=60s -- \
+  --image=quay.io/curl/curl:8.20.0 --timeout=60s -- \
   sleep 300 2>/dev/null || true
 
 echo "  Waiting for probe pod to be ready (2m max)"
@@ -190,7 +190,7 @@ for ATTEMPT in 1 2 3 4 5; do
   RAW_HTTP_CODE=$(kctl -n "${NS}" exec ct-ambient-live-probe -- \
     curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
       "http://${PRODUCT_SVC}:${SVC_PORT}/" 2>/dev/null || echo "000")
-  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1)
+  HTTP_CODE=$(echo "$RAW_HTTP_CODE" | tail -1 | grep -oE '[0-9]{3}' | tail -1 || echo "000")
   echo "  Attempt ${ATTEMPT}: HTTP response from ambient probe: ${HTTP_CODE}"
   if [ "${HTTP_CODE}" = "200" ]; then
     break

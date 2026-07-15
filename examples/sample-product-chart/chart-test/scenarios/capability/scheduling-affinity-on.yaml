@@ -5,22 +5,16 @@ description: >-
   Renders the product chart with a nodeAffinity rule configured
   (requiredDuringSchedulingIgnoredDuringExecution preferring kubernetes.io/os=linux)
   and asserts that every workload pod spec carries the affinity block.
-  The sample chart does NOT expose an affinity knob in its values.yaml
-  and has no affinity block in any Deployment template — setting affinity
-  has no effect. This scenario is EXPECTED to FAIL (honest red gap)
-  documenting that the chart lacks the affinity scheduling knob.
+  Uses a values file to properly set the nested affinity structure.
 labels: {customer: enterprise, profile: compliance}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
 product:
   chart: ./chart
   release: sample
   namespace: sample
-  set:
-    affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key: kubernetes.io/os
-    affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator: In
-    affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]: linux
+  values: chart-test/fixtures/capability/scheduling-affinity-on-values.yaml
 asserts:
   - type: scheduling-present
     namespace: sample

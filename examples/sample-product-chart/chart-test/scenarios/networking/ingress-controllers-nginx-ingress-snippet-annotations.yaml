@@ -5,7 +5,7 @@ description: "Installs NGINX Ingress with allowSnippetAnnotations=true, creates 
 labels: {customer: any, profile: ingress}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: ingress-nginx/ingress-nginx
@@ -51,6 +51,7 @@ asserts:
   - type: pods-ready
     namespace: ingress-nginx
     timeout: 3m
+    selector: app.kubernetes.io/instance=ingress-nginx
   - type: smoke-script
     path: chart-test/assertions/nginx-snippet-annotations.sh
 tags: [nightly]

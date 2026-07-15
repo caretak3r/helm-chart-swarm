@@ -2,12 +2,13 @@
 id: service-mesh-linkerd-service-profile
 name: "Linkerd — ServiceProfile (Per-Route Observability)"
 description: >-
-  Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace for injection, deploys the product chart, creates a ServiceProfile CRD for the sample
-  Service defining routes with timeout and retry policies, and verifies the ServiceProfile is recognized.
+  Installs linkerd-crds + linkerd-control-plane via Helm, annotates the product namespace for
+  injection, deploys the product chart, creates a ServiceProfile CRD for the sample Service
+  defining routes with timeout and retry policies, and verifies the ServiceProfile is recognized.
 labels: {customer: any, profile: mesh}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: linkerd/linkerd-crds
@@ -30,6 +31,7 @@ cluster:
         url: "https://helm.linkerd.io/stable"
       values: chart-test/fixtures/service-mesh/linkerd-control-plane-values.yaml
       wait: none
+  helm_timeout: 10m
 product:
   chart: ./chart
   release: sample
@@ -52,6 +54,7 @@ asserts:
   - type: pods-ready
     namespace: linkerd
     timeout: 3m
+    selector: linkerd.io/control-plane-component
   - type: pods-ready
     namespace: sample
     timeout: 5m

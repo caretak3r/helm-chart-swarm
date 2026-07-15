@@ -5,7 +5,7 @@ description: "Installs cert-manager with a self-signed ClusterIssuer, issues a C
 labels: {customer: any, profile: tls}
 cluster:
   provider: kind
-  k8s_version: v1.30.0
+  k8s_version: v1.36.1
   preinstall:
     - kind: helm
       chart: jetstack/cert-manager
