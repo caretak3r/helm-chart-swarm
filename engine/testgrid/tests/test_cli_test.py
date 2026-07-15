@@ -14,11 +14,13 @@ import re
 from pathlib import Path
 from textwrap import dedent
 
+import pytest
 from typer.testing import CliRunner
 
 from chart_test_swarm.main import app
 
 runner = CliRunner()
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -94,8 +96,9 @@ def _setup_engine_stubs(
 
     Each script appends its name (and sometimes args) to an invocation log file.
 
-    The default dispatch-swarm.sh always exits 0 (PASS) and logs invocations.
-    Tests that need different dispatch behavior should overwrite the stub
+    The default run-scenario.sh logs its invocation, then delegates to the
+    dispatch-swarm.sh stub for compatibility with older tests in this file.
+    Tests that need different scenario behavior should overwrite either stub
     after calling this function.
     """
     scripts_dir = tmp_path / "engine-stubs"
@@ -158,6 +161,21 @@ exit 0
 #!/usr/bin/env bash
 echo "dispatch-swarm.sh" >> {log_file}
 exit 0
+""",
+    )
+
+    # run-scenario.sh — default: log and delegate to dispatch-swarm.sh for
+    # existing tests that customize dispatch behavior.
+    _write_stub(
+        scripts_dir,
+        "run-scenario.sh",
+        f"""\
+#!/usr/bin/env bash
+echo "run-scenario.sh $1" \\
+  "KEEP_CLUSTER=${{KEEP_CLUSTER:-unset}}" \\
+  "KEEP_ON_FAILURE=${{KEEP_ON_FAILURE:-unset}}" >> {log_file}
+export CTS_SCENARIOS="${{1:-}}"
+bash "{scripts_dir / "dispatch-swarm.sh"}"
 """,
     )
 
@@ -824,6 +842,109 @@ class TestNoFix:
             env=env,
         )
         assert "fail" in result.stdout.lower() or "FAIL" in result.stdout
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Regression: test must execute run-scenario.sh, not brief-only dispatch
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestScenarioExecutionRegression:
+    """The test loop must run scenarios and propagate real failures."""
+
+    def test_run_scenario_failure_surfaces_in_summary(self, tmp_path: Path) -> None:
+        scripts = _setup_engine_stubs(tmp_path, verify_exit=0)
+        marker = tmp_path / "run-scenario-invoked.txt"
+        reports_dir = tmp_path / "reports"
+
+        content = dedent(f"""\
+            #!/usr/bin/env bash
+            set -euo pipefail
+
+            scenario="${{1:?scenario path required}}"
+            scenario_file="$(basename "$scenario")"
+            scenario_id="${{scenario_file%.*}}"
+            report_dir="${{REPORTS_DIR}}/scenario-${{scenario_id}}-20260704-000000"
+
+            printf '%s KEEP_CLUSTER=%s KEEP_ON_FAILURE=%s\\n' \\
+              "$scenario" \\
+              "${{KEEP_CLUSTER:-unset}}" \\
+              "${{KEEP_ON_FAILURE:-unset}}" >> "{marker}"
+            mkdir -p "$report_dir/artifacts/logs"
+            cat > "$report_dir/result.yaml" <<EOF
+            scenario_id: $scenario_id
+            status: FAIL
+            asserts: []
+            EOF
+            exit 1
+        """)
+        _write_stub(scripts, "run-scenario.sh", content)
+
+        proj = _setup_stub_project(tmp_path, ["scenario-fails.yaml"])
+        llm = _setup_llm_mock(tmp_path)
+        env = _build_env(scripts, llm, REPORTS_DIR=str(reports_dir))
+
+        result = runner.invoke(
+            app,
+            [
+                "test",
+                "--project-dir",
+                str(proj),
+                "--no-fix",
+                "--reports-dir",
+                str(reports_dir),
+            ],
+            env=env,
+        )
+
+        assert result.exit_code == 0, f"Exit: {result.exit_code}, stderr: {result.stderr}"
+        assert marker.is_file(), "run-scenario.sh stub was not invoked"
+        marker_text = marker.read_text()
+        assert "scenario-fails.yaml" in marker_text
+        assert "KEEP_CLUSTER=1" in marker_text
+        assert "KEEP_ON_FAILURE=1" in marker_text
+        assert re.search(r"PASS:\s+0", result.stdout), result.stdout
+        assert re.search(r"FAIL:\s+1", result.stdout), result.stdout
+
+        result_files = list(reports_dir.glob("scenario-scenario-fails-*/result.yaml"))
+        assert result_files, "run-scenario.sh stub did not write result.yaml"
+        assert "status: FAIL" in result_files[0].read_text()
+
+    @pytest.mark.skipif(
+        os.environ.get("CTS_LIVE_TESTS") != "1",
+        reason="Set CTS_LIVE_TESTS=1 to run the live kind smoke test",
+    )
+    def test_live_kind_smoke_writes_real_result_yaml(self, tmp_path: Path) -> None:
+        reports_dir = tmp_path / "reports"
+        project_dir = REPO_ROOT / "examples" / "sample-product-chart"
+
+        result = runner.invoke(
+            app,
+            [
+                "test",
+                "--project-dir",
+                str(project_dir),
+                "--suite",
+                "pr-subset",
+                "--no-fix",
+                "--cluster-name",
+                "chart-test-swarm-live-smoke",
+                "--reports-dir",
+                str(reports_dir),
+            ],
+        )
+
+        assert result.exit_code == 0, f"Exit: {result.exit_code}\n{result.stdout}\n{result.stderr}"
+        result_files = list(reports_dir.glob("scenario-*/result.yaml"))
+        assert result_files, f"No result.yaml files written under {reports_dir}"
+
+        statuses = {
+            match.group(1)
+            for path in result_files
+            if (match := re.search(r"^status:\s*(PASS|FAIL|SKIP)$", path.read_text(), re.M))
+        }
+        assert statuses
+        assert statuses <= {"PASS", "FAIL", "SKIP"}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

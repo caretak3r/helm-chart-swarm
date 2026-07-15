@@ -10,7 +10,7 @@ Loop (observable behavior):
   2. Run cluster-up.sh with validated CLUSTER_NAME.
   3. Discover scenarios for --suite or all.
   4. Per scenario in catalog order:
-     a. Run via dispatch-swarm.sh single-scenario (exit 0 = PASS).
+     a. Run via run-scenario.sh against the shared cluster.
      b. PASS → record, continue.
      c. FAIL (unless --no-fix) → bounded fix sub-loop using recommendations
         + fix_cmd via CTS_LLM_CMD, up to --max-fix-attempts.
@@ -25,7 +25,6 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import NoReturn
 
@@ -107,34 +106,28 @@ def _run_dispatch_scenario(
     reports_dir: Path,
     parallelism: int = 1,
 ) -> int:
-    """Run a single scenario via dispatch-swarm.sh, returning exit code.
+    """Execute one scenario via run-scenario.sh on the shared cluster.
 
-    Passes the scenario via ``CTS_SCENARIOS`` env var and uses
-    ``single-scenario`` mode.
+    Returns 0 for non-failing outcomes (PASS/SKIP) and non-zero for FAIL.
+    The ``parallelism`` parameter is retained for signature stability.
     """
-    script = _resolve_engine_script("dispatch-swarm.sh")
+    script = _resolve_engine_script("run-scenario.sh")
 
     env = os.environ.copy()
-    env["CTS_SCENARIOS"] = str(scenario_path)
     env["CLUSTER_NAME"] = cluster_name
     env["PROJECT_DIR"] = str(project_dir)
     env["REPORTS_DIR"] = str(reports_dir)
     env["PROVIDER"] = "kind"
-    env["NUM_AGENTS"] = str(parallelism)
+    env["KEEP_CLUSTER"] = "1"
+    env["KEEP_ON_FAILURE"] = "1"
 
-    run_id = _generate_run_id()
-    env["RUN_ID"] = run_id
-
-    _debug(f"Dispatching scenario: {scenario_path}")
-    _debug(f"RUN_ID={run_id}")
+    _debug(f"Running scenario: {scenario_path}")
+    _debug(f"parallelism={parallelism} ignored for single scenario execution")
 
     cmd = [
         "bash",
         str(script),
-        str(project_dir),
-        "single-scenario",
-        str(parallelism),
-        run_id,
+        str(scenario_path),
     ]
 
     result = subprocess.run(
@@ -182,13 +175,6 @@ def _rebuild_dashboard(reports_dir: Path, project_dir: Path) -> None:
 
 
 # ── Helper utilities ─────────────────────────────────────────────────────────
-
-
-def _generate_run_id() -> str:
-    """Generate a unique run id."""
-    ts = datetime.now(tz=UTC).strftime("%Y%m%d-%H%M%S")
-    pid = os.getpid()
-    return f"run-{ts}-{pid}"
 
 
 def _resolve_reports_dir(explicit: str | None) -> Path:
