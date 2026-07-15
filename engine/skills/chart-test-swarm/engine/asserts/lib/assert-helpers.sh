@@ -15,26 +15,29 @@
 # ──────────────────────────────────────────────────────────────────────
 # wait_with_backoff  —  Retry a probe command with exponential backoff.
 #
-# Usage:  wait_with_backoff <probe_cmd> <retries> <timeout_seconds>
+# Usage:  wait_with_backoff <retries> <timeout_seconds> -- <cmd> [args...]
 #
-#   probe_cmd       — Shell command that returns 0 on success, non-zero on failure.
 #   retries         — Number of retry attempts AFTER the initial try.
 #                     retries=0 → single attempt (no retry).
 #                     Defaults to 0 if empty/unset.
 #   timeout_seconds — Maximum total elapsed wall-clock time (integer seconds).
 #                     The loop stops when this ceiling is reached, even if
 #                     retries remain.  Defaults to 30s if empty/unset.
+#   cmd [args...]   — Probe command argv. It returns 0 on success, non-zero on
+#                     failure. Arguments are executed directly, with no shell
+#                     evaluation.
 #
-#   Returns: 0 if probe_cmd succeeds within budget; non-zero if budget exhausted.
+#   Returns: 0 if cmd succeeds within budget; non-zero if budget exhausted.
 #
 #   Test injection: set WAIT_BACKOFF_SLEEP_CMD to a stub (e.g. 'true' or
 #   'echo $1 >> log') before calling.  Default is 'sleep'.
 # ──────────────────────────────────────────────────────────────────────
 wait_with_backoff() {
-  local probe_cmd="$1"
-  local retries="${2:-0}"
-  local timeout_sec="${3:-30}"
+  local retries="${1:-0}"
+  local timeout_sec="${2:-30}"
   local sleep_cmd="${WAIT_BACKOFF_SLEEP_CMD:-sleep}"
+  shift 2 || true
+  [ "${1:-}" = "--" ] && shift
 
   # Validate numeric inputs
   case "$retries" in
@@ -43,6 +46,11 @@ wait_with_backoff() {
   case "$timeout_sec" in
     ''|*[!0-9]*) timeout_sec=30 ;;
   esac
+
+  if [ "$#" -eq 0 ]; then
+    echo "wait_with_backoff: no probe command provided" >&2
+    return 1
+  fi
 
   local attempt=0
   local max_attempts=$((retries + 1))
@@ -60,7 +68,7 @@ wait_with_backoff() {
     fi
 
     # Execute probe
-    if eval "$probe_cmd" 2>/dev/null; then
+    if "$@" 2>/dev/null; then
       return 0
     fi
 
@@ -85,9 +93,15 @@ wait_with_backoff() {
     fi
     [ "$delay" -gt "$remaining" ] && delay=$remaining
 
-    # Invoke sleep via eval so test stubs that use $1 work correctly.
-    # For production the default is 'sleep' (a simple command).
-    eval "$sleep_cmd $delay" 2>/dev/null || true
+    # Invoke sleep through the test seam. Simple commands receive the delay as
+    # argv; inline test stubs that reference $1 run under bash -c.
+    case "$sleep_cmd" in
+      *[[:space:]]*) bash -c "$sleep_cmd" _ "$delay" 2>/dev/null || true ;;
+      *) "$sleep_cmd" "$delay" 2>/dev/null || true ;;
+    esac
+    if [ -n "${WAIT_BACKOFF_SLEEP_CMD:-}" ] && [ "$sleep_cmd" != "sleep" ]; then
+      start_time=$((start_time - delay))
+    fi
   done
 
   return 1

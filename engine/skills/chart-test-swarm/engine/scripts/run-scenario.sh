@@ -119,6 +119,40 @@ PRODUCT_RELEASE=$(yq  '.product.release'   "$SCENARIO")
 PRODUCT_NS=$(yq       '.product.namespace' "$SCENARIO")
 PRODUCT_VALUES=$(yq   '.product.values // ""' "$SCENARIO")
 
+_validate_assert_field() {
+  local field="$1"
+  local value="${2:-}"
+
+  if [ -z "$value" ] || [ "$value" = "null" ]; then
+    return 0
+  fi
+
+  case "$value" in
+    *\"*|*"'"*|*\`*|*\$*|*\;*|*\&*|*\|*|*\<*|*\>*|*\(*|*\)*)
+      echo "ERROR: assert field '$field' contains disallowed characters: $value" >&2
+      return 1
+      ;;
+  esac
+}
+
+validate_assert_fields() {
+  _validate_assert_field "product.release" "$PRODUCT_RELEASE"
+
+  local assert_count
+  assert_count=$(yq '.asserts // [] | length' "$SCENARIO")
+  [ "$assert_count" -gt 0 ] || return 0
+
+  local i field value
+  for i in $(seq 0 $((assert_count - 1))); do
+    for field in namespace selector release; do
+      value=$(yq ".asserts[$i].$field // \"\"" "$SCENARIO")
+      _validate_assert_field "asserts[$i].$field" "$value"
+    done
+  done
+}
+
+validate_assert_fields
+
 # ---- Cilium CNI config ----
 CNI_PROVIDER=$(yq      '.cluster.cni.provider // ""'               "$SCENARIO")
 CNI_VERSION=$(yq       '.cluster.cni.version // ""'                "$SCENARIO")

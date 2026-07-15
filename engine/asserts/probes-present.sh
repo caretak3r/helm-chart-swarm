@@ -281,9 +281,10 @@ check_live_probes() {
   # Poll for all pods Ready=True using wait_with_backoff
   local retries=30
   local timeout_sec=300
-  local probe_cmd="ready=\$(kubectl ${kubectl_args[*]} get pods -n \"$NS\" -l \"$release_sel\" -o jsonpath='{range .items[*]}{.status.conditions[?(@.type==\"Ready\")].status}{\"\\n\"}{end}' 2>/dev/null || echo ''); total=\$(kubectl ${kubectl_args[*]} get pods -n \"$NS\" -l \"$release_sel\" --no-headers 2>/dev/null | wc -l | tr -d ' '); ready_count=0; for s in \$ready; do [ \"\$s\" = 'True' ] && ready_count=\$((ready_count + 1)); done; [ \"\$ready_count\" -gt 0 ] && [ \"\$ready_count\" -eq \"\$total\" ]"
 
-  if wait_with_backoff "$probe_cmd" "$retries" "$timeout_sec"; then
+  export CTS_PROBE_NAMESPACE="$NS"
+  export CTS_PROBE_SELECTOR="$release_sel"
+  if wait_with_backoff "$retries" "$timeout_sec" -- bash "$SCRIPT_DIR/lib/probe-pods-ready.sh"; then
     echo "PASS: release pods Ready in ns/$NS — readiness probe transition verified"
     kubectl "${kubectl_args[@]}" -n "$NS" get pods -l "$release_sel" 2>/dev/null || true
   else
