@@ -1,7 +1,0 @@
----
-# Cilium helm values enabling the ingress controller in dedicated loadbalancerMode.
-# Each Ingress gets its own per-Ingress Service (no shared proxy).
-ingressController:
-  enabled: true
-  loadbalancerMode: dedicated
-  default: true

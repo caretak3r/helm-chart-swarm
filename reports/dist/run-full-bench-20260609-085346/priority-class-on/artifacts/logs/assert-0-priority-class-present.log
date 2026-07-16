@@ -1,2 +1,0 @@
-  Deployment/sample: missing priorityClassName on pod spec
-FAIL: 1 priorityClassName check(s) failed across 1 workload(s)
