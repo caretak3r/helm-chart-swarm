@@ -45,28 +45,33 @@ Observed pacing (from per-scenario report dir timestamps): light block ~30s/scen
 
 ## Result summary
 
-<!-- FINAL_TALLY: filled from reports/sealed-clean-1/result.yaml on completion -->
-- Total scenarios: 103
-- PASS: _pending suite completion_
-- FAIL: _pending_
-- SKIP: _pending_
-- INTERRUPTED: _pending_
+Suite completed 2026-07-16T05:36:44Z (1h 47m wall clock, sequential).
 
-Acceptance per bead: zero FAIL / zero INTERRUPTED out of N=103, SKIPs individually justified.
+- Total scenarios: 103
+- PASS: **103**
+- FAIL: **0**
+- SKIP: **0**
+- INTERRUPTED: **0** (zero INTERRUPTED mentions in the dispatcher log; final result.yaml lists all 103 scenarios with `status: PASS`)
+
+Acceptance per bead: zero FAIL / zero INTERRUPTED out of N=103, SKIPs individually justified — **met** (103/103 PASS, no SKIPs to justify). Dispatcher exited cleanly after `Suite execution complete: 103 scenario(s) — PASS: 103, FAIL: 0, SKIP: 0` and deleted its final cluster (`chart-test-swarm-sealed-clean-1-103`).
 
 ## Pre/post state
 
-| Check | Pre-launch | Post-run |
+| Check | Pre-launch | Post-run (2026-07-16T05:37Z) |
 |---|---|---|
-| dispatch-swarm/run-scenario processes | none | _pending_ |
-| `kind get clusters` (chart-test-swarm-*) | none | _pending_ |
-| ambient cluster `helm-hip0025` | present, untouched | _pending_ |
-| engine bundle drift (`sync-engine.sh --check`) | in sync | _pending_ |
-| `git status` dirt beyond run reports dir | clean | _pending_ |
+| dispatch-swarm/run-scenario processes | none | none |
+| `kind get clusters` (chart-test-swarm-*) | none | none — every run cluster torn down by the dispatcher (KEEP_CLUSTER=0) |
+| ambient cluster `helm-hip0025` | present, untouched | present, untouched |
+| engine bundle drift (`sync-engine.sh --check`) | in sync | in sync (`OK: engine bundle in sync`) |
+| `git status` dirt beyond run reports dir | clean | clean, after restoring 5 tracked artifact files (see anomaly note below) |
+
+### Anomaly (no test impact): misdirected live-mesh artifact capture
+
+The three consumer "live" assertion scripts (`istio-ambient-live.sh`, `istio-sidecar-live.sh`, `linkerd-live.sh`) locate their artifact-capture dir by globbing `chart-test/reports/` at `-maxdepth 1` for `scenario-<id>-*`. Under run-scoped dispatch the live report dir is one level deeper (`reports/sealed-clean-1/scenario-<id>-<ts>/`), so the glob matched only stale tracked dirs from 2026-06-02 and the capture step rewrote 5 committed `pods.yaml`/`namespace.yaml` files there. All three scenarios PASSed on their actual probes; only the VAL-MSH-008 artifact bundle landed in the wrong place. The 5 files were restored via `git checkout --`, and the bug is filed as bead `chart-test-swarm-bz1`.
 
 ## SKIP justifications
 
-_pending — one entry per SKIPped scenario, or "none" if skip: 0_
+None — `skip: 0`; every enumerated scenario, including all kind-sensitive addon blocks (Cilium eBPF, Istio ambient/sidecar live, Linkerd live, MetalLB), ran and PASSed on kind v1.36.1.
 
 ## Committed artifacts
 

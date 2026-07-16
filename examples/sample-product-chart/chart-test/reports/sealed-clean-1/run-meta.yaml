@@ -1,0 +1,12 @@
+run_id: sealed-clean-1
+timestamp_utc: 2026-07-16T03:49:38Z
+num_agents: 1
+suite: all
+cluster_provider: kind
+k8s_version: "v1.36.1"
+project:
+  name: sample-product-chart
+  dir: /tmp/o0g17-sealed/examples/sample-product-chart
+chart:
+  name: sample-product
+  version: 0.1.0
