@@ -25,6 +25,12 @@ teardown() {
   # Cleanup only clusters created by THIS test file (run ids embed f17-3).
   # Never pattern-delete every chart-test-swarm-* cluster: a developer's
   # chart-test-swarm-default or a concurrent run's clusters must survive.
+  #
+  # LENGTH BUDGET: cts_run_id_slug keeps only the LAST 24 chars, so 'f17-3'
+  # survives in 'bats-f17-3-<name>-<pid>' only while '<name>-<pid>' <= 18
+  # chars. The longest current name, 'containers-' + a 7-digit PID, is
+  # exactly 18 — zero margin. Keep new run-id <name> parts <= 'containers'
+  # in length or these f17-3-scoped greps go silently vacuous.
   for cl in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' | grep 'f17-3' || true); do
     kind delete cluster --name "$cl" 2>/dev/null || true
   done

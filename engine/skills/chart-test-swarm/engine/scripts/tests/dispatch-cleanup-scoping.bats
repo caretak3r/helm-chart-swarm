@@ -221,8 +221,10 @@ _run_dispatch() {
   # run- prefix stripped, timestamp+PID tail kept, index appended
   echo "$output" | grep -q '==> Cluster: chart-test-swarm-20260601-070133-7511-1'
   echo "$output" | grep -q '==> Cluster: chart-test-swarm-20260601-070133-7511-2'
-  # Old index-only names must NOT appear
-  ! echo "$output" | grep -q 'Cluster: chart-test-swarm-run-1$'
+  # Old index-only names must NOT appear.
+  # (Positive count assertion: bats' set -e ignores '!'-negated commands, so a
+  #  plain '! grep' here could never fail the test.)
+  [ "$(echo "$output" | grep -c 'Cluster: chart-test-swarm-run-1$')" -eq 0 ]
 }
 
 @test "explicit RUN_ID with uppercase/underscores is sanitized into the cluster name" {
@@ -251,19 +253,21 @@ _run_dispatch() {
   _run_dispatch "run-20260601-070133-7511"
   [ "$status" -eq 0 ]
 
-  # Deleted: exactly the two clusters this run created, nothing else
+  # Deleted: exactly the two clusters this run created, nothing else.
+  # (Positive count assertions throughout: bats' set -e ignores '!'-negated
+  #  commands, so '! grep' mid-test could never fail the test.)
   grep -qx 'chart-test-swarm-20260601-070133-7511-1' "$KIND_DELETIONS"
   grep -qx 'chart-test-swarm-20260601-070133-7511-2' "$KIND_DELETIONS"
-  ! grep -q 'chart-test-swarm-default' "$KIND_DELETIONS"
-  ! grep -q 'chart-test-swarm-other-run-1' "$KIND_DELETIONS"
+  [ "$(grep -c 'chart-test-swarm-default' "$KIND_DELETIONS")" -eq 0 ]
+  [ "$(grep -c 'chart-test-swarm-other-run-1' "$KIND_DELETIONS")" -eq 0 ]
   # Every deleted name belongs to this run
-  ! grep -v '^chart-test-swarm-20260601-070133-7511-' "$KIND_DELETIONS" | grep -q .
+  [ "$(grep -vc '^chart-test-swarm-20260601-070133-7511-' "$KIND_DELETIONS")" -eq 0 ]
 
   # Survivors: the developer's default cluster and the concurrent run's cluster
   grep -qx 'chart-test-swarm-default' "$KIND_STATE"
   grep -qx 'chart-test-swarm-other-run-1' "$KIND_STATE"
   # This run's clusters are gone
-  ! grep -q '^chart-test-swarm-20260601-070133-7511-' "$KIND_STATE"
+  [ "$(grep -c '^chart-test-swarm-20260601-070133-7511-' "$KIND_STATE")" -eq 0 ]
 }
 
 @test "SIGTERM mid-run: handler deletes only recorded clusters; chart-test-swarm-default survives" {
@@ -283,9 +287,8 @@ _run_dispatch() {
 
   # The handler removed the one cluster this run had created...
   grep -qx 'chart-test-swarm-20260601-070133-7511-1' "$KIND_DELETIONS"
-  # ...and nothing else
-  ! grep -q 'chart-test-swarm-default' "$KIND_DELETIONS"
-  ! grep -q 'chart-test-swarm-other-run-1' "$KIND_DELETIONS"
+  # ...and nothing else (positive count form — see note in the test above)
+  [ "$(grep -vc '^chart-test-swarm-20260601-070133-7511-' "$KIND_DELETIONS")" -eq 0 ]
   grep -qx 'chart-test-swarm-default' "$KIND_STATE"
   grep -qx 'chart-test-swarm-other-run-1' "$KIND_STATE"
 }
