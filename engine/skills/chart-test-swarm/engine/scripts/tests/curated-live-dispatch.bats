@@ -22,12 +22,21 @@ setup() {
 }
 
 teardown() {
-  # Cleanup any test clusters that may have been left behind
-  for cl in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' || true); do
+  # Cleanup only clusters created by THIS test file (run ids embed f17-3).
+  # Never pattern-delete every chart-test-swarm-* cluster: a developer's
+  # chart-test-swarm-default or a concurrent run's clusters must survive.
+  #
+  # LENGTH BUDGET: cts_run_id_slug keeps only the LAST 24 chars, so 'f17-3'
+  # survives in 'bats-f17-3-<name>-<pid>' only while '<name>-<pid>' <= 18
+  # chars. The longest current name, 'containers-' + a 7-digit PID, is
+  # exactly 18 — zero margin. Keep new run-id <name> parts <= 'containers'
+  # in length or these f17-3-scoped greps go silently vacuous.
+  for cl in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' | grep 'f17-3' || true); do
     kind delete cluster --name "$cl" 2>/dev/null || true
   done
-  # Cleanup any orphan containers
-  for c in $(docker ps -a --filter "name=chart-test-swarm-" --format '{{.Names}}' 2>/dev/null || true); do
+  # Cleanup only this file's orphan containers (kind node containers inherit
+  # the cluster name, so they also embed f17-3)
+  for c in $(docker ps -a --filter "name=chart-test-swarm-" --format '{{.Names}}' 2>/dev/null | grep 'f17-3' || true); do
     docker rm -f "$c" 2>/dev/null || true
   done
 }
@@ -155,9 +164,11 @@ _has_modern_bash() {
   REPORTS_DIR="$REPORTS_ROOT" \
   run bash "$DISPATCH" "$PROJECT_DIR" curated-live 1 "$run_id" --run
 
-  # After completion, no chart-test-swarm-* kind clusters
+  # After completion, none of THIS run's clusters remain (names embed the
+  # RUN_ID slug, which contains f17-3). Unrelated chart-test-swarm-* clusters
+  # are allowed to exist — cleanup is scoped to the invocation.
   local orphan_clusters
-  orphan_clusters=$(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' || true)
+  orphan_clusters=$(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' | grep 'f17-3' || true)
   [ -z "$orphan_clusters" ] || {
     echo "FAIL: orphan kind clusters found: $orphan_clusters"
     return 1
@@ -180,9 +191,10 @@ _has_modern_bash() {
   REPORTS_DIR="$REPORTS_ROOT" \
   run bash "$DISPATCH" "$PROJECT_DIR" curated-live 1 "$run_id" --run
 
-  # After completion, no chart-test-swarm-* docker containers
+  # After completion, none of THIS run's containers remain (node containers
+  # inherit the cluster name, which embeds the f17-3 slug)
   local orphan_containers
-  orphan_containers=$(docker ps -a --filter "name=chart-test-swarm-" --format '{{.Names}}' 2>/dev/null | grep '^chart-test-swarm-' || true)
+  orphan_containers=$(docker ps -a --filter "name=chart-test-swarm-" --format '{{.Names}}' 2>/dev/null | grep '^chart-test-swarm-' | grep 'f17-3' || true)
   [ -z "$orphan_containers" ] || {
     echo "FAIL: orphan docker containers found: $orphan_containers"
     return 1

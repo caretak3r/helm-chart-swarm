@@ -68,6 +68,51 @@ _has_modern_bash() {
   [[ "$output" == *"chart-test-swarm-"* ]]
 }
 
+# --- RUN_ID slug sanitization (cts_run_id_slug, no cluster I/O) ---
+# Tested under /bin/bash (3.2 on macOS) by sourcing the library directly,
+# same pattern as the prefix-check tests above.
+
+@test "cts_run_id_slug strips leading run- from default-shaped RUN_ID" {
+  run /bin/bash -c ". '$LIB_DIR/prefix-check.sh'; cts_run_id_slug run-20260601-070133-7511"
+  [ "$status" -eq 0 ]
+  [ "$output" = "20260601-070133-7511" ]
+}
+
+@test "cts_run_id_slug lowercases and maps punctuation/underscores to hyphens" {
+  run /bin/bash -c ". '$LIB_DIR/prefix-check.sh'; cts_run_id_slug 'My_Weird.Run/ID'"
+  [ "$status" -eq 0 ]
+  [ "$output" = "my-weird-run-id" ]
+}
+
+@test "cts_run_id_slug collapses hyphen runs and trims edges" {
+  run /bin/bash -c ". '$LIB_DIR/prefix-check.sh'; cts_run_id_slug 'RUN-2026__Test--x'"
+  [ "$status" -eq 0 ]
+  [ "$output" = "2026-test-x" ]
+}
+
+@test "cts_run_id_slug truncates long RUN_IDs to <=24 chars keeping the unique tail" {
+  long_id="run-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-20260601-070133-7511"
+  run /bin/bash -c ". '$LIB_DIR/prefix-check.sh'; cts_run_id_slug '$long_id'"
+  [ "$status" -eq 0 ]
+  [ "${#output}" -le 24 ]
+  [[ "$output" =~ ^[a-z0-9][a-z0-9-]*$ ]]
+  [[ "$output" == *7511 ]]
+}
+
+@test "cts_run_id_slug falls back to a non-empty digit slug for empty/degenerate input" {
+  run /bin/bash -c ". '$LIB_DIR/prefix-check.sh'; cts_run_id_slug ''"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ ^[0-9]+$ ]]
+  run /bin/bash -c ". '$LIB_DIR/prefix-check.sh'; cts_run_id_slug '---'"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ ^[0-9]+$ ]]
+}
+
+@test "cluster name composed from cts_run_id_slug passes cts_check_cluster_name" {
+  run /bin/bash -c ". '$LIB_DIR/prefix-check.sh'; cts_check_cluster_name \"chart-test-swarm-\$(cts_run_id_slug 'run-20260601-070133-7511')-12\""
+  [ "$status" -eq 0 ]
+}
+
 @test "cluster-up rejects CLUSTER_NAME without chart-test-swarm- prefix (kind)" {
   if ! _has_modern_bash; then
     # Under bash 3.2, test prefix-check directly (same logic cluster-up uses)

@@ -24,6 +24,30 @@ cts_check_cluster_name() {
   return 0
 }
 
+# cts_run_id_slug — sanitize a RUN_ID into a cluster-name-safe slug.
+# Lowercases, maps every char outside [a-z0-9] to '-', collapses hyphen runs,
+# trims leading/trailing hyphens, strips a leading "run-" (constant noise in
+# default RUN_IDs like run-20260601-070133-7511), and truncates to the LAST
+# 24 characters (the tail carries the timestamp+PID uniqueness). Falls back
+# to the current PID if the result is empty, so the composed cluster name
+# always satisfies ^chart-test-swarm-[a-z0-9-]+$.
+cts_run_id_slug() {
+  local raw="${1:-}"
+  local slug
+  slug=$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | tr -s '-')
+  slug="${slug#-}"
+  slug="${slug%-}"
+  slug="${slug#run-}"
+  if [ "${#slug}" -gt 24 ]; then
+    slug="${slug: -24}"
+    slug="${slug#-}"
+  fi
+  if [ -z "$slug" ]; then
+    slug="$$"
+  fi
+  printf '%s\n' "$slug"
+}
+
 # Validate immediately on source if CLUSTER_NAME is already set.
 # (Callers that set CLUSTER_NAME later should call cts_check_cluster_name explicitly.)
 if [ -n "${CLUSTER_NAME:-}" ]; then
