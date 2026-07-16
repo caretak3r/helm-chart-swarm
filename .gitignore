@@ -14,3 +14,12 @@ examples/sample-product-chart/chart-test/reports/run-bats-*
 
 # Python bytecode from running the testgrid suite
 __pycache__/
+*.pyc
+
+# Generated dashboard output. pages.yml rebuilds dist from the canonical
+# reports/scenarios sources on every deploy (make publish-dashboard), so the
+# committed copies were never consumed — only churn.
+**/reports/dist/
+
+# Relay harness scratch dir
+.relay/

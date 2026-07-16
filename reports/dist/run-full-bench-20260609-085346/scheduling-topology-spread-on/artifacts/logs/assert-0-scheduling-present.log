@@ -1,2 +1,0 @@
-  Deployment/sample: missing topologySpreadConstraints on pod spec
-FAIL: 1 scheduling check(s) failed across 1 workload(s)

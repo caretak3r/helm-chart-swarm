@@ -1,4 +1,0 @@
-  missing annotation 'example.com/owner=team-x' on Service/sample (metadata=)
-  missing annotation 'example.com/owner=team-x' on Deployment/sample (metadata=)
-  missing annotation 'example.com/owner=team-x' on Ingress/sample (metadata=)
-FAIL: 3 annotation check(s) failed across 3 rendered objects

@@ -1,7 +1,0 @@
-  missing label 'cost-center=42' on Service/sample (metadata=)
-  missing label 'team=platform' on Service/sample (metadata=)
-  missing label 'cost-center=42' on Deployment/sample (metadata=)
-  missing label 'team=platform' on Deployment/sample (metadata=)
-  missing label 'cost-center=42' on Ingress/sample (metadata=)
-  missing label 'team=platform' on Ingress/sample (metadata=)
-FAIL: 6 label check(s) failed across 3 rendered objects
