@@ -1,0 +1,124 @@
+# Dogfoods the shipped consumer CI template (engine/templates/ci/github-pr.yml)
+# against examples/sample-product-chart so the template semantics can never
+# silently rot again (chart-test-swarm-wg9 / 5dw).
+#
+# This mirrors the template's steps rather than copying it blindly: this repo
+# is both consumer and engine, so there is a single checkout instead of the
+# template's consumer/ + engine/ pair, and PROJECT points at the in-repo
+# sample chart. Everything semantic is preserved: the shared REPORTS_DIR env,
+# `make verify` preflight, `dispatch-swarm.sh <project> pr-subset 1 <run-id>
+# --run` on real kind clusters, `aggregate.sh` with its default-strict exit
+# policy, and the always() artifact upload of the run dir + dashboard dist.
+#
+# It also proves the strict exit contract in-job before spending cluster time:
+# a seeded FAIL that is NOT expected-fail-tagged must make aggregate.sh exit
+# non-zero, and the identical FAIL tagged expected-fail must be exempt.
+name: template dogfood (consumer CI)
+
+on:
+  pull_request:
+    paths:
+      - 'engine/templates/ci/**'
+      - 'engine/scripts/**'
+      - '.github/workflows/template-dogfood.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-dogfood-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dogfood:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # One explicit reports root shared by dispatch/aggregate/dashboard and
+      # the upload step, exactly as the template prescribes.
+      REPORTS_DIR: ${{ github.workspace }}/reports
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+      - uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+      - name: Install yq
+        run: |
+          sudo curl -fsSL -o /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      # For the dashboard build at the end of aggregate.sh (template installs
+      # uv for the same reason).
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Preflight
+        run: make verify
+
+      # Contract proof (b) + (c) from the template's promise ("Strict by
+      # default: any FAIL/PARTIAL not tagged 'expected-fail' exits non-zero").
+      # Uses synthetic run dirs in runner.temp — no clusters, fails fast.
+      - name: Prove strict exit contract
+        env:
+          REPORTS_DIR: ${{ runner.temp }}/strict-proof
+        run: |
+          set -euo pipefail
+
+          seed_run() { # $1 = run-id, $2 = tags yaml list
+            local dir="$REPORTS_DIR/$1/scenario-seeded-fail-000"
+            mkdir -p "$dir"
+            cat > "$REPORTS_DIR/$1/scenarios-snapshot.yaml" <<EOF
+          scenarios:
+            - id: seeded-fail
+              tags: $2
+          EOF
+            cat > "$dir/result.yaml" <<'EOF'
+          scenario_id: seeded-fail
+          status: FAIL
+          fail_stage: asserts
+          fail_msg: seeded failure for the strict exit contract proof
+          EOF
+          }
+
+          seed_run proof-fail '[pr-subset]'
+          if bash engine/scripts/aggregate.sh proof-fail; then
+            echo "::error::aggregate.sh exited 0 on a non-tagged FAIL — strict exit contract broken"
+            exit 1
+          fi
+          echo "OK: seeded non-tagged FAIL makes aggregate.sh exit non-zero"
+
+          seed_run proof-exempt '[pr-subset, expected-fail]'
+          bash engine/scripts/aggregate.sh proof-exempt
+          echo "OK: expected-fail-tagged FAIL is exempt (exit 0)"
+
+      # Contract proof (a): the green path. Same invocation shape as the
+      # template's "Run swarm (pr-subset)" step, PR runs serialize for cost.
+      - name: Run swarm (pr-subset)
+        env:
+          PROJECT: ${{ github.workspace }}/examples/sample-product-chart
+          SUITE: pr-subset
+          NUM_AGENTS: 1
+        run: |
+          RUN_ID="dogfood-${{ github.run_id }}-${{ github.run_attempt }}"
+          # --run executes every matched scenario on fresh kind clusters and
+          # writes per-scenario result.yaml under $REPORTS_DIR/$RUN_ID/.
+          bash engine/scripts/dispatch-swarm.sh "$PROJECT" "$SUITE" "$NUM_AGENTS" "$RUN_ID" --run
+          # Roll results into scenario-matrix.csv + dashboard. Strict by
+          # default: any FAIL/PARTIAL not tagged 'expected-fail' exits
+          # non-zero and fails the job.
+          bash engine/scripts/aggregate.sh "$RUN_ID"
+          echo "RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
+
+      - name: Upload dashboard + reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-dogfood-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reports/dogfood-${{ github.run_id }}-${{ github.run_attempt }}
+            reports/dist
+          if-no-files-found: warn
