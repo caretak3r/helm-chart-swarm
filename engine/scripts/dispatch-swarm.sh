@@ -25,8 +25,11 @@ Options:
   --run      Execute each matched scenario via run-scenario.sh after
              creating the run directory structure. Scenarios are run
              sequentially with KEEP_CLUSTER=0 / KEEP_ON_FAILURE=0 so
-             clusters are always torn down. A run-level result.yaml
-             summarizing all scenario outcomes is written on completion.
+             clusters are always torn down. Each scenario gets a fresh
+             kind cluster named chart-test-swarm-<run-id-slug>-<index>;
+             cleanup removes ONLY clusters created by this invocation.
+             A run-level result.yaml summarizing all scenario outcomes
+             is written on completion.
 
 Arguments:
   project-dir  Path to the consumer chart project (containing chart-test-swarm.yaml)
@@ -456,7 +459,9 @@ echo "==> RUN_ID=$RUN_ID"
 # always torn down after the scenario completes (PASS or FAIL).
 #
 # VAL-E2E-002: each live/capability/gap-probe member produces a result.yaml
-# VAL-E2E-010: no orphan kind clusters after completion
+# VAL-E2E-010: no orphan kind clusters created by this run after completion
+#              (cleanup is scoped to the exact names this invocation created;
+#              unrelated chart-test-swarm-* clusters are never touched)
 # VAL-E2E-011: no orphan docker containers after completion
 
 if [ "$_EXECUTE_RUN" -eq 1 ]; then
@@ -465,6 +470,13 @@ if [ "$_EXECUTE_RUN" -eq 1 ]; then
 
   # Save the run id before clearing RUN_ID for run-scenario.sh
   _dispatch_run_id="$RUN_ID"
+
+  # Sanitize the run id into a cluster-name-safe slug (see lib/prefix-check.sh).
+  # Embedding the slug in every per-scenario cluster name makes concurrent
+  # dispatches collision-free (VAL-CROSS-028) while staying within kind's
+  # practical name-length limit (slug is capped at 24 chars; final name is
+  # chart-test-swarm-<slug>-<index>, and kind appends -control-plane).
+  _RUN_SLUG="$(cts_run_id_slug "$_dispatch_run_id")"
 
   # Force cluster teardown on both success and failure paths
   export KEEP_CLUSTER=0
@@ -481,6 +493,22 @@ if [ "$_EXECUTE_RUN" -eq 1 ]; then
   _RUN_SKIP=0
   _RUN_IDX=0
   _SCENARIO_RESULTS=()  # id=status pairs for run-level result.yaml
+  _CREATED_CLUSTERS=()  # exact cluster names created by THIS invocation
+
+  # Delete ONLY the clusters this invocation created (recorded in
+  # _CREATED_CLUSTERS as they are created). Never pattern-match: unrelated
+  # chart-test-swarm-* clusters (a developer's chart-test-swarm-default,
+  # another concurrent dispatch's clusters) must survive this run.
+  _cleanup_created_clusters() {
+    if [ "${#_CREATED_CLUSTERS[@]}" -gt 0 ]; then
+      for leftover in "${_CREATED_CLUSTERS[@]}"; do
+        if kind get clusters 2>/dev/null | grep -qx "$leftover"; then
+          echo "==> Removing this run's leftover cluster: $leftover" >&2
+          kind delete cluster --name "$leftover" 2>/dev/null || true
+        fi
+      done
+    fi
+  }
 
   # Trap for cleanup on interrupt during execution
   _exec_interrupted=0
@@ -488,10 +516,7 @@ if [ "$_EXECUTE_RUN" -eq 1 ]; then
     echo "" >&2
     echo "==> SIGINT/SIGTERM received during execution — cleaning up" >&2
     _exec_interrupted=1
-    for leftover in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' || true); do
-      echo "==> Removing leftover cluster: $leftover" >&2
-      kind delete cluster --name "$leftover" 2>/dev/null || true
-    done
+    _cleanup_created_clusters
     exit 1
   }
   trap _exec_cleanup INT TERM
@@ -523,9 +548,14 @@ if [ "$_EXECUTE_RUN" -eq 1 ]; then
   for f in "${MATCHED[@]}"; do
     _RUN_IDX=$((_RUN_IDX + 1))
     _sid=$(yq '.id' "$f")
-    # Use index-based cluster name to stay well under the 64-char hostname limit.
-    # kind appends -control-plane to the cluster name for the node hostname.
-    _cluster_name="chart-test-swarm-run-${_RUN_IDX}"
+    # RUN_ID-slug-scoped cluster name: unique across concurrent dispatches and
+    # still well under the 64-char hostname limit (slug capped at 24 chars;
+    # kind appends -control-plane to the cluster name for the node hostname).
+    _cluster_name="chart-test-swarm-${_RUN_SLUG}-${_RUN_IDX}"
+    # Belt-and-braces: the composed name must satisfy the shared prefix guard.
+    cts_check_cluster_name "$_cluster_name" || exit 1
+    # Record BEFORE creating so a signal arriving mid-create still cleans it up.
+    _CREATED_CLUSTERS+=("$_cluster_name")
 
     echo ""
     echo "============================================================"
@@ -606,11 +636,10 @@ if [ "$_EXECUTE_RUN" -eq 1 ]; then
   echo "==>   Run dir: $RUN_DIR"
   echo "============================================================"
 
-  # ---- Final cleanup: ensure no orphan clusters/containers ──────────
-  for leftover in $(kind get clusters 2>/dev/null | grep '^chart-test-swarm-' || true); do
-    echo "WARN: removing leftover cluster: $leftover" >&2
-    kind delete cluster --name "$leftover" 2>/dev/null || true
-  done
+  # ---- Final cleanup: remove leftovers among the clusters THIS run created ──
+  # Scoped to exact recorded names; unrelated chart-test-swarm-* clusters
+  # (e.g. chart-test-swarm-default, another dispatch's clusters) survive.
+  _cleanup_created_clusters
 
   # Reset trap to default
   trap - INT TERM
