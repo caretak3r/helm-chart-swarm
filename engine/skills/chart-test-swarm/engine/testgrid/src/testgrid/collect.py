@@ -403,20 +403,50 @@ def _collect_artifact_links(artifact_dir: Path) -> dict[str, Any]:
     return links
 
 
+def _run_result_has_scenarios(result_path: Path) -> bool:
+    """True if a run-level result.yaml exists and carries a non-empty
+    ``scenarios:`` array.
+
+    This is the summary-only run shape written by ``dispatch-swarm.sh``'s
+    run-level result.yaml (``_write_run_result_yaml``) and preserved by
+    evidence commits that keep only ``result.yaml`` + ``run-meta.yaml``.
+    Its per-scenario statuses are recovered by ``load_scenario_results``'s
+    fallback, so the run is renderable and must not be treated as orphaned.
+    """
+    if not result_path.is_file():
+        return False
+    try:
+        doc = _load_yaml(result_path) or {}
+    except yaml.YAMLError:
+        return False
+    return bool(doc.get("scenarios"))
+
+
 def collect_run(reports_dir: Path, run_id: str) -> Run:
     run_dir = reports_dir / run_id
     if not run_dir.is_dir():
         raise FileNotFoundError(f"run dir not found: {run_dir}")
 
     # Detect orphaned run dirs: no scenarios-snapshot.yaml AND no
-    # agent-*/result.yaml files AND no scenario-*/result.yaml files.
+    # agent-*/result.yaml files AND no scenario-*/result.yaml files AND no
+    # run-level result.yaml carrying a scenarios[] array. That last shape is
+    # what summary-only evidence runs commit (e.g. a sealed regression run
+    # keeps result.yaml + run-meta.yaml but not the full per-scenario tree);
+    # load_scenario_results() reads those statuses from result.yaml's
+    # scenarios[] fallback, so such a run is real data, not an orphan.
     has_snapshot = (run_dir / "scenarios-snapshot.yaml").exists()
     has_agent_results = any(run_dir.glob("agent-*/result.yaml"))
     has_scenario_results = any(run_dir.glob("scenario-*/result.yaml"))
-    if not has_snapshot and not has_agent_results and not has_scenario_results:
+    has_run_result_scenarios = _run_result_has_scenarios(run_dir / "result.yaml")
+    if (
+        not has_snapshot
+        and not has_agent_results
+        and not has_scenario_results
+        and not has_run_result_scenarios
+    ):
         print(
             f"warn: skipped orphaned run dir {run_dir.name}"
-            f" (no snapshot, no agent/scenario results)",
+            f" (no snapshot, no agent/scenario/run results)",
             file=sys.stderr,
         )
         raise OrphanRunError(run_dir)
