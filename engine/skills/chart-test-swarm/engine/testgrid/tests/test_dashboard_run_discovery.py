@@ -304,3 +304,57 @@ class TestBackwardCompatibility:
 
         runs = list_runs(Path("/nonexistent/path/12345"))
         assert runs == []
+
+
+# ---------------------------------------------------------------------------
+# Summary-only evidence runs: run-meta.yaml + run-level result.yaml only
+# (no snapshot, no agent-*/ or scenario-*/ dirs). Sealed regression evidence
+# commits keep exactly this — the run must still render, not be dropped as an
+# orphan. Regression guard for the 103/103 sealed run vanishing from the
+# dashboard.
+# ---------------------------------------------------------------------------
+
+
+class TestSummaryOnlyRunRenders:
+    def _write_summary_run(self, reports: Path, name: str, statuses: dict[str, str]) -> Path:
+        d = reports / name
+        d.mkdir(parents=True, exist_ok=True)
+        _write_run_meta(d, name)
+        result = {
+            "run_id": name,
+            "total": len(statuses),
+            "pass": sum(1 for s in statuses.values() if s == "PASS"),
+            "fail": sum(1 for s in statuses.values() if s == "FAIL"),
+            "skip": 0,
+            "scenarios": [{"id": sid, "status": st} for sid, st in statuses.items()],
+        }
+        (d / "result.yaml").write_text(yaml.dump(result))
+        return d
+
+    def test_summary_only_run_not_orphaned(self, tmp_path: Path) -> None:
+        """A run with only run-meta.yaml + result.yaml[scenarios] renders."""
+        from testgrid.collect import collect_run
+
+        reports = tmp_path / "reports"
+        reports.mkdir()
+        self._write_summary_run(reports, "sealed-clean-1", {"a": "PASS", "b": "PASS", "c": "FAIL"})
+
+        run = collect_run(reports, "sealed-clean-1")
+        assert len(run.scenarios) == 3
+        assert sum(1 for s in run.scenarios if s.status == "PASS") == 2
+
+    def test_result_yaml_without_scenarios_still_orphaned(self, tmp_path: Path) -> None:
+        """A result.yaml with no scenarios[] array is NOT rescued from orphan."""
+        import pytest
+
+        from testgrid.collect import OrphanRunError, collect_run
+
+        reports = tmp_path / "reports"
+        reports.mkdir()
+        d = reports / "empty-run"
+        d.mkdir()
+        _write_run_meta(d, "empty-run")
+        (d / "result.yaml").write_text(yaml.dump({"run_id": "empty-run", "total": 0}))
+
+        with pytest.raises(OrphanRunError):
+            collect_run(reports, "empty-run")
