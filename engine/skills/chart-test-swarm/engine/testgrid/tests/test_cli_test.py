@@ -65,16 +65,22 @@ def _setup_stub_project(
     tmp_path: Path,
     scenario_names: list[str],
     project_name: str = "testproj",
+    suites_yaml: str | None = None,
 ) -> Path:
-    """Create a stub project directory with chart-test-swarm.yaml and scenarios."""
+    """Create a stub project directory with chart-test-swarm.yaml and scenarios.
+
+    *suites_yaml*, if given, is a pre-indented ``suites:`` YAML block (e.g.
+    ``"suites:\\n  suite-a: {tag_filter: [suite-a]}\\n"``) appended to the config.
+    """
     proj = tmp_path / project_name
     scn_dir = proj / "chart-test" / "scenarios"
     scn_dir.mkdir(parents=True)
 
     # chart-test-swarm.yaml
-    (proj / "chart-test-swarm.yaml").write_text(
-        f"project:\n  name: {project_name}\nscenarios_dir: chart-test/scenarios\n"
-    )
+    config_text = f"project:\n  name: {project_name}\nscenarios_dir: chart-test/scenarios\n"
+    if suites_yaml:
+        config_text += suites_yaml
+    (proj / "chart-test-swarm.yaml").write_text(config_text)
 
     # chart dir
     (proj / "chart" / "templates").mkdir(parents=True)
@@ -516,7 +522,11 @@ class TestScenarioDiscovery:
         )
 
     def test_suite_filter_runs_subset(self, tmp_path: Path) -> None:
+        """--suite resolves via the config's tag_filter (chart-test-swarm-z5m):
+        the suite name is a lookup key, not a literal tag, so only scenarios
+        whose tags intersect the suite's tag_filter are selected."""
         scripts = _setup_engine_stubs(tmp_path, verify_exit=0)
+        self._setup_dispatch_with_scenario_logging(tmp_path, scripts)
         proj = _setup_stub_project(
             tmp_path,
             [
@@ -524,12 +534,11 @@ class TestScenarioDiscovery:
                 "capability/b-scenario.yaml",
                 "capability/c-scenario.yaml",
             ],
+            suites_yaml="suites:\n  suite-a: {tag_filter: [suite-a]}\n",
         )
         llm = _setup_llm_mock(tmp_path)
         env = _build_env(scripts, llm, REPORTS_DIR=str(tmp_path / "reports"))
 
-        # With suite filter that doesn't match tag-based discovery, we still
-        # run scenarios found via _find_all_scenarios (default behavior)
         result = runner.invoke(
             app,
             [
@@ -544,6 +553,78 @@ class TestScenarioDiscovery:
             env=env,
         )
         assert result.exit_code == 0
+        # Only the 2 scenarios tagged suite-a (of 3) should have been selected
+        log = _read_invocation_log(tmp_path)
+        dispatch_count = sum(1 for line in log if "dispatch-swarm.sh" in line)
+        assert dispatch_count == 2, (
+            f"Expected 2 dispatch calls (suite-a subset), got {dispatch_count} via log: {log}"
+        )
+
+    def test_suite_not_defined_dies(self, tmp_path: Path) -> None:
+        """A suite absent from config's tag_filter must select zero scenarios
+        by failing loudly, never by silently matching everything or nothing."""
+        scripts = _setup_engine_stubs(tmp_path, verify_exit=0)
+        proj = _setup_stub_project(tmp_path, ["capability/a-scenario.yaml"])
+        llm = _setup_llm_mock(tmp_path)
+        env = _build_env(scripts, llm, REPORTS_DIR=str(tmp_path / "reports"))
+
+        result = runner.invoke(
+            app,
+            [
+                "test",
+                "--project-dir",
+                str(proj),
+                "--suite",
+                "no-such-suite",
+                "--reports-dir",
+                str(tmp_path / "reports"),
+            ],
+            env=env,
+        )
+        assert result.exit_code != 0
+        assert "no-such-suite" in result.output
+        assert "not defined" in result.output
+
+    def test_suite_filter_excludes_unparsable_scenario(self, tmp_path: Path) -> None:
+        """A scenario that fails to parse must be excluded (with a warning),
+        never included by the best-effort branch — that inverts the filter
+        for exactly the files most likely to be broken."""
+        scripts = _setup_engine_stubs(tmp_path, verify_exit=0)
+        self._setup_dispatch_with_scenario_logging(tmp_path, scripts)
+        proj = _setup_stub_project(
+            tmp_path,
+            ["capability/a-scenario.yaml", "capability/b-scenario.yaml"],
+            suites_yaml="suites:\n  suite-a: {tag_filter: [suite-a]}\n",
+        )
+        # capability/a-scenario.yaml and b-scenario.yaml are both tagged
+        # suite-a by _setup_stub_project; corrupt one so it fails to parse.
+        broken = proj / "chart-test" / "scenarios" / "capability" / "a-scenario.yaml"
+        broken.write_text("tags: [suite-a\nnot: valid: yaml: [[[")
+
+        llm = _setup_llm_mock(tmp_path)
+        env = _build_env(scripts, llm, REPORTS_DIR=str(tmp_path / "reports"))
+
+        result = runner.invoke(
+            app,
+            [
+                "test",
+                "--project-dir",
+                str(proj),
+                "--suite",
+                "suite-a",
+                "--reports-dir",
+                str(tmp_path / "reports"),
+            ],
+            env=env,
+        )
+        assert result.exit_code == 0
+        log = _read_invocation_log(tmp_path)
+        dispatch_count = sum(1 for line in log if "dispatch-swarm.sh" in line)
+        assert dispatch_count == 1, (
+            f"Expected the unparsable scenario excluded (1 dispatch), got "
+            f"{dispatch_count} via log: {log}"
+        )
+        assert "Skipping unparsable scenario" in result.output
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
