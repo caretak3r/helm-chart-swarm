@@ -44,7 +44,9 @@ from .collect import Run, Scenario
 # Recommendation.fix_prompt -> .fix-prompt.json -> call_llm -> $CTS_LLM_CMD).
 # Left raw, a crafted value could be read by the fix LLM as instructions — the
 # injection bridge to the write-then-execute fix loop whose SINK was gated by
-# bead 998 (write allowlist + approval in fix_cmd.py). This fence closes the
+# bead 998 (write allowlist in fix_cmd.py: _validate_chart_write_path /
+# _is_allowed_chart_surface restrict writes to non-executable chart template
+# and values files). This fence closes the
 # SOURCE: untrusted text is labeled as data, length-capped, and stripped of the
 # fence sentinels so it cannot break out of the block.
 
