@@ -26,7 +26,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import NoReturn
+from typing import Any, NoReturn
 
 # ── Reused helpers (do not reimplement) ─────────────────────────────────────
 from chart_test_swarm.commands.fix_cmd import (
@@ -458,28 +458,47 @@ def _filter_by_suite_tag(
     project_dir: Path,
     suite: str,
 ) -> list[Path]:
-    """Filter scenarios by suite tag from their YAML tags field.
+    """Filter scenarios by the suite's ``tag_filter``, as declared in
+    ``chart-test-swarm.yaml``. Mirrors ``dispatch-swarm.sh``'s tag-based
+    filtering (engine/scripts/dispatch-swarm.sh:166-194): a scenario matches
+    if any of its tags intersect the suite's ``tag_filter`` array — the suite
+    name itself is a lookup key into that config, never a tag.
 
-    If a scenario doesn't have the suite tag, it's excluded.
-    If a scenario can't be parsed, it's included (best-effort).
+    A scenario that fails to parse is excluded (with a warning), not
+    included — a broken scenario file must never silently join a run.
     """
     if not suite:
         return scenarios
 
-    filtered: list[Path] = []
     import yaml as _yaml_lib
 
+    config_path = project_dir / "chart-test-swarm.yaml"
+    cfg: dict[str, Any] = {}
+    if config_path.exists():
+        with open(config_path, encoding="utf-8") as fh:
+            cfg = _yaml_lib.safe_load(fh) or {}
+    suites = cfg.get("suites") or {}
+    suite_cfg = suites.get(suite) or {}
+    tag_filter = suite_cfg.get("tag_filter") or []
+
+    if not tag_filter:
+        _die(
+            f"ERROR: suite '{suite}' not defined or has empty tag_filter in {config_path}",
+            code=1,
+        )
+
+    filtered: list[Path] = []
     for scn_path in scenarios:
         try:
             with open(scn_path, encoding="utf-8") as f:
                 doc = _yaml_lib.safe_load(f)
-            if isinstance(doc, dict):
-                tags = doc.get("tags", [])
-                if isinstance(tags, list) and suite in tags:
-                    filtered.append(scn_path)
-                    continue
-        except Exception:
-            # If we can't parse, include the scenario (best-effort)
-            filtered.append(scn_path)
+        except Exception as exc:
+            print(f"  ⚠ Skipping unparsable scenario {scn_path}: {exc}", file=sys.stderr)
             continue
+        if not isinstance(doc, dict):
+            print(f"  ⚠ Skipping unparsable scenario {scn_path}: not a mapping", file=sys.stderr)
+            continue
+        tags = doc.get("tags", [])
+        if isinstance(tags, list) and set(tags) & set(tag_filter):
+            filtered.append(scn_path)
     return filtered
