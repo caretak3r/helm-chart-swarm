@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="/Users/rohit/Documents/chart-test-swarm"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTGRID_DIR="$REPO_ROOT/engine/testgrid"
 
 log() { printf '[init] %s\n' "$*"; }
